@@ -14,6 +14,8 @@ import Sales from './pages/Sales';
 import Customers from './pages/Customers';
 import TranslationDemo from './pages/TranslationDemo';
 import TaxSettings from './pages/TaxSettings';
+import PaymentSettings from './pages/PaymentSettings';
+import PaymentAnalyticsDashboard from './pages/PaymentAnalyticsDashboard';
 
 // Placeholder components for other pages
 const Settings: React.FC = () => (
@@ -76,6 +78,8 @@ function App() {
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
               <Route path="tax-settings" element={<TaxSettings />} />
+              <Route path="payment-settings" element={<PaymentSettings />} />
+              <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
               <Route path="demo" element={<TranslationDemo />} />
             </Route>
             

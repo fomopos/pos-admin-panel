@@ -80,6 +80,7 @@ const DashboardLayout: React.FC = () => {
         { name: 'Sales Reports', href: '/reports/sales', icon: ChartBarIcon },
         { name: 'Inventory Reports', href: '/reports/inventory', icon: RectangleStackIcon },
         { name: 'Customer Analytics', href: '/reports/customers', icon: UsersIcon },
+        { name: 'Payment Analytics', href: '/payment-analytics', icon: CreditCardIcon },
         { name: 'Financial Reports', href: '/reports/financial', icon: DocumentTextIcon },
       ]
     },
@@ -94,7 +95,7 @@ const DashboardLayout: React.FC = () => {
       items: [
         { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },
         { name: 'User Management', href: '/settings/users', icon: UserIcon },
-        { name: 'Payment Methods', href: '/settings/payments', icon: CreditCardIcon },
+        { name: 'Payment Settings', href: '/payment-settings', icon: CreditCardIcon },
         { name: 'Tax Settings', href: '/tax-settings', icon: TableCellsIcon },
         { name: 'System Settings', href: '/settings/system', icon: Cog6ToothIcon },
       ]
