@@ -95,7 +95,7 @@ const DashboardLayout: React.FC = () => {
         { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },
         { name: 'User Management', href: '/settings/users', icon: UserIcon },
         { name: 'Payment Methods', href: '/settings/payments', icon: CreditCardIcon },
-        { name: 'Tax Settings', href: '/settings/tax', icon: TableCellsIcon },
+        { name: 'Tax Settings', href: '/tax-settings', icon: TableCellsIcon },
         { name: 'System Settings', href: '/settings/system', icon: Cog6ToothIcon },
       ]
     }

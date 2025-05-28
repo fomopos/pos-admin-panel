@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   PencilIcon, 
   TrashIcon, 
   PhotoIcon,
   MagnifyingGlassIcon,
+  FunnelIcon,
+  EyeIcon,
   ChevronDownIcon,
   XMarkIcon,
   ClipboardDocumentListIcon,
   CurrencyDollarIcon,
+  TagIcon,
   ArchiveBoxIcon,
   Squares2X2Icon,
   ListBulletIcon,
   EllipsisVerticalIcon,
+  StarIcon,
   HeartIcon
 } from '@heroicons/react/24/outline';
 import { 
@@ -48,7 +52,7 @@ interface Category {
 }
 
 const Products: React.FC = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -58,6 +62,8 @@ const Products: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortField, setSortField] = useState<keyof Product>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
     sku: '',
@@ -233,7 +239,9 @@ const Products: React.FC = () => {
   };
 
   const handleEdit = (product: Product) => {
-    navigate(`/products/edit/${product.id}`);
+    setEditingProduct(product);
+    setFormData(product);
+    setShowForm(true);
   };
 
   const handleDelete = async (productId: string) => {
@@ -260,12 +268,43 @@ const Products: React.FC = () => {
     setActiveTab('basic');
   };
 
+  const handleSort = (field: keyof Product) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getStatusBadge = (status: Product['status']) => {
+    return status === 'active' 
+      ? <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
+      : <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Inactive</span>;
+  };
+
+  const getInventoryStatus = (inventory: number) => {
+    if (inventory === 0) return { color: 'text-red-600', text: 'Out of Stock' };
+    if (inventory < 20) return { color: 'text-orange-600', text: 'Low Stock' };
+    return { color: 'text-green-600', text: 'In Stock' };
+  };
+
   const filteredProducts = products
     .filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.sku.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = !selectedCategory || product.category === selectedCategory;
       return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      const direction = sortDirection === 'asc' ? 1 : -1;
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return aValue.localeCompare(bValue) * direction;
+      }
+      return (Number(aValue) - Number(bValue)) * direction;
     });
 
   if (isLoading) {
@@ -293,7 +332,7 @@ const Products: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             <Button
-              onClick={() => navigate('/products/new')}
+              onClick={() => setShowForm(true)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               <PlusIcon className="h-5 w-5 mr-2" />

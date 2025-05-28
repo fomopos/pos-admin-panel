@@ -8,10 +8,12 @@ import DashboardLayout from './layouts/DashboardLayout';
 import SignIn from './pages/auth/SignIn';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import ProductEdit from './pages/ProductEdit';
 import Categories from './pages/Categories';
 import Sales from './pages/Sales';
 import Customers from './pages/Customers';
 import TranslationDemo from './pages/TranslationDemo';
+import TaxSettings from './pages/TaxSettings';
 
 // Placeholder components for other pages
 const Settings: React.FC = () => (
@@ -67,10 +69,13 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="products" element={<Products />} />
+              <Route path="products/new" element={<ProductEdit />} />
+              <Route path="products/edit/:id" element={<ProductEdit />} />
               <Route path="categories" element={<Categories />} />
               <Route path="sales" element={<Sales />} />
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="tax-settings" element={<TaxSettings />} />
               <Route path="demo" element={<TranslationDemo />} />
             </Route>
             
