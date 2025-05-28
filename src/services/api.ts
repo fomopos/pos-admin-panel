@@ -1,6 +1,10 @@
 // Base API configuration and utilities
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
+// Development mode flag - set to true to use mock data instead of real API calls
+export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || 
+  import.meta.env.NODE_ENV === 'development';
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;
@@ -11,6 +15,18 @@ export interface ApiError {
   message: string;
   code?: string;
   details?: any;
+}
+
+export class ApiError extends Error {
+  public code?: string;
+  public details?: any;
+
+  constructor(message: string, code?: string, details?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.details = details;
+  }
 }
 
 export class ApiClient {
@@ -59,7 +75,13 @@ export class ApiClient {
       return data;
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
-      throw error;
+      
+      // Re-throw the error so services can handle fallback to mock data
+      throw new ApiError(
+        error instanceof Error ? error.message : 'Network request failed',
+        'NETWORK_ERROR',
+        { endpoint, originalError: error }
+      );
     }
   }
 

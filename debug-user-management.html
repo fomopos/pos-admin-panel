@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug User Management</title>
+</head>
+<body>
+    <h1>User Management Debug Test</h1>
+    <p>This page tests if the User Management route is accessible.</p>
+    
+    <script>
+        // Test if we can reach the user management page
+        fetch('/settings/users')
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.text();
+            })
+            .then(html => {
+                console.log('Page loaded successfully');
+                if (html.includes('root')) {
+                    console.log('✅ React app container found');
+                } else {
+                    console.log('❌ React app container not found');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error loading page:', error);
+            });
+        
+        // Navigate to user management after 2 seconds
+        setTimeout(() => {
+            console.log('Navigating to /settings/users...');
+            window.location.href = '/settings/users';
+        }, 2000);
+    </script>
+</body>
+</html>
