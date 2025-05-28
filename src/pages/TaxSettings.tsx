@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -17,55 +16,14 @@ import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
-
-interface TaxAuthority {
-  authority_id: string;
-  name: string;
-  rounding_code: 'HALF_UP' | 'HALF_DOWN' | 'UP' | 'DOWN';
-  rounding_digit: number;
-}
-
-interface TaxLocation {
-  tax_loc_id: string;
-  name: string;
-  description: string;
-}
-
-interface TaxRule {
-  tax_rule_seq: number;
-  tax_authority_id: string;
-  name: string;
-  description: string;
-  tax_type_code: string;
-  fiscal_tax_id: string;
-  effective_datetime: string | null;
-  expr_datetime: string | null;
-  percentage: number;
-  amount: number | null;
-}
-
-interface TaxGroup {
-  tax_group_id: string;
-  name: string;
-  description: string;
-  group_rule: TaxRule[];
-}
-
-interface TaxConfiguration {
-  tenant_id: string;
-  store_id: string;
-  authority: TaxAuthority[];
-  tax_location: TaxLocation;
-  tax_group: TaxGroup[];
-  properties: any;
-  created_at: string;
-  create_user_id: string;
-  updated_at: string;
-  update_user_id: string | null;
-}
+import { taxServices } from '../services/tax';
+import type {
+  TaxAuthority,
+  TaxGroup,
+  TaxConfiguration
+} from '../services/tax';
 
 const TaxSettings: React.FC = () => {
-  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [taxConfig, setTaxConfig] = useState<TaxConfiguration | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,201 +34,21 @@ const TaxSettings: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock data based on your payload
+  // Fetch tax configuration using services
   useEffect(() => {
     const fetchTaxConfig = async () => {
       setIsLoading(true);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setTaxConfig({
-        tenant_id: "272e",
-        store_id: "*",
-        authority: [
-          {
-            authority_id: "IN-CGST",
-            name: "Central",
-            rounding_code: "HALF_UP",
-            rounding_digit: 2
-          },
-          {
-            authority_id: "IN-SGST",
-            name: "State",
-            rounding_code: "HALF_UP",
-            rounding_digit: 2
-          }
-        ],
-        tax_location: {
-          tax_loc_id: "TL-IN",
-          name: "India Tax Location",
-          description: "IN Tax Location"
-        },
-        tax_group: [
-          {
-            tax_group_id: "0",
-            name: "No Tax",
-            description: "No Tax",
-            group_rule: [
-              {
-                tax_rule_seq: 1,
-                tax_authority_id: "IN-CGST",
-                name: "Central GST",
-                description: "Central GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "A",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0,
-                amount: null
-              },
-              {
-                tax_rule_seq: 2,
-                tax_authority_id: "IN-SGST",
-                name: "State GST",
-                description: "State GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "A",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0,
-                amount: null
-              }
-            ]
-          },
-          {
-            tax_group_id: "1",
-            name: "State/County Tax",
-            description: "State/County Tax",
-            group_rule: [
-              {
-                tax_rule_seq: 1,
-                tax_authority_id: "IN-CGST",
-                name: "Central GST",
-                description: "Central GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "B",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.025,
-                amount: null
-              },
-              {
-                tax_rule_seq: 2,
-                tax_authority_id: "IN-SGST",
-                name: "State GST",
-                description: "State GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "B",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.025,
-                amount: null
-              }
-            ]
-          },
-          {
-            tax_group_id: "VAT",
-            name: "State/County Tax",
-            description: "State/County Tax",
-            group_rule: [
-              {
-                tax_rule_seq: 1,
-                tax_authority_id: "IN-CGST",
-                name: "Central GST",
-                description: "Central GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "C",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.06,
-                amount: null
-              },
-              {
-                tax_rule_seq: 2,
-                tax_authority_id: "IN-SGST",
-                name: "State GST",
-                description: "State GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "C",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.06,
-                amount: null
-              }
-            ]
-          },
-          {
-            tax_group_id: "GST18",
-            name: "GST 18%",
-            description: "GST 18%",
-            group_rule: [
-              {
-                tax_rule_seq: 1,
-                tax_authority_id: "IN-CGST",
-                name: "Central GST",
-                description: "Central GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "D",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.09,
-                amount: null
-              },
-              {
-                tax_rule_seq: 2,
-                tax_authority_id: "IN-SGST",
-                name: "State GST",
-                description: "State GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "D",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.09,
-                amount: null
-              }
-            ]
-          },
-          {
-            tax_group_id: "GST28",
-            name: "GST 28%",
-            description: "GST 28%",
-            group_rule: [
-              {
-                tax_rule_seq: 1,
-                tax_authority_id: "IN-CGST",
-                name: "Central GST",
-                description: "Central GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "E",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.14,
-                amount: null
-              },
-              {
-                tax_rule_seq: 2,
-                tax_authority_id: "IN-SGST",
-                name: "State GST",
-                description: "State GST",
-                tax_type_code: "VAT",
-                fiscal_tax_id: "E",
-                effective_datetime: null,
-                expr_datetime: null,
-                percentage: 0.14,
-                amount: null
-              }
-            ]
-          }
-        ],
-        properties: null,
-        created_at: "2025-05-18T16:05:32.822524413Z",
-        create_user_id: "81238dda-60f1-70c3-4284-0fb8c5ac5631",
-        updated_at: "2025-05-18T16:05:32.822526058Z",
-        update_user_id: null
-      });
-      
-      setIsLoading(false);
+      try {
+        // Use the tax configuration service
+        const config = await taxServices.configuration.getMockTaxConfiguration();
+        setTaxConfig(config);
+      } catch (error) {
+        console.error('Failed to fetch tax configuration:', error);
+        setTaxConfig(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchTaxConfig();
@@ -762,7 +540,6 @@ const TaxSettings: React.FC = () => {
           editingItem={editingItem}
           formData={formData}
           errors={errors}
-          taxConfig={taxConfig}
           onInputChange={handleInputChange}
           onSubmit={handleSubmit}
           onClose={handleCloseForm}
@@ -778,11 +555,10 @@ const TaxFormModal: React.FC<{
   editingItem: any;
   formData: any;
   errors: Record<string, string>;
-  taxConfig: TaxConfiguration | null;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
-}> = ({ formType, editingItem, formData, errors, taxConfig, onInputChange, onSubmit, onClose }) => {
+}> = ({ formType, editingItem, formData, errors, onInputChange, onSubmit, onClose }) => {
   const getModalTitle = () => {
     if (formType === 'authority') return editingItem ? 'Edit Tax Authority' : 'Add Tax Authority';
     if (formType === 'group') return editingItem ? 'Edit Tax Group' : 'Add Tax Group';
@@ -879,7 +655,7 @@ const TaxFormModal: React.FC<{
                     onChange={onInputChange}
                     error={errors.tax_group_id}
                     required
-                    placeholder="e.g., GST18"
+                    placeholder="e.g., GST-STANDARD"
                     disabled={!!editingItem}
                   />
                   <Input
@@ -889,23 +665,20 @@ const TaxFormModal: React.FC<{
                     onChange={onInputChange}
                     error={errors.name}
                     required
-                    placeholder="e.g., GST 18%"
+                    placeholder="e.g., Standard GST"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Description</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     name="description"
                     value={formData.description || ''}
                     onChange={onInputChange}
                     rows={3}
-                    className="flex w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter group description"
-                    required
                   />
-                  {errors.description && (
-                    <p className="text-sm text-red-600">{errors.description}</p>
-                  )}
+                  {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
                 </div>
               </>
             )}
@@ -920,7 +693,8 @@ const TaxFormModal: React.FC<{
                     onChange={onInputChange}
                     error={errors.tax_loc_id}
                     required
-                    placeholder="e.g., TL-IN"
+                    placeholder="e.g., STORE-001"
+                    disabled={!!editingItem}
                   />
                   <Input
                     label="Location Name"
@@ -929,40 +703,37 @@ const TaxFormModal: React.FC<{
                     onChange={onInputChange}
                     error={errors.name}
                     required
-                    placeholder="e.g., India Tax Location"
+                    placeholder="e.g., Main Store"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Description</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     name="description"
                     value={formData.description || ''}
                     onChange={onInputChange}
                     rows={3}
-                    className="flex w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="Enter location description"
-                    required
                   />
-                  {errors.description && (
-                    <p className="text-sm text-red-600">{errors.description}</p>
-                  )}
+                  {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
                 </div>
               </>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end space-x-3 pt-6 mt-6 border-t border-gray-200">
+          <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
             <Button
               type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
+              className="px-6 py-2 bg-white text-gray-700 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
+              className="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               {editingItem ? 'Update' : 'Create'}
             </Button>

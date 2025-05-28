@@ -5,8 +5,7 @@ import {
   TrashIcon,
   ListBulletIcon,
   LinkIcon,
-  MinusIcon,
-  XMarkIcon
+  MinusIcon
 } from '@heroicons/react/24/outline';
 
 interface Product {
