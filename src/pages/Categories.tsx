@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlusIcon, PencilIcon, TrashIcon, TagIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
@@ -17,6 +18,7 @@ interface Category {
 }
 
 const Categories: React.FC = () => {
+  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -298,6 +300,91 @@ const Categories: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* Add New Categories Section */}
+      <Card className="p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl">
+                <PlusIcon className="w-8 h-8 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('categories.addNewCategories')}</h2>
+                <p className="text-slate-600 mb-4">
+                  {t('categories.addNewDescription')}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center space-x-2 text-sm text-slate-500">
+                    <TagIcon className="w-4 h-4" />
+                    <span>{t('categories.organizeProducts')}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-slate-500">
+                    <span className="w-4 h-4 rounded-full bg-green-500"></span>
+                    <span>{t('categories.trackInventory')}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-slate-500">
+                    <span className="w-4 h-4 rounded-full bg-purple-500"></span>
+                    <span>{t('categories.improveExperience')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col space-y-3">
+            <Button 
+              onClick={() => setShowForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              {t('categories.createCategory')}
+            </Button>
+            <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+              <span className="mr-2">📋</span>
+              {t('categories.importCategories')}
+            </button>
+          </div>
+        </div>
+        
+        {/* Quick Category Templates */}
+        <div className="mt-8 pt-6 border-t border-blue-200">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('categories.quickStartTemplates')}</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { name: 'Electronics', color: '#3B82F6', icon: '💻' },
+              { name: 'Clothing', color: '#10B981', icon: '👕' },
+              { name: 'Food & Drinks', color: '#F59E0B', icon: '🍕' },
+              { name: 'Books', color: '#8B5CF6', icon: '📚' },
+              { name: 'Sports', color: '#EF4444', icon: '⚽' },
+              { name: 'Beauty', color: '#EC4899', icon: '💄' },
+              { name: 'Home & Garden', color: '#06B6D4', icon: '🏠' },
+              { name: 'Toys', color: '#84CC16', icon: '🧸' },
+            ].map((template) => (
+              <button
+                key={template.name}
+                onClick={() => {
+                  setFormData({
+                    name: template.name,
+                    description: `${template.name} products and accessories`,
+                    color: template.color,
+                    status: 'active',
+                  });
+                  setShowForm(true);
+                }}
+                className="flex items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 text-left"
+              >
+                <span 
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                  style={{ backgroundColor: `${template.color}20` }}
+                >
+                  {template.icon}
+                </span>
+                <span className="text-sm font-medium text-slate-700">{template.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
 
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

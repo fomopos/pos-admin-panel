@@ -62,6 +62,16 @@ const fallbackResources = {
       'products.active': 'Active',
       'products.inactive': 'Inactive',
       'products.uploadImage': 'Upload Image',
+      
+      // Categories
+      'categories.addNewCategories': 'Add New Categories',
+      'categories.addNewDescription': 'Create and organize product categories to improve your inventory management. Categories help customers find products faster and make inventory tracking easier.',
+      'categories.organizeProducts': 'Organize products',
+      'categories.trackInventory': 'Track inventory',
+      'categories.improveExperience': 'Improve customer experience',
+      'categories.createCategory': 'Create Category',
+      'categories.importCategories': 'Import Categories',
+      'categories.quickStartTemplates': 'Quick Start Templates',
 
       // Sales
       'sales.title': 'Sales',
@@ -146,6 +156,16 @@ const fallbackResources = {
       'products.active': 'Activo',
       'products.inactive': 'Inactivo',
       'products.uploadImage': 'Subir Imagen',
+      
+      // Categories
+      'categories.addNewCategories': 'Agregar Nuevas Categorías',
+      'categories.addNewDescription': 'Crea y organiza categorías de productos para mejorar la gestión de tu inventario. Las categorías ayudan a los clientes a encontrar productos más rápido y facilitan el seguimiento del inventario.',
+      'categories.organizeProducts': 'Organizar productos',
+      'categories.trackInventory': 'Seguir inventario',
+      'categories.improveExperience': 'Mejorar experiencia del cliente',
+      'categories.createCategory': 'Crear Categoría',
+      'categories.importCategories': 'Importar Categorías',
+      'categories.quickStartTemplates': 'Plantillas de Inicio Rápido',
 
       // Sales
       'sales.title': 'Ventas',
