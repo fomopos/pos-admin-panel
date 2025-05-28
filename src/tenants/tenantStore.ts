@@ -81,7 +81,7 @@ export const useTenantStore = create<TenantState>()(
         }
       },
 
-      fetchTenants: async (userId) => {
+      fetchTenants: async () => {
         set({ isLoading: true, error: null });
         
         try {

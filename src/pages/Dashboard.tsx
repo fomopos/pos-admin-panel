@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { Card } from '../components/ui/Card';
 import Chart from 'react-apexcharts';
@@ -7,15 +6,13 @@ import {
   CurrencyDollarIcon,
   ShoppingCartIcon,
   EyeIcon,
-  ChartBarSquareIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
 const Dashboard: React.FC = () => {
-  const { t } = useTranslation();
-  const { currentTenant, tenants, fetchTenants } = useTenantStore();
+  const { fetchTenants } = useTenantStore();
 
   useEffect(() => {
     // Fetch tenants when component mounts
@@ -253,7 +250,7 @@ const Dashboard: React.FC = () => {
 
           {/* Countries List */}
           <div className="space-y-3">
-            {topCountries.map((country, index) => (
+            {topCountries.map((country) => (
               <div key={country.country} className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>

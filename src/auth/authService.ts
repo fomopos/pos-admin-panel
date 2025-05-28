@@ -100,7 +100,6 @@ class AuthService {
   async getCurrentUser(): Promise<User | null> {
     try {
       const user = await getCurrentUser();
-      const session = await fetchAuthSession();
       
       // Extract user information from Cognito
       const email = user.signInDetails?.loginId || '';

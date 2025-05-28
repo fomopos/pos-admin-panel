@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -34,7 +33,6 @@ interface Category {
 }
 
 const ProductsWithDataTable: React.FC = () => {
-  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -279,7 +277,7 @@ const ProductsWithDataTable: React.FC = () => {
       key: 'name',
       title: 'Product',
       sortable: true,
-      render: (value, product) => (
+      render: (_, product) => (
         <div className="flex items-center">
           <div className="flex-shrink-0 h-10 w-10">
             <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center">

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   EyeIcon, 
@@ -14,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 
 interface SaleItem {
@@ -51,7 +49,6 @@ interface Sale {
 }
 
 const Sales: React.FC = () => {
-  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);

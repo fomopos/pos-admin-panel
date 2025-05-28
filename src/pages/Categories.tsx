@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { PlusIcon, PencilIcon, TrashIcon, TagIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
@@ -18,7 +17,6 @@ interface Category {
 }
 
 const Categories: React.FC = () => {
-  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
