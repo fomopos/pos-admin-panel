@@ -40,7 +40,7 @@ interface NavigationSection {
 }
 
 const DashboardLayout: React.FC = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { currentTenant, tenants, switchTenant, fetchTenants } = useTenantStore();
@@ -62,16 +62,16 @@ const DashboardLayout: React.FC = () => {
     {
       category: 'DASHBOARD',
       items: [
-        { name: 'Overview', href: '/dashboard', icon: HomeIcon },
+        { name: t('nav.dashboard'), href: '/dashboard', icon: HomeIcon },
       ]
     },
     {
       category: 'POS MANAGEMENT',
       items: [
-        { name: 'Sales', href: '/sales', icon: ShoppingCartIcon },
-        { name: 'Products', href: '/products', icon: CubeIcon },
-        { name: 'Categories', href: '/categories', icon: TagIcon },
-        { name: 'Customers', href: '/customers', icon: UserGroupIcon },
+        { name: t('nav.sales'), href: '/sales', icon: ShoppingCartIcon },
+        { name: t('nav.products'), href: '/products', icon: CubeIcon },
+        { name: t('nav.categories'), href: '/categories', icon: TagIcon },
+        { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
       ]
     },
     {
@@ -84,7 +84,13 @@ const DashboardLayout: React.FC = () => {
       ]
     },
     {
-      category: 'SETTINGS',
+      category: 'DEVELOPMENT',
+      items: [
+        { name: t('demo.title'), href: '/demo', icon: Cog6ToothIcon },
+      ]
+    },
+    {
+      category: t('nav.settings'),
       items: [
         { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },
         { name: 'User Management', href: '/settings/users', icon: UserIcon },
@@ -115,6 +121,10 @@ const DashboardLayout: React.FC = () => {
   const changeLanguage = (languageCode: string) => {
     i18n.changeLanguage(languageCode);
     setLanguageMenuOpen(false);
+  };
+
+  const getCurrentLanguage = () => {
+    return languages.find(lang => lang.code === i18n.language) || languages[0];
   };
 
   const isCurrentPath = (path: string) => {
@@ -307,7 +317,7 @@ const DashboardLayout: React.FC = () => {
                   onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
                   className="flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <span className="text-lg">🇺🇸</span>
+                  <span className="text-lg">{getCurrentLanguage().flag}</span>
                 </button>
                 {languageMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">

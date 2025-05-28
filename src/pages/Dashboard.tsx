@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { Card } from '../components/ui/Card';
 import Chart from 'react-apexcharts';
@@ -12,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { fetchTenants } = useTenantStore();
 
   useEffect(() => {
@@ -22,7 +24,7 @@ const Dashboard: React.FC = () => {
   // Mock data for dashboard stats - matching reference design
   const stats = [
     {
-      name: 'Total profit',
+      name: t('dashboard.totalSales'),
       value: '$82,373.21',
       change: '+3.4%',
       changeType: 'positive',
@@ -31,7 +33,7 @@ const Dashboard: React.FC = () => {
       iconColor: 'text-blue-600',
     },
     {
-      name: 'Total order',
+      name: t('dashboard.totalOrders'),
       value: '7,234',
       change: '-2.8%',
       changeType: 'negative',
@@ -166,7 +168,7 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Overview</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t('dashboard.title')}</h1>
         </div>
         <div className="flex items-center space-x-3">
           <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">

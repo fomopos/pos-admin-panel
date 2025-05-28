@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   EyeIcon, 
@@ -49,6 +50,7 @@ interface Sale {
 }
 
 const Sales: React.FC = () => {
+  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -298,7 +300,7 @@ const Sales: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Sales</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t('nav.sales')}</h1>
           <p className="text-slate-500">
             {currentTenant ? `${currentTenant.name} - ` : ''}
             Manage and track your sales transactions

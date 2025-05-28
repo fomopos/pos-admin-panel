@@ -62,6 +62,14 @@ const fallbackResources = {
       'products.active': 'Active',
       'products.inactive': 'Inactive',
       'products.uploadImage': 'Upload Image',
+
+      // Sales
+      'sales.title': 'Sales',
+      'sales.newSale': 'New Sale',
+      'sales.todaysRevenue': "Today's Revenue",
+      'sales.todaysSales': "Today's Sales",
+      'sales.completed': 'Completed',
+      'sales.pending': 'Pending',
       
       // Tenant
       'tenant.switchTenant': 'Switch Organization',
@@ -71,6 +79,13 @@ const fallbackResources = {
       'language.switchLanguage': 'Switch Language',
       'language.english': 'English',
       'language.spanish': 'Spanish',
+      
+      // Demo
+      'demo.title': 'Translation Demo',
+      'demo.features': 'Features',
+      'demo.feature1': 'Real-time language switching',
+      'demo.feature2': 'Persistent language preference',
+      'demo.feature3': 'Dynamic content translation',
     },
   },
   es: {
@@ -131,6 +146,14 @@ const fallbackResources = {
       'products.active': 'Activo',
       'products.inactive': 'Inactivo',
       'products.uploadImage': 'Subir Imagen',
+
+      // Sales
+      'sales.title': 'Ventas',
+      'sales.newSale': 'Nueva Venta',
+      'sales.todaysRevenue': 'Ingresos de Hoy',
+      'sales.todaysSales': 'Ventas de Hoy',
+      'sales.completed': 'Completadas',
+      'sales.pending': 'Pendientes',
       
       // Tenant
       'tenant.switchTenant': 'Cambiar Organización',
@@ -140,6 +163,13 @@ const fallbackResources = {
       'language.switchLanguage': 'Cambiar Idioma',
       'language.english': 'Inglés',
       'language.spanish': 'Español',
+      
+      // Demo
+      'demo.title': 'Demostración de Traducción',
+      'demo.features': 'Características',
+      'demo.feature1': 'Cambio de idioma en tiempo real',
+      'demo.feature2': 'Preferencia de idioma persistente',
+      'demo.feature3': 'Traducción dinámica de contenido',
     },
   },
 } as const;

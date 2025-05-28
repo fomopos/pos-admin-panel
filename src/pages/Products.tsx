@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -34,6 +35,7 @@ interface Category {
 }
 
 const Products: React.FC = () => {
+  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -307,7 +309,7 @@ const Products: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Products</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t('products.title')}</h1>
           <p className="text-slate-500 mt-1">
             {currentTenant ? `${currentTenant.name} - ` : ''}
             Manage your product catalog and inventory
@@ -320,7 +322,7 @@ const Products: React.FC = () => {
           </button>
           <Button onClick={() => setShowForm(true)}>
             <PlusIcon className="h-4 w-4 mr-2" />
-            Add Product
+            {t('products.addProduct')}
           </Button>
         </div>
       </div>

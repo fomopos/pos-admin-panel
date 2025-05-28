@@ -11,6 +11,7 @@ import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Sales from './pages/Sales';
 import Customers from './pages/Customers';
+import TranslationDemo from './pages/TranslationDemo';
 
 // Placeholder components for other pages
 const Settings: React.FC = () => (
@@ -70,6 +71,7 @@ function App() {
               <Route path="sales" element={<Sales />} />
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="demo" element={<TranslationDemo />} />
             </Route>
             
             {/* Catch all route */}
