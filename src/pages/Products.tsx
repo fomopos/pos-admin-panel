@@ -14,7 +14,9 @@ import {
   Squares2X2Icon,
   ListBulletIcon,
   EllipsisVerticalIcon,
-  HeartIcon
+  HeartIcon,
+  CogIcon,
+  TagIcon
 } from '@heroicons/react/24/outline';
 import { 
   StarIcon as StarIconSolid,
@@ -23,7 +25,12 @@ import {
 import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import type { 
+  Product as NewProduct,
+  ProductFormErrors
+} from '../services/types/product.types';
 
+// Legacy Product interface for backward compatibility with existing data
 interface Product {
   id: string;
   name: string;
@@ -54,22 +61,65 @@ const Products: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const [formData, setFormData] = useState<Partial<NewProduct>>({
+    store_id: '',
     name: '',
-    sku: '',
     description: '',
-    price: 0,
-    discount: 0,
-    tax: 0,
-    category: '',
-    inventory: 0,
-    status: 'active',
+    uom: 'EACH',
+    brand: '',
+    tax_group: '',
+    fiscal_id: '',
+    stock_status: 'in_stock',
+    pricing: {
+      list_price: 0,
+      sale_price: 0,
+      tare_value: 0,
+      tare_uom: '',
+      discount_type: 'percentage',
+      discount_value: 0,
+      min_discount_value: 0,
+      max_discount_value: 0
+    },
+    settings: {
+      track_inventory: false,
+      allow_backorder: false,
+      require_serial: false,
+      taxable: true,
+      measure_required: false,
+      non_inventoried: false,
+      shippable: true,
+      serialized: false,
+      active: true,
+      disallow_discount: false,
+      online_only: false
+    },
+    prompts: {
+      prompt_qty: false,
+      prompt_price: false,
+      prompt_weight: 0,
+      prompt_uom: false,
+      prompt_description: false,
+      prompt_cost: false,
+      prompt_serial: false,
+      prompt_lot: false,
+      prompt_expiry: false
+    },
+    attributes: {
+      manufacturer: '',
+      model_number: '',
+      category_id: '',
+      tags: [],
+      custom_attributes: {},
+      properties: {}
+    },
+    media: {
+      image_url: ''
+    }
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<ProductFormErrors>({});
   const [activeTab, setActiveTab] = useState('basic');
 
   // Mock data - in real app, this would come from API
@@ -183,12 +233,34 @@ const Products: React.FC = () => {
   }, [currentTenant]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    
+    // Handle nested field updates
+    const updateNestedField = (path: string, val: any) => {
+      const keys = path.split('.');
+      if (keys.length === 1) {
+        return { [keys[0]]: val };
+      } else if (keys.length === 2) {
+        const currentNestedValue = formData[keys[0] as keyof NewProduct] as any;
+        return {
+          [keys[0]]: {
+            ...(currentNestedValue || {}),
+            [keys[1]]: val
+          }
+        };
+      }
+      return {};
+    };
+
+    const processedValue = type === 'checkbox' 
+      ? (e.target as HTMLInputElement).checked
+      : type === 'number' 
+      ? parseFloat(value) || 0 
+      : value;
+
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'discount' || name === 'tax' || name === 'inventory' 
-        ? parseFloat(value) || 0 
-        : value,
+      ...updateNestedField(name, processedValue)
     }));
 
     // Clear error when user starts typing
@@ -198,13 +270,12 @@ const Products: React.FC = () => {
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: ProductFormErrors = {};
     
     if (!formData.name) newErrors.name = 'Product name is required';
-    if (!formData.sku) newErrors.sku = 'SKU is required';
-    if (!formData.category) newErrors.category = 'Category is required';
-    if (!formData.price || formData.price <= 0) newErrors.price = 'Price must be greater than 0';
-    if (formData.inventory === undefined || formData.inventory < 0) newErrors.inventory = 'Inventory must be 0 or greater';
+    if (!formData.store_id) newErrors.store_id = 'Store ID is required';
+    if (!formData.uom) newErrors.uom = 'Unit of measure is required';
+    if (!formData.pricing?.list_price || formData.pricing.list_price <= 0) newErrors.list_price = 'List price must be greater than 0';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -214,25 +285,29 @@ const Products: React.FC = () => {
     e.preventDefault();
     
     if (validateForm()) {
-      if (editingProduct) {
-        setProducts(prev => prev.map(p =>
-          p.id === editingProduct.id
-            ? { ...p, ...formData } as Product
-            : p
-        ));
-      } else {
-        const newProduct: Product = {
-          ...formData as Product,
-          id: Date.now().toString(),
-        };
-        setProducts(prev => [...prev, newProduct]);
-      }
+      // Create new product with legacy format for display
+      const newProduct: Product = {
+        id: Date.now().toString(),
+        name: formData.name || '',
+        sku: `PRD-${Date.now()}`,
+        description: formData.description || '',
+        price: formData.pricing?.list_price || 0,
+        discount: 0,
+        tax: 0,
+        category: formData.brand || 'General',
+        inventory: 0,
+        status: formData.settings?.active ? 'active' : 'inactive',
+        brand: formData.brand,
+        image: formData.media?.image_url,
+      };
+      setProducts(prev => [...prev, newProduct]);
       
       handleCloseForm();
     }
   };
 
   const handleEdit = (product: Product) => {
+    // Navigate to dedicated edit page instead of showing modal
     navigate(`/products/edit/${product.id}`);
   };
 
@@ -244,17 +319,60 @@ const Products: React.FC = () => {
 
   const handleCloseForm = () => {
     setShowForm(false);
-    setEditingProduct(null);
     setFormData({
+      store_id: currentTenant?.id || '',
       name: '',
-      sku: '',
       description: '',
-      price: 0,
-      discount: 0,
-      tax: 0,
-      category: '',
-      inventory: 0,
-      status: 'active',
+      uom: 'EACH',
+      brand: '',
+      tax_group: '',
+      fiscal_id: '',
+      stock_status: 'in_stock',
+      pricing: {
+        list_price: 0,
+        sale_price: 0,
+        tare_value: 0,
+        tare_uom: '',
+        discount_type: 'percentage',
+        discount_value: 0,
+        min_discount_value: 0,
+        max_discount_value: 0
+      },
+      settings: {
+        track_inventory: false,
+        allow_backorder: false,
+        require_serial: false,
+        taxable: true,
+        measure_required: false,
+        non_inventoried: false,
+        shippable: true,
+        serialized: false,
+        active: true,
+        disallow_discount: false,
+        online_only: false
+      },
+      prompts: {
+        prompt_qty: false,
+        prompt_price: false,
+        prompt_weight: 0,
+        prompt_uom: false,
+        prompt_description: false,
+        prompt_cost: false,
+        prompt_serial: false,
+        prompt_lot: false,
+        prompt_expiry: false
+      },
+      attributes: {
+        manufacturer: '',
+        model_number: '',
+        category_id: '',
+        tags: [],
+        custom_attributes: {},
+        properties: {}
+      },
+      media: {
+        image_url: ''
+      }
     });
     setErrors({});
     setActiveTab('basic');
@@ -293,7 +411,7 @@ const Products: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             <Button
-              onClick={() => navigate('/products/new')}
+              onClick={() => setShowForm(true)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
@@ -388,10 +506,9 @@ const Products: React.FC = () => {
         </div>
       )}
 
-      {/* Product Form Modal */}
+      {/* Product Form Modal - Only for new products */}
       {showForm && (
         <ProductFormModal
-          product={editingProduct}
           formData={formData}
           errors={errors}
           categories={categories}
@@ -703,22 +820,22 @@ const getInventoryStatus = (inventory: number) => {
   return { color: 'text-green-600', text: 'In Stock' };
 };
 
-// Product Form Modal Component (Enhanced from previous implementation)
+// Product Form Modal Component (For new products only)
 const ProductFormModal: React.FC<{
-  product: Product | null;
-  formData: Partial<Product>;
-  errors: Record<string, string>;
+  formData: Partial<NewProduct>;
+  errors: ProductFormErrors;
   categories: Category[];
   activeTab: string;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
   onTabChange: (tab: string) => void;
-}> = ({ product, formData, errors, categories, activeTab, onInputChange, onSubmit, onClose, onTabChange }) => {
+}> = ({ formData, errors, categories, activeTab, onInputChange, onSubmit, onClose, onTabChange }) => {
   const tabs = [
     { id: 'basic', name: 'Basic Info', icon: ClipboardDocumentListIcon },
     { id: 'pricing', name: 'Pricing', icon: CurrencyDollarIcon },
-    { id: 'inventory', name: 'Inventory', icon: ArchiveBoxIcon },
+    { id: 'settings', name: 'Settings', icon: CogIcon },
+    { id: 'attributes', name: 'Attributes', icon: TagIcon },
     { id: 'media', name: 'Media', icon: PhotoIcon },
   ];
 
@@ -746,10 +863,10 @@ const ProductFormModal: React.FC<{
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">
-                {product ? 'Edit Product' : 'Add New Product'}
+                Add New Product
               </h2>
               <p className="text-blue-100 mt-1">
-                {product ? 'Update product information' : 'Create a new product in your catalog'}
+                Create a new product in your catalog
               </p>
             </div>
             <button
@@ -823,45 +940,29 @@ const ProductFormModal: React.FC<{
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      SKU *
+                      Unit of Measure *
                     </label>
-                    <input
-                      type="text"
-                      name="sku"
-                      value={formData.sku || ''}
+                    <select
+                      name="uom"
+                      value={formData.uom || 'EACH'}
                       onChange={onInputChange}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                        errors.sku ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                        errors.uom ? 'border-red-300 bg-red-50' : 'border-gray-200'
                       }`}
-                      placeholder="Enter SKU"
-                    />
-                    {errors.sku && <p className="text-red-600 text-sm mt-1">{errors.sku}</p>}
+                    >
+                      <option value="EACH">Each</option>
+                      <option value="KG">Kilogram</option>
+                      <option value="LB">Pound</option>
+                      <option value="LTR">Liter</option>
+                      <option value="GAL">Gallon</option>
+                      <option value="BOX">Box</option>
+                      <option value="PACK">Pack</option>
+                    </select>
+                    {errors.uom && <p className="text-red-600 text-sm mt-1">{errors.uom}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Category *
-                    </label>
-                    <select
-                      name="category"
-                      value={formData.category || ''}
-                      onChange={onInputChange}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                        errors.category ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                      }`}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(category => (
-                        <option key={category.id} value={category.name}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category}</p>}
-                  </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Brand
@@ -874,6 +975,23 @@ const ProductFormModal: React.FC<{
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       placeholder="Enter brand name"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Tax Group
+                    </label>
+                    <select
+                      name="tax_group"
+                      value={formData.tax_group || ''}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Select Tax Group</option>
+                      <option value="standard">Standard Tax</option>
+                      <option value="reduced">Reduced Tax</option>
+                      <option value="exempt">Tax Exempt</option>
+                    </select>
                   </div>
                 </div>
 
@@ -891,19 +1009,37 @@ const ProductFormModal: React.FC<{
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status || 'active'}
-                    onChange={onInputChange}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Fiscal Item ID
+                    </label>
+                    <input
+                      type="text"
+                      name="fiscal_id"
+                      value={formData.fiscal_id || ''}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter fiscal item ID"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Stock Status
+                    </label>
+                    <select
+                      name="stock_status"
+                      value={formData.stock_status || 'in_stock'}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="in_stock">In Stock</option>
+                      <option value="low_stock">Low Stock</option>
+                      <option value="out_of_stock">Out of Stock</option>
+                      <option value="on_order">On Order</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             )}
@@ -913,37 +1049,36 @@ const ProductFormModal: React.FC<{
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Price * ($)
+                      List Price * ($)
                     </label>
                     <input
                       type="number"
-                      name="price"
-                      value={formData.price || ''}
+                      name="pricing.list_price"
+                      value={formData.pricing?.list_price || ''}
                       onChange={onInputChange}
                       step="0.01"
                       min="0"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                        errors.price ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                        errors.list_price ? 'border-red-300 bg-red-50' : 'border-gray-200'
                       }`}
                       placeholder="0.00"
                     />
-                    {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price}</p>}
+                    {errors.list_price && <p className="text-red-600 text-sm mt-1">{errors.list_price}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Discount (%)
+                      Sale Price ($)
                     </label>
                     <input
                       type="number"
-                      name="discount"
-                      value={formData.discount || ''}
+                      name="pricing.sale_price"
+                      value={formData.pricing?.sale_price || ''}
                       onChange={onInputChange}
                       step="0.01"
                       min="0"
-                      max="100"
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="0"
+                      placeholder="0.00"
                     />
                   </div>
                 </div>
@@ -951,94 +1086,372 @@ const ProductFormModal: React.FC<{
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Tax (%)
+                      Tare Value
                     </label>
                     <input
                       type="number"
-                      name="tax"
-                      value={formData.tax || ''}
+                      name="pricing.tare_value"
+                      value={formData.pricing?.tare_value || ''}
                       onChange={onInputChange}
                       step="0.01"
                       min="0"
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="0"
+                      placeholder="0.00"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Tare UOM
+                    </label>
+                    <select
+                      name="pricing.tare_uom"
+                      value={formData.pricing?.tare_uom || ''}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Select Tare Unit</option>
+                      <option value="KG">Kilogram</option>
+                      <option value="LB">Pound</option>
+                      <option value="GRAM">Gram</option>
+                      <option value="OZ">Ounce</option>
+                    </select>
                   </div>
                 </div>
 
                 {/* Price Summary */}
-                {formData.price && formData.price > 0 && (
+                {formData.pricing?.list_price && formData.pricing.list_price > 0 && (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h4 className="font-semibold text-gray-900 mb-3">Price Summary</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span>Base Price:</span>
-                        <span>${formData.price?.toFixed(2)}</span>
+                        <span>List Price:</span>
+                        <span>${formData.pricing.list_price?.toFixed(2)}</span>
                       </div>
-                      {formData.discount && formData.discount > 0 && (
-                        <div className="flex justify-between text-red-600">
-                          <span>Discount ({formData.discount}%):</span>
-                          <span>-${((formData.price * formData.discount) / 100).toFixed(2)}</span>
+                      {formData.pricing?.sale_price && formData.pricing.sale_price > 0 && formData.pricing.sale_price < formData.pricing.list_price && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Sale Price:</span>
+                          <span>${formData.pricing.sale_price.toFixed(2)}</span>
                         </div>
                       )}
                       <div className="flex justify-between font-semibold text-lg pt-2 border-t">
                         <span>Final Price:</span>
                         <span>
-                          ${(formData.price * (1 - (formData.discount || 0) / 100)).toFixed(2)}
+                          ${(formData.pricing?.sale_price && formData.pricing.sale_price > 0 && formData.pricing.sale_price < formData.pricing.list_price 
+                            ? formData.pricing.sale_price 
+                            : formData.pricing.list_price).toFixed(2)}
                         </span>
                       </div>
                     </div>
                   </div>
                 )}
+
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      name="settings.disallow_discount"
+                      id="disallow_discount"
+                      checked={formData.settings?.disallow_discount || false}
+                      onChange={onInputChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="disallow_discount" className="ml-2 text-sm font-medium text-gray-700">
+                      Disallow Discount
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Check this box to prevent discounts from being applied to this product.
+                  </p>
+                </div>
               </div>
             )}
 
-            {activeTab === 'inventory' && (
+            {activeTab === 'settings' && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Stock Quantity *
-                    </label>
-                    <input
-                      type="number"
-                      name="inventory"
-                      value={formData.inventory || ''}
-                      onChange={onInputChange}
-                      min="0"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                        errors.inventory ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                      }`}
-                      placeholder="0"
-                    />
-                    {errors.inventory && <p className="text-red-600 text-sm mt-1">{errors.inventory}</p>}
+                {/* Product Settings Checkboxes */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-gray-900 mb-4">Product Settings</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="settings.measure_required"
+                        id="measure_required"
+                        checked={formData.settings?.measure_required || false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="measure_required" className="ml-2 text-sm font-medium text-gray-700">
+                        Measure Required
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="settings.non_inventoried"
+                        id="non_inventoried"
+                        checked={formData.settings?.non_inventoried || false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="non_inventoried" className="ml-2 text-sm font-medium text-gray-700">
+                        Non-Inventoried
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="settings.shippable"
+                        id="shippable"
+                        checked={formData.settings?.shippable !== false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="shippable" className="ml-2 text-sm font-medium text-gray-700">
+                        Shippable
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="settings.serialized"
+                        id="serialized"
+                        checked={formData.settings?.serialized || false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="serialized" className="ml-2 text-sm font-medium text-gray-700">
+                        Serialized
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="settings.active"
+                        id="active"
+                        checked={formData.settings?.active !== false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="active" className="ml-2 text-sm font-medium text-gray-700">
+                        Active Product
+                      </label>
+                    </div>
                   </div>
                 </div>
 
-                {/* Stock Status Indicator */}
-                {formData.inventory !== undefined && (
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">Stock Status</h4>
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          formData.inventory === 0
-                            ? 'bg-red-500'
-                            : formData.inventory < 20
-                            ? 'bg-orange-500'
-                            : 'bg-green-500'
-                        }`}
+                {/* Prompt Settings */}
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-blue-900 mb-4">Prompt Settings</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="prompts.prompt_qty"
+                        id="prompt_qty"
+                        checked={formData.prompts?.prompt_qty || false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                      <span className="text-sm font-medium">
-                        {formData.inventory === 0
-                          ? 'Out of Stock'
-                          : formData.inventory < 20
-                          ? 'Low Stock'
-                          : 'In Stock'}
-                      </span>
+                      <label htmlFor="prompt_qty" className="ml-2 text-sm font-medium text-gray-700">
+                        Prompt for Quantity
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="prompts.prompt_price"
+                        id="prompt_price"
+                        checked={formData.prompts?.prompt_price || false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="prompt_price" className="ml-2 text-sm font-medium text-gray-700">
+                        Prompt for Price
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="prompts.prompt_weight"
+                        id="prompt_weight"
+                        checked={(formData.prompts?.prompt_weight || 0) > 0}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="prompt_weight" className="ml-2 text-sm font-medium text-gray-700">
+                        Prompt for Weight
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="prompts.prompt_description"
+                        id="prompt_description"
+                        checked={formData.prompts?.prompt_description || false}
+                        onChange={onInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="prompt_description" className="ml-2 text-sm font-medium text-gray-700">
+                        Prompt for Description
+                      </label>
                     </div>
                   </div>
-                )}
+                </div>
+
+                {/* Other Settings */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Manufacturer
+                    </label>
+                    <input
+                      type="text"
+                      name="attributes.manufacturer"
+                      value={formData.attributes?.manufacturer || ''}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter manufacturer name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Model Number
+                    </label>
+                    <input
+                      type="text"
+                      name="attributes.model_number"
+                      value={formData.attributes?.model_number || ''}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter model number"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'attributes' && (
+              <div className="space-y-6">
+                {/* Custom Attributes */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-gray-900 mb-4">Custom Attributes</h4>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Attribute Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., Color, Size, Material"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Attribute Value
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., Red, Large, Cotton"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Add Attribute
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Properties */}
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-blue-900 mb-4">Product Properties</h4>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Property Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., Weight, Dimensions, Warranty"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Property Value
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="e.g., 2.5kg, 30x20x10cm, 2 years"
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Add Property
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Category Assignment */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Primary Category
+                    </label>
+                    <select
+                      name="attributes.category_id"
+                      value={formData.attributes?.category_id || ''}
+                      onChange={onInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Tags
+                    </label>
+                    <input
+                      type="text"
+                      name="attributes.tags"
+                      value={formData.attributes?.tags?.join(', ') || ''}
+                      onChange={(e) => {
+                        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        onInputChange({
+                          target: { name: 'attributes.tags', value: tags, type: 'text' }
+                        } as any);
+                      }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter tags separated by commas"
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1050,8 +1463,8 @@ const ProductFormModal: React.FC<{
                   </label>
                   <input
                     type="url"
-                    name="image"
-                    value={formData.image || ''}
+                    name="media.image_url"
+                    value={formData.media?.image_url || ''}
                     onChange={onInputChange}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="https://example.com/image.jpg"
@@ -1059,12 +1472,12 @@ const ProductFormModal: React.FC<{
                 </div>
 
                 {/* Image Preview */}
-                {formData.image && (
+                {formData.media?.image_url && (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h4 className="font-semibold text-gray-900 mb-3">Image Preview</h4>
                     <div className="w-full max-w-xs mx-auto">
                       <img
-                        src={formData.image}
+                        src={formData.media.image_url}
                         alt="Product preview"
                         className="w-full h-48 object-cover rounded-lg"
                         onError={(e) => {
@@ -1119,7 +1532,7 @@ const ProductFormModal: React.FC<{
                     type="submit"
                     className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-105 shadow-lg"
                   >
-                    {product ? 'Update Product' : 'Create Product'}
+                    Create Product
                   </Button>
                 ) : (
                   <Button
