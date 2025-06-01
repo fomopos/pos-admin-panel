@@ -6,6 +6,10 @@ import i18n from './i18n';
 import ProtectedRoute from './routes/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import SignIn from './pages/auth/SignIn';
+import SignUp from './pages/auth/SignUp';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import VerifyEmail from './pages/auth/VerifyEmail';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import ProductEdit from './pages/ProductEdit';
@@ -27,24 +31,6 @@ const Settings: React.FC = () => (
   </div>
 );
 
-const SignUp: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="max-w-md w-full">
-      <h1 className="text-2xl font-bold text-center mb-4">Sign Up</h1>
-      <p className="text-center text-gray-600">Sign up functionality coming soon...</p>
-    </div>
-  </div>
-);
-
-const ForgotPassword: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="max-w-md w-full">
-      <h1 className="text-2xl font-bold text-center mb-4">Forgot Password</h1>
-      <p className="text-center text-gray-600">Password reset functionality coming soon...</p>
-    </div>
-  </div>
-);
-
 function App() {
   useEffect(() => {
     // Initialize the app
@@ -60,6 +46,8 @@ function App() {
             <Route path="/auth/signin" element={<SignIn />} />
             <Route path="/auth/signup" element={<SignUp />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/verify-email" element={<VerifyEmail />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
             
             {/* Protected routes */}
             <Route

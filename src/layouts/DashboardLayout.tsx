@@ -50,12 +50,20 @@ const DashboardLayout: React.FC = () => {
   const [tenantMenuOpen, setTenantMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
-  // Fetch tenants on component mount
+  // Fetch user information and tenants on component mount
   useEffect(() => {
-    const userEmail = localStorage.getItem('userEmail');
-    if (userEmail && tenants.length === 0) {
-      fetchTenants(userEmail);
-    }
+    const fetchUserData = async () => {
+      try {
+        const user = await authService.getCurrentUser();
+        if (user?.email && tenants.length === 0) {
+          fetchTenants(user.email);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+      }
+    };
+
+    fetchUserData();
   }, [fetchTenants, tenants.length]);
 
   const navigation: NavigationSection[] = [
@@ -109,8 +117,6 @@ const DashboardLayout: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('userEmail');
       await authService.signOut();
       navigate('/auth/signin');
     } catch (error) {
@@ -145,8 +151,27 @@ const DashboardLayout: React.FC = () => {
     setTenantMenuOpen(false);
   };
 
-  const userEmail = localStorage.getItem('userEmail') || 'demo@example.com';
-  const userName = userEmail.split('@')[0] || 'Demo User';
+  // Get user info from Cognito auth service
+  const [currentUser, setCurrentUser] = React.useState<{ email: string; name: string } | null>(null);
+  
+  React.useEffect(() => {
+    const getCurrentUserInfo = async () => {
+      const user = await authService.getCurrentUser();
+      if (user?.email) {
+        setCurrentUser({
+          email: user.email,
+          name: user.name || user.email.split('@')[0] || 'User'
+        });
+        // Fetch tenants if we haven't already and have a valid user
+        if (tenants.length === 0) {
+          fetchTenants(user.email);
+        }
+      }
+    };
+    getCurrentUserInfo();
+  }, [tenants.length]);
+
+  const userName = currentUser?.name || 'User';
 
   return (
     <div className="min-h-screen bg-gray-50">

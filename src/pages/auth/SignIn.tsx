@@ -3,17 +3,28 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/Button';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { cn } from '../../utils/cn';
+import { authService } from '../../auth/authService';
 
 const SignIn: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
-    email: 'admin-01@ecme.com',
-    password: '123456',
+    email: '',
+    password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Check for success message from password reset
+  React.useEffect(() => {
+    if (location.state?.message && location.state?.type === 'success') {
+      setSuccessMessage(location.state.message);
+      // Clear the state to prevent showing the message on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,31 +61,42 @@ const SignIn: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // For demo purposes, we'll simulate authentication
-      // In a real app, you would use: await authService.signIn(formData);
-      console.log('Sign in attempt:', formData);
+      // Use actual AWS Cognito authentication
+      const result = await authService.signIn({
+        email: formData.email,
+        password: formData.password
+      });
+
+      console.log('Sign in successful:', result);
       
-      // Simulate loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Navigate to the intended destination or dashboard
+      const from = (location.state as any)?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
       
-      // For demo, accept any email/password combination
-      // In production, remove this and use actual authentication
-      if (formData.email && formData.password) {
-        // Simulate successful authentication by storing a token
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userEmail', formData.email);
-        
-        // Navigate to the intended destination or dashboard
-        const from = (location.state as any)?.from?.pathname || '/dashboard';
-        navigate(from, { replace: true });
-      } else {
-        throw new Error('Invalid credentials');
-      }
     } catch (error: any) {
       console.error('Sign in error:', error);
-      setErrors({ 
-        general: error.message || 'Sign in failed. Please check your credentials and try again.' 
-      });
+      
+      let errorMessage = 'Sign in failed. Please check your credentials and try again.';
+      
+      // Handle specific Cognito error codes
+      if (error.name === 'UserNotConfirmedException') {
+        errorMessage = 'Please verify your email address. Check your inbox for a verification link.';
+        // Optionally redirect to verification page
+        // navigate('/auth/verify-email', { state: { email: formData.email, fromSignUp: true } });
+        // return;
+      } else if (error.name === 'NotAuthorizedException') {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (error.name === 'UserNotFoundException') {
+        errorMessage = 'No account found with this email address.';
+      } else if (error.name === 'TooManyRequestsException') {
+        errorMessage = 'Too many failed attempts. Please wait before trying again.';
+      } else if (error.name === 'PasswordResetRequiredException') {
+        errorMessage = 'Password reset required. Please reset your password.';
+      } else if (error.name === 'UserNotConfirmedException') {
+        errorMessage = 'Account not verified. Please check your email for verification instructions.';
+      }
+      
+      setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -84,16 +106,12 @@ const SignIn: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Simulate social login
-      console.log(`Login with ${provider}`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Social login with AWS Cognito would require additional setup
+      // For now, show a message that it's not implemented
+      setErrors({ 
+        general: `${provider} login is not yet implemented. Please use email and password.` 
+      });
       
-      // For demo purposes, simulate successful social login
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userEmail', `user@${provider}.com`);
-      
-      const from = (location.state as any)?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
     } catch (error) {
       console.error(`${provider} login error:`, error);
       setErrors({ 
@@ -129,6 +147,13 @@ const SignIn: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Success Message */}
+            {successMessage && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                <p className="text-sm text-green-600">{successMessage}</p>
+              </div>
+            )}
+
             {/* General Error */}
             {errors.general && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
@@ -147,7 +172,7 @@ const SignIn: React.FC = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="admin-01@ecme.com"
+                placeholder="Enter your email address"
                 className={cn(
                   "flex h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
                   errors.email && "border-red-500 focus-visible:ring-red-500"
@@ -262,6 +287,19 @@ const SignIn: React.FC = () => {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Sign Up Link */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-slate-500">
+            Don't have an account?{' '}
+            <button
+              onClick={() => navigate('/auth/signup')}
+              className="text-slate-900 hover:text-slate-700 font-medium transition-colors underline"
+            >
+              Sign up
+            </button>
+          </p>
         </div>
       </div>
     </div>

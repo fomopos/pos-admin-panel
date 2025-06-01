@@ -13,17 +13,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // For demo purposes, check localStorage for authentication
-        // In production, you would use: await authService.isAuthenticated();
-        const isAuthenticatedDemo = localStorage.getItem('isAuthenticated') === 'true';
-        
-        if (isAuthenticatedDemo) {
-          setIsAuthenticated(true);
-        } else {
-          // Fallback to actual auth service check
-          const authenticated = await authService.isAuthenticated();
-          setIsAuthenticated(authenticated);
-        }
+        // Use actual AWS Cognito authentication check
+        const authenticated = await authService.isAuthenticated();
+        setIsAuthenticated(authenticated);
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsAuthenticated(false);

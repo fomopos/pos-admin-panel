@@ -1,4 +1,6 @@
 // Base API configuration and utilities
+import { authService } from '../auth/authService';
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 // Development mode flag - set to true to use mock data instead of real API calls
@@ -55,7 +57,7 @@ export class ApiClient {
     };
 
     // Add authentication token if available
-    const token = localStorage.getItem('auth_token');
+    const token = await authService.getAccessToken();
     if (token) {
       config.headers = {
         ...config.headers,
