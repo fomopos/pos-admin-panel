@@ -57,7 +57,7 @@ const UserList: React.FC<UserListProps> = ({
   onViewActivity,
   onViewTimeTracking
 }) => {
-  const { currentTenant } = useTenantStore();
+  const { currentStore } = useTenantStore();
   const [state, setState] = useState<UserListState>({
     users: [],
     userStats: null,
@@ -77,11 +77,11 @@ const UserList: React.FC<UserListProps> = ({
 
   // Fetch users and statistics
   useEffect(() => {
-    if (currentTenant?.id) {
+    if (currentStore?.store_id) {
       loadUsers();
       loadUserStats();
     }
-  }, [currentTenant?.id, state.pagination.page, state.statusFilter, state.departmentFilter, state.searchQuery]);
+  }, [currentStore?.store_id, state.pagination.page, state.statusFilter, state.departmentFilter, state.searchQuery]);
 
   const loadUsers = async () => {
     try {
@@ -90,7 +90,7 @@ const UserList: React.FC<UserListProps> = ({
       const params: UserQueryParams = {
         page: state.pagination.page,
         limit: state.pagination.limit,
-        store_id: currentTenant?.id,
+        store_id: currentStore?.store_id,
         ...(state.searchQuery && { search: state.searchQuery }),
         ...(state.statusFilter !== 'all' && { status: state.statusFilter }),
         ...(state.departmentFilter !== 'all' && { department: state.departmentFilter })

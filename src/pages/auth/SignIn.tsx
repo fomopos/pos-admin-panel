@@ -69,9 +69,18 @@ const SignIn: React.FC = () => {
 
       console.log('Sign in successful:', result);
       
-      // Navigate to the intended destination or dashboard
-      const from = (location.state as any)?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      // Navigate to tenant/store selection first, then to intended destination
+      const from = (location.state as any)?.from?.pathname;
+      if (from && from !== '/dashboard' && from !== '/tenant-store-selection') {
+        // If user was trying to access a specific page, store it for later
+        navigate('/tenant-store-selection', { 
+          replace: true, 
+          state: { intendedDestination: from }
+        });
+      } else {
+        // Default flow: go through tenant/store selection
+        navigate('/tenant-store-selection', { replace: true });
+      }
       
     } catch (error: any) {
       console.error('Sign in error:', error);

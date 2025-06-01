@@ -19,7 +19,7 @@ interface Category {
 
 const Categories: React.FC = () => {
   const { t } = useTranslation();
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, currentStore } = useTenantStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -228,7 +228,7 @@ const Categories: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Categories</h1>
           <p className="text-slate-500">
-            {currentTenant ? `${currentTenant.name} - ` : ''}
+            {currentStore ? `${currentStore.store_name} - ` : ''}
             Organize your products into categories
           </p>
         </div>

@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTenantStore } from '../tenants/tenantStore';
 import { Card } from '../components/ui/Card';
 import Chart from 'react-apexcharts';
 import {
@@ -14,12 +13,9 @@ import {
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { fetchTenants } = useTenantStore();
 
-  useEffect(() => {
-    // Fetch tenants when component mounts
-    fetchTenants('current-user-id');
-  }, [fetchTenants]);
+  // Note: Tenants and stores are already loaded via the TenantStoreSelection flow
+  // No need to fetch tenants here as it would clear current selections
 
   // Mock data for dashboard stats - matching reference design
   const stats = [

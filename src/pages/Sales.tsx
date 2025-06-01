@@ -51,7 +51,7 @@ interface Sale {
 
 const Sales: React.FC = () => {
   const { t } = useTranslation();
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, currentStore } = useTenantStore();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -302,7 +302,7 @@ const Sales: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">{t('nav.sales')}</h1>
           <p className="text-slate-500">
-            {currentTenant ? `${currentTenant.name} - ` : ''}
+            {currentStore ? `${currentStore.store_name} - ` : ''}
             Manage and track your sales transactions
           </p>
         </div>

@@ -21,13 +21,13 @@ const ProductEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
-  const { currentTenant } = useTenantStore();
+  const { currentStore } = useTenantStore();
   
   const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
     description: '',
-    store_id: currentTenant?.id || '',
+    store_id: currentStore?.store_id || '',
     uom: '',
     brand: '',
     tax_group: '',
@@ -91,7 +91,7 @@ const ProductEdit: React.FC = () => {
         item_id: id,
         name: 'Premium Coffee Beans',
         description: 'High-quality coffee beans sourced from the best farms around the world. Perfect for espresso and drip coffee.',
-        store_id: currentTenant?.id || '',
+        store_id: currentStore?.store_id || '',
         uom: 'lb',
         brand: 'Premium Coffee Co.',
         tax_group: 'standard',
@@ -150,7 +150,7 @@ const ProductEdit: React.FC = () => {
         }
       });
     }
-  }, [isEditing, id, currentTenant]);
+  }, [isEditing, id, currentStore]);
 
   const validateForm = (): boolean => {
     const newErrors: ProductFormErrors = {};

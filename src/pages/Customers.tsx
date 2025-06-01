@@ -42,7 +42,7 @@ interface Customer {
 }
 
 const Customers: React.FC = () => {
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, currentStore } = useTenantStore();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -399,7 +399,7 @@ const Customers: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Customers</h1>
           <p className="text-slate-500">
-            {currentTenant ? `${currentTenant.name} - ` : ''}
+            {currentStore ? `${currentStore.store_name} - ` : ''}
             Manage your customer database
           </p>
         </div>

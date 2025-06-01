@@ -10,6 +10,7 @@ import SignUp from './pages/auth/SignUp';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 import ResetPassword from './pages/auth/ResetPassword';
+import TenantStoreSelection from './pages/auth/TenantStoreSelection';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import ProductEdit from './pages/ProductEdit';
@@ -49,11 +50,21 @@ function App() {
             <Route path="/auth/verify-email" element={<VerifyEmail />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             
-            {/* Protected routes */}
+            {/* Tenant/Store Selection - Protected but outside dashboard layout */}
+            <Route 
+              path="/tenant-store-selection" 
+              element={
+                <ProtectedRoute>
+                  <TenantStoreSelection />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Protected routes - Dashboard requires tenant/store selection */}
             <Route
               path="/"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiresTenantStore={true}>
                   <DashboardLayout />
                 </ProtectedRoute>
               }

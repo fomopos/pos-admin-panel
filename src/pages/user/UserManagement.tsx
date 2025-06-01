@@ -24,7 +24,7 @@ interface UserManagementState {
 }
 
 const UserManagement: React.FC = () => {
-  const { currentTenant } = useTenantStore();
+  const { currentStore } = useTenantStore();
   
   const [state, setState] = useState<UserManagementState>({
     currentView: 'list',
@@ -38,17 +38,17 @@ const UserManagement: React.FC = () => {
 
   // Load users and statistics
   useEffect(() => {
-    if (currentTenant?.id) {
+    if (currentStore?.store_id) {
       loadUsers();
       loadUserStats();
     }
-  }, [currentTenant?.id]);
+  }, [currentStore?.store_id]);
 
   const loadUsers = async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       const response = await userService.getUsers({
-        store_id: currentTenant?.id || '',
+        store_id: currentStore?.store_id || '',
         limit: 100
       });
       setState(prev => ({ 
@@ -69,7 +69,7 @@ const UserManagement: React.FC = () => {
 
   const loadUserStats = async () => {
     try {
-      const stats = await userService.getUserStats(currentTenant?.id || '');
+      const stats = await userService.getUserStats(currentStore?.store_id || '');
       setState(prev => ({ ...prev, userStats: stats }));
     } catch (error) {
       console.error('Failed to load user statistics:', error);
@@ -233,7 +233,7 @@ const UserManagement: React.FC = () => {
       case 'create':
         return (
           <CreateUser
-            storeId={currentTenant?.id || ''}
+            storeId={currentStore?.store_id || ''}
             onBack={handleNavigateToList}
             onSave={handleUserCreate}
           />

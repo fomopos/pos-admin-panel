@@ -150,7 +150,7 @@ class AuthService {
   async getAccessToken(): Promise<string | null> {
     try {
       const session = await fetchAuthSession();
-      return session.tokens?.accessToken?.toString() || null;
+      return session.tokens?.idToken?.toString() || null;
     } catch (error) {
       console.error('Get access token error:', error);
       return null;

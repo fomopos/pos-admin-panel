@@ -33,7 +33,7 @@ interface Category {
 }
 
 const ProductsWithDataTable: React.FC = () => {
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, currentStore } = useTenantStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -374,7 +374,7 @@ const ProductsWithDataTable: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Products (DataTable Demo)</h1>
           <p className="text-slate-500 mt-1">
-            {currentTenant ? `${currentTenant.name} - ` : ''}
+            {currentStore ? `${currentStore.store_name} - ` : ''}
             Manage your product catalog with the new modular DataTable component
           </p>
         </div>

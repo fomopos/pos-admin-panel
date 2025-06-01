@@ -13,7 +13,7 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
-export interface ApiError {
+export interface ApiErrorResponse {
   message: string;
   code?: string;
   details?: any;
@@ -74,7 +74,19 @@ export class ApiClient {
       }
 
       const data = await response.json();
-      return data;
+      
+      // Check if the response is already in the expected format
+      // Some APIs return data directly, others wrap it in a response object
+      if (data && typeof data === 'object' && 'data' in data) {
+        return data;
+      } else {
+        // Wrap direct data in ApiResponse format
+        return {
+          data: data,
+          success: true,
+          message: 'Success'
+        };
+      }
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
       

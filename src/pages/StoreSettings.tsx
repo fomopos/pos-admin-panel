@@ -35,7 +35,7 @@ interface StoreSettingsState {
 }
 
 const StoreSettingsPage: React.FC = () => {
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, currentStore } = useTenantStore();
   
   const [state, setState] = useState<StoreSettingsState>({
     settings: null,
@@ -92,7 +92,7 @@ const StoreSettingsPage: React.FC = () => {
       
       let updatedSettings: StoreSettings;
       const tenantId = currentTenant?.id || '272e';
-      const storeId = '*';
+      const storeId = currentStore?.store_id || '*';
 
       switch (section) {
         case 'information':
@@ -179,7 +179,7 @@ const StoreSettingsPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Store Settings</h1>
           <p className="text-slate-500 mt-1">
-            {currentTenant ? `${currentTenant.name} - ` : ''}
+            {currentStore ? `${currentStore.store_name} - ` : ''}
             Configure and manage all aspects of your point of sale system
           </p>
         </div>

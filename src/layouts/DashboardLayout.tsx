@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -21,6 +21,7 @@ import {
   UsersIcon,
   TableCellsIcon,
   BuildingStorefrontIcon,
+  BuildingOfficeIcon,
   CreditCardIcon,
   DocumentTextIcon,
   ChevronUpDownIcon,
@@ -43,28 +44,15 @@ const DashboardLayout: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentTenant, tenants, switchTenant, fetchTenants } = useTenantStore();
+  const { currentTenant, currentStore, tenants, switchTenant, switchStore, getCurrentTenantStores } = useTenantStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [tenantMenuOpen, setTenantMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
-  // Fetch user information and tenants on component mount
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const user = await authService.getCurrentUser();
-        if (user?.email && tenants.length === 0) {
-          fetchTenants(user.email);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      }
-    };
-
-    fetchUserData();
-  }, [fetchTenants, tenants.length]);
+  // Note: Tenants are loaded via TenantStoreSelection flow before reaching this layout
+  // No need to fetch tenants here as it would interfere with the hierarchical auth flow
 
   const navigation: NavigationSection[] = [
     {
@@ -146,14 +134,23 @@ const DashboardLayout: React.FC = () => {
     );
   };
 
+  const [storeMenuOpen, setStoreMenuOpen] = useState(false);
+
   const handleTenantSwitch = (tenantId: string) => {
     switchTenant(tenantId);
     setTenantMenuOpen(false);
+    setStoreMenuOpen(false); // Close store menu when switching tenant
+  };
+
+  const handleStoreSwitch = (storeId: string) => {
+    switchStore(storeId);
+    setStoreMenuOpen(false);
   };
 
   // Get user info from Cognito auth service
   const [currentUser, setCurrentUser] = React.useState<{ email: string; name: string } | null>(null);
   
+  // Initialize user info (no tenant fetching - handled by TenantStoreSelection flow)
   React.useEffect(() => {
     const getCurrentUserInfo = async () => {
       const user = await authService.getCurrentUser();
@@ -162,14 +159,10 @@ const DashboardLayout: React.FC = () => {
           email: user.email,
           name: user.name || user.email.split('@')[0] || 'User'
         });
-        // Fetch tenants if we haven't already and have a valid user
-        if (tenants.length === 0) {
-          fetchTenants(user.email);
-        }
       }
     };
     getCurrentUserInfo();
-  }, [tenants.length]);
+  }, []); // Only run once on mount
 
   const userName = currentUser?.name || 'User';
 
@@ -203,18 +196,19 @@ const DashboardLayout: React.FC = () => {
             </button>
           </div>
 
-          {/* Tenant Selector */}
+          {/* Tenant/Store Selector */}
           {tenants.length > 0 && (
-            <div className="px-4 py-3 border-b border-gray-200">
+            <div className="px-4 py-3 border-b border-gray-200 space-y-2">
+              {/* Tenant Selection */}
               <div className="relative">
                 <button
                   onClick={() => setTenantMenuOpen(!tenantMenuOpen)}
                   className="w-full flex items-center justify-between px-3 py-2 text-sm bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center">
-                    <BuildingStorefrontIcon className="h-4 w-4 text-gray-500 mr-2" />
+                    <BuildingOfficeIcon className="h-4 w-4 text-gray-500 mr-2" />
                     <span className="text-gray-900 font-medium">
-                      {currentTenant?.name || 'Select Store'}
+                      {currentTenant?.name || 'Select Organization'}
                     </span>
                   </div>
                   <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
@@ -230,7 +224,7 @@ const DashboardLayout: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center">
-                          <BuildingStorefrontIcon className="h-4 w-4 mr-2" />
+                          <BuildingOfficeIcon className="h-4 w-4 mr-2" />
                           {tenant.name}
                         </div>
                       </button>
@@ -238,6 +232,50 @@ const DashboardLayout: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* Store Selection */}
+              {currentTenant && (
+                <div className="relative">
+                  <button
+                    onClick={() => setStoreMenuOpen(!storeMenuOpen)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <BuildingStorefrontIcon className="h-4 w-4 text-gray-500 mr-2" />
+                      <span className="text-gray-900 font-medium">
+                        {currentStore?.store_name || 'Select Store'}
+                      </span>
+                    </div>
+                    <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                  </button>
+                  {storeMenuOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                      {getCurrentTenantStores().map((store) => (
+                        <button
+                          key={store.store_id}
+                          onClick={() => handleStoreSwitch(store.store_id)}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                            currentStore?.store_id === store.store_id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <BuildingStorefrontIcon className="h-4 w-4 mr-2" />
+                            <div>
+                              <div className="font-medium">{store.store_name}</div>
+                              <div className="text-xs text-gray-500">{store.location_type}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      {getCurrentTenantStores().length === 0 && (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                          No stores available
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -434,6 +472,9 @@ const DashboardLayout: React.FC = () => {
       )}
       {tenantMenuOpen && (
         <div className="fixed inset-0 z-30" onClick={() => setTenantMenuOpen(false)} />
+      )}
+      {storeMenuOpen && (
+        <div className="fixed inset-0 z-30" onClick={() => setStoreMenuOpen(false)} />
       )}
     </div>
   );
