@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../components/ui/Card';
 import Chart from 'react-apexcharts';
+import LogoutTestComponent from '../components/LogoutTestComponent';
 import {
   CurrencyDollarIcon,
   ShoppingCartIcon,
@@ -13,6 +14,9 @@ import {
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
+
+  // Check if we're in development mode
+  const isDevelopment = import.meta.env.DEV;
 
   // Note: Tenants and stores are already loaded via the TenantStoreSelection flow
   // No need to fetch tenants here as it would clear current selections
@@ -330,6 +334,13 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </Card>
+
+      {/* Logout Test Component - Development Only */}
+      {isDevelopment && (
+        <div>
+          <LogoutTestComponent />
+        </div>
+      )}
     </div>
   );
 };

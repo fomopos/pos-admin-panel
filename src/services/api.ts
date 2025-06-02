@@ -112,10 +112,11 @@ export class ApiClient {
     return this.request<T>(url.pathname + url.search);
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, data?: any, options?: { headers?: Record<string, string> }): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      headers: options?.headers,
     });
   }
 

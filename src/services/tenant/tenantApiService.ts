@@ -116,13 +116,9 @@ class TenantApiService {
     } catch (error) {
       console.error('❌ Error fetching tenants from API:', error);
       
-      // Return empty result when no mock data is available
-      console.log('🔄 No fallback data available, returning empty result');
-      return {
-        tenants: [],
-        total_count: 0,
-        user_id: userId
-      };
+      // Don't return empty data on API failures - let the error bubble up
+      // The calling code should handle the error appropriately
+      throw error;
     }
   }
 
@@ -149,8 +145,9 @@ class TenantApiService {
     } catch (error) {
       console.error('❌ Error fetching stores from API:', error);
       
-      // Return empty array when no mock data is available
-      return { stores: [] };
+      // Don't return empty data on API failures - let the error bubble up
+      // The calling code should handle the error appropriately
+      throw error;
     }
   }
 
@@ -222,8 +219,12 @@ class TenantApiService {
         throw new ApiError('Store creation requires real API backend', 'MOCK_CREATE_NOT_SUPPORTED');
       }
 
-      // Real API call
-      const response = await apiClient.post<StoreApiResponse>(`/tenants/${tenantId}/stores`, storeData);
+      // Real API call using the specified endpoint structure: POST /v1/store with X-Tenant-Id header
+      const response = await apiClient.post<StoreApiResponse>('/v1/store', storeData, {
+        headers: {
+          'X-Tenant-Id': tenantId
+        }
+      });
       return response.data;
       
     } catch (error) {

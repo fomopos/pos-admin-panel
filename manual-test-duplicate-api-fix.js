@@ -152,3 +152,4 @@ console.log('- printCallHistory() - Show all API calls');
 console.log('- printComponentLogs() - Show component behavior');
 
 console.log('\n🚀 Test monitoring started! Perform your navigation tests...');
+il

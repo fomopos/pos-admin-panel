@@ -267,6 +267,31 @@ const DashboardLayout: React.FC = () => {
                           </div>
                         </button>
                       ))}
+                      
+                      {/* Divider */}
+                      {getCurrentTenantStores().length > 0 && (
+                        <div className="border-t border-gray-200 my-1"></div>
+                      )}
+                      
+                      {/* Create New Store Option */}
+                      <button
+                        onClick={() => {
+                          setStoreMenuOpen(false);
+                          navigate('/create-store');
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors text-blue-600"
+                      >
+                        <div className="flex items-center">
+                          <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <div>
+                            <div className="font-medium">Create New Store</div>
+                            <div className="text-xs text-gray-500">Add another store location</div>
+                          </div>
+                        </div>
+                      </button>
+                      
                       {getCurrentTenantStores().length === 0 && (
                         <div className="px-3 py-2 text-sm text-gray-500">
                           No stores available

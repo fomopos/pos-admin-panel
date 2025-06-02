@@ -20,6 +20,14 @@ const TenantStoreSelection: React.FC = () => {
     getCurrentTenantStores,
     isLoading 
   } = useTenantStore();
+
+  // Helper function to safely capitalize status strings
+  const capitalizeStatus = (status: string | undefined): string => {
+    if (!status || typeof status !== 'string') {
+      return 'Unknown';
+    }
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
   
   const [step, setStep] = useState<'tenant' | 'store'>('tenant');
   const [loadingStores, setLoadingStores] = useState(false);
@@ -239,8 +247,8 @@ const TenantStoreSelection: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {tenants.map((tenant) => {
-                    // Add safety check for tenant object
-                    if (!tenant || !tenant.id) {
+                    // Add safety check for tenant object and required properties
+                    if (!tenant || !tenant.id || !tenant.name) {
                       console.warn('Invalid tenant object found:', tenant);
                       return null;
                     }
@@ -273,7 +281,7 @@ const TenantStoreSelection: React.FC = () => {
                               tenant.status === 'suspended' ? 'bg-red-100 text-red-700' :
                               'bg-yellow-100 text-yellow-700'
                             }`}>
-                              {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
+                              {capitalizeStatus(tenant.status)}
                             </span>
                             <span>{storeCount} store{storeCount !== 1 ? 's' : ''}</span>
                           </div>
@@ -312,9 +320,15 @@ const TenantStoreSelection: React.FC = () => {
                   <BuildingStorefrontIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-slate-900 mb-2">No Stores Found</h3>
                   <p className="text-slate-500 mb-6">
-                    This organization doesn't have any stores set up yet.
+                    This organization doesn't have any stores set up yet. Create your first store to get started.
                   </p>
-                  <div className="space-x-3">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      onClick={() => navigate('/create-store')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Create First Store
+                    </Button>
                     <Button onClick={handleBackToTenants} variant="outline">
                       Choose Different Organization
                     </Button>
@@ -324,42 +338,68 @@ const TenantStoreSelection: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {getCurrentTenantStores().map((store) => (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {getCurrentTenantStores().map((store) => {
+                      // Add safety check for store object and required properties
+                      if (!store || !store.store_id || !store.store_name) {
+                        console.warn('Invalid store object found:', store);
+                        return null;
+                      }
+                      
+                      return (
+                      <button
+                        key={store.store_id}
+                        onClick={() => handleStoreSelect(store.store_id)}
+                        className="text-left p-6 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                              <BuildingStorefrontIcon className="h-6 w-6 text-green-600" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                              {store.store_name}
+                            </h3>
+                            {store.description && (
+                              <p className="text-sm text-slate-500 mb-2">
+                                {store.description}
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-4 text-xs text-slate-400">
+                              <span className={`px-2 py-1 rounded-full ${
+                                store.status === 'active' ? 'bg-green-100 text-green-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {capitalizeStatus(store.status)}
+                              </span>
+                              <span>{store.location_type}</span>
+                            </div>
+                          </div>
+                          <ChevronRightIcon className="h-5 w-5 text-slate-400" />
+                        </div>
+                      </button>
+                      );
+                    })}
+                    
+                    {/* Add New Store Card */}
                     <button
-                      key={store.store_id}
-                      onClick={() => handleStoreSelect(store.store_id)}
-                      className="text-left p-6 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      onClick={() => navigate('/create-store')}
+                      className="text-left p-6 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex flex-col items-center justify-center min-h-[140px]"
                     >
-                      <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0">
-                          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                            <BuildingStorefrontIcon className="h-6 w-6 text-green-600" />
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                            {store.store_name}
-                          </h3>
-                          {store.description && (
-                            <p className="text-sm text-slate-500 mb-2">
-                              {store.description}
-                            </p>
-                          )}
-                          <div className="flex items-center space-x-4 text-xs text-slate-400">
-                            <span className={`px-2 py-1 rounded-full ${
-                              store.status === 'active' ? 'bg-green-100 text-green-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {store.status.charAt(0).toUpperCase() + store.status.slice(1)}
-                            </span>
-                            <span>{store.location_type}</span>
-                          </div>
-                        </div>
-                        <ChevronRightIcon className="h-5 w-5 text-slate-400" />
+                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                        <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
                       </div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-1">Add New Store</h3>
+                      <p className="text-sm text-slate-500 text-center">
+                        Create another store for this organization
+                      </p>
                     </button>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>

@@ -8,6 +8,7 @@ import {
   confirmResetPassword,
   fetchAuthSession
 } from 'aws-amplify/auth';
+import { useTenantStore } from '../tenants/tenantStore';
 
 export interface User {
   userId: string;
@@ -90,7 +91,14 @@ class AuthService {
 
   async signOut() {
     try {
+      console.log('🚪 Signing out user and clearing all cached data');
+      
+      // Clear all tenant store data before signing out
+      const { clearAllData } = useTenantStore.getState();
+      clearAllData();
+      
       await signOut();
+      console.log('✅ User signed out and data cleared successfully');
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;

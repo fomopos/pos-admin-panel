@@ -178,6 +178,7 @@ interface TenantState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearSelection: () => void;
+  clearAllData: () => void;
 }
 
 // Store state with duplicate call prevention
@@ -429,6 +430,17 @@ export const useTenantStore = create<TenantState>()(
         set({ 
           currentTenant: null,
           currentStore: null 
+        });
+      },
+
+      clearAllData: () => {
+        console.log('🧹 Clearing all tenant store data on logout');
+        set({ 
+          tenants: [],
+          currentTenant: null,
+          currentStore: null,
+          isLoading: false,
+          error: null
         });
       },
 

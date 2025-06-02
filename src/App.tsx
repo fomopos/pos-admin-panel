@@ -22,6 +22,7 @@ import TaxSettings from './pages/TaxSettings';
 import PaymentSettings from './pages/PaymentSettings';
 import PaymentAnalyticsDashboard from './pages/PaymentAnalyticsDashboard';
 import StoreSettings from './pages/StoreSettings';
+import CreateStore from './pages/CreateStore';
 import { UserManagement } from './pages/user';
 
 // Placeholder components for other pages
@@ -56,6 +57,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TenantStoreSelection />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Create Store - Protected but accessible from tenant selection */}
+            <Route 
+              path="/create-store" 
+              element={
+                <ProtectedRoute>
+                  <CreateStore />
                 </ProtectedRoute>
               } 
             />
