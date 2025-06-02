@@ -219,8 +219,8 @@ class TenantApiService {
         throw new ApiError('Store creation requires real API backend', 'MOCK_CREATE_NOT_SUPPORTED');
       }
 
-      // Real API call using the specified endpoint structure: POST /v1/store with X-Tenant-Id header
-      const response = await apiClient.post<StoreApiResponse>('/v1/store', storeData, {
+      // Real API call using the specified endpoint structure: POST /v0/store with X-Tenant-Id header
+      const response = await apiClient.post<StoreApiResponse>('/v0/store', storeData, {
         headers: {
           'X-Tenant-Id': tenantId
         }
