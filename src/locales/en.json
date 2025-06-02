@@ -1,8 +1,25 @@
 {
   "categories": {
     "title": "Categories",
+    "edit": "Edit",
     "subtitle": "Manage your product categories",
     "subtitleWithCount": "Showing {{count}} categories",
+    "newCategory": "New Category",
+    "editCategory": "Edit Category",
+    "newDescription": "Create a new category to organize your products",
+    "editDescription": "Edit the details of this category",
+    "fields": {
+        "name": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "sortOrder": "Sort Order",
+        "icon": "Category Icon",
+        "image": "Category Image",
+        "tags": "Tags",
+        "isActive": "Active Status",
+        "displayOnMain": "Display on Main Screen",
+        "quickIcons": "Quick Icon Selection"
+      },
     "create": {
       "title": "Create New Category",
       "subtitle": "Add a new category to organize your products",
@@ -15,24 +32,6 @@
         "mobile": "Mobile Ready",
         "tags": "Smart Tags",
         "hierarchy": "Hierarchical"
-      },
-      "tabs": {
-        "basic": "Basic Info",
-        "media": "Media & Icons",
-        "settings": "Settings",
-        "preview": "Preview"
-      },
-      "fields": {
-        "name": "Category Name",
-        "description": "Description",
-        "parentCategory": "Parent Category",
-        "sortOrder": "Sort Order",
-        "icon": "Category Icon",
-        "image": "Category Image",
-        "tags": "Tags",
-        "isActive": "Active Status",
-        "displayOnMain": "Display on Main Screen",
-        "quickIcons": "Quick Icon Selection"
       },
       "placeholders": {
         "name": "Enter category name",
@@ -57,12 +56,17 @@
         "sortOrder": "Sort Order",
         "tags": "Tags",
         "addTag": "Add a tag",
-        "noParent": "No Parent (Top Level)"
+        "noParent": "No Parent (Top Level)",
+        "basicInfo": "Basic Information",
+        "media": "Media & Icons",
+        "settings": "Settings",
+        "color": "Color"
       },
       "tabs": {
         "basic": "Basic Info",
         "media": "Media & Icons",
-        "settings": "Settings"
+        "settings": "Settings",
+        "preview": "Preview"
       },
       "edit": {
         "title": "Edit Category"
@@ -115,8 +119,8 @@
       "confirm": "Are you sure you want to delete '{{name}}'?"
     },
     "empty": {
-      "noCategories": "No categories yet",
-      "noCategoriesDescription": "Start organizing your products by creating your first category",
+      "title": "No categories yet",
+      "description": "Start organizing your products by creating your first category",
       "noResults": "No categories found",
       "noResultsDescription": "Try adjusting your search or filter criteria"
     },
@@ -165,7 +169,11 @@
     "filters": "Filters",
     "search": "Search",
     "loading": "Loading...",
-    "goToDashboard": "Go to Dashboard"
+    "goToDashboard": "Go to Dashboard",
+    "active": "Active",
+    "inactive": "Inactive",
+    "categories": "Categories",
+    "saving": "Saving..."
   },
   "nav": {
     "dashboard": "Dashboard",

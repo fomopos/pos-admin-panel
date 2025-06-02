@@ -26,6 +26,7 @@ import {
   CATEGORY_TEMPLATES,
   CATEGORY_ICONS
 } from '../../types/category';
+import useTenantStore from '../../tenants/tenantStore';
 
 interface CreateCategoryProps {
   isOpen: boolean;
@@ -52,6 +53,9 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
   // File upload refs
   const iconInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Tenant and store selection
+  const { currentTenant, currentStore } = useTenantStore();
 
   // Form state
   const [formData, setFormData] = useState<CategoryFormData>({
@@ -194,7 +198,10 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
 
     setIsSubmitting(true);
     try {
-      const newCategory = await categoryApiService.createCategory(formData);
+      const newCategory = await categoryApiService.createCategory(formData, {
+        tenant_id: currentTenant?.id,
+        store_id: currentStore?.store_id
+      });
       if (onSuccess) {
         onSuccess(newCategory);
       }

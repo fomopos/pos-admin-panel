@@ -69,7 +69,7 @@ export interface CategoryQueryParams {
 }
 
 class CategoryApiService {
-  private readonly basePath = '/categories';
+  private readonly basePath = `/v0/tenant/`;
 
   /**
    * Get all categories for a tenant/store
@@ -84,19 +84,17 @@ class CategoryApiService {
         return mockData.categories.map(this.mapToEnhancedCategory);
       }
 
+      const path = `${this.basePath}${params?.tenant_id || ''}/store/${params?.store_id || ''}/category/all`;
+
       // Real API call
-      const response = await apiClient.get<CategoriesApiResponse>(this.basePath, params);
+      const response = await apiClient.get<CategoriesApiResponse>(path, {});
       
       console.log('✅ Successfully fetched categories from API:', response.data);
       return response.data.categories.map(this.mapToEnhancedCategory);
       
     } catch (error) {
       console.error('❌ Error fetching categories from API:', error);
-      
-      // Fallback to mock data on API failure
-      console.log('📝 Falling back to mock categories data');
-      const mockData = this.getMockCategories();
-      return mockData.categories.map(this.mapToEnhancedCategory);
+      throw this.handleError(error);
     }
   }
 
@@ -169,9 +167,15 @@ class CategoryApiService {
         return newCategory;
       }
 
+      const path = `${this.basePath}${params?.tenant_id || ''}/store/${params?.store_id || ''}/category/addBatch`;
+
+      const request: BatchCreateCategoriesRequest = {
+        categories: [data]
+      };
+
       // Real API call
-      const response = await apiClient.post<CategoryApiResponse>(this.basePath, data, {
-        headers: params?.tenant_id ? { 'X-Tenant-Id': params.tenant_id } : undefined
+      const response = await apiClient.post<CategoryApiResponse>(path, request, {
+        headers: undefined,
       });
       
       console.log('✅ Successfully created category:', response.data);

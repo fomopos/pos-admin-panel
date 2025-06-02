@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
 import type { EnhancedCategory } from '../types/category';
+import useTenantStore from '../tenants/tenantStore';
 
 const Categories: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Categories: React.FC = () => {
   const [selectedParent, setSelectedParent] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(true);
+  const { currentTenant, currentStore } = useTenantStore();
 
   useEffect(() => {
     loadCategories();
@@ -32,7 +34,10 @@ const Categories: React.FC = () => {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const result = await categoryApiService.getCategories();
+      const result = await categoryApiService.getCategories({
+        tenant_id: currentTenant?.id,
+        store_id: currentStore?.store_id,
+      });
       setCategories(result);
     } catch (error) {
       console.error('Failed to load categories:', error);
@@ -109,7 +114,7 @@ const Categories: React.FC = () => {
               onChange={(e) => setSelectedParent(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="">{t('categories.filter.allCategories')}</option>
+              <option value="">{t('categories.filters.allCategories')}</option>
               {parentCategories.map(category => (
                 <option key={category.category_id} value={category.category_id}>
                   {category.name}
@@ -276,7 +281,7 @@ const CategoryCard: React.FC<{
         
         <div className="flex justify-between items-center">
           <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-            {category.sort_order || 0} {t('categories.sortOrder')}
+            {category.sort_order || 0} {t('categories.fields.sortOrder')}
           </span>
           <span className={`px-2 py-1 text-xs rounded-full ${
             category.is_active 
