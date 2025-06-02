@@ -15,9 +15,9 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import ProductEdit from './pages/ProductEdit';
 import Categories from './pages/Categories';
+import CategoryEdit from './pages/CategoryEdit';
 import Sales from './pages/Sales';
 import Customers from './pages/Customers';
-import TranslationDemo from './pages/TranslationDemo';
 import TaxSettings from './pages/TaxSettings';
 import PaymentSettings from './pages/PaymentSettings';
 import PaymentAnalyticsDashboard from './pages/PaymentAnalyticsDashboard';
@@ -86,6 +86,8 @@ function App() {
               <Route path="products/new" element={<ProductEdit />} />
               <Route path="products/edit/:id" element={<ProductEdit />} />
               <Route path="categories" element={<Categories />} />
+              <Route path="categories/new" element={<CategoryEdit />} />
+              <Route path="categories/edit/:id" element={<CategoryEdit />} />
               <Route path="sales" element={<Sales />} />
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
@@ -94,9 +96,8 @@ function App() {
               <Route path="tax-settings" element={<TaxSettings />} />
               <Route path="payment-settings" element={<PaymentSettings />} />
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
-              <Route path="demo" element={<TranslationDemo />} />
             </Route>
-            
+
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

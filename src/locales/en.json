@@ -1,0 +1,180 @@
+{
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Manage your product categories",
+    "subtitleWithCount": "Showing {{count}} categories",
+    "create": {
+      "title": "Create New Category",
+      "subtitle": "Add a new category to organize your products",
+      "button": "Add Category",
+      "creating": "Creating...",
+      "create": "Create Category",
+      "newCategory": "Create New Category",
+      "newCategoryDescription": "Organize your products with a custom category",
+      "features": {
+        "mobile": "Mobile Ready",
+        "tags": "Smart Tags",
+        "hierarchy": "Hierarchical"
+      },
+      "tabs": {
+        "basic": "Basic Info",
+        "media": "Media & Icons",
+        "settings": "Settings",
+        "preview": "Preview"
+      },
+      "fields": {
+        "name": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "sortOrder": "Sort Order",
+        "icon": "Category Icon",
+        "image": "Category Image",
+        "tags": "Tags",
+        "isActive": "Active Status",
+        "displayOnMain": "Display on Main Screen",
+        "quickIcons": "Quick Icon Selection"
+      },
+      "placeholders": {
+        "name": "Enter category name",
+        "description": "Describe what products belong in this category",
+        "addTag": "Add a tag"
+      },
+      "descriptions": {
+        "isActive": "Toggle to enable or disable this category",
+        "displayOnMain": "Show this category prominently on the main screen"
+      },
+      "selectParent": "Select Parent Category",
+      "noParent": "No Parent (Top Level)",
+      "templates": {
+        "title": "Choose a Template",
+        "skip": "Skip Templates",
+        "createCustom": "Skip Templates - Create Custom Category"
+      },
+      "form": {
+        "name": "Category Name",
+        "description": "Description",
+        "parentCategory": "Parent Category",
+        "sortOrder": "Sort Order",
+        "tags": "Tags",
+        "addTag": "Add a tag",
+        "noParent": "No Parent (Top Level)"
+      },
+      "tabs": {
+        "basic": "Basic Info",
+        "media": "Media & Icons",
+        "settings": "Settings"
+      },
+      "edit": {
+        "title": "Edit Category"
+      },
+      "errors": {
+        "nameRequired": "Category name is required",
+        "descriptionTooLong": "Description is too long",
+        "invalidSortOrder": "Sort order must be a positive number",
+        "saveFailed": "Failed to save category",
+        "deleteFailed": "Failed to delete category"
+      },
+      "media": {
+        "dragIcon": "Drag & drop an icon image here",
+        "dragImage": "Drag & drop a category image here",
+        "changeIcon": "Click to change icon",
+        "changeImage": "Click to change image",
+        "iconFormat": "PNG, JPG up to 2MB",
+        "imageFormat": "PNG, JPG up to 5MB"
+      },
+      "preview": {
+        "title": "Category Preview",
+        "button": "Preview",
+        "sampleName": "Sample Category",
+        "mainScreen": "Main Screen",
+        "tags": "tags"
+      }
+    },
+    "search": {
+      "placeholder": "Search categories..."
+    },
+    "filters": {
+      "all": "All Categories",
+      "active": "Active",
+      "inactive": "Inactive",
+      "mainScreen": "Main Screen",
+      "withSubcategories": "With Subcategories",
+      "allCategories": "All Categories"
+    },
+    "card": {
+      "order": "Order",
+      "mainScreen": "Main Screen",
+      "subcategories": "subcategories",
+      "subcategoriesLabel": "Subcategories"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "delete": {
+      "confirm": "Are you sure you want to delete '{{name}}'?"
+    },
+    "empty": {
+      "noCategories": "No categories yet",
+      "noCategoriesDescription": "Start organizing your products by creating your first category",
+      "noResults": "No categories found",
+      "noResultsDescription": "Try adjusting your search or filter criteria"
+    },
+    "stats": {
+      "total": "Total Categories",
+      "active": "Active Categories",
+      "inactive": "Inactive Categories",
+      "withProducts": "Categories with Products"
+    },
+    "quickCreate": "Quick Create",
+    "actions": {
+      "import": "Import Categories",
+      "export": "Export Categories"
+    },
+    "bulkImport": {
+      "title": "Bulk Import Categories",
+      "description": "Import multiple categories from a CSV file"
+    },
+    "results": {
+      "showing": "Showing {{count}} of {{total}} categories"
+    },
+    "errors": {
+      "loadFailed": "Failed to load categories",
+      "deleteFailed": "Failed to delete category",
+      "importFailed": "Failed to import categories",
+      "exportFailed": "Failed to export categories",
+      "noTenantStore": "No Store Selected",
+      "noTenantStoreDescription": "Please select a store to manage categories"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "Basic Info",
+      "media": "Media & Icons",
+      "settings": "Settings"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "refresh": "Refresh",
+    "filters": "Filters",
+    "search": "Search",
+    "loading": "Loading...",
+    "goToDashboard": "Go to Dashboard"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "customers": "Customers",
+    "reports": "Reports",
+    "settings": "Settings",
+    "categories": "Categories",
+    "sales": "Sales"
+  }
+}

@@ -81,12 +81,6 @@ const DashboardLayout: React.FC = () => {
       ]
     },
     {
-      category: 'DEVELOPMENT',
-      items: [
-        { name: t('demo.title'), href: '/demo', icon: Cog6ToothIcon },
-      ]
-    },
-    {
       category: t('nav.settings'),
       items: [
         { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },

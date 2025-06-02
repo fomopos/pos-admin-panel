@@ -226,7 +226,6 @@ class TenantApiService {
         }
       });
       return response.data;
-      
     } catch (error) {
       console.error('❌ Error creating store:', error);
       throw error;

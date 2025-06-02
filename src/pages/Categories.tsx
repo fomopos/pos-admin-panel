@@ -1,556 +1,367 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlusIcon, PencilIcon, TrashIcon, TagIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import { useTenantStore } from '../tenants/tenantStore';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  productCount: number;
-  status: 'active' | 'inactive';
-  createdAt: string;
-  updatedAt: string;
-}
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  FunnelIcon, 
+  Squares2X2Icon, 
+  ListBulletIcon,
+  FolderIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon
+} from '@heroicons/react/24/outline';
+import { categoryApiService } from '../services/category/categoryApiService';
+import type { EnhancedCategory } from '../types/category';
 
 const Categories: React.FC = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
-  const { currentTenant, currentStore } = useTenantStore();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState<Partial<Category>>({
-    name: '',
-    description: '',
-    color: '#3B82F6',
-    status: 'active',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedParent, setSelectedParent] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [loading, setLoading] = useState(true);
 
-  // Predefined color options
-  const colorOptions = [
-    '#3B82F6', // Blue
-    '#10B981', // Green
-    '#F59E0B', // Yellow
-    '#EF4444', // Red
-    '#8B5CF6', // Purple
-    '#F97316', // Orange
-    '#06B6D4', // Cyan
-    '#84CC16', // Lime
-    '#EC4899', // Pink
-    '#6B7280', // Gray
-  ];
-
-  // Mock data - in real app, this would come from API
   useEffect(() => {
-    const fetchCategories = async () => {
-      setIsLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setCategories([
-        {
-          id: '1',
-          name: 'Electronics',
-          description: 'Electronic devices and accessories',
-          color: '#3B82F6',
-          productCount: 45,
-          status: 'active',
-          createdAt: '2024-01-10',
-          updatedAt: '2024-01-15',
-        },
-        {
-          id: '2',
-          name: 'Clothing',
-          description: 'Apparel and fashion items',
-          color: '#10B981',
-          productCount: 128,
-          status: 'active',
-          createdAt: '2024-01-08',
-          updatedAt: '2024-01-12',
-        },
-        {
-          id: '3',
-          name: 'Food & Beverages',
-          description: 'Food items and drinks',
-          color: '#F59E0B',
-          productCount: 67,
-          status: 'active',
-          createdAt: '2024-01-05',
-          updatedAt: '2024-01-14',
-        },
-        {
-          id: '4',
-          name: 'Books',
-          description: 'Books and educational materials',
-          color: '#8B5CF6',
-          productCount: 23,
-          status: 'active',
-          createdAt: '2024-01-03',
-          updatedAt: '2024-01-10',
-        },
-        {
-          id: '5',
-          name: 'Home & Garden',
-          description: 'Home improvement and gardening supplies',
-          color: '#06B6D4',
-          productCount: 34,
-          status: 'inactive',
-          createdAt: '2024-01-01',
-          updatedAt: '2024-01-08',
-        },
-      ]);
-      
-      setIsLoading(false);
-    };
+    loadCategories();
+  }, []);
 
-    fetchCategories();
-  }, [currentTenant]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.name) newErrors.name = 'Category name is required';
-    if (!formData.description) newErrors.description = 'Description is required';
-    if (!formData.color) newErrors.color = 'Color is required';
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
+  const loadCategories = async () => {
     try {
-      if (editingCategory) {
-        // Update existing category
-        setCategories(prev => prev.map(c => 
-          c.id === editingCategory.id 
-            ? { 
-                ...c, 
-                ...formData,
-                updatedAt: new Date().toISOString().split('T')[0]
-              } as Category
-            : c
-        ));
-      } else {
-        // Add new category
-        const newCategory: Category = {
-          ...formData as Category,
-          id: Date.now().toString(),
-          productCount: 0,
-          createdAt: new Date().toISOString().split('T')[0],
-          updatedAt: new Date().toISOString().split('T')[0],
-        };
-        setCategories(prev => [...prev, newCategory]);
-      }
-      
-      handleCloseForm();
+      setLoading(true);
+      const result = await categoryApiService.getCategories();
+      setCategories(result);
     } catch (error) {
-      console.error('Error saving category:', error);
+      console.error('Failed to load categories:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setFormData(category);
-    setShowForm(true);
+  const parentCategories = categories.filter(cat => !cat.parent_category_id);
+
+  const filteredCategories = categories.filter(category => {
+    const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesParent = !selectedParent || category.parent_category_id === selectedParent;
+    return matchesSearch && matchesParent;
+  });
+
+  const handleEdit = (category: EnhancedCategory) => {
+    navigate(`/categories/edit/${category.category_id}`);
+  };
+
+  const handleView = (category: EnhancedCategory) => {
+    navigate(`/categories/${category.category_id}`);
   };
 
   const handleDelete = async (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    if (category && category.productCount > 0) {
-      alert(`Cannot delete category "${category.name}" because it has ${category.productCount} products. Please move or delete the products first.`);
-      return;
+    const category = categories.find(c => c.category_id === categoryId);
+    if (!category) return;
+
+    if (window.confirm(t('categories.delete.confirm', { name: category.name }))) {
+      try {
+        await categoryApiService.deleteCategory(categoryId);
+        await loadCategories(); // Reload the list
+      } catch (error) {
+        console.error('Failed to delete category:', error);
+        // Show error message to user
+      }
     }
-    
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      setCategories(prev => prev.filter(c => c.id !== categoryId));
-    }
   };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditingCategory(null);
-    setFormData({
-      name: '',
-      description: '',
-      color: '#3B82F6',
-      status: 'active',
-    });
-    setErrors({});
-  };
-
-  const getStatusBadge = (status: Category['status']) => {
-    return (
-      <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-        status === 'active' 
-          ? 'bg-green-100 text-green-800' 
-          : 'bg-red-100 text-red-800'
-      }`}>
-        {status === 'active' ? 'Active' : 'Inactive'}
-      </span>
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Categories</h1>
-          <p className="text-slate-500">
-            {currentStore ? `${currentStore.store_name} - ` : ''}
-            Organize your products into categories
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            Export
-            <ChevronDownIcon className="ml-2 h-4 w-4" />
+    <div className="p-6">
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h1>
+            <p className="text-gray-600 mt-1">{t('categories.subtitle')}</p>
+          </div>
+          <button
+            onClick={() => navigate('/categories/new')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span>{t('categories.create.button')}</span>
           </button>
-          <Button onClick={() => setShowForm(true)}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Category
-          </Button>
+        </div>
+
+        {/* Search and Filter Bar */}
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+          <div className="flex-1 relative">
+            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t('categories.search.placeholder')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <FunnelIcon className="w-5 h-5 text-gray-400" />
+            <select
+              value={selectedParent}
+              onChange={(e) => setSelectedParent(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">{t('categories.filter.allCategories')}</option>
+              {parentCategories.map(category => (
+                <option key={category.category_id} value={category.category_id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex border border-gray-300 rounded-lg">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
+            >
+              <Squares2X2Icon className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
+            >
+              <ListBulletIcon className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Category Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-2xl mb-4">
-                <TagIcon className="w-6 h-6 text-blue-600" />
-              </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Total Categories</p>
-              <p className="text-3xl font-bold text-slate-900">{categories.length}</p>
+      {/* Loading State */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">{t('common.loading')}</p>
+        </div>
+      ) : (
+        <>
+          {/* Categories Display */}
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCategories.map(category => (
+                <CategoryCard
+                  key={category.category_id}
+                  category={category}
+                  onEdit={handleEdit}
+                  onView={handleView}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-2xl mb-4">
-                <span className="text-green-600 font-semibold text-lg">A</span>
-              </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Active</p>
-              <p className="text-3xl font-bold text-slate-900">
-                {categories.filter(c => c.status === 'active').length}
-              </p>
+          ) : (
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('categories.table.category')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('categories.table.parent')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('categories.table.items')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('categories.table.status')}
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('categories.table.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCategories.map(category => (
+                    <CategoryListItem
+                      key={category.category_id}
+                      category={category}
+                      categories={categories}
+                      onEdit={handleEdit}
+                      onView={handleView}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-red-100 rounded-2xl mb-4">
-                <span className="text-red-600 font-semibold text-lg">I</span>
-              </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Inactive</p>
-              <p className="text-3xl font-bold text-slate-900">
-                {categories.filter(c => c.status === 'inactive').length}
-              </p>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-2xl mb-4">
-                <span className="text-purple-600 font-semibold text-lg">#</span>
-              </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Total Products</p>
-              <p className="text-3xl font-bold text-slate-900">
-                {categories.reduce((sum, c) => sum + c.productCount, 0)}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
+          )}
 
-      {/* Add New Categories Section */}
-      <Card className="p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center space-x-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl">
-                <PlusIcon className="w-8 h-8 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('categories.addNewCategories')}</h2>
-                <p className="text-slate-600 mb-4">
-                  {t('categories.addNewDescription')}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center space-x-2 text-sm text-slate-500">
-                    <TagIcon className="w-4 h-4" />
-                    <span>{t('categories.organizeProducts')}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-slate-500">
-                    <span className="w-4 h-4 rounded-full bg-green-500"></span>
-                    <span>{t('categories.trackInventory')}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-slate-500">
-                    <span className="w-4 h-4 rounded-full bg-purple-500"></span>
-                    <span>{t('categories.improveExperience')}</span>
-                  </div>
-                </div>
+          {filteredCategories.length === 0 && (
+            <div className="text-center py-12">
+              <FolderIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                {t('categories.empty.title')}
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {t('categories.empty.description')}
+              </p>
+              <div className="mt-6">
+                <button
+                  onClick={() => navigate('/categories/new')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                  {t('categories.create.button')}
+                </button>
               </div>
             </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// Category Card Component for Grid View
+const CategoryCard: React.FC<{
+  category: EnhancedCategory;
+  onEdit: (category: EnhancedCategory) => void;
+  onView: (category: EnhancedCategory) => void;
+  onDelete: (id: string) => void;
+}> = ({ category, onEdit, onView, onDelete }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            {category.icon_url ? (
+              <img src={category.icon_url} alt="" className="w-10 h-10 rounded" />
+            ) : (
+              <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                <FolderIcon className="w-6 h-6 text-gray-400" />
+              </div>
+            )}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">{category.name}</h3>
+              {category.parent_category_id && (
+                <p className="text-sm text-gray-500">
+                  {t('categories.parentCategory')}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col space-y-3">
-            <Button 
-              onClick={() => setShowForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onView(category)}
+              className="text-gray-400 hover:text-gray-600 text-sm font-medium"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              {t('categories.createCategory')}
-            </Button>
-            <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-              <span className="mr-2">📋</span>
-              {t('categories.importCategories')}
+              <EyeIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onEdit(category)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              <PencilIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onDelete(category.category_id)}
+              className="text-red-600 hover:text-red-800 text-sm font-medium"
+            >
+              <TrashIcon className="w-4 h-4" />
             </button>
           </div>
         </div>
         
-        {/* Quick Category Templates */}
-        <div className="mt-8 pt-6 border-t border-blue-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('categories.quickStartTemplates')}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { name: 'Electronics', color: '#3B82F6', icon: '💻' },
-              { name: 'Clothing', color: '#10B981', icon: '👕' },
-              { name: 'Food & Drinks', color: '#F59E0B', icon: '🍕' },
-              { name: 'Books', color: '#8B5CF6', icon: '📚' },
-              { name: 'Sports', color: '#EF4444', icon: '⚽' },
-              { name: 'Beauty', color: '#EC4899', icon: '💄' },
-              { name: 'Home & Garden', color: '#06B6D4', icon: '🏠' },
-              { name: 'Toys', color: '#84CC16', icon: '🧸' },
-            ].map((template) => (
-              <button
-                key={template.name}
-                onClick={() => {
-                  setFormData({
-                    name: template.name,
-                    description: `${template.name} products and accessories`,
-                    color: template.color,
-                    status: 'active',
-                  });
-                  setShowForm(true);
-                }}
-                className="flex items-center space-x-3 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 text-left"
-              >
-                <span 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-                  style={{ backgroundColor: `${template.color}20` }}
-                >
-                  {template.icon}
-                </span>
-                <span className="text-sm font-medium text-slate-700">{template.name}</span>
-              </button>
-            ))}
-          </div>
+        {category.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{category.description}</p>
+        )}
+        
+        <div className="flex justify-between items-center">
+          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+            {category.sort_order || 0} {t('categories.sortOrder')}
+          </span>
+          <span className={`px-2 py-1 text-xs rounded-full ${
+            category.is_active 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {category.is_active ? t('common.active') : t('common.inactive')}
+          </span>
         </div>
-      </Card>
-
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <Card key={category.id} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center space-x-3">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: `${category.color}20` }}
-                >
-                  <TagIcon 
-                    className="w-6 h-6" 
-                    style={{ color: category.color }}
-                  />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-slate-500">
-                    {category.productCount} products
-                  </p>
-                </div>
-              </div>
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => handleEdit(category)}
-                  className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  <PencilIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(category.id)}
-                  className="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            
-            <p className="mt-3 text-sm text-slate-600">
-              {category.description}
-            </p>
-            
-            <div className="mt-4 flex items-center justify-between">
-              {getStatusBadge(category.status)}
-              <span className="text-xs text-slate-500">
-                Updated {category.updatedAt}
-              </span>
-            </div>
-          </Card>
-        ))}
       </div>
+    </div>
+  );
+};
 
-      {/* Category Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-slate-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-2xl bg-white border-slate-200">
-            <Card className="border-0 shadow-none">
-              <div className="p-6">
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-slate-900 mb-1">
-                    {editingCategory ? 'Edit Category' : 'Add Category'}
-                  </h3>
-                  <p className="text-sm text-slate-500">
-                    {editingCategory ? 'Update category information' : 'Create a new product category'}
-                  </p>
-                </div>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <Input
-                    label="Category Name"
-                    name="name"
-                    value={formData.name || ''}
-                    onChange={handleInputChange}
-                    error={errors.name}
-                    required
-                    placeholder="Enter category name"
-                  />
+// Category List Item Component for Table View
+const CategoryListItem: React.FC<{
+  category: EnhancedCategory;
+  categories: EnhancedCategory[];
+  onEdit: (category: EnhancedCategory) => void;
+  onView: (category: EnhancedCategory) => void;
+  onDelete: (id: string) => void;
+}> = ({ category, categories, onEdit, onView, onDelete }) => {
+  const { t } = useTranslation();
+  
+  const parentCategory = category.parent_category_id 
+    ? categories.find(c => c.category_id === category.parent_category_id)
+    : null;
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description || ''}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="flex w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      placeholder="Enter category description"
-                      required
-                    />
-                    {errors.description && (
-                      <p className="text-sm text-red-600">{errors.description}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Color</label>
-                    <div className="flex flex-wrap gap-2">
-                      {colorOptions.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, color }))}
-                          className={`w-8 h-8 rounded-full border-2 ${
-                            formData.color === color ? 'border-slate-900' : 'border-slate-300'
-                          }`}
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                    </div>
-                    <input
-                      type="color"
-                      name="color"
-                      value={formData.color || '#3B82F6'}
-                      onChange={handleInputChange}
-                      className="w-16 h-8 rounded border border-slate-300"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Status</label>
-                    <select
-                      name="status"
-                      value={formData.status || 'active'}
-                      onChange={handleInputChange}
-                      className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <button
-                      type="button"
-                      onClick={handleCloseForm}
-                      className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <Button type="submit">
-                      {editingCategory ? 'Update' : 'Create'}
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </Card>
+  return (
+    <tr className="hover:bg-gray-50">
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          {category.icon_url ? (
+            <img src={category.icon_url} alt="" className="w-8 h-8 rounded mr-3" />
+          ) : (
+            <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mr-3">
+              <FolderIcon className="w-5 h-5 text-gray-400" />
+            </div>
+          )}
+          <div>
+            <div className="text-sm font-medium text-gray-900">{category.name}</div>
+            {category.description && (
+              <div className="text-sm text-gray-500 line-clamp-1">{category.description}</div>
+            )}
           </div>
         </div>
-      )}
-
-      {categories.length === 0 && (
-        <Card className="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <TagIcon className="mx-auto h-12 w-12 text-slate-400" />
-          <h3 className="mt-4 text-lg font-medium text-slate-900">No categories yet</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Get started by creating your first product category.
-          </p>
-          <Button className="mt-4" onClick={() => setShowForm(true)}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add Category
-          </Button>
-        </Card>
-      )}
-    </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {parentCategory ? parentCategory.name : '-'}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        0 {/* This would need to be calculated from product count */}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          category.is_active
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {category.is_active ? t('common.active') : t('common.inactive')}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => onView(category)}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <EyeIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onEdit(category)}
+            className="text-blue-600 hover:text-blue-900"
+          >
+            <PencilIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(category.category_id)}
+            className="text-red-600 hover:text-red-900"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 };
 
