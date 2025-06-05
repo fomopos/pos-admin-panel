@@ -13,8 +13,7 @@ import {
   GlobeAltIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
-import Button from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { Button, PageHeader, EnhancedTabs, Input } from '../components/ui';
 import { useTenantStore } from '../tenants/tenantStore';
 
 interface StoreFormData {
@@ -125,11 +124,11 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   });
 
   const tabs = [
-    { id: 'basic', name: 'Basic Information', icon: BuildingStorefrontIcon, color: 'blue' },
-    { id: 'address', name: 'Address', icon: MapPinIcon, color: 'emerald' },
-    { id: 'contact', name: 'Contact Info', icon: PhoneIcon, color: 'purple' },
-    { id: 'legal', name: 'Legal Entity', icon: BuildingOfficeIcon, color: 'amber' },
-    { id: 'timing', name: 'Store Timing', icon: ClockIcon, color: 'green' }
+    { id: 'basic', name: 'Basic Information', icon: BuildingStorefrontIcon },
+    { id: 'address', name: 'Address', icon: MapPinIcon },
+    { id: 'contact', name: 'Contact Info', icon: PhoneIcon },
+    { id: 'legal', name: 'Legal Entity', icon: BuildingOfficeIcon },
+    { id: 'timing', name: 'Store Timing', icon: ClockIcon }
   ];
 
   // Handle navigation when used as standalone route
@@ -275,27 +274,22 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
-              <span>Store Name *</span>
-            </div>
-          </label>
-          <input
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              <div className="flex items-center space-x-2">
+                <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
+                <span>Store Name *</span>
+              </div>
+            </label>
+          </div>
+          <Input
             type="text"
             value={formData.store_name}
             onChange={(e) => handleInputChange('store_name', e.target.value)}
-            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 ${
-              errors.store_name ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-            }`}
             placeholder="Enter store name"
+            error={errors.store_name}
+            className="rounded-xl"
           />
-          {errors.store_name && (
-            <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-              <XMarkIcon className="w-4 h-4" />
-              <span>{errors.store_name}</span>
-            </p>
-          )}
         </div>
 
         <div>
@@ -454,53 +448,44 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       
       <div className="grid grid-cols-1 gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <MapPinIcon className="w-4 h-4 text-emerald-500" />
-              <span>Street Address 1 *</span>
-            </div>
-          </label>
-          <input
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              <div className="flex items-center space-x-2">
+                <MapPinIcon className="w-4 h-4 text-emerald-500" />
+                <span>Street Address 1 *</span>
+              </div>
+            </label>
+          </div>
+          <Input
             type="text"
             value={formData.address.address1}
             onChange={(e) => handleInputChange('address.address1', e.target.value)}
-            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300 ${
-              errors['address.address1'] ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-            }`}
             placeholder="Enter street address"
+            error={errors['address.address1']}
+            className="rounded-xl"
           />
-          {errors['address.address1'] && (
-            <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-              <XMarkIcon className="w-4 h-4" />
-              <span>{errors['address.address1']}</span>
-            </p>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Street Address 2
-            </label>
-            <input
+            <Input
+              label="Street Address 2"
               type="text"
               value={formData.address.address2 || ''}
               onChange={(e) => handleInputChange('address.address2', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
               placeholder="Apartment, suite, etc."
+              className="rounded-xl"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Street Address 3
-            </label>
-            <input
+            <Input
+              label="Street Address 3"
               type="text"
               value={formData.address.address3 || ''}
               onChange={(e) => handleInputChange('address.address3', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
               placeholder="Additional address line"
+              className="rounded-xl"
             />
           </div>
         </div>
@@ -696,34 +681,38 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <PhoneIcon className="w-4 h-4 text-purple-500" />
-              <span>Primary Phone</span>
-            </div>
-          </label>
-          <input
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              <div className="flex items-center space-x-2">
+                <PhoneIcon className="w-4 h-4 text-purple-500" />
+                <span>Primary Phone</span>
+              </div>
+            </label>
+          </div>
+          <Input
             type="tel"
             value={formData.telephone1 || ''}
             onChange={(e) => handleInputChange('telephone1', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300"
             placeholder="Enter primary phone number"
+            className="rounded-xl"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <PhoneIcon className="w-4 h-4 text-purple-500" />
-              <span>Secondary Phone</span>
-            </div>
-          </label>
-          <input
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              <div className="flex items-center space-x-2">
+                <PhoneIcon className="w-4 h-4 text-purple-500" />
+                <span>Secondary Phone</span>
+              </div>
+            </label>
+          </div>
+          <Input
             type="tel"
             value={formData.telephone2 || ''}
             onChange={(e) => handleInputChange('telephone2', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300"
             placeholder="Enter secondary phone number"
+            className="rounded-xl"
           />
         </div>
 
@@ -761,27 +750,22 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
-          <div className="flex items-center space-x-2">
-            <GlobeAltIcon className="w-4 h-4 text-purple-500" />
-            <span>Email Address</span>
-          </div>
-        </label>
-        <input
+        <div className="mb-3">
+          <label className="block text-sm font-semibold text-gray-700">
+            <div className="flex items-center space-x-2">
+              <GlobeAltIcon className="w-4 h-4 text-purple-500" />
+              <span>Email Address</span>
+            </div>
+          </label>
+        </div>
+        <Input
           type="email"
           value={formData.email || ''}
           onChange={(e) => handleInputChange('email', e.target.value)}
-          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300 ${
-            errors.email ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-          }`}
           placeholder="Enter email address"
+          error={errors.email}
+          className="rounded-xl"
         />
-        {errors.email && (
-          <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-            <XMarkIcon className="w-4 h-4" />
-            <span>{errors.email}</span>
-          </p>
-        )}
       </div>
     </div>
   );
@@ -920,73 +904,35 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
-          {/* Modern Header */}
-          <div className="bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl rounded-2xl p-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <Button
-                  variant="ghost"
-                  onClick={handleBack}
-                  className="flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 px-4 py-2 rounded-xl"
-                >
-                  <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                  Back to Stores
-                </Button>
-                <div className="border-l border-gray-300 pl-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 rounded-xl shadow-lg">
-                      <BuildingStorefrontIcon className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
-                        Create New Store
-                      </h1>
-                      <p className="text-gray-600 mt-1 font-medium">
-                        Add a new store to {currentTenant?.name}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Page Header */}
+          <PageHeader
+            title="Create New Store"
+            description={`Add a new store to ${currentTenant?.name}`}
+            className="bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl rounded-2xl p-8"
+          >
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 px-4 py-2 rounded-xl"
+            >
+              <ArrowLeftIcon className="h-5 w-5 mr-2" />
+              Back to Stores
+            </Button>
+          </PageHeader>
 
-          {/* Modern Tab Navigation */}
-          <Card className="p-0 bg-white/90 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200/50">
-              <nav className="flex space-x-2 overflow-x-auto px-6 py-4">
-                {tabs.map((tab) => {
-                  const IconComponent = tab.icon;
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`relative whitespace-nowrap px-6 py-3 font-semibold text-sm flex items-center space-x-3 rounded-xl transition-all duration-300 transform ${
-                        isActive
-                          ? `bg-gradient-to-r from-${tab.color}-500 to-${tab.color}-600 text-white shadow-lg scale-105`
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/60 hover:scale-105'
-                      }`}
-                    >
-                      <IconComponent className="h-5 w-5" />
-                      <span>{tab.name}</span>
-                      {isActive && (
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/20 to-white/10"></div>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Tab Content */}
-            <form onSubmit={handleSubmit}>
-              <div className="p-8">
-                {renderTabContent()}
-              </div>
+          {/* Enhanced Tab Navigation */}
+          <form onSubmit={handleSubmit}>
+            <EnhancedTabs
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl"
+            >
+              {renderTabContent()}
+            </EnhancedTabs>
 
               {/* Modern Form Actions */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-t border-gray-200/50 px-8 py-6">
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 border border-gray-200/50 rounded-2xl px-8 py-6 mt-6">
                 <div className="flex justify-end space-x-4">
                   <Button
                     type="button"
@@ -1017,7 +963,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 </div>
               </div>
             </form>
-          </Card>
 
           {/* Modern Success/Error Messages */}
           {successMessage && (

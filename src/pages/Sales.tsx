@@ -13,8 +13,7 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import Button from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { Button, Card, PageHeader } from '../components/ui';
 
 interface SaleItem {
   id: string;
@@ -298,25 +297,24 @@ const Sales: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">{t('nav.sales')}</h1>
-          <p className="text-slate-500">
-            {currentStore ? `${currentStore.store_name} - ` : ''}
-            Manage and track your sales transactions
-          </p>
-        </div>
+      <PageHeader
+        title={t('nav.sales')}
+        description={`${currentStore ? `${currentStore.store_name} - ` : ''}Manage and track your sales transactions`}
+      >
         <div className="flex items-center space-x-3">
-          <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+          <Button
+            variant="outline"
+            className="inline-flex items-center"
+          >
             Export
             <ChevronDownIcon className="ml-2 h-4 w-4" />
-          </button>
+          </Button>
           <Button>
             <PlusIcon className="h-4 w-4 mr-2" />
             New Sale
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Sales Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

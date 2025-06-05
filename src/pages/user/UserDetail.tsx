@@ -12,8 +12,7 @@ import {
   ShieldCheckIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';
-import Button from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { Button, Card, PageHeader } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { StoreUser } from '../../services/types/user.types';
 
@@ -105,8 +104,12 @@ const UserDetail: React.FC<UserDetailProps> = ({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <PageHeader
+        title={`${user.first_name} ${user.last_name}`}
+        description={user.email}
+        className="bg-white border border-gray-200 shadow-sm rounded-lg p-6"
+      >
+        <div className="flex items-center space-x-3">
           <Button
             variant="ghost"
             onClick={onBack}
@@ -115,14 +118,6 @@ const UserDetail: React.FC<UserDetailProps> = ({
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Back to Users
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {user.first_name} {user.last_name}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">{user.email}</p>
-          </div>
-        </div>
-        <div className="flex space-x-3">
           <Button
             variant="outline"
             onClick={() => onViewActivity(userId)}
@@ -147,7 +142,7 @@ const UserDetail: React.FC<UserDetailProps> = ({
             Edit User
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* User Information */}

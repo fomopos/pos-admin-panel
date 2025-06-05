@@ -12,6 +12,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
+import { PageHeader, EnhancedTabs, Button } from '../components/ui';
 import type { 
   Product,
   ProductFormErrors
@@ -318,62 +319,43 @@ const ProductEdit: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              Back to Products
-            </button>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              {isEditing ? 'Edit Product' : 'Create Product'}
-            </h1>
-          </div>
-          
+        <PageHeader
+          title={isEditing ? 'Edit Product' : 'Create Product'}
+          description={isEditing ? `Modify product details and configurations` : 'Add a new product to your inventory'}
+        >
           <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              <span>Back to Products</span>
+            </Button>
+            
             {isEditing && (
-              <button
-                type="button"
+              <Button
+                variant="outline"
                 onClick={handleDelete}
                 disabled={isLoading}
-                className="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                className="flex items-center space-x-2 text-red-600 hover:text-red-700"
               >
-                <TrashIcon className="h-4 w-4 mr-2" />
-                Delete
-              </button>
+                <TrashIcon className="h-4 w-4" />
+                <span>Delete</span>
+              </Button>
             )}
           </div>
-        </div>
+        </PageHeader>
 
         <form onSubmit={handleSubmit} className="bg-white">
           {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`${
-                      activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{tab.name}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="px-6 py-8">
+          <EnhancedTabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          >
+            {/* Tab Content */}
+            <div className="px-6 py-8">
             {/* Basic Info Tab */}
             {activeTab === 'basic' && (
               <div className="space-y-6">
@@ -1152,38 +1134,36 @@ const ProductEdit: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+            </div>
+          </EnhancedTabs>
 
           {/* Footer Actions */}
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end space-x-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={handleBack}
-              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Cancel
-            </button>
+            </Button>
             
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center space-x-2"
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Saving...
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <CheckIcon className="h-4 w-4 mr-2" />
-                  {isEditing ? 'Update Product' : 'Create Product'}
+                  <CheckIcon className="h-4 w-4" />
+                  <span>{isEditing ? 'Update Product' : 'Create Product'}</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

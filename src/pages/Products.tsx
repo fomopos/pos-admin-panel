@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { PageHeader, Button } from '../components/ui';
 
 // Product interface definition
 interface Product {
@@ -95,18 +96,22 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
           <p className="text-sm text-gray-500 mt-1">{product.sku}</p>
         </div>
         <div className="flex space-x-2">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onEdit(product)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            className="text-blue-600 hover:text-blue-800"
           >
             Edit
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onDelete(product.id)}
-            className="text-red-600 hover:text-red-800 text-sm font-medium"
+            className="text-red-600 hover:text-red-800"
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
       
@@ -177,18 +182,24 @@ const ProductListItem: React.FC<{ product: Product; onEdit: (product: Product) =
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        <button
-          onClick={() => onEdit(product)}
-          className="text-blue-600 hover:text-blue-900 mr-4"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(product.id)}
-          className="text-red-600 hover:text-red-900"
-        >
-          Delete
-        </button>
+        <div className="flex space-x-2 justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(product)}
+            className="text-blue-600 hover:text-blue-900"
+          >
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(product.id)}
+            className="text-red-600 hover:text-red-900"
+          >
+            Delete
+          </Button>
+        </div>
       </td>
     </tr>
   );
@@ -222,60 +233,58 @@ const Products: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-600 mt-1">Manage your product inventory</p>
-          </div>
-          <button
-            onClick={() => navigate('/products/new')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-          >
-            <PlusIcon className="w-5 h-5" />
-            <span>Add Product</span>
-          </button>
-        </div>
+      {/* Header */}
+      <PageHeader
+        title="Products"
+        description="Manage your product inventory"
+      >
+        <Button
+          onClick={() => navigate('/products/new')}
+          className="flex items-center space-x-2"
+        >
+          <PlusIcon className="w-5 h-5" />
+          <span>Add Product</span>
+        </Button>
+      </PageHeader>
 
-        {/* Search and Filter Bar */}
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <FunnelIcon className="w-5 h-5 text-gray-400" />
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex border border-gray-300 rounded-lg">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
-            >
-              <Squares2X2Icon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
-            >
-              <ListBulletIcon className="w-5 h-5" />
-            </button>
-          </div>
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+        <div className="flex-1 relative">
+          <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <FunnelIcon className="w-5 h-5 text-gray-400" />
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex border border-gray-300 rounded-lg">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
+          >
+            <Squares2X2Icon className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
+          >
+            <ListBulletIcon className="w-5 h-5" />
+          </button>
         </div>
       </div>
 

@@ -14,12 +14,16 @@ import {
   CurrencyDollarIcon,
   PlusIcon,
   CheckIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import Button from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { 
+  Button, 
+  Card, 
+  PageHeader, 
+  Alert, 
+  EnhancedTabs 
+} from '../components/ui';
 import { storeServices } from '../services/store';
 import type { StoreSettings } from '../services/types/store.types';
 
@@ -175,131 +179,95 @@ const StoreSettingsPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Store Settings</h1>
-          <p className="text-slate-500 mt-1">
-            {currentStore ? `${currentStore.store_name} - ` : ''}
-            Configure and manage all aspects of your point of sale system
-          </p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Store Settings"
+        description={`${currentStore ? `${currentStore.store_name} - ` : ''}Configure and manage all aspects of your point of sale system`}
+      />
 
       {/* General Error Message */}
       {state.errors.general && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-          <div className="flex">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
-            <div className="ml-3">
-              <p className="text-sm text-red-600">{state.errors.general}</p>
-            </div>
-          </div>
-        </div>
+        <Alert variant="error">
+          {state.errors.general}
+        </Alert>
       )}
 
       {/* Unsaved Changes Warning */}
       {state.hasUnsavedChanges && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-          <div className="flex">
-            <InformationCircleIcon className="h-5 w-5 text-amber-400" />
-            <div className="ml-3">
-              <p className="text-sm text-amber-600">You have unsaved changes</p>
-            </div>
-          </div>
-        </div>
+        <Alert variant="warning">
+          You have unsaved changes
+        </Alert>
       )}
 
       {/* Tab Navigation */}
-      <Card className="p-0 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <div className="border-b border-slate-200">
-          <nav className="flex space-x-8 overflow-x-auto px-6">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
-                    state.activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <IconComponent className="h-5 w-5" />
-                  <span>{tab.name}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+      <EnhancedTabs
+        tabs={tabs}
+        activeTab={state.activeTab}
+        onTabChange={handleTabChange}
+      >
+        {state.activeTab === 'information' && (
+          <StoreInformationTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('information', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-        {/* Tab Content */}
-        <div className="p-6">
-          {state.activeTab === 'information' && (
-            <StoreInformationTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('information', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
+        {state.activeTab === 'regional' && (
+          <RegionalSettingsTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('regional', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-          {state.activeTab === 'regional' && (
-            <RegionalSettingsTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('regional', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
+        {state.activeTab === 'receipt' && (
+          <ReceiptSettingsTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('receipt', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-          {state.activeTab === 'receipt' && (
-            <ReceiptSettingsTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('receipt', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
+        {state.activeTab === 'hardware' && (
+          <HardwareConfigTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('hardware', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-          {state.activeTab === 'hardware' && (
-            <HardwareConfigTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('hardware', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
+        {state.activeTab === 'operational' && (
+          <OperationalSettingsTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('operational', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-          {state.activeTab === 'operational' && (
-            <OperationalSettingsTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('operational', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
+        {state.activeTab === 'users' && (
+          <UserManagementTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('users', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-          {state.activeTab === 'users' && (
-            <UserManagementTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('users', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
+        {state.activeTab === 'integrations' && (
+          <IntegrationsTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('integrations', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
 
-          {state.activeTab === 'integrations' && (
-            <IntegrationsTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('integrations', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
-
-          {state.activeTab === 'security' && (
-            <SecuritySettingsTab 
-              settings={state.settings}
-              onSave={(data) => handleSave('security', data)}
-              onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-            />
-          )}
-        </div>
-      </Card>
+        {state.activeTab === 'security' && (
+          <SecuritySettingsTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('security', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
+      </EnhancedTabs>
     </div>
   );
 };

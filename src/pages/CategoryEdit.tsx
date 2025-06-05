@@ -16,9 +16,7 @@ import {
   TagIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Input, PageHeader } from '../components/ui';
 import { categoryApiService } from '../services/category/categoryApiService';
 import type { 
   EnhancedCategory, 
@@ -251,9 +249,9 @@ const CategoryEdit: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'basic', label: t('categories.create.form.basicInfo'), icon: ClipboardDocumentListIcon },
-    { id: 'media', label: t('categories.create.form.media'), icon: PhotoIcon },
-    { id: 'settings', label: t('categories.create.form.settings'), icon: CogIcon }
+    { id: 'basic', name: t('categories.create.form.basicInfo'), icon: ClipboardDocumentListIcon },
+    { id: 'media', name: t('categories.create.form.media'), icon: PhotoIcon },
+    { id: 'settings', name: t('categories.create.form.settings'), icon: CogIcon }
   ];
 
   const getParentCategories = () => {
@@ -265,12 +263,16 @@ const CategoryEdit: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Modern Header */}
+      {/* Page Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
         <div className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <PageHeader
+              title={isEditing ? t('categories.editCategory') : t('categories.newCategory')}
+              description={isEditing ? t('categories.editDescription') : t('categories.newDescription')}
+              className="text-white mb-0"
+            >
+              <div className="flex items-center space-x-3">
                 <Button
                   onClick={() => navigate('/categories')}
                   variant="ghost"
@@ -278,23 +280,6 @@ const CategoryEdit: React.FC = () => {
                 >
                   <ArrowLeftIcon className="h-5 w-5" />
                 </Button>
-                <div>
-                  <nav className="flex items-center space-x-2 text-blue-200 text-sm mb-2">
-                    <span>{t('common.categories')}</span>
-                    <span>/</span>
-                    <span className="text-white font-medium">
-                      {isEditing ? t('categories.edit') : t('categories.new')}
-                    </span>
-                  </nav>
-                  <h1 className="text-3xl font-bold text-white">
-                    {isEditing ? t('categories.editCategory') : t('categories.newCategory')}
-                  </h1>
-                  <p className="text-blue-100 mt-1">
-                    {isEditing ? t('categories.editDescription') : t('categories.newDescription')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
                 {isEditing && (
                   <Button
                     onClick={handleDelete}
@@ -323,7 +308,7 @@ const CategoryEdit: React.FC = () => {
                   )}
                 </Button>
               </div>
-            </div>
+            </PageHeader>
           </div>
         </div>
       </div>
@@ -421,7 +406,7 @@ const CategoryEdit: React.FC = () => {
                           `}
                         >
                           <IconComponent className="h-5 w-5" />
-                          <span className="font-medium">{tab.label}</span>
+                          <span className="font-medium">{tab.name}</span>
                           {activeTab === tab.id && (
                             <div className="ml-auto w-2 h-2 bg-white rounded-full"></div>
                           )}

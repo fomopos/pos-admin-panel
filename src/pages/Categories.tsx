@@ -13,6 +13,7 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
+import { PageHeader, Button } from '../components/ui';
 import type { EnhancedCategory } from '../types/category';
 import useTenantStore from '../tenants/tenantStore';
 
@@ -80,20 +81,19 @@ const Categories: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h1>
-            <p className="text-gray-600 mt-1">{t('categories.subtitle')}</p>
-          </div>
-          <button
-            onClick={() => navigate('/categories/new')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-          >
-            <PlusIcon className="w-5 h-5" />
-            <span>{t('categories.create.button')}</span>
-          </button>
-        </div>
+      {/* Header */}
+      <PageHeader
+        title={t('categories.title')}
+        description={t('categories.subtitle')}
+      >
+        <Button
+          onClick={() => navigate('/categories/new')}
+          className="flex items-center space-x-2"
+        >
+          <PlusIcon className="w-5 h-5" />
+          <span>{t('categories.create.button')}</span>
+        </Button>
+      </PageHeader>
 
         {/* Search and Filter Bar */}
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
@@ -137,7 +137,6 @@ const Categories: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
 
       {/* Loading State */}
       {loading ? (
@@ -207,13 +206,13 @@ const Categories: React.FC = () => {
                 {t('categories.empty.description')}
               </p>
               <div className="mt-6">
-                <button
+                <Button
                   onClick={() => navigate('/categories/new')}
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  className="inline-flex items-center"
                 >
                   <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                   {t('categories.create.button')}
-                </button>
+                </Button>
               </div>
             </div>
           )}

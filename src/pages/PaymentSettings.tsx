@@ -12,7 +12,7 @@ import {
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import Button from '../components/ui/Button';
+import { Button, Card, PageHeader, Alert } from '../components/ui';
 import { paymentServices } from '../services/payment';
 import type { Tender, CreateTenderRequest } from '../services/types/payment.types';
 
@@ -253,78 +253,75 @@ const PaymentSettings: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Payment Settings</h1>
-          <p className="text-slate-500 mt-2">
-            Configure payment options available for your POS system
-          </p>
-        </div>
+      <PageHeader
+        title="Payment Settings"
+        description="Configure payment options available for your POS system"
+      >
         <Button onClick={handleCreateTender} className="flex items-center space-x-2">
           <PlusIcon className="h-5 w-5" />
           <span>Add Tender</span>
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6">
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
           <div className="flex items-center">
             <div className="p-3 rounded-xl bg-blue-50">
               <CreditCardIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-slate-500">Total Tenders</p>
-              <p className="text-2xl font-bold text-slate-900">{state.tenders.length}</p>
+              <p className="text-sm font-medium text-blue-600">Total Tenders</p>
+              <p className="text-2xl font-bold text-blue-900">{state.tenders.length}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6">
+        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
           <div className="flex items-center">
             <div className="p-3 rounded-xl bg-green-50">
               <CheckIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-slate-500">Active Tenders</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-sm font-medium text-green-600">Active Tenders</p>
+              <p className="text-2xl font-bold text-green-900">
                 {state.tenders.filter(t => t.is_active !== false).length}
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6">
+        <Card className="p-6 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
           <div className="flex items-center">
             <div className="p-3 rounded-xl bg-purple-50">
               <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-slate-500">Currencies</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-sm font-medium text-purple-600">Currencies</p>
+              <p className="text-2xl font-bold text-purple-900">
                 {new Set(state.tenders.map(t => t.currency_id)).size}
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6">
+        <Card className="p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
           <div className="flex items-center">
             <div className="p-3 rounded-xl bg-orange-50">
               <BanknotesIcon className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-slate-500">Over Tender Allowed</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-sm font-medium text-orange-600">Over Tender Allowed</p>
+              <p className="text-2xl font-bold text-orange-900">
                 {state.tenders.filter(t => t.over_tender_allowed).length}
               </p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Tenders List */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+      <Card>
         <div className="px-6 py-4 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-900">Payment Tenders</h2>
         </div>
@@ -419,12 +416,12 @@ const PaymentSettings: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Tender Form Modal */}
       {state.showTenderForm && (
         <div className="fixed inset-0 bg-slate-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-6 border border-slate-200 w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-2xl bg-white">
+          <Card className="relative top-20 mx-auto p-6 w-11/12 md:w-3/4 lg:w-1/2">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-slate-900">
                 {state.editingTender ? 'Edit Tender' : 'Add New Tender'}
@@ -439,9 +436,9 @@ const PaymentSettings: React.FC = () => {
 
             <form onSubmit={handleSubmitForm} className="space-y-6">
               {state.errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <p className="text-sm text-red-600">{state.errors.general}</p>
-                </div>
+                <Alert variant="error">
+                  {state.errors.general}
+                </Alert>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -569,7 +566,7 @@ const PaymentSettings: React.FC = () => {
                 </Button>
               </div>
             </form>
-          </div>
+          </Card>
         </div>
       )}
     </div>

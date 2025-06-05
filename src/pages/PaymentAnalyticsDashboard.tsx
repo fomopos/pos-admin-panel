@@ -9,8 +9,7 @@ import {
   ArrowDownTrayIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
-import { Card } from '../components/ui/Card';
-import Button from '../components/ui/Button';
+import { Button, Card, PageHeader } from '../components/ui';
 import { paymentAnalyticsService } from '../services/payment';
 import type { PaymentAnalytics, PaymentTrends } from '../services/payment/paymentAnalyticsService';
 
@@ -123,12 +122,11 @@ const PaymentAnalyticsDashboard: React.FC = () => {
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Payment Analytics</h1>
-          <p className="mt-2 text-slate-500">Monitor payment performance and trends</p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+      <PageHeader
+        title="Payment Analytics"
+        description="Monitor payment performance and trends"
+      >
+        <div className="flex items-center space-x-3">
           <select
             value={state.selectedPeriod}
             onChange={(e) => setState(prev => ({ 
@@ -151,7 +149,7 @@ const PaymentAnalyticsDashboard: React.FC = () => {
             Refresh
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Real-time Metrics */}
       {state.realTimeMetrics && (

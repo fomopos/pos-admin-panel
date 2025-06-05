@@ -8,8 +8,7 @@ import {
   CalendarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
-import Button from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { Button, Card, PageHeader } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { UserTimeTracking, StoreUser } from '../../services/types/user.types';
 
@@ -177,28 +176,19 @@ const UserTimeTrackingPage: React.FC<UserTimeTrackingPageProps> = ({ userId, onB
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
           {/* Header */}
-          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={onBack}
-                  className="flex items-center text-gray-600 hover:text-gray-900"
-                >
-                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-                <div className="border-l border-gray-300 pl-4">
-                  <h1 className="text-2xl font-semibold text-gray-900">
-                    Time Tracking: {user.first_name} {user.last_name}
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Work hours and time tracking history
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title={`Time Tracking: ${user.first_name} ${user.last_name}`}
+            description="Work hours and time tracking history"
+          >
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </PageHeader>
 
           {/* Date Range Filter */}
           <Card className="border border-gray-200 shadow-sm p-6">

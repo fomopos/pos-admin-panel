@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card } from '../components/ui/Card';
+import { Card, PageHeader } from '../components/ui';
 import Chart from 'react-apexcharts';
 import LogoutTestComponent from '../components/LogoutTestComponent';
 import {
@@ -166,17 +166,15 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">{t('dashboard.title')}</h1>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-            Monthly
-            <ChevronDownIcon className="ml-2 h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={t('dashboard.title')}
+        description="Overview of your business performance and key metrics"
+      >
+        <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+          Monthly
+          <ChevronDownIcon className="ml-2 h-4 w-4" />
+        </button>
+      </PageHeader>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

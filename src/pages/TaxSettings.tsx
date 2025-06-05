@@ -13,9 +13,7 @@ import {
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
+import { Button, Input, Card, PageHeader, Alert, EnhancedTabs } from '../components/ui';
 import { taxServices } from '../services/tax';
 import type {
   TaxAuthority,
@@ -332,52 +330,44 @@ const TaxSettings: React.FC = () => {
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-blue-600 rounded-xl">
-              <TableCellsIcon className="h-8 w-8 text-white" />
+      <PageHeader
+        title="Tax Settings"
+        description="Configure tax authorities, groups, and locations"
+      >
+        {/* Save/Discard Actions */}
+        {hasChanges && (
+          <Alert variant="warning" className="flex items-center justify-between">
+            <span>You have unsaved changes</span>
+            <div className="flex space-x-2 ml-4">
+              <Button
+                onClick={discardChanges}
+                variant="outline"
+                size="sm"
+              >
+                Discard
+              </Button>
+              <Button
+                onClick={saveAllChanges}
+                disabled={isSaving}
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <CloudArrowUpIcon className="h-4 w-4" />
+                    <span>Save All Changes</span>
+                  </>
+                )}
+              </Button>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Tax Settings</h1>
-              <p className="text-gray-600 mt-1">Configure tax authorities, groups, and locations</p>
-            </div>
-          </div>
-          
-          {/* Save/Discard Actions */}
-          {hasChanges && (
-            <div className="flex items-center space-x-3 p-3 bg-amber-50 rounded-xl border border-amber-200">
-              <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-              <span className="text-sm text-amber-800 font-medium">You have unsaved changes</span>
-              <div className="flex space-x-2 ml-4">
-                <Button
-                  onClick={discardChanges}
-                  className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
-                >
-                  Discard
-                </Button>
-                <Button
-                  onClick={saveAllChanges}
-                  disabled={isSaving}
-                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white rounded-lg text-sm font-medium flex items-center space-x-2"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CloudArrowUpIcon className="h-4 w-4" />
-                      <span>Save All Changes</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+          </Alert>
+        )}
+      </PageHeader>
 
       {/* Tax Configuration Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -425,32 +415,13 @@ const TaxSettings: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div className="border-b border-gray-200">
-          <div className="flex space-x-1 p-1 mx-6">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center py-3 px-4 rounded-xl font-medium text-sm transition-all duration-200 ${
-                    activeTab === tab.id
-                      ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="h-5 w-5 mr-2" />
-                  {tab.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
+      <EnhancedTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      >
         {/* Tab Content */}
-        <div className="p-6">
-          {activeTab === 'authorities' && (
+        {activeTab === 'authorities' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Tax Authorities</h2>
@@ -1011,17 +982,13 @@ const TaxSettings: React.FC = () => {
               </Card>
             </div>
           )}
-        </div>
-      </div>
+      </EnhancedTabs>
 
       {/* Error Display */}
       {errors.submit && (
-        <Card className="border-red-200 bg-red-50">
-          <div className="p-4 flex items-center space-x-3">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
-            <p className="text-sm text-red-800">{errors.submit}</p>
-          </div>
-        </Card>
+        <Alert variant="error">
+          {errors.submit}
+        </Alert>
       )}
     </div>
   );

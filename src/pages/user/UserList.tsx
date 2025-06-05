@@ -11,9 +11,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../../tenants/tenantStore';
-import Button from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
-import DataTable from '../../components/ui/DataTable';
+import { Button, Card, DataTable, PageHeader, Input } from '../../components/ui';
 import { userService } from '../../services/user';
 import type {
   StoreUser,
@@ -254,18 +252,15 @@ const UserList: React.FC<UserListProps> = ({
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage your team members, roles, and permissions
-          </p>
-        </div>
+      <PageHeader
+        title="User Management"
+        description="Manage your team members, roles, and permissions"
+      >
         <Button onClick={onCreateUser} className="bg-primary-600 hover:bg-primary-700">
           <PlusIcon className="h-4 w-4 mr-2" />
           Add User
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Statistics Cards */}
       {state.userStats && (
@@ -342,12 +337,12 @@ const UserList: React.FC<UserListProps> = ({
           <div className="flex-1">
             <div className="relative">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search users by name or email..."
                 value={state.searchQuery}
                 onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
-                className="input-base pl-10 w-full focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="pl-10 w-full"
               />
             </div>
           </div>

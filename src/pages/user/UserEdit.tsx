@@ -8,8 +8,7 @@ import {
   ShieldCheckIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
-import Button from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
+import { Button, Card, Input, PageHeader } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { StoreUser, UpdateUserRequest, Department } from '../../services/types/user.types';
 import { DEPARTMENTS } from '../../services/types/user.types';
@@ -171,26 +170,20 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
           {/* Header */}
-          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={onBack}
-                  className="flex items-center text-gray-600 hover:text-gray-900"
-                >
-                  <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-                <div className="border-l border-gray-300 pl-4">
-                  <h1 className="text-2xl font-semibold text-gray-900">
-                    Edit User: {user.first_name} {user.last_name}
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-1">Update user information and settings</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title={`Edit User: ${user.first_name} ${user.last_name}`}
+            description="Update user information and settings"
+            className="bg-white border border-gray-200 shadow-sm rounded-lg p-6"
+          >
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="flex items-center text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </PageHeader>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -207,39 +200,25 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          First Name *
-                        </label>
-                        <input
+                        <Input
+                          label="First Name *"
                           type="text"
                           value={formData.first_name || ''}
                           onChange={(e) => handleInputChange('first_name', e.target.value)}
-                          className={`input-base ${
-                            errors.first_name ? 'border-red-300 focus:ring-red-500' : ''
-                          }`}
                           placeholder="Enter first name"
+                          error={errors.first_name}
                         />
-                        {errors.first_name && (
-                          <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
-                        )}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Last Name *
-                        </label>
-                        <input
+                        <Input
+                          label="Last Name *"
                           type="text"
                           value={formData.last_name || ''}
                           onChange={(e) => handleInputChange('last_name', e.target.value)}
-                          className={`input-base ${
-                            errors.last_name ? 'border-red-300 focus:ring-red-500' : ''
-                          }`}
                           placeholder="Enter last name"
+                          error={errors.last_name}
                         />
-                        {errors.last_name && (
-                          <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
-                        )}
                       </div>
                     </div>
 
@@ -248,20 +227,16 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                         Email Address *
                       </label>
                       <div className="relative">
-                        <EnvelopeIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        <input
+                        <EnvelopeIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 z-10" />
+                        <Input
                           type="email"
                           value={formData.email || ''}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          className={`input-base pl-10 ${
-                            errors.email ? 'border-red-300 focus:ring-red-500' : ''
-                          }`}
                           placeholder="Enter email address"
+                          error={errors.email}
+                          className="pl-10"
                         />
                       </div>
-                      {errors.email && (
-                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                      )}
                     </div>
 
                     <div>
@@ -269,20 +244,16 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                         Phone Number
                       </label>
                       <div className="relative">
-                        <PhoneIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        <input
+                        <PhoneIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 z-10" />
+                        <Input
                           type="tel"
                           value={formData.phone || ''}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
-                          className={`input-base pl-10 ${
-                            errors.phone ? 'border-red-300 focus:ring-red-500' : ''
-                          }`}
                           placeholder="Enter phone number"
+                          error={errors.phone}
+                          className="pl-10"
                         />
                       </div>
-                      {errors.phone && (
-                        <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                      )}
                     </div>
 
                     <div>
@@ -290,13 +261,13 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                         Employee ID
                       </label>
                       <div className="relative">
-                        <KeyIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        <input
+                        <KeyIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 z-10" />
+                        <Input
                           type="text"
                           value={formData.employee_id || ''}
                           onChange={(e) => handleInputChange('employee_id', e.target.value)}
-                          className="input-base pl-10"
                           placeholder="Enter employee ID"
+                          className="pl-10"
                         />
                       </div>
                     </div>
@@ -354,21 +325,14 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Role Name *
-                      </label>
-                      <input
+                      <Input
+                        label="Role Name *"
                         type="text"
                         value={formData.role_name || ''}
                         onChange={(e) => handleInputChange('role_name', e.target.value)}
-                        className={`input-base ${
-                          errors.role_name ? 'border-red-300 focus:ring-red-500' : ''
-                        }`}
                         placeholder="Enter role name"
+                        error={errors.role_name}
                       />
-                      {errors.role_name && (
-                        <p className="mt-1 text-sm text-red-600">{errors.role_name}</p>
-                      )}
                     </div>
 
                     <div>
@@ -389,20 +353,15 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        PIN Code
-                      </label>
-                      <input
+                      <Input
+                        label="PIN Code"
                         type="password"
                         value={formData.pin_code || ''}
                         onChange={(e) => handleInputChange('pin_code', e.target.value)}
-                        className="input-base"
                         placeholder="Enter new PIN (leave empty to keep current)"
                         maxLength={6}
+                        helperText="Leave empty to keep the current PIN"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Leave empty to keep the current PIN
-                      </p>
                     </div>
 
                     <div>
