@@ -83,6 +83,7 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
   
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       className={cn(
@@ -142,6 +143,7 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => !tab.disabled && onTabChange(tab.id)}
                 disabled={tab.disabled}
                 className={cn(

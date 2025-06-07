@@ -184,5 +184,11 @@
     "settings": "Settings",
     "categories": "Categories",
     "sales": "Sales"
+  },
+  "dashboard": {
+    "totalSales": "Total Sales",
+    "totalOrders": "Total Orders",
+    "title": "Dashboard"
+
   }
 }

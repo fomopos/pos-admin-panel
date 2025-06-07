@@ -423,6 +423,8 @@ export const useTenantStore = create<TenantState>()(
             error: error instanceof Error ? error.message : 'Failed to create store',
             isLoading: false 
           });
+          // Re-throw the error to allow components to handle it
+          throw error;
         }
       },
 
