@@ -133,34 +133,49 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
   children 
 }) => {
   return (
-    <div className={cn('w-full bg-white border border-slate-200 rounded-2xl shadow-sm', className)}>
-      <div className="border-b border-slate-200">
-        <nav className="flex space-x-8 overflow-x-auto px-6">
+    <div className={cn('w-full bg-white rounded-2xl shadow-sm overflow-hidden', className)}>
+      <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
+        <nav className="flex overflow-x-auto px-4">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => !tab.disabled && onTabChange(tab.id)}
                 disabled={tab.disabled}
                 className={cn(
-                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors',
+                  'relative whitespace-nowrap py-3 px-4 font-medium text-sm flex items-center space-x-2',
+                  'transition-all duration-200 ease-in-out',
                   'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
-                  activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  'hover:text-primary-600',
+                  isActive
+                    ? 'text-primary-600 border-b-2 border-primary-500'
+                    : 'text-slate-600 border-b-2 border-transparent hover:border-slate-300'
                 )}
               >
-                {IconComponent && <IconComponent className="h-5 w-5" />}
-                <span>{tab.name}</span>
+                {IconComponent && (
+                  <IconComponent 
+                    className={cn(
+                      'h-4 w-4 transition-colors duration-200',
+                      isActive ? 'text-primary-500' : 'text-slate-400'
+                    )} 
+                  />
+                )}
+                <span className="relative">
+                  {tab.name}
+                </span>
+                {isActive && (
+                  <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary-500 rounded-full" />
+                )}
               </button>
             );
           })}
         </nav>
       </div>
       
-      <div className="p-6">
+      <div className="p-6 bg-white">
         {children}
       </div>
     </div>
