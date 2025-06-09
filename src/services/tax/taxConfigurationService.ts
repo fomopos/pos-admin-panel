@@ -3,49 +3,36 @@ import type {
   TaxConfiguration,
   TaxLocation,
   UpdateTaxLocationRequest,
-  TaxConfigurationQueryParams,
-  TaxConfigurationResponse,
-  TaxServiceError
+  TaxServiceError,
+  CreateTaxConfigurationRequest,
+  TaxConfigurationApiResponse
 } from '../types/tax.types';
 
 export class TaxConfigurationService {
-  private readonly basePath = '/tax/configuration';
+  private readonly basePath = '/v0/tenant';
 
   /**
-   * Get tax configuration for a tenant/store
+   * Get tax configuration for a tenant
    */
-  async getTaxConfiguration(params?: TaxConfigurationQueryParams): Promise<TaxConfiguration | null> {
+  async getTaxConfiguration(tenantId: string): Promise<TaxConfiguration | null> {
     try {
-      const response = await apiClient.get<TaxConfigurationResponse>(this.basePath, params);
-      return response.data.tax_list.length > 0 ? response.data.tax_list[0] : null;
+      const response = await apiClient.get<TaxConfigurationApiResponse>(`${this.basePath}/${tenantId}/tax`);
+      return response.data;
     } catch (error) {
       console.error('Failed to fetch tax configuration:', error);
-      throw this.handleError(error);
+      return null; // Return null if not found
     }
   }
 
   /**
-   * Get all tax configurations
+   * Create a new tax configuration for a tenant
    */
-  async getAllTaxConfigurations(params?: TaxConfigurationQueryParams): Promise<TaxConfiguration[]> {
-    try {
-      const response = await apiClient.get<TaxConfigurationResponse>(this.basePath, params);
-      return response.data.tax_list;
-    } catch (error) {
-      console.error('Failed to fetch tax configurations:', error);
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Create a new tax configuration
-   */
-  async createTaxConfiguration(data: Partial<TaxConfiguration>): Promise<TaxConfiguration> {
+  async createTaxConfiguration(tenantId: string, data: CreateTaxConfigurationRequest): Promise<TaxConfiguration> {
     try {
       // Validate required fields
       this.validateTaxConfigurationData(data);
       
-      const response = await apiClient.post<TaxConfiguration>(this.basePath, data);
+      const response = await apiClient.post<TaxConfigurationApiResponse>(`${this.basePath}/${tenantId}/tax`, data);
       return response.data;
     } catch (error) {
       console.error('Failed to create tax configuration:', error);
@@ -54,14 +41,17 @@ export class TaxConfigurationService {
   }
 
   /**
-   * Update tax configuration
+   * Update tax configuration for a tenant
    */
-  async updateTaxConfiguration(tenantId: string, storeId: string, data: Partial<TaxConfiguration>): Promise<TaxConfiguration> {
+  async updateTaxConfiguration(tenantId: string, data: CreateTaxConfigurationRequest): Promise<TaxConfiguration> {
     try {
-      const response = await apiClient.put<TaxConfiguration>(`${this.basePath}/${tenantId}/${storeId}`, data);
+      // Validate required fields
+      this.validateTaxConfigurationData(data);
+      
+      const response = await apiClient.put<TaxConfigurationApiResponse>(`${this.basePath}/${tenantId}/tax`, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update tax configuration for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update tax configuration for tenant ${tenantId}:`, error);
       throw this.handleError(error);
     }
   }
@@ -117,7 +107,7 @@ export class TaxConfigurationService {
     isActive: boolean;
   }> {
     try {
-      const config = await this.getTaxConfiguration({ tenant_id: tenantId, store_id: storeId });
+      const config = await this.getTaxConfiguration(tenantId);
       
       if (!config) {
         return {

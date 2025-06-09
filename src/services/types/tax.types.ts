@@ -1,4 +1,4 @@
-// Tax-related type definitions
+// Tax-related type definitions matching API payload structure
 export interface TaxAuthority {
   authority_id: string;
   name: string;
@@ -33,16 +33,36 @@ export interface TaxGroup {
 }
 
 export interface TaxConfiguration {
-  tenant_id: string;
-  store_id: string;
+  tenant_id?: string;
+  store_id?: string;
   authority: TaxAuthority[];
   tax_location: TaxLocation;
   tax_group: TaxGroup[];
-  properties: any;
+  properties?: any;
+  created_at?: string;
+  create_user_id?: string;
+  updated_at?: string;
+  update_user_id?: string | null;
+}
+
+// API Request/Response types for creating tax configuration
+export interface CreateTaxConfigurationRequest {
+  authority: TaxAuthority[];
+  tax_location: TaxLocation;
+  tax_group: TaxGroup[];
+}
+
+export interface TaxConfigurationApiResponse {
+  authority: TaxAuthority[];
+  tax_location: TaxLocation;
+  tax_group: TaxGroup[];
+  tenant_id: string;
+  store_id?: string;
+  properties?: any;
   created_at: string;
   create_user_id: string;
   updated_at: string;
-  update_user_id: string | null;
+  update_user_id?: string | null;
 }
 
 // Request/Response types

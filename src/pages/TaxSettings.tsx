@@ -36,16 +36,30 @@ const TaxSettings: React.FC = () => {
   // Fetch tax configuration using services
   useEffect(() => {
     const fetchTaxConfig = async () => {
+      if (!currentTenant?.id) {
+        console.warn('No tenant selected, cannot fetch tax configuration');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       
       try {
-        // Use the tax configuration service
-        const config = await taxServices.configuration.getMockTaxConfiguration();
+        // Use the real tax configuration service with tenant ID
+        const config = await taxServices.configuration.getTaxConfiguration(currentTenant.id);
         setTaxConfig(config);
         setOriginalTaxConfig(JSON.parse(JSON.stringify(config))); // Deep clone
       } catch (error) {
         console.error('Failed to fetch tax configuration:', error);
-        setTaxConfig(null);
+        // If no tax configuration exists, try to use mock data for initial setup
+        try {
+          const mockConfig = await taxServices.configuration.getMockTaxConfiguration();
+          setTaxConfig(mockConfig);
+          setOriginalTaxConfig(JSON.parse(JSON.stringify(mockConfig)));
+        } catch (mockError) {
+          console.error('Failed to fetch mock tax configuration:', mockError);
+          setTaxConfig(null);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -276,14 +290,24 @@ const TaxSettings: React.FC = () => {
   };
 
   const saveAllChanges = async () => {
-    if (!taxConfig || !hasChanges) return;
+    if (!taxConfig || !hasChanges || !currentTenant?.id) return;
 
     setIsSaving(true);
     try {
-      // Here you would call the actual API to save the configuration
-      // await taxServices.configuration.updateTaxConfiguration(taxConfig);
+      const requestData = {
+        authority: taxConfig.authority,
+        tax_location: taxConfig.tax_location,
+        tax_group: taxConfig.tax_group
+      };
+
+      // Check if this is a new configuration or updating existing one
+      if (originalTaxConfig) {
+        await taxServices.configuration.updateTaxConfiguration(currentTenant.id, requestData);
+      } else {
+        await taxServices.configuration.createTaxConfiguration(currentTenant.id, requestData);
+      }
       
-      // For now, we'll just update the original config to reflect saved state
+      // Update the original config to reflect saved state
       setOriginalTaxConfig(JSON.parse(JSON.stringify(taxConfig)));
       setEditingItems({});
       
@@ -375,7 +399,7 @@ const TaxSettings: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-blue-600">Total Authorities</p>
-              <p className="text-3xl font-bold text-blue-900">{taxConfig.authority.length}</p>
+              <p className="text-3xl font-bold text-blue-900">{taxConfig?.authority?.length || 0}</p>
             </div>
             <BuildingOfficeIcon className="h-12 w-12 text-blue-500" />
           </div>
@@ -385,7 +409,7 @@ const TaxSettings: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-600">Tax Groups</p>
-              <p className="text-3xl font-bold text-green-900">{taxConfig.tax_group.length}</p>
+              <p className="text-3xl font-bold text-green-900">{taxConfig?.tax_group?.length || 0}</p>
             </div>
             <TableCellsIcon className="h-12 w-12 text-green-500" />
           </div>
@@ -395,7 +419,7 @@ const TaxSettings: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-purple-600">Tax Location</p>
-              <p className="text-lg font-bold text-purple-900">{taxConfig.tax_location.name}</p>
+              <p className="text-lg font-bold text-purple-900">{taxConfig?.tax_location?.name || 'Not Set'}</p>
             </div>
             <ClipboardDocumentListIcon className="h-12 w-12 text-purple-500" />
           </div>
@@ -406,7 +430,7 @@ const TaxSettings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-orange-600">Total Rules</p>
               <p className="text-3xl font-bold text-orange-900">
-                {taxConfig.tax_group.reduce((total, group) => total + group.group_rule.length, 0)}
+                {taxConfig?.tax_group?.reduce((total, group) => total + (group?.group_rule?.length || 0), 0) || 0}
               </p>
             </div>
             <CurrencyDollarIcon className="h-12 w-12 text-orange-500" />
@@ -435,7 +459,7 @@ const TaxSettings: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                {taxConfig.authority.map((authority) => {
+                {taxConfig?.authority?.map((authority) => {
                   const isEditing = editingItems[`authority_${authority.authority_id}`];
                   return (
                     <Card key={authority.authority_id} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
@@ -543,7 +567,7 @@ const TaxSettings: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                {taxConfig.tax_group.map((group) => {
+                {taxConfig?.tax_group?.map((group) => {
                   const isEditing = editingItems[`group_${group.tax_group_id}`];
                   return (
                     <Card key={group.tax_group_id} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
@@ -617,7 +641,7 @@ const TaxSettings: React.FC = () => {
                                                     onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', e.target.value)}
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                   >
-                                                    {taxConfig.authority.map(auth => (
+                                                    {taxConfig?.authority?.map(auth => (
                                                       <option key={auth.authority_id} value={auth.authority_id}>
                                                         {auth.name}
                                                       </option>
@@ -776,7 +800,7 @@ const TaxSettings: React.FC = () => {
                                                     onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', e.target.value)}
                                                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                   >
-                                                    {taxConfig.authority.map(auth => (
+                                                    {taxConfig?.authority?.map(auth => (
                                                       <option key={auth.authority_id} value={auth.authority_id}>
                                                         {auth.name}
                                                       </option>
@@ -911,27 +935,27 @@ const TaxSettings: React.FC = () => {
               <Card className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    {editingItems[`location_${taxConfig.tax_location.tax_loc_id}`] ? (
+                    {editingItems[`location_${taxConfig?.tax_location?.tax_loc_id}`] ? (
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Input
                             label="Tax Location ID"
-                            value={taxConfig.tax_location.tax_loc_id}
+                            value={taxConfig?.tax_location?.tax_loc_id || ''}
                             disabled
                             className="bg-gray-50"
                           />
                           <Input
                             label="Location Name"
-                            value={taxConfig.tax_location.name}
-                            onChange={(e) => handleFieldChange('location', taxConfig.tax_location.tax_loc_id, 'name', e.target.value)}
+                            value={taxConfig?.tax_location?.name || ''}
+                            onChange={(e) => handleFieldChange('location', taxConfig?.tax_location?.tax_loc_id || '', 'name', e.target.value)}
                             placeholder="e.g., Main Store"
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                           <textarea
-                            value={taxConfig.tax_location.description}
-                            onChange={(e) => handleFieldChange('location', taxConfig.tax_location.tax_loc_id, 'description', e.target.value)}
+                            value={taxConfig?.tax_location?.description || ''}
+                            onChange={(e) => handleFieldChange('location', taxConfig?.tax_location?.tax_loc_id || '', 'description', e.target.value)}
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Enter location description"
@@ -940,22 +964,22 @@ const TaxSettings: React.FC = () => {
                       </div>
                     ) : (
                       <>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{taxConfig.tax_location.name}</h3>
-                        <p className="text-sm text-gray-500 mb-2">ID: {taxConfig.tax_location.tax_loc_id}</p>
-                        <p className="text-sm text-gray-600">{taxConfig.tax_location.description}</p>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{taxConfig?.tax_location?.name || 'Not Set'}</h3>
+                        <p className="text-sm text-gray-500 mb-2">ID: {taxConfig?.tax_location?.tax_loc_id || 'Not Set'}</p>
+                        <p className="text-sm text-gray-600">{taxConfig?.tax_location?.description || 'No description'}</p>
                       </>
                     )}
                   </div>
                   <div className="flex space-x-2 ml-4">
                     <button
-                      onClick={() => toggleEdit('location', taxConfig.tax_location.tax_loc_id)}
+                      onClick={() => toggleEdit('location', taxConfig?.tax_location?.tax_loc_id || '')}
                       className={`p-2 rounded-lg transition-colors ${
-                        editingItems[`location_${taxConfig.tax_location.tax_loc_id}`]
+                        editingItems[`location_${taxConfig?.tax_location?.tax_loc_id}`]
                           ? 'bg-green-100 text-green-600 hover:bg-green-200' 
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
-                      {editingItems[`location_${taxConfig.tax_location.tax_loc_id}`] ? (
+                      {editingItems[`location_${taxConfig?.tax_location?.tax_loc_id}`] ? (
                         <CheckCircleIcon className="h-4 w-4" />
                       ) : (
                         <PencilIcon className="h-4 w-4" />
