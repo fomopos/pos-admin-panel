@@ -346,6 +346,7 @@ export const useTenantStore = create<TenantState>()(
           
           // Transform store data to API format if needed
           const apiStoreData: Partial<StoreApiResponse> = {
+            store_id: storeData.store_id || '',
             store_name: storeData.store_name || 'New Store',
             description: storeData.description || '',
             location_type: storeData.location_type || 'retail',

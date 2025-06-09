@@ -18,6 +18,7 @@ import { useTenantStore } from '../tenants/tenantStore';
 
 interface StoreFormData {
   // Basic Information
+  store_id?: string;
   store_name: string;
   description: string;
   location_type: string;
@@ -83,6 +84,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<StoreFormData>({
+    store_id: '',
     store_name: '',
     description: '',
     location_type: 'retail',
@@ -191,6 +193,11 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     const newErrors: Record<string, string> = {};
 
     // Basic Information validation
+
+    if (!formData.store_id?.trim()) {
+      newErrors.store_id = 'Store ID is optional but should not be empty if provided';
+    }
+
     if (!formData.store_name?.trim()) {
       newErrors.store_name = 'Store name is required';
     }
@@ -278,6 +285,25 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             <label className="block text-sm font-semibold text-gray-700">
               <div className="flex items-center space-x-2">
                 <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
+                <span>Store ID</span>
+              </div>
+            </label>
+          </div>
+          <Input
+            type="text"
+            value={formData.store_id || ''}
+            onChange={(e) => handleInputChange('store_id', e.target.value)}
+            placeholder="Enter store ID (optional)"
+            error={errors.store_id}
+            className="rounded-xl"
+          />
+        </div>
+
+        <div>
+          <div className="mb-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              <div className="flex items-center space-x-2">
+                <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
                 <span>Store Name *</span>
               </div>
             </label>
@@ -323,6 +349,9 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             </p>
           )}
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -920,6 +949,31 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             </Button>
           </PageHeader>
 
+          {/* Modern Success/Error Messages */}
+          {successMessage && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-lg rounded-2xl p-6 animate-slideIn">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                  <CheckIcon className="w-6 h-6 text-white" />
+                </div>
+                <p className="text-lg font-semibold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {errors.submit && (
+            <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 shadow-lg rounded-2xl p-6 animate-slideIn">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                  <XMarkIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold bg-gradient-to-r from-red-700 to-rose-700 bg-clip-text text-transparent">{errors.submit}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Enhanced Tab Navigation */}
           <form onSubmit={handleSubmit}>
             <EnhancedTabs
@@ -963,31 +1017,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 </div>
               </div>
             </form>
-
-          {/* Modern Success/Error Messages */}
-          {successMessage && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-lg rounded-2xl p-6 animate-slideIn">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                  <CheckIcon className="w-6 h-6 text-white" />
-                </div>
-                <p className="text-lg font-semibold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">{successMessage}</p>
-              </div>
-            </div>
-          )}
-
-          {errors.submit && (
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 shadow-lg rounded-2xl p-6 animate-slideIn">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                  <XMarkIcon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold bg-gradient-to-r from-red-700 to-rose-700 bg-clip-text text-transparent">{errors.submit}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
