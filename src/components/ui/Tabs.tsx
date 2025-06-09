@@ -28,10 +28,10 @@ interface TabsListProps {
 }
 
 interface TabsTriggerProps {
-  value: string;
   children: React.ReactNode;
   className?: string;
   disabled?: boolean;
+  isActive?: boolean;
   onClick?: () => void;
 }
 
@@ -45,7 +45,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange, classN
           return (
             <TabsTrigger
               key={tab.id}
-              value={tab.id}
+              isActive={activeTab === tab.id}
               disabled={tab.disabled}
               onClick={() => onTabChange(tab.id)}
             >
@@ -72,15 +72,12 @@ export const TabsList: React.FC<TabsListProps> = ({ children, className }) => {
 };
 
 export const TabsTrigger: React.FC<TabsTriggerProps> = ({ 
-  value, 
   children, 
   className, 
   disabled,
+  isActive = false,
   onClick 
 }) => {
-  // This would typically get activeTab from context, but for simplicity we'll use props
-  const isActive = false; // This should come from context in a real implementation
-  
   return (
     <button
       type="button"

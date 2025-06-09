@@ -199,14 +199,17 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ userId, onBack }) =
           <Card className="border border-gray-200 shadow-sm">
             <div className="p-6">
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Input
-                    type="text"
-                    placeholder="Search activities..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    icon={MagnifyingGlassIcon}
-                  />
+                <div className="flex-1">
+                  <div className="relative">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    <Input
+                      type="text"
+                      placeholder="Search activities..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 w-full"
+                    />
+                  </div>
                 </div>
                 
                 <select
