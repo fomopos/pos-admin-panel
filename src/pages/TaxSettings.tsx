@@ -5,7 +5,6 @@ import {
   TrashIcon, 
   TableCellsIcon,
   ClipboardDocumentListIcon,
-  CurrencyDollarIcon,
   BuildingOfficeIcon,
   Cog6ToothIcon,
   ExclamationTriangleIcon,
@@ -30,6 +29,7 @@ const TaxSettings: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('authorities');
   const [editingItems, setEditingItems] = useState<Record<string, boolean>>({});
+
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -82,7 +82,7 @@ const TaxSettings: React.FC = () => {
     { id: 'settings', name: 'Settings', icon: Cog6ToothIcon },
   ];
 
-  const handleFieldChange = (type: 'authority' | 'group' | 'location', id: string, field: string, value: any) => {
+  const handleFieldChange = (type: 'authority' | 'group' | 'location', itemIndex: number, field: string, value: any) => {
     if (!taxConfig) return;
 
     setTaxConfig(prev => {
@@ -91,23 +91,23 @@ const TaxSettings: React.FC = () => {
       if (type === 'authority') {
         return {
           ...prev,
-          authority: prev.authority.map(auth =>
-            auth.authority_id === id
+          authority: prev.authority?.map((auth, index) => {
+            return index === itemIndex
               ? { 
                   ...auth, 
                   [field]: field === 'rounding_digit' ? (parseFloat(value) || 0) : value 
                 }
-              : auth
-          )
+              : auth;
+          })
         };
       } else if (type === 'group') {
         return {
           ...prev,
-          tax_group: prev.tax_group.map(group =>
-            group.tax_group_id === id
+          tax_group: prev.tax_group.map((group, index) => {
+            return index === itemIndex
               ? { ...group, [field]: value }
-              : group
-          )
+              : group;
+          })
         };
       } else if (type === 'location') {
         return {
@@ -119,7 +119,7 @@ const TaxSettings: React.FC = () => {
     });
 
     // Clear any existing errors for this field
-    const errorKey = `${type}_${id}_${field}`;
+    const errorKey = `${type}_${itemIndex}_${field}`;
     if (errors[errorKey]) {
       setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
@@ -241,7 +241,7 @@ const TaxSettings: React.FC = () => {
       };
       setTaxConfig(prev => ({
         ...prev!,
-        authority: [...prev!.authority, newAuthority]
+        authority: [...prev?.authority ?? [], newAuthority]
       }));
       setEditingItems(prev => ({
         ...prev,
@@ -256,7 +256,7 @@ const TaxSettings: React.FC = () => {
       };
       setTaxConfig(prev => ({
         ...prev!,
-        tax_group: [...prev!.tax_group, newGroup]
+        tax_group: [...prev?.tax_group ?? [], newGroup]
       }));
       setEditingItems(prev => ({
         ...prev,
@@ -360,21 +360,32 @@ const TaxSettings: React.FC = () => {
       >
         {/* Save/Discard Actions */}
         {hasChanges && (
-          <Alert variant="warning" className="flex items-center justify-between">
-            <span>You have unsaved changes</span>
-            <div className="flex space-x-2 ml-4">
+          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
+                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end space-x-3">
               <Button
                 onClick={discardChanges}
                 variant="outline"
                 size="sm"
+                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
               >
-                Discard
+                <span>Discard Changes</span>
               </Button>
               <Button
                 onClick={saveAllChanges}
                 disabled={isSaving}
                 size="sm"
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
               >
                 {isSaving ? (
                   <>
@@ -389,12 +400,12 @@ const TaxSettings: React.FC = () => {
                 )}
               </Button>
             </div>
-          </Alert>
+          </div>
         )}
       </PageHeader>
 
       {/* Tax Configuration Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
           <div className="flex items-center justify-between">
             <div>
@@ -436,7 +447,7 @@ const TaxSettings: React.FC = () => {
             <CurrencyDollarIcon className="h-12 w-12 text-orange-500" />
           </div>
         </Card>
-      </div>
+      </div> */}
 
       {/* Tab Navigation */}
       <EnhancedTabs
@@ -459,10 +470,10 @@ const TaxSettings: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                {taxConfig?.authority?.map((authority) => {
-                  const isEditing = editingItems[`authority_${authority.authority_id}`];
+                {taxConfig?.authority?.map((authority, index) => {
+                  const isEditing = editingItems[`authority_${index}`];
                   return (
-                    <Card key={authority.authority_id} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
+                    <Card key={`auth-${index}`} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           {isEditing ? (
@@ -471,14 +482,13 @@ const TaxSettings: React.FC = () => {
                                 <Input
                                   label="Authority ID"
                                   value={authority.authority_id}
-                                  onChange={(e) => handleFieldChange('authority', authority.authority_id, 'authority_id', e.target.value)}
-                                  disabled
-                                  className="bg-gray-50"
+                                  onChange={(e) => handleFieldChange('authority', index, 'authority_id', e.target.value)}
+                                  placeholder="e.g., CGST001"
                                 />
                                 <Input
                                   label="Authority Name"
                                   value={authority.name}
-                                  onChange={(e) => handleFieldChange('authority', authority.authority_id, 'name', e.target.value)}
+                                  onChange={(e) => handleFieldChange('authority', index, 'name', e.target.value)}
                                   placeholder="e.g., Central GST"
                                 />
                               </div>
@@ -487,7 +497,7 @@ const TaxSettings: React.FC = () => {
                                   <label className="block text-sm font-medium text-gray-700 mb-2">Rounding Code</label>
                                   <select
                                     value={authority.rounding_code}
-                                    onChange={(e) => handleFieldChange('authority', authority.authority_id, 'rounding_code', e.target.value)}
+                                    onChange={(e) => handleFieldChange('authority', index, 'rounding_code', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   >
                                     <option value="HALF_UP">Half Up</option>
@@ -500,7 +510,7 @@ const TaxSettings: React.FC = () => {
                                   label="Rounding Digits"
                                   type="number"
                                   value={authority.rounding_digit.toString()}
-                                  onChange={(e) => handleFieldChange('authority', authority.authority_id, 'rounding_digit', e.target.value)}
+                                  onChange={(e) => handleFieldChange('authority', index, 'rounding_digit', e.target.value)}
                                   min="0"
                                   max="10"
                                 />
@@ -525,7 +535,7 @@ const TaxSettings: React.FC = () => {
                         </div>
                         <div className="flex space-x-2 ml-4">
                           <button
-                            onClick={() => toggleEdit('authority', authority.authority_id)}
+                            onClick={() => toggleEdit('authority', index.toString())}
                             className={`p-2 rounded-lg transition-colors ${
                               isEditing 
                                 ? 'bg-green-100 text-green-600 hover:bg-green-200' 
@@ -567,10 +577,10 @@ const TaxSettings: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                {taxConfig?.tax_group?.map((group) => {
-                  const isEditing = editingItems[`group_${group.tax_group_id}`];
+                {taxConfig?.tax_group?.map((group, index) => {
+                  const isEditing = editingItems[`group_${index}`];
                   return (
-                    <Card key={group.tax_group_id} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
+                    <Card key={`group-${index}`} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           {isEditing ? (
@@ -579,14 +589,13 @@ const TaxSettings: React.FC = () => {
                                 <Input
                                   label="Tax Group ID"
                                   value={group.tax_group_id}
-                                  onChange={(e) => handleFieldChange('group', group.tax_group_id, 'tax_group_id', e.target.value)}
-                                  disabled
-                                  className="bg-gray-50"
+                                  onChange={(e) => handleFieldChange('group', index, 'tax_group_id', e.target.value)}
+                                  placeholder="e.g., TG001"
                                 />
                                 <Input
                                   label="Group Name"
                                   value={group.name}
-                                  onChange={(e) => handleFieldChange('group', group.tax_group_id, 'name', e.target.value)}
+                                  onChange={(e) => handleFieldChange('group', index, 'name', e.target.value)}
                                   placeholder="e.g., Standard GST"
                                 />
                               </div>
@@ -594,7 +603,7 @@ const TaxSettings: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                                 <textarea
                                   value={group.description}
-                                  onChange={(e) => handleFieldChange('group', group.tax_group_id, 'description', e.target.value)}
+                                  onChange={(e) => handleFieldChange('group', index, 'description', e.target.value)}
                                   rows={3}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   placeholder="Enter group description"
@@ -898,7 +907,7 @@ const TaxSettings: React.FC = () => {
                         </div>
                         <div className="flex space-x-2 ml-4">
                           <button
-                            onClick={() => toggleEdit('group', group.tax_group_id)}
+                            onClick={() => toggleEdit('group', index.toString())}
                             className={`p-2 rounded-lg transition-colors ${
                               isEditing 
                                 ? 'bg-green-100 text-green-600 hover:bg-green-200' 
@@ -935,7 +944,7 @@ const TaxSettings: React.FC = () => {
               <Card className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    {editingItems[`location_${taxConfig?.tax_location?.tax_loc_id}`] ? (
+                    {editingItems[`location_0`] ? (
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Input
@@ -947,7 +956,7 @@ const TaxSettings: React.FC = () => {
                           <Input
                             label="Location Name"
                             value={taxConfig?.tax_location?.name || ''}
-                            onChange={(e) => handleFieldChange('location', taxConfig?.tax_location?.tax_loc_id || '', 'name', e.target.value)}
+                            onChange={(e) => handleFieldChange('location', 0, 'name', e.target.value)}
                             placeholder="e.g., Main Store"
                           />
                         </div>
@@ -955,7 +964,7 @@ const TaxSettings: React.FC = () => {
                           <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                           <textarea
                             value={taxConfig?.tax_location?.description || ''}
-                            onChange={(e) => handleFieldChange('location', taxConfig?.tax_location?.tax_loc_id || '', 'description', e.target.value)}
+                            onChange={(e) => handleFieldChange('location', 0, 'description', e.target.value)}
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Enter location description"
@@ -972,14 +981,14 @@ const TaxSettings: React.FC = () => {
                   </div>
                   <div className="flex space-x-2 ml-4">
                     <button
-                      onClick={() => toggleEdit('location', taxConfig?.tax_location?.tax_loc_id || '')}
+                      onClick={() => toggleEdit('location', '0')}
                       className={`p-2 rounded-lg transition-colors ${
-                        editingItems[`location_${taxConfig?.tax_location?.tax_loc_id}`]
+                        editingItems[`location_0`]
                           ? 'bg-green-100 text-green-600 hover:bg-green-200' 
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
-                      {editingItems[`location_${taxConfig?.tax_location?.tax_loc_id}`] ? (
+                      {editingItems[`location_0`] ? (
                         <CheckCircleIcon className="h-4 w-4" />
                       ) : (
                         <PencilIcon className="h-4 w-4" />
