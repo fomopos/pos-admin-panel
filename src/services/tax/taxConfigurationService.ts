@@ -1,11 +1,10 @@
 import { apiClient } from '../api';
 import type {
   TaxConfiguration,
-  TaxLocation,
-  UpdateTaxLocationRequest,
   TaxServiceError,
   CreateTaxConfigurationRequest,
-  TaxConfigurationApiResponse
+  TaxApiResponse,
+  TaxApiResponseItem
 } from '../types/tax.types';
 
 export class TaxConfigurationService {
@@ -16,11 +15,45 @@ export class TaxConfigurationService {
    */
   async getTaxConfiguration(tenantId: string): Promise<TaxConfiguration | null> {
     try {
-      const response = await apiClient.get<TaxConfigurationApiResponse>(`${this.basePath}/${tenantId}/tax`);
-      return response.data;
+      console.log(`Fetching tax configuration for tenant: ${tenantId}`);
+      const response = await apiClient.get<TaxApiResponse>(`${this.basePath}/${tenantId}/tax`);
+      
+      console.log('Tax configuration API response:', response.data);
+      
+      // Extract the first tax configuration from tax_list array
+      if (response.data && response.data.tax_list && response.data.tax_list.length > 0) {
+        const taxData = response.data.tax_list[0];
+        
+        // Transform API response to our TaxConfiguration format
+        const taxConfiguration: TaxConfiguration = {
+          tenant_id: taxData.tenant_id,
+          store_id: taxData.store_id,
+          authority: taxData.authority,
+          tax_location: taxData.tax_location,
+          tax_group: taxData.tax_group,
+          properties: taxData.properties,
+          created_at: taxData.created_at,
+          create_user_id: taxData.create_user_id,
+          updated_at: taxData.updated_at,
+          update_user_id: taxData.update_user_id
+        };
+        
+        console.log('Transformed tax configuration:', taxConfiguration);
+        return taxConfiguration;
+      }
+      
+      console.warn('No tax configuration found in response');
+      return null; // No tax configuration found
     } catch (error) {
       console.error('Failed to fetch tax configuration:', error);
-      return null; // Return null if not found
+      
+      // If 404 or no data found, return null instead of throwing
+      if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
+        console.log('Tax configuration not found (404), returning null');
+        return null;
+      }      
+      // For other errors, throw them up
+      throw this.handleError(error);
     }
   }
 
@@ -29,13 +62,48 @@ export class TaxConfigurationService {
    */
   async createTaxConfiguration(tenantId: string, data: CreateTaxConfigurationRequest): Promise<TaxConfiguration> {
     try {
+      // Prepare the request data with required fields
+      const requestData = {
+        tenant_id: tenantId,
+        store_id: "*", // Default to wildcard for new configurations
+        authority: data.authority,
+        tax_location: data.tax_location,
+        tax_group: data.tax_group,
+        properties: null
+      };
+
+      console.log(`Creating tax configuration for tenant: ${tenantId}`, requestData);
+
       // Validate required fields
-      this.validateTaxConfigurationData(data);
+      this.validateTaxConfigurationData(requestData);
       
-      const response = await apiClient.post<TaxConfigurationApiResponse>(`${this.basePath}/${tenantId}/tax`, data);
-      return response.data;
+      const response = await apiClient.post<TaxApiResponseItem>(`${this.basePath}/${tenantId}/tax`, requestData);
+      
+      console.log('Create tax configuration API response:', response.data);
+      
+      // Transform API response to our TaxConfiguration format
+      const taxConfiguration: TaxConfiguration = {
+        tenant_id: response.data.tenant_id,
+        store_id: response.data.store_id,
+        authority: response.data.authority,
+        tax_location: response.data.tax_location,
+        tax_group: response.data.tax_group,
+        properties: response.data.properties,
+        created_at: response.data.created_at,
+        create_user_id: response.data.create_user_id,
+        updated_at: response.data.updated_at,
+        update_user_id: response.data.update_user_id
+      };
+      
+      return taxConfiguration;
     } catch (error) {
       console.error('Failed to create tax configuration:', error);
+      
+      // For development, you might want to return mock data or handle gracefully
+      if (import.meta.env.NODE_ENV === 'development') {
+        console.warn('Create operation failed, this might be expected in development');
+      }
+      
       throw this.handleError(error);
     }
   }
@@ -45,89 +113,49 @@ export class TaxConfigurationService {
    */
   async updateTaxConfiguration(tenantId: string, data: CreateTaxConfigurationRequest): Promise<TaxConfiguration> {
     try {
+      // Prepare the request data with required fields
+      const requestData = {
+        tenant_id: tenantId,
+        store_id: "*", // Default to wildcard for configurations
+        authority: data.authority,
+        tax_location: data.tax_location,
+        tax_group: data.tax_group,
+        properties: null
+      };
+
+      console.log(`Updating tax configuration for tenant: ${tenantId}`, requestData);
+
       // Validate required fields
-      this.validateTaxConfigurationData(data);
+      this.validateTaxConfigurationData(requestData);
       
-      const response = await apiClient.put<TaxConfigurationApiResponse>(`${this.basePath}/${tenantId}/tax`, data);
-      return response.data;
+      // Use POST for both create and update as per the API specification
+      const response = await apiClient.post<TaxApiResponseItem>(`${this.basePath}/${tenantId}/tax`, requestData);
+      
+      console.log('Update tax configuration API response:', response.data);
+      
+      // Transform API response to our TaxConfiguration format
+      const taxConfiguration: TaxConfiguration = {
+        tenant_id: response.data.tenant_id,
+        store_id: response.data.store_id,
+        authority: response.data.authority,
+        tax_location: response.data.tax_location,
+        tax_group: response.data.tax_group,
+        properties: response.data.properties,
+        created_at: response.data.created_at,
+        create_user_id: response.data.create_user_id,
+        updated_at: response.data.updated_at,
+        update_user_id: response.data.update_user_id
+      };
+      
+      return taxConfiguration;
     } catch (error) {
       console.error(`Failed to update tax configuration for tenant ${tenantId}:`, error);
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Delete tax configuration
-   */
-  async deleteTaxConfiguration(tenantId: string, storeId: string): Promise<void> {
-    try {
-      await apiClient.delete<void>(`${this.basePath}/${tenantId}/${storeId}`);
-    } catch (error) {
-      console.error(`Failed to delete tax configuration for ${tenantId}/${storeId}:`, error);
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Get tax location
-   */
-  async getTaxLocation(tenantId: string, storeId: string): Promise<TaxLocation> {
-    try {
-      const response = await apiClient.get<TaxLocation>(`${this.basePath}/${tenantId}/${storeId}/location`);
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch tax location for ${tenantId}/${storeId}:`, error);
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Update tax location
-   */
-  async updateTaxLocation(tenantId: string, storeId: string, data: UpdateTaxLocationRequest): Promise<TaxLocation> {
-    try {
-      // Validate required fields
-      this.validateTaxLocationData(data);
       
-      const response = await apiClient.put<TaxLocation>(`${this.basePath}/${tenantId}/${storeId}/location`, data);
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to update tax location for ${tenantId}/${storeId}:`, error);
-      throw this.handleError(error);
-    }
-  }
-
-  /**
-   * Get tax configuration statistics
-   */
-  async getTaxConfigurationStats(tenantId: string, storeId: string): Promise<{
-    totalAuthorities: number;
-    totalGroups: number;
-    totalRules: number;
-    isActive: boolean;
-  }> {
-    try {
-      const config = await this.getTaxConfiguration(tenantId);
-      
-      if (!config) {
-        return {
-          totalAuthorities: 0,
-          totalGroups: 0,
-          totalRules: 0,
-          isActive: false
-        };
+      // For development, you might want to handle gracefully
+      if (import.meta.env.NODE_ENV === 'development') {
+        console.warn('Update operation failed, this might be expected in development');
       }
-
-      const totalRules = config.tax_group.reduce((total, group) => total + group.group_rule.length, 0);
-
-      return {
-        totalAuthorities: config.authority.length,
-        totalGroups: config.tax_group.length,
-        totalRules,
-        isActive: true
-      };
-    } catch (error) {
-      console.error(`Failed to get tax configuration stats for ${tenantId}/${storeId}:`, error);
+      
       throw this.handleError(error);
     }
   }
@@ -160,41 +188,6 @@ export class TaxConfigurationService {
   }
 
   /**
-   * Validate tax location data
-   */
-  private validateTaxLocationData(data: UpdateTaxLocationRequest): void {
-    const errors: TaxServiceError[] = [];
-
-    if (!data.tax_loc_id) {
-      errors.push({
-        code: 'REQUIRED_FIELD',
-        message: 'Tax Location ID is required',
-        field: 'tax_loc_id'
-      });
-    }
-
-    if (!data.name) {
-      errors.push({
-        code: 'REQUIRED_FIELD',
-        message: 'Tax Location name is required',
-        field: 'name'
-      });
-    }
-
-    if (!data.description) {
-      errors.push({
-        code: 'REQUIRED_FIELD',
-        message: 'Tax Location description is required',
-        field: 'description'
-      });
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Validation failed: ${errors.map(e => e.message).join(', ')}`);
-    }
-  }
-
-  /**
    * Handle API errors
    */
   private handleError(error: any): Error {
@@ -203,107 +196,6 @@ export class TaxConfigurationService {
     }
     
     return new Error('An unexpected error occurred while processing tax configuration request');
-  }
-
-  /**
-   * Mock data for development/testing
-   */
-  async getMockTaxConfiguration(): Promise<TaxConfiguration> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      tenant_id: "272e",
-      store_id: "*",
-      authority: [
-        {
-          authority_id: "IN-CGST",
-          name: "Central",
-          rounding_code: "HALF_UP",
-          rounding_digit: 2
-        },
-        {
-          authority_id: "IN-SGST",
-          name: "State",
-          rounding_code: "HALF_UP",
-          rounding_digit: 2
-        }
-      ],
-      tax_location: {
-        tax_loc_id: "TL-IN",
-        name: "India Tax Location",
-        description: "IN Tax Location"
-      },
-      tax_group: [
-        {
-          tax_group_id: "0",
-          name: "No Tax",
-          description: "No Tax",
-          group_rule: [
-            {
-              tax_rule_seq: 1,
-              tax_authority_id: "IN-CGST",
-              name: "Central GST",
-              description: "Central GST",
-              tax_type_code: "VAT",
-              fiscal_tax_id: "A",
-              effective_datetime: null,
-              expr_datetime: null,
-              percentage: 0,
-              amount: null
-            },
-            {
-              tax_rule_seq: 2,
-              tax_authority_id: "IN-SGST",
-              name: "State GST",
-              description: "State GST",
-              tax_type_code: "VAT",
-              fiscal_tax_id: "A",
-              effective_datetime: null,
-              expr_datetime: null,
-              percentage: 0,
-              amount: null
-            }
-          ]
-        },
-        {
-          tax_group_id: "GST18",
-          name: "GST 18%",
-          description: "GST 18%",
-          group_rule: [
-            {
-              tax_rule_seq: 1,
-              tax_authority_id: "IN-CGST",
-              name: "Central GST",
-              description: "Central GST",
-              tax_type_code: "VAT",
-              fiscal_tax_id: "D",
-              effective_datetime: null,
-              expr_datetime: null,
-              percentage: 0.09,
-              amount: null
-            },
-            {
-              tax_rule_seq: 2,
-              tax_authority_id: "IN-SGST",
-              name: "State GST",
-              description: "State GST",
-              tax_type_code: "VAT",
-              fiscal_tax_id: "D",
-              effective_datetime: null,
-              expr_datetime: null,
-              percentage: 0.09,
-              amount: null
-            }
-          ]
-        }
-      ],
-      properties: null,
-      created_at: "2025-05-18T16:05:32.822524413Z",
-      create_user_id: "81238dda-60f1-70c3-4284-0fb8c5ac5631",
-      updated_at: "2025-05-18T16:05:32.822526058Z",
-      update_user_id: null
-    };
   }
 }
 

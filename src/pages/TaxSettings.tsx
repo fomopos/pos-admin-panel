@@ -18,7 +18,8 @@ import type {
   TaxAuthority,
   TaxGroup,
   TaxRule,
-  TaxConfiguration
+  TaxConfiguration,
+  CreateTaxConfigurationRequest
 } from '../services/tax';
 
 const TaxSettings: React.FC = () => {
@@ -32,6 +33,8 @@ const TaxSettings: React.FC = () => {
 
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch tax configuration using services
   useEffect(() => {
@@ -39,25 +42,43 @@ const TaxSettings: React.FC = () => {
       if (!currentTenant?.id) {
         console.warn('No tenant selected, cannot fetch tax configuration');
         setIsLoading(false);
+        setFetchError('Please select a tenant to configure tax settings');
         return;
       }
 
       setIsLoading(true);
+      setFetchError(null);
+      setErrors({});
+      
+      console.log(`[API Call 1] Starting tax configuration fetch for tenant: ${currentTenant.id}`);
       
       try {
         // Use the real tax configuration service with tenant ID
         const config = await taxServices.configuration.getTaxConfiguration(currentTenant.id);
-        setTaxConfig(config);
-        setOriginalTaxConfig(JSON.parse(JSON.stringify(config))); // Deep clone
+        
+        if (config) {
+          console.log('[API Call 1] Tax configuration loaded successfully from API');
+          setTaxConfig(config);
+          setOriginalTaxConfig(JSON.parse(JSON.stringify(config))); // Deep clone
+          setFetchError(null);
+        } else {
+          console.warn('[API Call 1] No tax configuration returned from API');
+          setFetchError('No tax configuration found for this tenant. Please create a new configuration.');
+          setTaxConfig(null);
+        }
       } catch (error) {
-        console.error('Failed to fetch tax configuration:', error);
-        // If no tax configuration exists, try to use mock data for initial setup
-        try {
-          const mockConfig = await taxServices.configuration.getMockTaxConfiguration();
-          setTaxConfig(mockConfig);
-          setOriginalTaxConfig(JSON.parse(JSON.stringify(mockConfig)));
-        } catch (mockError) {
-          console.error('Failed to fetch mock tax configuration:', mockError);
+        console.error('[API Call 1] Failed to fetch tax configuration:', error);
+        
+        // Check if this is a 404 (no configuration exists) or other error
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          console.log('[API Call 1] 404 error - no tax configuration exists');
+          setFetchError('No tax configuration found for this tenant. Please create a new configuration.');
+          setTaxConfig(null);
+        } else {
+          console.error('[API Call 1] API error occurred:', errorMessage);
+          setFetchError(`Failed to load tax configuration: ${errorMessage}`);
           setTaxConfig(null);
         }
       } finally {
@@ -293,40 +314,70 @@ const TaxSettings: React.FC = () => {
     if (!taxConfig || !hasChanges || !currentTenant?.id) return;
 
     setIsSaving(true);
+    setErrors({});
+    setSuccessMessage(null);
+    
     try {
-      const requestData = {
+      console.log('Saving tax configuration changes...');
+      
+      const requestData: CreateTaxConfigurationRequest = {
         authority: taxConfig.authority,
         tax_location: taxConfig.tax_location,
         tax_group: taxConfig.tax_group
       };
 
+      let updatedConfig: TaxConfiguration;
+
       // Check if this is a new configuration or updating existing one
       if (originalTaxConfig) {
-        await taxServices.configuration.updateTaxConfiguration(currentTenant.id, requestData);
+        console.log('Updating existing tax configuration');
+        updatedConfig = await taxServices.configuration.updateTaxConfiguration(currentTenant.id, requestData);
+        setSuccessMessage('Tax configuration updated successfully');
       } else {
-        await taxServices.configuration.createTaxConfiguration(currentTenant.id, requestData);
+        console.log('Creating new tax configuration');
+        updatedConfig = await taxServices.configuration.createTaxConfiguration(currentTenant.id, requestData);
+        setSuccessMessage('Tax configuration created successfully');
       }
       
-      // Update the original config to reflect saved state
-      setOriginalTaxConfig(JSON.parse(JSON.stringify(taxConfig)));
+      // Update both current and original config to reflect saved state
+      setTaxConfig(updatedConfig);
+      setOriginalTaxConfig(JSON.parse(JSON.stringify(updatedConfig)));
       setEditingItems({});
+      setErrors({});
+      setFetchError(null);
       
-      // Show success message (you could use a toast notification here)
-      console.log('Tax configuration saved successfully');
+      console.log('Tax configuration saved successfully:', updatedConfig);
+      
+      // Clear success message after a delay
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+      
     } catch (error) {
       console.error('Failed to save tax configuration:', error);
-      setErrors({ submit: 'Failed to save changes. Please try again.' });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setErrors({ submit: `Failed to save changes: ${errorMessage}` });
+      setSuccessMessage(null);
     } finally {
       setIsSaving(false);
     }
   };
 
   const discardChanges = () => {
-    if (!originalTaxConfig || !window.confirm('Are you sure you want to discard all changes?')) return;
+    if (!window.confirm('Are you sure you want to discard all changes?')) return;
     
-    setTaxConfig(JSON.parse(JSON.stringify(originalTaxConfig)));
+    if (originalTaxConfig) {
+      // Restore to original configuration
+      setTaxConfig(JSON.parse(JSON.stringify(originalTaxConfig)));
+    } else {
+      // For new configurations, clear the form
+      setTaxConfig(null);
+      setFetchError('No tax configuration available. Please reload the page to fetch data.');
+    }
+    
     setEditingItems({});
     setErrors({});
+    setSuccessMessage(null);
   };
 
   const getTotalTaxRate = (group: TaxGroup) => {
@@ -335,18 +386,55 @@ const TaxSettings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Tax Configuration</h3>
+          <p className="text-gray-500">Please wait while we fetch your tax settings...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError && !taxConfig) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md mx-auto">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Tax Configuration</h3>
+          <p className="text-gray-500 mb-4">{fetchError}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (!taxConfig) {
     return (
-      <div className="text-center py-12">
-        <ExclamationTriangleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No tax configuration found</h3>
-        <p className="text-gray-500">Please contact your administrator to set up tax configuration.</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md mx-auto">
+          <ExclamationTriangleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Tax Configuration Found</h3>
+          <p className="text-gray-500 mb-4">
+            {currentTenant?.id 
+              ? 'No tax configuration exists for this tenant. Please contact your administrator to set up tax configuration.'
+              : 'Please select a tenant to configure tax settings.'
+            }
+          </p>
+          {!currentTenant?.id && (
+            <Button 
+              onClick={() => window.history.back()} 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Go Back
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
@@ -403,6 +491,40 @@ const TaxSettings: React.FC = () => {
           </div>
         )}
       </PageHeader>
+
+      {/* Success Message */}
+      {successMessage && (
+        <Alert variant="success" className="mb-4">
+          <CheckCircleIcon className="h-5 w-5" />
+          {successMessage}
+        </Alert>
+      )}
+
+      {/* Warning for sample data */}
+      {fetchError && taxConfig && (
+        <Alert variant="warning" className="mb-4">
+          <ExclamationTriangleIcon className="h-5 w-5" />
+          {fetchError}
+        </Alert>
+      )}
+
+      {/* New tenant setup message */}
+      {!originalTaxConfig && taxConfig && !fetchError && (
+        <Alert variant="info" className="mb-4">
+          <div className="flex items-start space-x-2">
+            <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+              <span className="text-blue-600 text-xs font-bold">!</span>
+            </div>
+            <div>
+              <p className="font-medium">Welcome! Setting up your tax configuration</p>
+              <p className="text-sm opacity-90 mt-1">
+                We've loaded a template configuration to get you started. 
+                Review and modify the settings below, then save to create your tax configuration.
+              </p>
+            </div>
+          </div>
+        </Alert>
+      )}
 
       {/* Tax Configuration Stats */}
       {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

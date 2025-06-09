@@ -45,6 +45,26 @@ export interface TaxConfiguration {
   update_user_id?: string | null;
 }
 
+// API Response structure based on your API specification
+export interface TaxApiResponseItem {
+  tenant_id: string;
+  store_id: string;
+  authority: TaxAuthority[];
+  tax_location: TaxLocation;
+  tax_group: TaxGroup[];
+  properties: any;
+  created_at: string;
+  create_user_id: string;
+  updated_at: string;
+  update_user_id: string | null;
+}
+
+export interface TaxApiResponse {
+  tenant_id: string;
+  store_id: string;
+  tax_list: TaxApiResponseItem[];
+}
+
 // API Request/Response types for creating tax configuration
 export interface CreateTaxConfigurationRequest {
   authority: TaxAuthority[];
