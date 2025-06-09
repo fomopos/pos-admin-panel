@@ -5,19 +5,19 @@ export interface EnhancedCategory {
   // Core identification
   category_id: string;
   name: string;
-  description: string;
+  description: string | null;
   
   // Hierarchy support
-  parent_category_id?: string;
-  sort_order: number;
+  parent_category_id: string | null;
+  sort_order: number | null;
   
   // Status and visibility
-  is_active: boolean;
-  display_on_main_screen: boolean;
+  is_active: boolean | null;
+  display_on_main_screen: boolean | null;
   
   // Media assets
-  icon_url?: string;
-  image_url?: string;
+  icon_url: string | null;
+  image_url: string | null;
   
   // Categorization and search
   tags: string[];
@@ -30,13 +30,13 @@ export interface EnhancedCategory {
     seasonal?: boolean;
     featured?: boolean;
     [key: string]: any;
-  };
+  } | null;
   
   // Metadata
   created_at: string;
   updated_at: string;
   create_user_id: string;
-  update_user_id?: string;
+  update_user_id: string | null;
   
   // UI helpers (computed)
   productCount?: number;
@@ -343,7 +343,7 @@ export const CategoryUtils = {
 
     // Sort by sort_order
     const sortNodes = (nodes: CategoryNode[]) => {
-      nodes.sort((a, b) => a.sort_order - b.sort_order);
+      nodes.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       nodes.forEach(node => {
         if (node.children.length > 0) {
           sortNodes(node.children);
@@ -400,7 +400,7 @@ export const CategoryUtils = {
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         const matchesName = category.name.toLowerCase().includes(searchLower);
-        const matchesDescription = category.description.toLowerCase().includes(searchLower);
+        const matchesDescription = category.description?.toLowerCase().includes(searchLower) ?? false;
         const matchesTags = category.tags.some(tag => tag.toLowerCase().includes(searchLower));
         
         if (!matchesName && !matchesDescription && !matchesTags) {

@@ -7,25 +7,26 @@ import type { EnhancedCategory } from '../../types/category';
 export interface CategoryApiResponse {
   category_id: string;
   name: string;
-  description: string;
-  parent_category_id?: string;
-  sort_order: number;
-  is_active: boolean;
-  icon_url?: string;
-  image_url?: string;
-  display_on_main_screen: boolean;
+  description: string | null;
+  parent_category_id: string | null;
+  sort_order: number | null;
+  is_active: boolean | null;
+  icon_url: string | null;
+  image_url: string | null;
+  display_on_main_screen: boolean | null;
   tags: string[];
-  properties?: Record<string, any>;
+  properties: Record<string, any> | null;
   created_at: string;
   updated_at: string;
   create_user_id: string;
-  update_user_id?: string;
+  update_user_id: string | null;
 }
 
 // Request payload for creating categories
 export interface CreateCategoryRequest {
+  category_id?: string; // Optional for creation, will be generated if not provided
   name: string;
-  description: string;
+  description?: string;
   parent_category_id?: string;
   sort_order?: number;
   is_active?: boolean;
@@ -84,10 +85,10 @@ class CategoryApiService {
         return mockData.categories.map(this.mapToEnhancedCategory);
       }
 
-      const path = `${this.basePath}${params?.tenant_id || ''}/store/${params?.store_id || ''}/category/all`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/all`;
 
-      // Real API call
-      const response = await apiClient.get<CategoriesApiResponse>(path, {});
+      // Real API call - expecting response format: { categories: CategoryApiResponse[] }
+      const response = await apiClient.get<{ categories: CategoryApiResponse[] }>(path, {});
       
       console.log('✅ Successfully fetched categories from API:', response.data);
       return response.data.categories.map(this.mapToEnhancedCategory);
@@ -127,8 +128,10 @@ class CategoryApiService {
         return category;
       }
 
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+
       // Real API call
-      const response = await apiClient.get<CategoryApiResponse>(`${this.basePath}/${categoryId}`, params);
+      const response = await apiClient.get<CategoryApiResponse>(path, {});
       return response.data;
       
     } catch (error) {
@@ -148,33 +151,29 @@ class CategoryApiService {
         console.log('📝 Mock data mode - simulating category creation');
         // Simulate creation in mock mode
         const newCategory: CategoryApiResponse = {
-          category_id: Date.now().toString(),
+          category_id: data.category_id || Date.now().toString(),
           name: data.name,
-          description: data.description,
-          parent_category_id: data.parent_category_id,
+          description: data.description || '',
+          parent_category_id: data.parent_category_id || null,
           sort_order: data.sort_order || 0,
           is_active: data.is_active !== false,
-          icon_url: data.icon_url,
-          image_url: data.image_url,
+          icon_url: data.icon_url || null,
+          image_url: data.image_url || null,
           display_on_main_screen: data.display_on_main_screen !== false,
           tags: data.tags || [],
-          properties: data.properties,
+          properties: data.properties || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           create_user_id: 'mock-user',
-          update_user_id: 'mock-user'
+          update_user_id: null
         };
         return newCategory;
       }
 
-      const path = `${this.basePath}${params?.tenant_id || ''}/store/${params?.store_id || ''}/category/addBatch`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category`;
 
-      const request: BatchCreateCategoriesRequest = {
-        categories: [data]
-      };
-
-      // Real API call
-      const response = await apiClient.post<CategoryApiResponse>(path, request, {
+      // Real API call - single category creation
+      const response = await apiClient.post<CategoryApiResponse>(path, data, {
         headers: undefined,
       });
       
@@ -204,9 +203,11 @@ class CategoryApiService {
         };
       }
 
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/addBatch`;
+
       // Real API call to addBatch endpoint
-      const response = await apiClient.post<BatchOperationResponse>(`${this.basePath}/addBatch`, data, {
-        headers: params?.tenant_id ? { 'X-Tenant-Id': params.tenant_id } : undefined
+      const response = await apiClient.post<BatchOperationResponse>(path, data, {
+        headers: undefined
       });
       
       console.log('✅ Successfully batch created categories:', response.data);
@@ -253,7 +254,7 @@ class CategoryApiService {
   /**
    * Delete a category
    */
-  async deleteCategory(categoryId: string, _params?: { tenant_id?: string; store_id?: string }): Promise<void> {
+  async deleteCategory(categoryId: string, params?: { tenant_id?: string; store_id?: string }): Promise<void> {
     try {
       console.log('📂 Deleting category:', categoryId);
       
@@ -262,8 +263,10 @@ class CategoryApiService {
         return;
       }
 
+      const path = `/v1/tenant/${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+
       // Real API call
-      await apiClient.delete(`${this.basePath}/${categoryId}`);
+      await apiClient.delete(path);
       
       console.log('✅ Successfully deleted category:', categoryId);
       
@@ -276,7 +279,7 @@ class CategoryApiService {
   /**
    * Get category hierarchy (parent-child relationships)
    */
-  async getCategoryHierarchy(params?: CategoryQueryParams): Promise<CategoryApiResponse[]> {
+  async getCategoryHierarchy(params?: CategoryQueryParams): Promise<EnhancedCategory[]> {
     try {
       console.log('📂 Fetching category hierarchy');
       
@@ -284,7 +287,7 @@ class CategoryApiService {
       
       // Build hierarchy from flat list
       const categories = response; // response is already EnhancedCategory[]
-      const rootCategories: CategoryApiResponse[] = [];
+      const rootCategories: EnhancedCategory[] = [];
       
       categories.forEach((category: EnhancedCategory) => {
         if (!category.parent_category_id) {
@@ -292,7 +295,7 @@ class CategoryApiService {
         }
       });
       
-      return rootCategories.sort((a, b) => a.sort_order - b.sort_order);
+      return rootCategories.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       
     } catch (error) {
       console.error('❌ Error fetching category hierarchy:', error);
@@ -383,42 +386,51 @@ class CategoryApiService {
         category_id: '1',
         name: 'Electronics',
         description: 'Electronic devices and accessories',
+        parent_category_id: null,
         sort_order: 1,
         is_active: true,
         display_on_main_screen: true,
         tags: ['electronics', 'technology', 'gadgets'],
         icon_url: 'https://example.com/icons/electronics.svg',
+        image_url: null,
         created_at: '2024-01-10T10:00:00Z',
         updated_at: '2024-01-15T14:30:00Z',
         create_user_id: 'user-123',
+        update_user_id: null,
         properties: { color: '#3B82F6' }
       },
       {
         category_id: '2',
         name: 'Clothing',
         description: 'Apparel and fashion items',
+        parent_category_id: null,
         sort_order: 2,
         is_active: true,
         display_on_main_screen: true,
         tags: ['clothing', 'fashion', 'apparel'],
         icon_url: 'https://example.com/icons/clothing.svg',
+        image_url: null,
         created_at: '2024-01-08T09:00:00Z',
         updated_at: '2024-01-12T16:45:00Z',
         create_user_id: 'user-123',
+        update_user_id: null,
         properties: { color: '#10B981' }
       },
       {
         category_id: '3',
         name: 'Food & Beverages',
         description: 'Food items and drinks',
+        parent_category_id: null,
         sort_order: 3,
         is_active: true,
         display_on_main_screen: true,
         tags: ['food', 'beverages', 'drinks'],
         icon_url: 'https://example.com/icons/food.svg',
+        image_url: null,
         created_at: '2024-01-05T11:30:00Z',
         updated_at: '2024-01-14T12:15:00Z',
         create_user_id: 'user-123',
+        update_user_id: null,
         properties: { color: '#F59E0B' }
       },
       {
@@ -430,23 +442,29 @@ class CategoryApiService {
         is_active: true,
         display_on_main_screen: false,
         tags: ['mens', 'clothing', 'fashion'],
+        icon_url: null,
+        image_url: null,
         created_at: '2024-01-08T10:00:00Z',
         updated_at: '2024-01-12T17:00:00Z',
         create_user_id: 'user-123',
+        update_user_id: null,
         properties: { color: '#06B6D4' }
       },
       {
         category_id: '5',
         name: 'Books',
         description: 'Books and educational materials',
+        parent_category_id: null,
         sort_order: 4,
         is_active: false,
         display_on_main_screen: false,
         tags: ['books', 'education', 'reading'],
         icon_url: 'https://example.com/icons/books.svg',
+        image_url: null,
         created_at: '2024-01-03T15:20:00Z',
         updated_at: '2024-01-10T08:30:00Z',
         create_user_id: 'user-123',
+        update_user_id: null,
         properties: { color: '#8B5CF6' }
       }
     ];

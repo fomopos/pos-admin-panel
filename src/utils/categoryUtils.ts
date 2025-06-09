@@ -64,7 +64,7 @@ export class CategoryUtils {
       }
     });
 
-    return rootCategories.sort((a, b) => a.sort_order - b.sort_order);
+    return rootCategories.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   }
 
   /**
@@ -173,7 +173,7 @@ export class CategoryUtils {
     
     return categories.filter(category => 
       category.name.toLowerCase().includes(normalizedSearch) ||
-      category.description.toLowerCase().includes(normalizedSearch) ||
+      (category.description && category.description.toLowerCase().includes(normalizedSearch)) ||
       category.tags.some(tag => tag.toLowerCase().includes(normalizedSearch))
     );
   }
