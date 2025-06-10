@@ -106,7 +106,7 @@ export const InputTextField: React.FC<InputTextFieldProps> = ({
 
   return (
     <div className={wrapperClasses}>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>

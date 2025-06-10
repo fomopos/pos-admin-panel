@@ -1,5 +1,5 @@
 import React from 'react';
-import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Input from './Input';
 
 interface InputMoneyFieldProps {
@@ -41,6 +41,8 @@ interface InputMoneyFieldProps {
   currencyPosition?: 'before' | 'after';
   /** Custom currency icon component */
   currencyIcon?: React.ComponentType<{ className?: string }>;
+  /** Whether to show error icon alongside error text */
+  showErrorIcon?: boolean;
 }
 
 /**
@@ -90,7 +92,8 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
   autoFocus = false,
   currencySymbol = '$',
   currencyPosition = 'before',
-  currencyIcon
+  currencyIcon,
+  showErrorIcon = true,
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -110,15 +113,16 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
 
   const CurrencyIconComponent = currencyIcon || CurrencyDollarIcon;
 
-  // Create the full label with required indicator
-  const fullLabel = required ? `${label} *` : label;
-
   return (
     <div className={wrapperClasses}>
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      
       <div className="relative">
         <Input
           type="number"
-          label={fullLabel}
           value={value ?? ''}
           onChange={handleInputChange}
           placeholder={placeholder}
@@ -129,13 +133,11 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
           max={max}
           step={step}
           autoFocus={autoFocus}
-          error={error}
-          helperText={helperText}
         />
         
         {/* Currency Symbol/Icon - Positioned to align with input field center */}
         {currencyPosition === 'before' && (
-          <div className="absolute left-4 top-[2.35rem] flex items-center justify-center z-10 pointer-events-none">
+          <div className="absolute left-4 top-[0.75rem] flex items-center justify-center z-10 pointer-events-none">
             {currencyIcon ? (
               <CurrencyIconComponent className="h-4 w-4 text-slate-400" />
             ) : (
@@ -145,7 +147,7 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
         )}
         
         {currencyPosition === 'after' && (
-          <div className="absolute right-4 top-[2.35rem] flex items-center justify-center z-10 pointer-events-none">
+          <div className="absolute right-4 top-[0.75rem] flex items-center justify-center z-10 pointer-events-none">
             {currencyIcon ? (
               <CurrencyIconComponent className="h-4 w-4 text-slate-400" />
             ) : (
@@ -154,6 +156,19 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
           </div>
         )}
       </div>
+      
+      {error && (
+        <p className="mt-2 text-sm text-red-600 flex items-center">
+          {showErrorIcon && <ExclamationTriangleIcon className="h-4 w-4 mr-1" />}
+          {error}
+        </p>
+      )}
+      
+      {helperText && !error && (
+        <p className="mt-2 text-sm text-gray-500">
+          {helperText}
+        </p>
+      )}
     </div>
   );
 };

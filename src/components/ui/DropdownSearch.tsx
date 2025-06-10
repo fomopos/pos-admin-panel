@@ -165,7 +165,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* Label */}
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
