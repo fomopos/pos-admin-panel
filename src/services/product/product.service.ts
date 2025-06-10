@@ -180,7 +180,7 @@ class ProductService {
       created_at: apiProduct.created_at,
       create_user_id: apiProduct.create_user_id,
       updated_at: apiProduct.updated_at,
-      update_user_id: apiProduct.update_user_id
+      update_user_id: apiProduct.update_user_id || undefined
     };
   }
 

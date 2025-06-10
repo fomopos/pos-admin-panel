@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeftIcon,
@@ -9,12 +9,18 @@ import {
   TagIcon,
   PhotoIcon,
   CheckIcon,
-  XMarkIcon
+  XMarkIcon,
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+  FolderIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService } from '../services/product';
+import { categoryApiService } from '../services/category/categoryApiService';
+import { CategoryUtils } from '../utils/categoryUtils';
+import type { EnhancedCategory } from '../types/category';
 import type { 
   Product,
   ProductFormErrors
@@ -87,8 +93,50 @@ const ProductEdit: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
+  // Category search state
+  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
+
+  // Load categories for dropdown
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (currentTenant && currentStore) {
+        try {
+          const result = await categoryApiService.getCategories({
+            tenant_id: currentTenant.id,
+            store_id: currentStore.store_id
+          });
+          setCategories(result);
+        } catch (error) {
+          console.error('Error loading categories:', error);
+        }
+      }
+    };
+
+    loadCategories();
+  }, [currentTenant, currentStore]);
+
+  // Click outside handler for category dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+        setCategorySearchQuery('');
+      }
+    };
+
+    if (showCategoryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showCategoryDropdown]);
 
   // Load existing product data for editing
   useEffect(() => {
@@ -114,6 +162,36 @@ const ProductEdit: React.FC = () => {
 
     loadProduct();
   }, [isEditing, id, currentTenant, currentStore]);
+
+  // Helper function to filter categories based on search query
+  const getFilteredCategories = () => {
+    let availableCategories = categories;
+
+    // Filter by search query if provided
+    if (categorySearchQuery.trim()) {
+      const query = categorySearchQuery.toLowerCase();
+      availableCategories = availableCategories.filter(cat => 
+        cat.name.toLowerCase().includes(query) ||
+        (cat.description && cat.description.toLowerCase().includes(query))
+      );
+    }
+
+    // Sort by name for better usability
+    return availableCategories.sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  // Helper function to get category display name with hierarchy path
+  const getCategoryDisplayName = (categoryId: string) => {
+    const category = categories.find(c => c.category_id === categoryId);
+    if (!category) return '';
+
+    const ancestors = CategoryUtils.getCategoryAncestors(categoryId, categories);
+    if (ancestors.length > 0) {
+      const path = ancestors.map(a => a.name).join(' > ');
+      return `${path} > ${category.name}`;
+    }
+    return category.name;
+  };
 
   const validateForm = (): boolean => {
     const newErrors: ProductFormErrors = {};
@@ -931,23 +1009,123 @@ const ProductEdit: React.FC = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Category */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="relative">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Category
                     </label>
-                    <select
-                      name="attributes.category_id"
-                      value={formData.attributes?.category_id || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Select category</option>
-                      <option value="beverages">Beverages</option>
-                      <option value="food">Food</option>
-                      <option value="electronics">Electronics</option>
-                      <option value="clothing">Clothing</option>
-                      <option value="home">Home & Garden</option>
-                    </select>
+                    <div className="relative" ref={categoryDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCategoryDropdown(!showCategoryDropdown);
+                          if (!showCategoryDropdown) {
+                            setCategorySearchQuery(''); // Reset search when opening
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-3 border border-gray-300 rounded-lg bg-white hover:border-blue-300 transition-colors ${showCategoryDropdown ? 'border-blue-500 ring-2 ring-blue-200' : ''}`}
+                      >
+                        <span className="text-gray-700 truncate">
+                          {formData.attributes?.category_id
+                            ? getCategoryDisplayName(formData.attributes.category_id)
+                            : 'No Category Selected'
+                          }
+                        </span>
+                        <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {showCategoryDropdown && (
+                        <div className="absolute z-[100] mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-2xl max-h-80 overflow-hidden"
+                             style={{ minWidth: '100%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+                          {/* Search Input */}
+                          <div className="p-3 border-b border-gray-100 bg-gray-50 sticky top-0">
+                            <div className="relative">
+                              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              <input
+                                type="text"
+                                placeholder="Search categories..."
+                                value={categorySearchQuery}
+                                onChange={(e) => setCategorySearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
+                                autoFocus
+                              />
+                            </div>
+                          </div>
+
+                          {/* Category List */}
+                          <div className="max-h-60 overflow-y-auto">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleInputChange({
+                                  target: { name: 'attributes.category_id', value: '' }
+                                } as React.ChangeEvent<HTMLInputElement>);
+                                setShowCategoryDropdown(false);
+                                setCategorySearchQuery('');
+                              }}
+                              className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-50 flex items-center"
+                            >
+                              <FolderIcon className="h-4 w-4 text-gray-400 mr-2" />
+                              <span className="text-gray-700 font-medium">No Category</span>
+                            </button>
+                            
+                            {getFilteredCategories().length > 0 ? (
+                              getFilteredCategories().map((category) => {
+                                const level = CategoryUtils.getCategoryAncestors(category.category_id, categories).length;
+                                return (
+                                  <button
+                                    key={category.category_id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleInputChange({
+                                        target: { name: 'attributes.category_id', value: category.category_id }
+                                      } as React.ChangeEvent<HTMLInputElement>);
+                                      setShowCategoryDropdown(false);
+                                      setCategorySearchQuery('');
+                                    }}
+                                    className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center group"
+                                    style={{ paddingLeft: `${16 + level * 20}px` }}
+                                  >
+                                    <FolderIcon className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium text-gray-900 truncate">{category.name}</div>
+                                      {category.description && (
+                                        <div className="text-xs text-gray-500 truncate mt-0.5">{category.description}</div>
+                                      )}
+                                    </div>
+                                    {level > 0 && (
+                                      <div className="text-xs text-gray-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Level {level + 1}
+                                      </div>
+                                    )}
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="px-4 py-6 text-center text-gray-500 text-sm">
+                                {categorySearchQuery.trim() ? (
+                                  <>
+                                    <MagnifyingGlassIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                                    <p>No categories found matching "{categorySearchQuery}"</p>
+                                    <button
+                                      type="button"
+                                      onClick={() => setCategorySearchQuery('')}
+                                      className="text-blue-500 hover:text-blue-600 text-sm mt-1"
+                                    >
+                                      Clear search
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <FolderIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                                    <p>No categories available</p>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Tags */}

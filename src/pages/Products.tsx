@@ -14,7 +14,6 @@ import { PageHeader, Button, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useTenantStore } from '../tenants/tenantStore';
 import { productService } from '../services/product';
-import type { ApiProduct } from '../services/types/product.types';
 
 // Types for advanced filters
 interface PriceRange {
