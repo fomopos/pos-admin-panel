@@ -12,7 +12,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading, InputTextField, PropertyCheckbox, DropdownSearch } from '../components/ui';
+import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading, InputTextField, InputMoneyField, PropertyCheckbox, DropdownSearch } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService } from '../services/product';
@@ -648,64 +648,36 @@ const ProductEdit: React.FC = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* List Price */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      List Price <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                      <input
-                        type="number"
-                        name="pricing.list_price"
-                        value={formData.pricing?.list_price || ''}
-                        onChange={handleInputChange}
-                        step="0.01"
-                        min="0"
-                        className={`w-full pl-8 pr-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
-                          errors.list_price ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                        placeholder="0.00"
-                      />
-                    </div>
-                    {errors.list_price && <p className="mt-1 text-sm text-red-600">{errors.list_price}</p>}
-                  </div>
+                  <InputMoneyField
+                    label="List Price"
+                    required
+                    value={formData.pricing?.list_price || ''}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.list_price', value, type: 'number' } } as any)}
+                    placeholder="0.00"
+                    error={errors.list_price}
+                    min={0}
+                    step={0.01}
+                  />
 
                   {/* Sale Price */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sale Price
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                      <input
-                        type="number"
-                        name="pricing.sale_price"
-                        value={formData.pricing?.sale_price || ''}
-                        onChange={handleInputChange}
-                        step="0.01"
-                        min="0"
-                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
+                  <InputMoneyField
+                    label="Sale Price"
+                    value={formData.pricing?.sale_price || ''}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.sale_price', value, type: 'number' } } as any)}
+                    placeholder="0.00"
+                    min={0}
+                    step={0.01}
+                  />
 
                   {/* Tare Value */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tare Value
-                    </label>
-                    <input
-                      type="number"
-                      name="pricing.tare_value"
-                      value={formData.pricing?.tare_value || ''}
-                      onChange={handleInputChange}
-                      step="0.01"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                    />
-                  </div>
+                  <InputMoneyField
+                    label="Tare Value"
+                    value={formData.pricing?.tare_value || ''}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.tare_value', value, type: 'number' } } as any)}
+                    placeholder="0.00"
+                    min={0}
+                    step={0.01}
+                  />
 
                   {/* Tare UOM */}
                   <InputTextField
@@ -732,8 +704,7 @@ const ProductEdit: React.FC = () => {
                   </div>
 
                   {/* Discount Value */}
-                  <InputTextField
-                    type="number"
+                  <InputMoneyField
                     label="Discount Value"
                     value={formData.pricing?.discount_value}
                     onChange={(value) => handleInputChange({ target: { name: 'pricing.discount_value', value, type: 'number' } } as any)}
@@ -743,8 +714,7 @@ const ProductEdit: React.FC = () => {
                   />
 
                   {/* Min Discount Value */}
-                  <InputTextField
-                    type="number"
+                  <InputMoneyField
                     label="Min Discount Value"
                     value={formData.pricing?.min_discount_value}
                     onChange={(value) => handleInputChange({ target: { name: 'pricing.min_discount_value', value, type: 'number' } } as any)}
@@ -754,8 +724,7 @@ const ProductEdit: React.FC = () => {
                   />
 
                   {/* Max Discount Value */}
-                  <InputTextField
-                    type="number"
+                  <InputMoneyField
                     label="Max Discount Value"
                     value={formData.pricing?.max_discount_value}
                     onChange={(value) => handleInputChange({ target: { name: 'pricing.max_discount_value', value, type: 'number' } } as any)}
