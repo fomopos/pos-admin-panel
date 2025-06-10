@@ -19,7 +19,8 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Card, EnhancedTabs, Alert } from '../components/ui';
+import { PageHeader, Button, Input, Alert } from '../components/ui';
+import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
@@ -70,7 +71,7 @@ const CATEGORY_TEMPLATES = [
   }
 ];
 
-const CategoryEdit: React.FC = () => {
+const CategoryEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
@@ -105,19 +106,11 @@ const CategoryEdit: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   
-  const [activeTab, setActiveTab] = useState('basic');
   const [showTemplates, setShowTemplates] = useState(!isEditing);
   const [tagInput, setTagInput] = useState('');
   const [showParentDropdown, setShowParentDropdown] = useState(false);
   const [parentSearchQuery, setParentSearchQuery] = useState('');
   const parentDropdownRef = useRef<HTMLDivElement>(null);
-
-  const tabs = [
-    { id: 'basic', name: 'Basic Information', icon: InformationCircleIcon },
-    { id: 'organization', name: 'Organization', icon: FolderIcon },
-    { id: 'appearance', name: 'Appearance', icon: SwatchIcon },
-    { id: 'settings', name: 'Settings', icon: Cog6ToothIcon }
-  ];
 
   // Load categories and current category data
   useEffect(() => {
@@ -234,36 +227,32 @@ const CategoryEdit: React.FC = () => {
 
   const handleInputChange = (field: keyof CategoryFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear errors for this field
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
-  const handlePropertyChange = (property: string, value: any) => {
+  const handlePropertyChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      properties: {
-        ...prev.properties,
-        [property]: value
-      }
+      properties: { ...prev.properties, [field]: value }
     }));
-    
-    if (errors[property]) {
-      setErrors(prev => ({ ...prev, [property]: '' }));
-    }
   };
 
   const addTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      handleInputChange('tags', [...formData.tags, tagInput.trim()]);
+    const tag = tagInput.trim();
+    if (tag && !formData.tags.includes(tag)) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tag]
+      }));
       setTagInput('');
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    handleInputChange('tags', formData.tags.filter(tag => tag !== tagToRemove));
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
   };
 
   const applyTemplate = (template: any) => {
@@ -271,7 +260,7 @@ const CategoryEdit: React.FC = () => {
       ...prev,
       name: template.name,
       description: template.description,
-      tags: template.tags || [],
+      tags: template.tags,
       properties: {
         ...prev.properties,
         color: template.color
@@ -282,55 +271,70 @@ const CategoryEdit: React.FC = () => {
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-
+    
     if (!formData.name.trim()) {
       newErrors.name = 'Category name is required';
     }
-
+    
+    if (formData.name.length > 100) {
+      newErrors.name = 'Category name must be less than 100 characters';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const saveAllChanges = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!validateForm()) return;
-
-    setIsSaving(true);
-    setErrors({});
-
+    
     try {
+      setIsSaving(true);
+      setErrors({});
+
+      const categoryData = {
+        ...formData,
+      };
+
       if (isEditing && id) {
-        await categoryApiService.updateCategory(id, formData, {
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id
-        });
+        await categoryApiService.updateCategory(id, categoryData);
         setSuccessMessage('Category updated successfully!');
       } else {
-        await categoryApiService.createCategory(formData, {
+        await categoryApiService.createCategory(categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
-        });
+        }); 
         setSuccessMessage('Category created successfully!');
+        setTimeout(() => navigate('/categories'), 1500);
       }
-
-      // Reset change tracking
-      setHasChanges(false);
       
-      // Navigate back after a delay
-      setTimeout(() => {
-        navigate('/categories');
-      }, 1500);
-
-    } catch (error) {
+      setHasChanges(false);
+    } catch (error: any) {
       console.error('Failed to save category:', error);
-      setErrors({ submit: 'Failed to save category. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to save category. Please try again.' });
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (!id || !window.confirm('Are you sure you want to delete this category?')) return;
+
+    try {
+      await categoryApiService.deleteCategory(id, {
+        tenant_id: currentTenant?.id,
+        store_id: currentStore?.store_id
+      });
+      navigate('/categories');
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      setErrors({ submit: 'Failed to delete category. Please try again.' });
+    }
+  };
+
   const discardChanges = () => {
-    if (isEditing && originalCategory) {
-      // Reset to original data
+    if (originalCategory) {
       setFormData({
         name: originalCategory.name,
         description: originalCategory.description || '',
@@ -376,18 +380,10 @@ const CategoryEdit: React.FC = () => {
     setHasChanges(false);
   };
 
-  const handleDelete = async () => {
-    if (!id || !window.confirm('Are you sure you want to delete this category?')) return;
-
-    try {
-      await categoryApiService.deleteCategory(id, {
-        tenant_id: currentTenant?.id,
-        store_id: currentStore?.store_id
-      });
-      navigate('/categories');
-    } catch (error) {
-      console.error('Failed to delete category:', error);
-      setErrors({ submit: 'Failed to delete category. Please try again.' });
+  const saveAllChanges = () => {
+    const form = document.querySelector('form') as HTMLFormElement;
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     }
   };
 
@@ -540,81 +536,70 @@ const CategoryEdit: React.FC = () => {
 
       {/* Template Selection for New Categories */}
       {showTemplates && !isEditing && (
-        <Card className="border-0 shadow-xl bg-white">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-lg">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <SparklesIcon className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold">Category Templates</h3>
-                <p className="text-blue-100 mt-1">
-                  Choose a template to get started quickly, or skip to create from scratch
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {CATEGORY_TEMPLATES.map((template) => (
-                <div
-                  key={template.id}
-                  onClick={() => applyTemplate(template)}
-                  className="group relative p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white"
-                >
-                  <div className="flex items-start space-x-3">
-                    <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-semibold text-lg shadow-md"
-                      style={{ backgroundColor: template.color }}
-                    >
-                      {template.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                        {template.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {template.description}
-                      </p>
-                      <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
-                        <span className="flex items-center">
-                          <TagIcon className="h-3 w-3 mr-1" />
-                          {template.tags?.length || 0} tags
-                        </span>
-                      </div>
-                    </div>
+        <CategoryWidget
+          title="Category Templates"
+          description="Choose a template to get started quickly, or skip to create from scratch"
+          icon={SparklesIcon}
+          headerActions={
+            <Button
+              onClick={() => setShowTemplates(false)}
+              variant="outline"
+              size="sm"
+            >
+              Skip Templates
+            </Button>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {CATEGORY_TEMPLATES.map((template) => (
+              <div
+                key={template.id}
+                onClick={() => applyTemplate(template)}
+                className="group relative p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white"
+              >
+                <div className="flex items-start space-x-3">
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                    style={{ backgroundColor: template.color }}
+                  >
+                    {template.name.charAt(0)}
                   </div>
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                      <PlusIcon className="h-4 w-4 text-white" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {template.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {template.description}
+                    </p>
+                    <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
+                      <span className="flex items-center">
+                        <TagIcon className="h-3 w-3 mr-1" />
+                        {template.tags?.length || 0} tags
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="pt-4 border-t border-gray-200">
-              <Button
-                type="button"
-                onClick={() => setShowTemplates(false)}
-                variant="outline"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                Skip Templates
-              </Button>
-            </div>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <PlusIcon className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </Card>
+        </CategoryWidget>
       )}
 
-      {/* Tab Navigation */}
-      <EnhancedTabs
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      >
-        {/* Basic Information Tab */}
-        {activeTab === 'basic' && (
-          <div className="space-y-6">
+      {/* Main Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Basic Information Widget */}
+          <CategoryWidget
+            title="Basic Information"
+            description="Essential category details and identification"
+            icon={InformationCircleIcon}
+            className="xl:col-span-2"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -650,7 +635,7 @@ const CategoryEdit: React.FC = () => {
             </div>
 
             {/* Tags Section */}
-            <div>
+            <div className="mt-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Tags
               </label>
@@ -690,13 +675,15 @@ const CategoryEdit: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          </CategoryWidget>
 
-        {/* Organization Tab */}
-        {activeTab === 'organization' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Organization Widget */}
+          <CategoryWidget
+            title="Organization"
+            description="Category hierarchy and ordering"
+            icon={FolderIcon}
+          >
+            <div className="space-y-6">
               <div className="relative">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Parent Category
@@ -825,13 +812,15 @@ const CategoryEdit: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
-        )}
+          </CategoryWidget>
 
-        {/* Appearance Tab */}
-        {activeTab === 'appearance' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Appearance Widget */}
+          <CategoryWidget
+            title="Appearance"
+            description="Visual styling and media"
+            icon={SwatchIcon}
+          >
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Category Color
@@ -852,38 +841,40 @@ const CategoryEdit: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Icon and Image Upload placeholders */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Category Icon
-                </label>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Click to upload icon</p>
+              {/* Icon and Image Upload placeholders */}
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Category Icon
+                  </label>
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                    <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">Click to upload icon</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Category Image
+                  </label>
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                    <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">Click to upload image</p>
+                  </div>
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Category Image
-                </label>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Click to upload image</p>
-                </div>
-              </div>
             </div>
-          </div>
-        )}
+          </CategoryWidget>
 
-        {/* Settings Tab */}
-        {activeTab === 'settings' && (
-          <div className="space-y-6">
-            {/* Toggle Settings */}
-            <div className="space-y-6">
+          {/* Settings Widget */}
+          <CategoryWidget
+            title="Settings"
+            description="Category behavior and display options"
+            icon={Cog6ToothIcon}
+            className="xl:col-span-2"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
                   <h4 className="font-semibold text-gray-900">Active Status</h4>
@@ -956,22 +947,51 @@ const CategoryEdit: React.FC = () => {
                 </label>
               </div>
             </div>
-          </div>
-        )}
-      </EnhancedTabs>
+          </CategoryWidget>
+        </div>
 
-      {/* Error Display */}
-      {errors.submit && (
-        <Alert variant="error">
-          <ExclamationTriangleIcon className="h-4 w-4" />
-          <div>
-            <h4 className="font-medium">Error</h4>
-            <p className="text-sm">{errors.submit}</p>
-          </div>
-        </Alert>
-      )}
+        {/* Error Display */}
+        {errors.submit && (
+          <Alert variant="error">
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            <div>
+              <h4 className="font-medium">Error</h4>
+              <p className="text-sm">{errors.submit}</p>
+            </div>
+          </Alert>
+        )}
+
+        {/* Form Actions */}
+        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/categories')}
+          >
+            Cancel
+          </Button>
+          
+          <Button
+            type="submit"
+            disabled={isSaving}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6"
+          >
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <CloudArrowUpIcon className="h-4 w-4" />
+                <span>{isEditing ? 'Update Category' : 'Create Category'}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };
 
-export default CategoryEdit;
+export default CategoryEditPage;
