@@ -18,6 +18,7 @@ export { Modal } from './Modal';
 export { Loading } from './Loading';
 export { PropertyCheckbox } from './PropertyCheckbox';
 export { InputTextField } from './InputTextField';
+export { DropdownSearch } from './DropdownSearch';
 
 // Re-export types
 export type { ButtonProps } from './Button';

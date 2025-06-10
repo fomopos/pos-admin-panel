@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -14,12 +14,11 @@ import {
   InformationCircleIcon,
   FolderIcon,
   Cog6ToothIcon,
-  SwatchIcon,
-  ChevronDownIcon,
-  MagnifyingGlassIcon
+  SwatchIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField } from '../components/ui';
+import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch } from '../components/ui';
+import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -109,9 +108,6 @@ const CategoryEditPage: React.FC = () => {
   
   const [showTemplates, setShowTemplates] = useState(!isEditing);
   const [tagInput, setTagInput] = useState('');
-  const [showParentDropdown, setShowParentDropdown] = useState(false);
-  const [parentSearchQuery, setParentSearchQuery] = useState('');
-  const parentDropdownRef = useRef<HTMLDivElement>(null);
 
   // Dialog hooks
   const deleteDialog = useDeleteConfirmDialog();
@@ -171,23 +167,6 @@ const CategoryEditPage: React.FC = () => {
 
     loadData();
   }, [isEditing, id, currentTenant, currentStore]);
-
-  // Click outside handler for parent dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (parentDropdownRef.current && !parentDropdownRef.current.contains(event.target as Node)) {
-        setShowParentDropdown(false);
-        setParentSearchQuery('');
-      }
-    };
-
-    if (showParentDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showParentDropdown]);
 
   // Check for changes
   useEffect(() => {
@@ -404,15 +383,6 @@ const CategoryEditPage: React.FC = () => {
       availableCategories = categories.filter(cat => !excludeIds.includes(cat.category_id));
     }
 
-    // Filter by search query if provided
-    if (parentSearchQuery.trim()) {
-      const query = parentSearchQuery.toLowerCase();
-      availableCategories = availableCategories.filter(cat => 
-        cat.name.toLowerCase().includes(query) ||
-        (cat.description && cat.description.toLowerCase().includes(query))
-      );
-    }
-
     // Sort by name for better usability
     return availableCategories.sort((a, b) => a.name.localeCompare(b.name));
   };
@@ -425,6 +395,40 @@ const CategoryEditPage: React.FC = () => {
       return `${path} > ${category.name}`;
     }
     return category.name;
+  };
+
+  // Convert categories to DropdownSearchOption format
+  const getParentDropdownOptions = (): DropdownSearchOption[] => {
+    const availableCategories = getParentCategories();
+    return availableCategories.map(category => {
+      const level = CategoryUtils.getCategoryAncestors(category.category_id, categories).length;
+      return {
+        id: category.category_id,
+        label: category.name,
+        description: category.description || undefined,
+        level: level,
+        data: category
+      };
+    });
+  };
+
+  // Handle parent category selection
+  const handleParentCategorySelect = (option: DropdownSearchOption | null) => {
+    handleInputChange('parent_category_id', option?.id);
+  };
+
+  // Get display value for parent category dropdown
+  const getParentCategoryDisplayValue = (option: DropdownSearchOption | null) => {
+    if (!option && !formData.parent_category_id) {
+      return 'No Parent (Root Category)';
+    }
+    
+    if (formData.parent_category_id) {
+      const category = categories.find(c => c.category_id === formData.parent_category_id);
+      return category ? getCategoryDisplayName(category) : 'No Parent (Root Category)';
+    }
+    
+    return option ? getCategoryDisplayName(option.data) : 'No Parent (Root Category)';
   };
 
   // Loading state
@@ -682,127 +686,21 @@ const CategoryEditPage: React.FC = () => {
             className="overflow-visible"
           >
             <div className="space-y-6 relative">
-              <div className="relative">
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Parent Category
-                </label>
-                <div className="relative" ref={parentDropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowParentDropdown(!showParentDropdown);
-                      if (!showParentDropdown) {
-                        setParentSearchQuery(''); // Reset search when opening
-                      }
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-3 sm:py-4 border border-gray-300 rounded-lg bg-white hover:border-blue-300 transition-colors min-h-[48px] ${showParentDropdown ? 'border-blue-500 ring-2 ring-blue-200' : ''}`}
-                  >
-                    <span className="text-gray-700 truncate">
-                      {formData.parent_category_id
-                        ? getCategoryDisplayName(categories.find(c => c.category_id === formData.parent_category_id)!)
-                        : 'No Parent (Root Category)'
-                      }
-                    </span>
-                    <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform ${showParentDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {showParentDropdown && (
-                    <div className="absolute z-[9999] mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-2xl max-h-80 sm:max-h-96"
-                         style={{ 
-                           minWidth: '100%', 
-                           maxHeight: 'min(400px, 60vh)', 
-                           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
-                           zIndex: 9999,
-                           transform: 'translateZ(0)', // Force new stacking context
-                           willChange: 'auto' // Optimize for changes
-                         }}>
-                      {/* Search Input */}
-                      <div className="p-3 border-b border-gray-100 bg-gray-50 sticky top-0 z-10">
-                        <div className="relative">
-                          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Search categories..."
-                            value={parentSearchQuery}
-                            onChange={(e) => setParentSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
-                            autoFocus
-                          />
-                        </div>
-                      </div>
-
-                      {/* Category List */}
-                      <div className="overflow-y-auto" style={{ maxHeight: 'min(280px, 45vh)' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleInputChange('parent_category_id', undefined);
-                            setShowParentDropdown(false);
-                            setParentSearchQuery('');
-                          }}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-50 flex items-center"
-                        >
-                          <FolderIcon className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="text-gray-700 font-medium">No Parent (Root Category)</span>
-                        </button>
-                        
-                        {getParentCategories().length > 0 ? (
-                          getParentCategories().map((category) => {
-                            const level = CategoryUtils.getCategoryAncestors(category.category_id, categories).length;
-                            return (
-                              <button
-                                key={category.category_id}
-                                type="button"
-                                onClick={() => {
-                                  handleInputChange('parent_category_id', category.category_id);
-                                  setShowParentDropdown(false);
-                                  setParentSearchQuery('');
-                                }}
-                                className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center group"
-                                style={{ paddingLeft: `${16 + level * 20}px` }}
-                              >
-                                <FolderIcon className="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-gray-900 truncate">{category.name}</div>
-                                  {category.description && (
-                                    <div className="text-xs text-gray-500 truncate mt-0.5">{category.description}</div>
-                                  )}
-                                </div>
-                                {level > 0 && (
-                                  <div className="text-xs text-gray-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Level {level + 1}
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <div className="px-4 py-6 text-center text-gray-500 text-sm">
-                            {parentSearchQuery.trim() ? (
-                              <>
-                                <MagnifyingGlassIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                                <p>No categories found matching "{parentSearchQuery}"</p>
-                                <button
-                                  type="button"
-                                  onClick={() => setParentSearchQuery('')}
-                                  className="text-blue-500 hover:text-blue-600 text-sm mt-1"
-                                >
-                                  Clear search
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <FolderIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                                <p>No categories available</p>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <DropdownSearch
+                label="Parent Category"
+                value={formData.parent_category_id}
+                placeholder="No Parent (Root Category)"
+                searchPlaceholder="Search categories..."
+                options={getParentDropdownOptions()}
+                onSelect={handleParentCategorySelect}
+                displayValue={getParentCategoryDisplayValue}
+                clearLabel="No Parent (Root Category)"
+                noOptionsMessage="No categories available"
+                clearSearchText="Clear search"
+                allowClear={true}
+                closeOnSelect={true}
+                autoFocus={true}
+              />
 
               <InputTextField
                 label="Sort Order"
