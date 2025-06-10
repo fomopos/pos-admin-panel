@@ -65,7 +65,7 @@ class ProductService {
   async getProduct(tenantId: string, storeId: string, itemId: string): Promise<ApiProduct> {
     try {
       const response = await apiClient.get<ApiProduct>(
-        `/v1/tenant/${tenantId}/store/${storeId}/item/${itemId}`
+        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`
       );
       return response.data;
     } catch (error) {
@@ -96,7 +96,7 @@ class ProductService {
   async updateProduct(tenantId: string, storeId: string, itemId: string, productData: UpdateProductRequest): Promise<ApiProduct> {
     try {
       const response = await apiClient.put<ApiProduct>(
-        `/v1/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
+        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
         productData
       );
       return response.data;
@@ -111,7 +111,7 @@ class ProductService {
    */
   async deleteProduct(tenantId: string, storeId: string, itemId: string): Promise<void> {
     try {
-      await apiClient.delete(`/v1/tenant/${tenantId}/store/${storeId}/item/${itemId}`);
+      await apiClient.delete(`/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`);
     } catch (error) {
       console.error('Error deleting product:', error);
       throw new Error('Failed to delete product');
