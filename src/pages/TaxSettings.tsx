@@ -12,7 +12,7 @@ import {
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Input, Card, PageHeader, Alert, EnhancedTabs, ConfirmDialog } from '../components/ui';
+import { Button, Input, Card, PageHeader, Alert, EnhancedTabs, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { taxServices } from '../services/tax';
 import type {
@@ -403,13 +403,11 @@ const TaxSettings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Tax Configuration</h3>
-          <p className="text-gray-500">Please wait while we fetch your tax settings...</p>
-        </div>
-      </div>
+      <Loading
+        title="Loading Tax Configuration"
+        description="Please wait while we fetch your tax settings..."
+        variant="primary"
+      />
     );
   }
 

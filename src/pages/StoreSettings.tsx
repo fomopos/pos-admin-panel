@@ -23,7 +23,8 @@ import {
   PageHeader, 
   Alert, 
   EnhancedTabs,
-  ConfirmDialog 
+  ConfirmDialog,
+  Loading 
 } from '../components/ui';
 import { useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { storeServices } from '../services/store';
@@ -148,9 +149,12 @@ const StoreSettingsPage: React.FC = () => {
 
   if (state.isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <Loading
+        title="Loading Store Settings"
+        description="Please wait while we fetch your store configuration..."
+        fullScreen={false}
+        size="md"
+      />
     );
   }
 

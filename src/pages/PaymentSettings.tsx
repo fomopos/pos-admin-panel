@@ -12,7 +12,7 @@ import {
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader, Alert, ConfirmDialog } from '../components/ui';
+import { Button, Card, PageHeader, Alert, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { paymentServices } from '../services/payment';
 import type { Tender, CreateTenderRequest } from '../services/types/payment.types';
@@ -241,19 +241,12 @@ const PaymentSettings: React.FC = () => {
 
   if (state.isLoading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-slate-200 rounded w-1/4 mb-6"></div>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-slate-200 rounded-2xl"></div>
-            ))}
-          </div>
-        </div>
-        <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
-        </div>
-      </div>
+      <Loading
+        title="Loading Payment Settings"
+        description="Please wait while we fetch your payment configuration..."
+        fullScreen={false}
+        size="md"
+      />
     );
   }
 

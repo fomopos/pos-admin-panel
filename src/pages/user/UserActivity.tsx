@@ -7,7 +7,7 @@ import {
   ComputerDesktopIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
-import { Button, Card, Input, PageHeader } from '../../components/ui';
+import { Button, Card, Input, PageHeader, Loading } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { UserActivity, StoreUser } from '../../services/types/user.types';
 
@@ -139,16 +139,12 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ userId, onBack }) =
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              <p className="text-sm text-gray-600">Loading activity log...</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Loading
+        title="Loading Activity Log"
+        description="Please wait while we fetch the user activity data..."
+        fullScreen={true}
+        size="lg"
+      />
     );
   }
 

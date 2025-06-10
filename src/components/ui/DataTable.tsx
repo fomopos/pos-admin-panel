@@ -10,6 +10,7 @@ import {
 } from './Table';
 import Pagination from './Pagination';
 import Input from './Input';
+import Loading from './Loading';
 import { MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 
 export interface Column<T> {
@@ -172,9 +173,12 @@ function DataTable<T extends Record<string, any>>({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <Loading
+        title="Loading Data"
+        description="Please wait while we fetch your data..."
+        fullScreen={false}
+        size="md"
+      />
     );
   }
 

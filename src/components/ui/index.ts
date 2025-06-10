@@ -15,6 +15,7 @@ export { PageHeader } from './PageHeader';
 export { Alert } from './Alert';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Modal } from './Modal';
+export { Loading } from './Loading';
 
 // Re-export types
 export type { ButtonProps } from './Button';

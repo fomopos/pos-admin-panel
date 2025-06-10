@@ -12,7 +12,7 @@ import {
   ShieldCheckIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';
-import { Button, Card, PageHeader } from '../../components/ui';
+import { Button, Card, PageHeader, Loading } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { StoreUser } from '../../services/types/user.types';
 
@@ -60,10 +60,12 @@ const UserDetail: React.FC<UserDetailProps> = ({
             Back to Users
           </Button>
         </div>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          <span className="ml-3 text-gray-600">Loading user details...</span>
-        </div>
+        <Loading
+          title="Loading User Details"
+          description="Please wait while we fetch the user information..."
+          fullScreen={false}
+          size="md"
+        />
       </div>
     );
   }

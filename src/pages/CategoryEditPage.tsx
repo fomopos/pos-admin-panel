@@ -19,7 +19,7 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Alert, ConfirmDialog } from '../components/ui';
+import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading } from '../components/ui';
 import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -430,12 +430,11 @@ const CategoryEditPage: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading category...</p>
-        </div>
-      </div>
+      <Loading
+        title="Loading Category"
+        description="Please wait while we fetch the category data..."
+        variant="primary"
+      />
     );
   }
 

@@ -14,7 +14,7 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader, ConfirmDialog } from '../components/ui';
+import { Button, Card, PageHeader, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 
 interface Customer {
@@ -393,9 +393,12 @@ const Customers: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <Loading
+        title="Loading Customers"
+        description="Please wait while we fetch your customer data..."
+        fullScreen={false}
+        size="md"
+      />
     );
   }
 

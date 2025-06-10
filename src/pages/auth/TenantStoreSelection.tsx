@@ -4,6 +4,7 @@ import { BuildingOfficeIcon, BuildingStorefrontIcon, ChevronRightIcon } from '@h
 import { useTenantStore } from '../../tenants/tenantStore';
 import { authService } from '../../auth/authService';
 import Button from '../../components/ui/Button';
+import { Loading } from '../../components/ui';
 
 const TenantStoreSelection: React.FC = () => {
   const navigate = useNavigate();
@@ -176,12 +177,12 @@ const TenantStoreSelection: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading your organizations...</p>
-        </div>
-      </div>
+      <Loading
+        title="Loading Organizations"
+        description="Please wait while we fetch your organizations and stores..."
+        fullScreen={true}
+        size="lg"
+      />
     );
   }
 

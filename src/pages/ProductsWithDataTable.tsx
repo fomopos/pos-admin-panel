@@ -11,7 +11,7 @@ import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
-import { ConfirmDialog } from '../components/ui';
+import { ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import DataTable, { type Column } from '../components/ui/DataTable';
 
@@ -369,9 +369,12 @@ const ProductsWithDataTable: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <Loading
+        title="Loading Products"
+        description="Please wait while we fetch your product data..."
+        fullScreen={false}
+        size="md"
+      />
     );
   }
 

@@ -13,7 +13,7 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader } from '../components/ui';
+import { Button, Card, PageHeader, Loading } from '../components/ui';
 
 interface SaleItem {
   id: string;
@@ -288,9 +288,12 @@ const Sales: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <Loading
+        title="Loading Sales"
+        description="Please wait while we fetch your sales data..."
+        fullScreen={false}
+        size="md"
+      />
     );
   }
 

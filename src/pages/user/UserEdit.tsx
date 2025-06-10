@@ -8,7 +8,7 @@ import {
   ShieldCheckIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
-import { Button, Card, Input, PageHeader } from '../../components/ui';
+import { Button, Card, Input, PageHeader, Loading } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { StoreUser, UpdateUserRequest, Department } from '../../services/types/user.types';
 import { DEPARTMENTS } from '../../services/types/user.types';
@@ -128,16 +128,12 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              <p className="text-sm text-gray-600">Loading user details...</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Loading
+        title="Loading User Details"
+        description="Please wait while we fetch the user information for editing..."
+        fullScreen={true}
+        size="lg"
+      />
     );
   }
 

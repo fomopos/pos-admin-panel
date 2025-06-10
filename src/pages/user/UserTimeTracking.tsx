@@ -8,7 +8,7 @@ import {
   CalendarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
-import { Button, Card, PageHeader } from '../../components/ui';
+import { Button, Card, PageHeader, Loading } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { UserTimeTracking, StoreUser } from '../../services/types/user.types';
 
@@ -134,16 +134,12 @@ const UserTimeTrackingPage: React.FC<UserTimeTrackingPageProps> = ({ userId, onB
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              <p className="text-sm text-gray-600">Loading time tracking data...</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Loading
+        title="Loading Time Tracking"
+        description="Please wait while we fetch the time tracking data..."
+        fullScreen={true}
+        size="lg"
+      />
     );
   }
 
