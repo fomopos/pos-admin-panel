@@ -165,7 +165,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* Label */}
-      <label className="block text-sm font-semibold text-gray-700 mb-3">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -177,15 +177,15 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
           type="button"
           onClick={handleToggleDropdown}
           disabled={disabled}
-          className={`w-full flex items-center justify-between px-4 py-3 sm:py-4 border border-gray-300 rounded-lg bg-white hover:border-blue-300 transition-colors min-h-[48px] ${
-            isOpen ? 'border-blue-500 ring-2 ring-blue-200' : ''
+          className={`w-full flex items-center justify-between px-4 py-3 h-12 border border-slate-200 bg-slate-50 rounded-lg hover:border-blue-300 transition-all duration-200 ${
+            isOpen ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-2' : 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500'
           } ${
             disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           } ${
-            error ? 'border-red-300' : ''
+            error ? 'border-red-500 focus-visible:ring-red-500' : ''
           } ${buttonClassName}`}
         >
-          <span className={`truncate ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>
+          <span className={`truncate text-sm ${selectedOption ? 'text-gray-900' : 'text-slate-400'}`}>
             {getDisplayValue()}
           </span>
           <ChevronDownIcon 
@@ -195,7 +195,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
 
         {/* Error Message */}
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-2 text-sm text-red-600">{error}</p>
         )}
 
         {/* Dropdown Menu */}
