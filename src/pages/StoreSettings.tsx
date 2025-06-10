@@ -24,7 +24,8 @@ import {
   Alert, 
   EnhancedTabs,
   ConfirmDialog,
-  Loading 
+  Loading,
+  InputTextField
 } from '../components/ui';
 import { useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { storeServices } from '../services/store';
@@ -338,57 +339,33 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Store Name
-            </label>
-            <input
-              type="text"
-              value={formData.store_name}
-              onChange={(e) => handleFieldChange('store_name', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter store name"
-            />
-          </div>
+          <InputTextField
+            label="Store Name"
+            value={formData.store_name}
+            onChange={(value) => handleFieldChange('store_name', value)}
+            placeholder="Enter store name"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Business Name
-            </label>
-            <input
-              type="text"
-              value={formData.business_name}
-              onChange={(e) => handleFieldChange('business_name', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter business name"
-            />
-          </div>
+          <InputTextField
+            label="Business Name"
+            value={formData.business_name}
+            onChange={(value) => handleFieldChange('business_name', value)}
+            placeholder="Enter business name"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Registration Number
-            </label>
-            <input
-              type="text"
-              value={formData.registration_number || ''}
-              onChange={(e) => handleFieldChange('registration_number', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter registration number"
-            />
-          </div>
+          <InputTextField
+            label="Registration Number"
+            value={formData.registration_number || ''}
+            onChange={(value) => handleFieldChange('registration_number', value)}
+            placeholder="Enter registration number"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Tax Number
-            </label>
-            <input
-              type="text"
-              value={formData.tax_number || ''}
-              onChange={(e) => handleFieldChange('tax_number', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter tax number"
-            />
-          </div>
+          <InputTextField
+            label="Tax Number"
+            value={formData.tax_number || ''}
+            onChange={(value) => handleFieldChange('tax_number', value)}
+            placeholder="Enter tax number"
+          />
         </div>
       </Card>
 
@@ -400,82 +377,50 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Street Address 1
-            </label>
-            <input
-              type="text"
+            <InputTextField
+              label="Street Address 1"
               value={formData.address.street1}
-              onChange={(e) => handleFieldChange('address.street1', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(value) => handleFieldChange('address.street1', value)}
               placeholder="Enter street address"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Street Address 2
-            </label>
-            <input
-              type="text"
+            <InputTextField
+              label="Street Address 2"
               value={formData.address.street2 || ''}
-              onChange={(e) => handleFieldChange('address.street2', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(value) => handleFieldChange('address.street2', value)}
               placeholder="Apartment, suite, etc. (optional)"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              City
-            </label>
-            <input
-              type="text"
-              value={formData.address.city}
-              onChange={(e) => handleFieldChange('address.city', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter city"
-            />
-          </div>
+          <InputTextField
+            label="City"
+            value={formData.address.city}
+            onChange={(value) => handleFieldChange('address.city', value)}
+            placeholder="Enter city"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              State/Province
-            </label>
-            <input
-              type="text"
-              value={formData.address.state}
-              onChange={(e) => handleFieldChange('address.state', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter state/province"
-            />
-          </div>
+          <InputTextField
+            label="State/Province"
+            value={formData.address.state}
+            onChange={(value) => handleFieldChange('address.state', value)}
+            placeholder="Enter state/province"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Postal Code
-            </label>
-            <input
-              type="text"
-              value={formData.address.postal_code}
-              onChange={(e) => handleFieldChange('address.postal_code', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter postal code"
-            />
-          </div>
+          <InputTextField
+            label="Postal Code"
+            value={formData.address.postal_code}
+            onChange={(value) => handleFieldChange('address.postal_code', value)}
+            placeholder="Enter postal code"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Country
-            </label>
-            <input
-              type="text"
-              value={formData.address.country}
-              onChange={(e) => handleFieldChange('address.country', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter country"
-            />
-          </div>
+          <InputTextField
+            label="Country"
+            value={formData.address.country}
+            onChange={(value) => handleFieldChange('address.country', value)}
+            placeholder="Enter country"
+          />
         </div>
       </Card>
 
@@ -486,57 +431,37 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
           Contact Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              value={formData.contact_info.phone}
-              onChange={(e) => handleFieldChange('contact_info.phone', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter phone number"
-            />
-          </div>
+          <InputTextField
+            label="Phone Number"
+            type="tel"
+            value={formData.contact_info.phone}
+            onChange={(value) => handleFieldChange('contact_info.phone', value)}
+            placeholder="Enter phone number"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={formData.contact_info.email}
-              onChange={(e) => handleFieldChange('contact_info.email', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter email address"
-            />
-          </div>
+          <InputTextField
+            label="Email Address"
+            type="email"
+            value={formData.contact_info.email}
+            onChange={(value) => handleFieldChange('contact_info.email', value)}
+            placeholder="Enter email address"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Website
-            </label>
-            <input
-              type="url"
-              value={formData.contact_info.website || ''}
-              onChange={(e) => handleFieldChange('contact_info.website', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter website URL"
-            />
-          </div>
+          <InputTextField
+            label="Website"
+            type="url"
+            value={formData.contact_info.website || ''}
+            onChange={(value) => handleFieldChange('contact_info.website', value)}
+            placeholder="Enter website URL"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Fax Number
-            </label>
-            <input
-              type="tel"
-              value={formData.contact_info.fax || ''}
-              onChange={(e) => handleFieldChange('contact_info.fax', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter fax number"
-            />
-          </div>
+          <InputTextField
+            label="Fax Number"
+            type="tel"
+            value={formData.contact_info.fax || ''}
+            onChange={(value) => handleFieldChange('contact_info.fax', value)}
+            placeholder="Enter fax number"
+          />
         </div>
       </Card>
 

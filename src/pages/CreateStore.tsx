@@ -13,7 +13,7 @@ import {
   GlobeAltIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
-import { Button, PageHeader, EnhancedTabs, Input } from '../components/ui';
+import { Button, PageHeader, EnhancedTabs, Input, InputTextField } from '../components/ui';
 import { useTenantStore } from '../tenants/tenantStore';
 
 interface StoreFormData {
@@ -520,172 +520,86 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              <div className="flex items-center space-x-2">
-                <MapPinIcon className="w-4 h-4 text-emerald-500" />
-                <span>City *</span>
-              </div>
-            </label>
-            <input
-              type="text"
-              value={formData.address.city}
-              onChange={(e) => handleInputChange('address.city', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300 ${
-                errors['address.city'] ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-              }`}
-              placeholder="Enter city"
-            />
-            {errors['address.city'] && (
-              <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-                <XMarkIcon className="w-4 h-4" />
-                <span>{errors['address.city']}</span>
-              </p>
-            )}
-          </div>
+          <InputTextField
+            label="City"
+            required
+            value={formData.address.city}
+            onChange={(value) => handleInputChange('address.city', value)}
+            placeholder="Enter city"
+            error={errors['address.city']}
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              <div className="flex items-center space-x-2">
-                <MapPinIcon className="w-4 h-4 text-emerald-500" />
-                <span>State/Province *</span>
-              </div>
-            </label>
-            <input
-              type="text"
-              value={formData.address.state}
-              onChange={(e) => handleInputChange('address.state', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300 ${
-                errors['address.state'] ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-              }`}
-              placeholder="Enter state"
-            />
-            {errors['address.state'] && (
-              <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-                <XMarkIcon className="w-4 h-4" />
-                <span>{errors['address.state']}</span>
-              </p>
-            )}
-          </div>
+          <InputTextField
+            label="State/Province"
+            required
+            value={formData.address.state}
+            onChange={(value) => handleInputChange('address.state', value)}
+            placeholder="Enter state"
+            error={errors['address.state']}
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              <div className="flex items-center space-x-2">
-                <MapPinIcon className="w-4 h-4 text-emerald-500" />
-                <span>Postal Code *</span>
-              </div>
-            </label>
-            <input
-              type="text"
-              value={formData.address.postal_code}
-              onChange={(e) => handleInputChange('address.postal_code', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300 ${
-                errors['address.postal_code'] ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-              }`}
-              placeholder="Enter postal code"
-            />
-            {errors['address.postal_code'] && (
-              <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-                <XMarkIcon className="w-4 h-4" />
-                <span>{errors['address.postal_code']}</span>
-              </p>
-            )}
-          </div>
+          <InputTextField
+            label="Postal Code"
+            required
+            value={formData.address.postal_code}
+            onChange={(value) => handleInputChange('address.postal_code', value)}
+            placeholder="Enter postal code"
+            error={errors['address.postal_code']}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              <div className="flex items-center space-x-2">
-                <GlobeAltIcon className="w-4 h-4 text-emerald-500" />
-                <span>Country *</span>
-              </div>
-            </label>
-            <input
-              type="text"
-              value={formData.address.country}
-              onChange={(e) => handleInputChange('address.country', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300 ${
-                errors['address.country'] ? 'border-red-300 bg-red-50/30' : 'border-gray-300'
-              }`}
-              placeholder="Enter country"
-            />
-            {errors['address.country'] && (
-              <p className="mt-2 text-sm text-red-600 animate-slideIn flex items-center space-x-1">
-                <XMarkIcon className="w-4 h-4" />
-                <span>{errors['address.country']}</span>
-              </p>
-            )}
+          <InputTextField
+            label="Country"
+            required
+            value={formData.address.country}
+            onChange={(value) => handleInputChange('address.country', value)}
+            placeholder="Enter country"
+            error={errors['address.country']}
+          />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              District
-            </label>
-            <input
-              type="text"
+            <InputTextField
+              label="District"
               value={formData.address.district}
-              onChange={(e) => handleInputChange('address.district', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
+              onChange={(value) => handleInputChange('address.district', value)}
               placeholder="Enter district"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Area
-            </label>
-            <input
-              type="text"
-              value={formData.address.area}
-              onChange={(e) => handleInputChange('address.area', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
-              placeholder="Enter area"
-            />
-          </div>
+          <InputTextField
+            label="Area"
+            value={formData.address.area}
+            onChange={(value) => handleInputChange('address.area', value)}
+            placeholder="Enter area"
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              County
-            </label>
-            <input
-              type="text"
-              value={formData.address.county}
-              onChange={(e) => handleInputChange('address.county', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
-              placeholder="Enter county"
-            />
-          </div>
+          <InputTextField
+            label="County"
+            value={formData.address.county}
+            onChange={(value) => handleInputChange('address.county', value)}
+            placeholder="Enter county"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Latitude
-            </label>
-            <input
-              type="text"
-              value={formData.latitude || ''}
-              onChange={(e) => handleInputChange('latitude', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
-              placeholder="e.g., 40.7128"
-            />
-          </div>
+          <InputTextField
+            label="Latitude"
+            value={formData.latitude || ''}
+            onChange={(value) => handleInputChange('latitude', value)}
+            placeholder="e.g., 40.7128"
+          />
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Longitude
-            </label>
-            <input
-              type="text"
-              value={formData.longitude || ''}
-              onChange={(e) => handleInputChange('longitude', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-300"
-              placeholder="e.g., -74.0060"
-            />
-          </div>
+          <InputTextField
+            label="Longitude"
+            value={formData.longitude || ''}
+            onChange={(value) => handleInputChange('longitude', value)}
+            placeholder="e.g., -74.0060"
+          />
         </div>
       </div>
     </div>
@@ -745,37 +659,21 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <PhoneIcon className="w-4 h-4 text-purple-500" />
-              <span>Alternate Phone 1</span>
-            </div>
-          </label>
-          <input
-            type="tel"
-            value={formData.telephone3 || ''}
-            onChange={(e) => handleInputChange('telephone3', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300"
-            placeholder="Enter alternate phone number"
-          />
-        </div>
+        <InputTextField
+          label="Alternate Phone 1"
+          type="tel"
+          value={formData.telephone3 || ''}
+          onChange={(value) => handleInputChange('telephone3', value)}
+          placeholder="Enter alternate phone number"
+        />
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <PhoneIcon className="w-4 h-4 text-purple-500" />
-              <span>Alternate Phone 2</span>
-            </div>
-          </label>
-          <input
-            type="tel"
-            value={formData.telephone4 || ''}
-            onChange={(e) => handleInputChange('telephone4', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-300"
-            placeholder="Enter alternate phone number"
-          />
-        </div>
+        <InputTextField
+          label="Alternate Phone 2"
+          type="tel"
+          value={formData.telephone4 || ''}
+          onChange={(value) => handleInputChange('telephone4', value)}
+          placeholder="Enter alternate phone number"
+        />
       </div>
 
       <div>
@@ -817,37 +715,19 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <BuildingOfficeIcon className="w-4 h-4 text-amber-500" />
-              <span>Legal Entity ID</span>
-            </div>
-          </label>
-          <input
-            type="text"
-            value={formData.legal_entity_id || ''}
-            onChange={(e) => handleInputChange('legal_entity_id', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 hover:border-amber-300"
-            placeholder="Enter legal entity ID"
-          />
-        </div>
+        <InputTextField
+          label="Legal Entity ID"
+          value={formData.legal_entity_id || ''}
+          onChange={(value) => handleInputChange('legal_entity_id', value)}
+          placeholder="Enter legal entity ID"
+        />
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <BuildingOfficeIcon className="w-4 h-4 text-amber-500" />
-              <span>Legal Entity Name</span>
-            </div>
-          </label>
-          <input
-            type="text"
-            value={formData.legal_entity_name || ''}
-            onChange={(e) => handleInputChange('legal_entity_name', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 hover:border-amber-300"
-            placeholder="Enter legal entity name"
-          />
-        </div>
+        <InputTextField
+          label="Legal Entity Name"
+          value={formData.legal_entity_name || ''}
+          onChange={(value) => handleInputChange('legal_entity_name', value)}
+          placeholder="Enter legal entity name"
+        />
       </div>
     </div>
   );
@@ -880,12 +760,12 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 <span className="font-semibold text-gray-700">{day}</span>
               </div>
               <div className="md:col-span-2">
-                <input
-                  type="text"
+                <InputTextField
+                  label=""
                   value={formData.store_timing[day as keyof typeof formData.store_timing]}
-                  onChange={(e) => handleTimingChange(day, e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 hover:border-green-300"
+                  onChange={(value) => handleTimingChange(day, value)}
                   placeholder={day === 'Holidays' ? 'Closed' : '09:00-18:00'}
+                  className="w-full"
                 />
               </div>
             </div>

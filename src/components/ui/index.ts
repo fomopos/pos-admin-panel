@@ -17,6 +17,7 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { Modal } from './Modal';
 export { Loading } from './Loading';
 export { PropertyCheckbox } from './PropertyCheckbox';
+export { InputTextField } from './InputTextField';
 
 // Re-export types
 export type { ButtonProps } from './Button';

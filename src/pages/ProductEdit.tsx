@@ -15,7 +15,7 @@ import {
   FolderIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading } from '../components/ui';
+import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading, InputTextField, PropertyCheckbox } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService } from '../services/product';
 import { categoryApiService } from '../services/category/categoryApiService';
@@ -449,55 +449,33 @@ const ProductEdit: React.FC = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Product Name */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Product Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name || ''}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.name ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                      placeholder="Enter product name"
-                    />
-                    {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-                  </div>
+                  <InputTextField
+                    label="Product Name"
+                    required
+                    value={formData.name}
+                    onChange={(value) => handleInputChange({ target: { name: 'name', value, type: 'text' } } as any)}
+                    placeholder="Enter product name"
+                    error={errors.name}
+                    colSpan="md:col-span-2"
+                  />
 
                   {/* UOM */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Unit of Measure <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="uom"
-                      value={formData.uom || ''}
-                      onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.uom ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                      placeholder="e.g., lb, kg, each"
-                    />
-                    {errors.uom && <p className="mt-1 text-sm text-red-600">{errors.uom}</p>}
-                  </div>
+                  <InputTextField
+                    label="Unit of Measure"
+                    required
+                    value={formData.uom}
+                    onChange={(value) => handleInputChange({ target: { name: 'uom', value, type: 'text' } } as any)}
+                    placeholder="e.g., lb, kg, each"
+                    error={errors.uom}
+                  />
 
                   {/* Brand */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Brand
-                    </label>
-                    <input
-                      type="text"
-                      name="brand"
-                      value={formData.brand || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter brand name"
-                    />
-                  </div>
+                  <InputTextField
+                    label="Brand"
+                    value={formData.brand}
+                    onChange={(value) => handleInputChange({ target: { name: 'brand', value, type: 'text' } } as any)}
+                    placeholder="Enter brand name"
+                  />
 
                   {/* Tax Group */}
                   <div>
@@ -519,19 +497,12 @@ const ProductEdit: React.FC = () => {
                   </div>
 
                   {/* Fiscal ID */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Fiscal ID
-                    </label>
-                    <input
-                      type="text"
-                      name="fiscal_id"
-                      value={formData.fiscal_id || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter fiscal ID"
-                    />
-                  </div>
+                  <InputTextField
+                    label="Fiscal ID"
+                    value={formData.fiscal_id}
+                    onChange={(value) => handleInputChange({ target: { name: 'fiscal_id', value, type: 'text' } } as any)}
+                    placeholder="Enter fiscal ID"
+                  />
 
                   {/* Stock Status */}
                   <div>
@@ -636,19 +607,12 @@ const ProductEdit: React.FC = () => {
                   </div>
 
                   {/* Tare UOM */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tare UOM
-                    </label>
-                    <input
-                      type="text"
-                      name="pricing.tare_uom"
-                      value={formData.pricing?.tare_uom || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="e.g., oz, g"
-                    />
-                  </div>
+                  <InputTextField
+                    label="Tare UOM"
+                    value={formData.pricing?.tare_uom}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.tare_uom', value, type: 'text' } } as any)}
+                    placeholder="e.g., oz, g"
+                  />
 
                   {/* Discount Type */}
                   <div>
@@ -667,55 +631,37 @@ const ProductEdit: React.FC = () => {
                   </div>
 
                   {/* Discount Value */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Discount Value
-                    </label>
-                    <input
-                      type="number"
-                      name="pricing.discount_value"
-                      value={formData.pricing?.discount_value || ''}
-                      onChange={handleInputChange}
-                      step="0.01"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                    />
-                  </div>
+                  <InputTextField
+                    type="number"
+                    label="Discount Value"
+                    value={formData.pricing?.discount_value}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.discount_value', value, type: 'number' } } as any)}
+                    placeholder="0.00"
+                    step={0.01}
+                    min={0}
+                  />
 
                   {/* Min Discount Value */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Min Discount Value
-                    </label>
-                    <input
-                      type="number"
-                      name="pricing.min_discount_value"
-                      value={formData.pricing?.min_discount_value || ''}
-                      onChange={handleInputChange}
-                      step="0.01"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                    />
-                  </div>
+                  <InputTextField
+                    type="number"
+                    label="Min Discount Value"
+                    value={formData.pricing?.min_discount_value}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.min_discount_value', value, type: 'number' } } as any)}
+                    placeholder="0.00"
+                    step={0.01}
+                    min={0}
+                  />
 
                   {/* Max Discount Value */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Max Discount Value
-                    </label>
-                    <input
-                      type="number"
-                      name="pricing.max_discount_value"
-                      value={formData.pricing?.max_discount_value || ''}
-                      onChange={handleInputChange}
-                      step="0.01"
-                      min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="0.00"
-                    />
-                  </div>
+                  <InputTextField
+                    type="number"
+                    label="Max Discount Value"
+                    value={formData.pricing?.max_discount_value}
+                    onChange={(value) => handleInputChange({ target: { name: 'pricing.max_discount_value', value, type: 'number' } } as any)}
+                    placeholder="0.00"
+                    step={0.01}
+                    min={0}
+                  />
                 </div>
               </div>
             )}
@@ -731,38 +677,26 @@ const ProductEdit: React.FC = () => {
                     <h3 className="text-md font-medium text-gray-800">Inventory Settings</h3>
                     
                     <div className="space-y-3">
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.track_inventory"
-                          checked={formData.settings?.track_inventory || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Track Inventory</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Track Inventory"
+                        description="Monitor stock levels for this product"
+                        checked={formData.settings?.track_inventory || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.track_inventory', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.allow_backorder"
-                          checked={formData.settings?.allow_backorder || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Allow Backorder</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Allow Backorder"
+                        description="Allow orders when item is out of stock"
+                        checked={formData.settings?.allow_backorder || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.allow_backorder', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.require_serial"
-                          checked={formData.settings?.require_serial || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Require Serial Number</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Require Serial Number"
+                        description="Serial number must be provided for this product"
+                        checked={formData.settings?.require_serial || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.require_serial', checked, type: 'checkbox' } } as any)}
+                      />
                     </div>
                   </div>
 
@@ -771,82 +705,54 @@ const ProductEdit: React.FC = () => {
                     <h3 className="text-md font-medium text-gray-800">Product Flags</h3>
                     
                     <div className="space-y-3">
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.taxable"
-                          checked={formData.settings?.taxable || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Taxable</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Taxable"
+                        description="Apply taxes to this product"
+                        checked={formData.settings?.taxable || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.taxable', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.measure_required"
-                          checked={formData.settings?.measure_required || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Measure Required</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Measure Required"
+                        description="Require weight or measurement for this product"
+                        checked={formData.settings?.measure_required || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.measure_required', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.non_inventoried"
-                          checked={formData.settings?.non_inventoried || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Non-Inventoried</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Non-Inventoried"
+                        description="This product is not tracked in inventory"
+                        checked={formData.settings?.non_inventoried || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.non_inventoried', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.shippable"
-                          checked={formData.settings?.shippable || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Shippable</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Shippable"
+                        description="This product can be shipped to customers"
+                        checked={formData.settings?.shippable || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.shippable', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.active"
-                          checked={formData.settings?.active || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Active</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Active"
+                        description="Product is active and available for sale"
+                        checked={formData.settings?.active || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.active', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.disallow_discount"
-                          checked={formData.settings?.disallow_discount || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Disallow Discount</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Disallow Discount"
+                        description="Prevent discounts from being applied to this product"
+                        checked={formData.settings?.disallow_discount || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.disallow_discount', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="settings.online_only"
-                          checked={formData.settings?.online_only || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Online Only</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Online Only"
+                        description="Product is only available for online orders"
+                        checked={formData.settings?.online_only || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'settings.online_only', checked, type: 'checkbox' } } as any)}
+                      />
                     </div>
                   </div>
 
@@ -855,93 +761,61 @@ const ProductEdit: React.FC = () => {
                     <h3 className="text-md font-medium text-gray-800">Prompt Settings</h3>
                     
                     <div className="space-y-3">
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_price"
-                          checked={formData.prompts?.prompt_price || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Price</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Price"
+                        description="Ask for price confirmation during sale"
+                        checked={formData.prompts?.prompt_price || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_price', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_qty"
-                          checked={formData.prompts?.prompt_qty || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Quantity</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Quantity"
+                        description="Ask for quantity confirmation during sale"
+                        checked={formData.prompts?.prompt_qty || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_qty', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_description"
-                          checked={formData.prompts?.prompt_description || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Description</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Description"
+                        description="Ask for additional description during sale"
+                        checked={formData.prompts?.prompt_description || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_description', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_uom"
-                          checked={formData.prompts?.prompt_uom || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for UOM</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for UOM"
+                        description="Ask for unit of measure during sale"
+                        checked={formData.prompts?.prompt_uom || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_uom', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_cost"
-                          checked={formData.prompts?.prompt_cost || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Cost</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Cost"
+                        description="Ask for cost confirmation during sale"
+                        checked={formData.prompts?.prompt_cost || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_cost', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_serial"
-                          checked={formData.prompts?.prompt_serial || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Serial</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Serial"
+                        description="Ask for serial number during sale"
+                        checked={formData.prompts?.prompt_serial || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_serial', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_lot"
-                          checked={formData.prompts?.prompt_lot || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Lot</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Lot"
+                        description="Ask for lot number during sale"
+                        checked={formData.prompts?.prompt_lot || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_lot', checked, type: 'checkbox' } } as any)}
+                      />
                       
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          name="prompts.prompt_expiry"
-                          checked={formData.prompts?.prompt_expiry || false}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">Prompt for Expiry</span>
-                      </label>
+                      <PropertyCheckbox
+                        title="Prompt for Expiry"
+                        description="Ask for expiry date during sale"
+                        checked={formData.prompts?.prompt_expiry || false}
+                        onChange={(checked) => handleInputChange({ target: { name: 'prompts.prompt_expiry', checked, type: 'checkbox' } } as any)}
+                      />
                     </div>
                   </div>
 
@@ -968,34 +842,20 @@ const ProductEdit: React.FC = () => {
                       </div>
 
                       {/* Manufacturer */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Manufacturer
-                        </label>
-                        <input
-                          type="text"
-                          name="attributes.manufacturer"
-                          value={formData.attributes?.manufacturer || ''}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter manufacturer name"
-                        />
-                      </div>
+                      <InputTextField
+                        label="Manufacturer"
+                        value={formData.attributes?.manufacturer}
+                        onChange={(value) => handleInputChange({ target: { name: 'attributes.manufacturer', value, type: 'text' } } as any)}
+                        placeholder="Enter manufacturer name"
+                      />
 
                       {/* Model Number */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Model Number
-                        </label>
-                        <input
-                          type="text"
-                          name="attributes.model_number"
-                          value={formData.attributes?.model_number || ''}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter model number"
-                        />
-                      </div>
+                      <InputTextField
+                        label="Model Number"
+                        value={formData.attributes?.model_number}
+                        onChange={(value) => handleInputChange({ target: { name: 'attributes.model_number', value, type: 'text' } } as any)}
+                        placeholder="Enter model number"
+                      />
                     </div>
                   </div>
                 </div>
@@ -1278,15 +1138,11 @@ const ProductEdit: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-900">Product Media</h2>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL
-                  </label>
-                  <input
+                  <InputTextField
                     type="url"
-                    name="media.image_url"
-                    value={formData.media?.image_url || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    label="Image URL"
+                    value={formData.media?.image_url}
+                    onChange={(value) => handleInputChange({ target: { name: 'media.image_url', value, type: 'url' } } as any)}
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>

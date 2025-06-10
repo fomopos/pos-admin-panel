@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
 import Button from '../ui/Button';
+import { InputTextField } from '../ui';
 import type { StoreUser, UpdateUserRequest, Department } from '../../services/types/user.types';
 
 interface EditUserModalProps {
@@ -144,85 +145,54 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, user, onClose, on
 
             {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.first_name || ''}
-                  onChange={(e) => handleInputChange('first_name', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.first_name ? 'border-red-300' : 'border-gray-300'}`}
-                  placeholder="Enter first name"
-                />
-                {errors.first_name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
-                )}
-              </div>
+              <InputTextField
+                label="First Name"
+                required
+                value={formData.first_name}
+                onChange={(value) => handleInputChange('first_name', value)}
+                placeholder="Enter first name"
+                error={errors.first_name}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.last_name || ''}
-                  onChange={(e) => handleInputChange('last_name', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.last_name ? 'border-red-300' : 'border-gray-300'}`}
-                  placeholder="Enter last name"
-                />
-                {errors.last_name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
-                )}
-              </div>
+              <InputTextField
+                label="Last Name"
+                required
+                value={formData.last_name}
+                onChange={(value) => handleInputChange('last_name', value)}
+                placeholder="Enter last name"
+                error={errors.last_name}
+              />
             </div>
 
             {/* Contact Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
-                  placeholder="Enter email address"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
+              <InputTextField
+                type="email"
+                label="Email Address"
+                required
+                value={formData.email}
+                onChange={(value) => handleInputChange('email', value)}
+                placeholder="Enter email address"
+                error={errors.email}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone || ''}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter phone number"
-                />
-              </div>
+              <InputTextField
+                type="tel"
+                label="Phone Number"
+                value={formData.phone}
+                onChange={(value) => handleInputChange('phone', value)}
+                placeholder="Enter phone number"
+              />
             </div>
 
             {/* Employment Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Employee ID
-                </label>
-                <input
-                  type="text"
-                  value={formData.employee_id || ''}
-                  onChange={(e) => handleInputChange('employee_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter employee ID"
-                />
-              </div>
+              <InputTextField
+                label="Employee ID"
+                value={formData.employee_id}
+                onChange={(value) => handleInputChange('employee_id', value)}
+                placeholder="Enter employee ID"
+              />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

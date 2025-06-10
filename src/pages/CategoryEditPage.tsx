@@ -19,7 +19,7 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox } from '../components/ui';
+import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField } from '../components/ui';
 import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -607,24 +607,15 @@ const CategoryEditPage: React.FC = () => {
             className="lg:col-span-2"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Category Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`w-full ${errors.name ? 'border-red-300' : 'border-gray-300'}`}
-                  placeholder="Enter category name"
-                />
-                {errors.name && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center">
-                    <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
-                    {errors.name}
-                  </p>
-                )}
-              </div>
+              <InputTextField
+                label="Category Name"
+                required
+                value={formData.name}
+                onChange={(value) => handleInputChange('name', value)}
+                placeholder="Enter category name"
+                error={errors.name}
+                colSpan="md:col-span-2"
+              />
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -813,21 +804,15 @@ const CategoryEditPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Sort Order
-                </label>
-                <Input
-                  type="number"
-                  value={formData.sort_order}
-                  onChange={(e) => handleInputChange('sort_order', parseInt(e.target.value) || 0)}
-                  className="w-full"
-                  placeholder="0"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  Lower numbers appear first in the category list
-                </p>
-              </div>
+              <InputTextField
+                label="Sort Order"
+                type="number"
+                value={formData.sort_order}
+                onChange={(value) => handleInputChange('sort_order', parseInt(value) || 0)}
+                placeholder="0"
+                helperText="Lower numbers appear first in the category list"
+                min={0}
+              />
             </div>
           </CategoryWidget>
 

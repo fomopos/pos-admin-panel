@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   ArrowLeftIcon,
   UserIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  KeyIcon,
   ShieldCheckIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
-import { Button, Card, Input, PageHeader, Loading } from '../../components/ui';
+import { Button, Card, PageHeader, Loading, InputTextField } from '../../components/ui';
 import { userService } from '../../services/user';
 import type { StoreUser, UpdateUserRequest, Department } from '../../services/types/user.types';
 import { DEPARTMENTS } from '../../services/types/user.types';
@@ -195,78 +192,50 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
 
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Input
-                          label="First Name *"
-                          type="text"
-                          value={formData.first_name || ''}
-                          onChange={(e) => handleInputChange('first_name', e.target.value)}
-                          placeholder="Enter first name"
-                          error={errors.first_name}
-                        />
-                      </div>
+                      <InputTextField
+                        label="First Name"
+                        required
+                        value={formData.first_name}
+                        onChange={(value) => handleInputChange('first_name', value)}
+                        placeholder="Enter first name"
+                        error={errors.first_name}
+                      />
 
-                      <div>
-                        <Input
-                          label="Last Name *"
-                          type="text"
-                          value={formData.last_name || ''}
-                          onChange={(e) => handleInputChange('last_name', e.target.value)}
-                          placeholder="Enter last name"
-                          error={errors.last_name}
-                        />
-                      </div>
+                      <InputTextField
+                        label="Last Name"
+                        required
+                        value={formData.last_name}
+                        onChange={(value) => handleInputChange('last_name', value)}
+                        placeholder="Enter last name"
+                        error={errors.last_name}
+                      />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address *
-                      </label>
-                      <div className="relative">
-                        <EnvelopeIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 z-10" />
-                        <Input
-                          type="email"
-                          value={formData.email || ''}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          placeholder="Enter email address"
-                          error={errors.email}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
+                    <InputTextField
+                      type="email"
+                      label="Email Address"
+                      required
+                      value={formData.email}
+                      onChange={(value) => handleInputChange('email', value)}
+                      placeholder="Enter email address"
+                      error={errors.email}
+                    />
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <PhoneIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 z-10" />
-                        <Input
-                          type="tel"
-                          value={formData.phone || ''}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          placeholder="Enter phone number"
-                          error={errors.phone}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
+                    <InputTextField
+                      type="tel"
+                      label="Phone Number"
+                      value={formData.phone}
+                      onChange={(value) => handleInputChange('phone', value)}
+                      placeholder="Enter phone number"
+                      error={errors.phone}
+                    />
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Employee ID
-                      </label>
-                      <div className="relative">
-                        <KeyIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 z-10" />
-                        <Input
-                          type="text"
-                          value={formData.employee_id || ''}
-                          onChange={(e) => handleInputChange('employee_id', e.target.value)}
-                          placeholder="Enter employee ID"
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
+                    <InputTextField
+                      label="Employee ID"
+                      value={formData.employee_id}
+                      onChange={(value) => handleInputChange('employee_id', value)}
+                      placeholder="Enter employee ID"
+                    />
                   </div>
                 </div>
               </Card>
@@ -320,16 +289,14 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                       )}
                     </div>
 
-                    <div>
-                      <Input
-                        label="Role Name *"
-                        type="text"
-                        value={formData.role_name || ''}
-                        onChange={(e) => handleInputChange('role_name', e.target.value)}
-                        placeholder="Enter role name"
-                        error={errors.role_name}
-                      />
-                    </div>
+                    <InputTextField
+                      label="Role Name"
+                      required
+                      value={formData.role_name}
+                      onChange={(value) => handleInputChange('role_name', value)}
+                      placeholder="Enter role name"
+                      error={errors.role_name}
+                    />
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -348,17 +315,15 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                       </select>
                     </div>
 
-                    <div>
-                      <Input
-                        label="PIN Code"
-                        type="password"
-                        value={formData.pin_code || ''}
-                        onChange={(e) => handleInputChange('pin_code', e.target.value)}
-                        placeholder="Enter new PIN (leave empty to keep current)"
-                        maxLength={6}
-                        helperText="Leave empty to keep the current PIN"
-                      />
-                    </div>
+                    <InputTextField
+                      type="password"
+                      label="PIN Code"
+                      value={formData.pin_code}
+                      onChange={(value) => handleInputChange('pin_code', value)}
+                      placeholder="Enter new PIN (leave empty to keep current)"
+                      maxLength={6}
+                      helperText="Leave empty to keep the current PIN"
+                    />
 
                     <div>
                       <label className="flex items-center space-x-3">
