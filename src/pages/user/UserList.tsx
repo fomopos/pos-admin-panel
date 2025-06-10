@@ -11,7 +11,8 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../../tenants/tenantStore';
-import { Button, Card, DataTable, PageHeader, Input } from '../../components/ui';
+import { Button, Card, DataTable, PageHeader, Input, ConfirmDialog } from '../../components/ui';
+import { useDeleteConfirmDialog } from '../../hooks/useConfirmDialog';
 import { userService } from '../../services/user';
 import type {
   StoreUser,
@@ -73,6 +74,8 @@ const UserList: React.FC<UserListProps> = ({
     }
   });
 
+  const deleteDialog = useDeleteConfirmDialog();
+
   // Fetch users and statistics
   useEffect(() => {
     if (currentStore?.store_id) {
@@ -122,21 +125,24 @@ const UserList: React.FC<UserListProps> = ({
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    const user = state.users.find(u => u.user_id === userId);
+    const userName = user ? `${user.first_name} ${user.last_name}` : 'this user';
     
-    try {
-      await userService.deleteUser(userId);
-      setState(prev => ({
-        ...prev,
-        successMessage: 'User deleted successfully',
-        users: prev.users.filter(u => u.user_id !== userId)
-      }));
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        errors: { ...prev.errors, delete: 'Failed to delete user' }
-      }));
-    }
+    deleteDialog.openDeleteDialog(userName, async () => {
+      try {
+        await userService.deleteUser(userId);
+        setState(prev => ({
+          ...prev,
+          successMessage: 'User deleted successfully',
+          users: prev.users.filter(u => u.user_id !== userId)
+        }));
+      } catch (error) {
+        setState(prev => ({
+          ...prev,
+          errors: { ...prev.errors, delete: 'Failed to delete user' }
+        }));
+      }
+    });
   };
 
   const columns = [
@@ -393,6 +399,18 @@ const UserList: React.FC<UserListProps> = ({
         />
       </Card>
 
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        onConfirm={deleteDialog.handleConfirm}
+        onClose={deleteDialog.closeDialog}
+        variant={deleteDialog.dialogState.variant}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

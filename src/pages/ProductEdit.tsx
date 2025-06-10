@@ -12,7 +12,8 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { PageHeader, EnhancedTabs, Button } from '../components/ui';
+import { PageHeader, EnhancedTabs, Button, ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import type { 
   Product,
   ProductFormErrors
@@ -83,6 +84,9 @@ const ProductEdit: React.FC = () => {
 
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
 
   // Mock data for editing - in real app, this would fetch from API
   useEffect(() => {
@@ -288,7 +292,9 @@ const ProductEdit: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    const productName = formData.name || 'this product';
+    
+    deleteDialog.openDeleteDialog(productName, async () => {
       setIsLoading(true);
       try {
         // Simulate API call
@@ -300,7 +306,7 @@ const ProductEdit: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-    }
+    });
   };
 
   const handleBack = () => {
@@ -1167,6 +1173,19 @@ const ProductEdit: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

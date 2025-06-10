@@ -14,6 +14,8 @@ import type { EnhancedCategory, CategoryTemplate } from '../../types/category';
 import { CATEGORY_TEMPLATES } from '../../types/category';
 import Button from '../ui/Button';
 import { Card } from '../ui/Card';
+import { ConfirmDialog } from '../ui';
+import { useDeleteConfirmDialog } from '../../hooks/useConfirmDialog';
 
 interface CategoryManagerProps {
   onCategorySelect?: (category: EnhancedCategory) => void;
@@ -40,6 +42,9 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
     inactive: 0,
     withProducts: 0
   });
+
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
 
   // Load categories and stats
   const loadCategories = useCallback(async () => {
@@ -84,17 +89,13 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   };
 
   const handleDeleteCategory = async (category: EnhancedCategory) => {
-    if (!window.confirm(t('categories.delete.confirm', { name: category.name }))) {
-      return;
-    }
-
-    try {
-      await categoryApiService.deleteCategory(category.category_id);
-      await loadCategories();
-    } catch (err) {
-      console.error('Failed to delete category:', err);
-      setError(t('categories.errors.deleteFailed'));
-    }
+    deleteDialog.openDeleteDialog(
+      category.name,
+      async () => {
+        await categoryApiService.deleteCategory(category.category_id);
+        await loadCategories();
+      }
+    );
   };
 
   const handleViewCategory = (category: EnhancedCategory) => {
@@ -318,6 +319,19 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };
@@ -383,6 +397,7 @@ export const CategoryManagerWithFAB: React.FC<CategoryManagerProps> = (props) =>
           </div>
         </div>
       </div>
+
     </div>
   );
 };

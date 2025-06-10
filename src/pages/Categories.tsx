@@ -13,9 +13,10 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog } from '../components/ui';
 import type { EnhancedCategory } from '../types/category';
 import useTenantStore from '../tenants/tenantStore';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 
 const Categories: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,9 @@ const Categories: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(true);
   const { currentTenant, currentStore } = useTenantStore();
+
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
 
   useEffect(() => {
     loadCategories();
@@ -68,18 +72,16 @@ const Categories: React.FC = () => {
     const category = categories.find(c => c.category_id === categoryId);
     if (!category) return;
 
-    if (window.confirm(t('categories.delete.confirm', { name: category.name }))) {
-      try {
+    deleteDialog.openDeleteDialog(
+      category.name,
+      async () => {
         await categoryApiService.deleteCategory(categoryId, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id,
         });
         await loadCategories(); // Reload the list
-      } catch (error) {
-        console.error('Failed to delete category:', error);
-        // Show error message to user
       }
-    }
+    );
   };
 
   return (
@@ -221,6 +223,19 @@ const Categories: React.FC = () => {
           )}
         </>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

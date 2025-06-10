@@ -10,7 +10,8 @@ import {
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline';
-import { PageHeader, Button } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 
 // Types for advanced filters
 interface PriceRange {
@@ -550,6 +551,8 @@ const Products: React.FC = () => {
     status: 'all'
   });
   
+  const deleteDialog = useDeleteConfirmDialog();
+  
   const categories = Array.from(new Set(products.map(p => p.category)));
   const suppliers = Array.from(new Set(products.map(p => p.supplier)));
   const allTags = Array.from(new Set(products.flatMap(p => p.tags)));
@@ -645,9 +648,12 @@ const Products: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    const product = products.find(p => p.id === id);
+    const productName = product ? product.name : 'this product';
+    
+    deleteDialog.openDeleteDialog(productName, () => {
       setProducts(products.filter(p => p.id !== id));
-    }
+    });
   };
 
   const handleClearFilters = () => {
@@ -1008,6 +1014,19 @@ const Products: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        onConfirm={deleteDialog.handleConfirm}
+        onClose={deleteDialog.closeDialog}
+        variant={deleteDialog.dialogState.variant}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

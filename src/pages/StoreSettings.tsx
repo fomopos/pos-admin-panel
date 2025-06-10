@@ -22,8 +22,10 @@ import {
   Card, 
   PageHeader, 
   Alert, 
-  EnhancedTabs 
+  EnhancedTabs,
+  ConfirmDialog 
 } from '../components/ui';
+import { useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { storeServices } from '../services/store';
 import type { StoreSettings } from '../services/types/store.types';
 
@@ -51,6 +53,8 @@ const StoreSettingsPage: React.FC = () => {
     errors: {},
     hasUnsavedChanges: false
   });
+
+  const discardDialog = useDiscardChangesDialog();
 
   // Fetch store settings
   useEffect(() => {
@@ -83,9 +87,10 @@ const StoreSettingsPage: React.FC = () => {
 
   const handleTabChange = (tabId: string) => {
     if (state.hasUnsavedChanges) {
-      if (!confirm('You have unsaved changes. Are you sure you want to switch tabs?')) {
-        return;
-      }
+      discardDialog.openDiscardDialog(() => {
+        setState(prev => ({ ...prev, activeTab: tabId, hasUnsavedChanges: false, errors: {} }));
+      });
+      return;
     }
     setState(prev => ({ ...prev, activeTab: tabId, hasUnsavedChanges: false, errors: {} }));
   };
@@ -268,6 +273,19 @@ const StoreSettingsPage: React.FC = () => {
           />
         )}
       </EnhancedTabs>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={discardDialog.dialogState.isOpen}
+        title={discardDialog.dialogState.title}
+        message={discardDialog.dialogState.message}
+        onConfirm={discardDialog.handleConfirm}
+        onClose={discardDialog.closeDialog}
+        variant={discardDialog.dialogState.variant}
+        confirmText={discardDialog.dialogState.confirmText}
+        cancelText={discardDialog.dialogState.cancelText}
+        isLoading={discardDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

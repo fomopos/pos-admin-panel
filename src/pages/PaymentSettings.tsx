@@ -12,7 +12,8 @@ import {
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader, Alert } from '../components/ui';
+import { Button, Card, PageHeader, Alert, ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { paymentServices } from '../services/payment';
 import type { Tender, CreateTenderRequest } from '../services/types/payment.types';
 
@@ -70,6 +71,9 @@ const PaymentSettings: React.FC = () => {
     errors: {}
   });
 
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
+
   useEffect(() => {
     loadTenders();
   }, [currentTenant]);
@@ -121,17 +125,20 @@ const PaymentSettings: React.FC = () => {
   };
 
   const handleDeleteTender = async (tenderId: string) => {
-    if (!confirm('Are you sure you want to delete this tender?')) return;
-
-    try {
-      await paymentServices.tender.deleteTender(tenderId);
-      setState(prev => ({
-        ...prev,
-        tenders: prev.tenders.filter(t => t.tender_id !== tenderId)
-      }));
-    } catch (error) {
-      console.error('Failed to delete tender:', error);
-    }
+    const tender = state.tenders.find(t => t.tender_id === tenderId);
+    const tenderName = tender ? tender.description || tender.type_code : 'this tender';
+    
+    deleteDialog.openDeleteDialog(tenderName, async () => {
+      try {
+        await paymentServices.tender.deleteTender(tenderId);
+        setState(prev => ({
+          ...prev,
+          tenders: prev.tenders.filter(t => t.tender_id !== tenderId)
+        }));
+      } catch (error) {
+        console.error('Failed to delete tender:', error);
+      }
+    });
   };
 
   const handleToggleStatus = async (tender: Tender) => {
@@ -569,6 +576,19 @@ const PaymentSettings: React.FC = () => {
           </Card>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

@@ -8,6 +8,8 @@ import { categoryApiService } from '../services/category/categoryApiService';
 import type { EnhancedCategory } from '../types/category';
 import Button from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 
 const Categories: React.FC = () => {
   const { t } = useTranslation();
@@ -17,6 +19,9 @@ const Categories: React.FC = () => {
   const [showCreateCategory, setShowCreateCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<EnhancedCategory | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
 
   // Load categories
   useEffect(() => {
@@ -50,18 +55,13 @@ const Categories: React.FC = () => {
   };
 
   const handleDeleteCategory = async (category: EnhancedCategory) => {
-    if (!window.confirm(t('categories.delete.confirm', { name: category.name }))) {
-      return;
-    }
-
-    try {
-      await categoryApiService.deleteCategory(category.category_id);
-      await loadCategories(); // Refresh the list
-      // Show success message
-    } catch (err) {
-      console.error('Failed to delete category:', err);
-      setError(t('categories.errors.deleteFailed'));
-    }
+    deleteDialog.openDeleteDialog(
+      category.name,
+      async () => {
+        await categoryApiService.deleteCategory(category.category_id);
+        await loadCategories(); // Refresh the list
+      }
+    );
   };
 
   const handleCategorySuccess = async (_category: EnhancedCategory) => {
@@ -139,6 +139,19 @@ const Categories: React.FC = () => {
           onSuccess={handleCategorySuccess}
           // Pass editing category data if editing
           initialTemplate={editingCategory ? undefined : undefined}
+        />
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={deleteDialog.dialogState.isOpen}
+          onClose={deleteDialog.closeDialog}
+          onConfirm={deleteDialog.handleConfirm}
+          title={deleteDialog.dialogState.title}
+          message={deleteDialog.dialogState.message}
+          confirmText={deleteDialog.dialogState.confirmText}
+          cancelText={deleteDialog.dialogState.cancelText}
+          variant={deleteDialog.dialogState.variant}
+          isLoading={deleteDialog.dialogState.isLoading}
         />
       </div>
     </div>

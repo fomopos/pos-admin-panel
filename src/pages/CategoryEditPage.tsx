@@ -19,11 +19,12 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Alert } from '../components/ui';
+import { PageHeader, Button, Input, Alert, ConfirmDialog } from '../components/ui';
 import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
+import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 
 // Category templates for quick setup
 const CATEGORY_TEMPLATES = [
@@ -111,6 +112,10 @@ const CategoryEditPage: React.FC = () => {
   const [showParentDropdown, setShowParentDropdown] = useState(false);
   const [parentSearchQuery, setParentSearchQuery] = useState('');
   const parentDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Dialog hooks
+  const deleteDialog = useDeleteConfirmDialog();
+  const discardDialog = useDiscardChangesDialog();
 
   // Load categories and current category data
   useEffect(() => {
@@ -319,65 +324,67 @@ const CategoryEditPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!id || !window.confirm('Are you sure you want to delete this category?')) return;
-
-    try {
-      await categoryApiService.deleteCategory(id, {
-        tenant_id: currentTenant?.id,
-        store_id: currentStore?.store_id
-      });
-      navigate('/categories');
-    } catch (error) {
-      console.error('Failed to delete category:', error);
-      setErrors({ submit: 'Failed to delete category. Please try again.' });
-    }
+    if (!id) return;
+    
+    deleteDialog.openDeleteDialog(
+      originalCategory?.name || 'this category',
+      async () => {
+        await categoryApiService.deleteCategory(id, {
+          tenant_id: currentTenant?.id,
+          store_id: currentStore?.store_id
+        });
+        navigate('/categories');
+      }
+    );
   };
 
   const discardChanges = () => {
-    if (originalCategory) {
-      setFormData({
-        name: originalCategory.name,
-        description: originalCategory.description || '',
-        parent_category_id: originalCategory.parent_category_id || undefined,
-        sort_order: originalCategory.sort_order || 0,
-        is_active: originalCategory.is_active ?? true,
-        display_on_main_screen: originalCategory.display_on_main_screen ?? false,
-        icon_url: originalCategory.icon_url || undefined,
-        image_url: originalCategory.image_url || undefined,
-        tags: originalCategory.tags || [],
-        properties: {
-          color: originalCategory.properties?.color || '#3B82F6',
-          tax_rate: originalCategory.properties?.tax_rate || 0,
-          commission_rate: originalCategory.properties?.commission_rate || 0,
-          featured: originalCategory.properties?.featured || false,
-          seasonal: originalCategory.properties?.seasonal || false,
-          ...originalCategory.properties
-        }
-      });
-    } else {
-      // Reset to empty form
-      setFormData({
-        name: '',
-        description: '',
-        parent_category_id: undefined,
-        sort_order: 0,
-        is_active: true,
-        display_on_main_screen: false,
-        icon_url: undefined,
-        image_url: undefined,
-        tags: [],
-        properties: {
-          color: '#3B82F6',
-          tax_rate: 0,
-          commission_rate: 0,
-          featured: false,
-          seasonal: false
-        }
-      });
-    }
-    
-    setErrors({});
-    setHasChanges(false);
+    discardDialog.openDiscardDialog(() => {
+      if (originalCategory) {
+        setFormData({
+          name: originalCategory.name,
+          description: originalCategory.description || '',
+          parent_category_id: originalCategory.parent_category_id || undefined,
+          sort_order: originalCategory.sort_order || 0,
+          is_active: originalCategory.is_active ?? true,
+          display_on_main_screen: originalCategory.display_on_main_screen ?? false,
+          icon_url: originalCategory.icon_url || undefined,
+          image_url: originalCategory.image_url || undefined,
+          tags: originalCategory.tags || [],
+          properties: {
+            color: originalCategory.properties?.color || '#3B82F6',
+            tax_rate: originalCategory.properties?.tax_rate || 0,
+            commission_rate: originalCategory.properties?.commission_rate || 0,
+            featured: originalCategory.properties?.featured || false,
+            seasonal: originalCategory.properties?.seasonal || false,
+            ...originalCategory.properties
+          }
+        });
+      } else {
+        // Reset to empty form
+        setFormData({
+          name: '',
+          description: '',
+          parent_category_id: undefined,
+          sort_order: 0,
+          is_active: true,
+          display_on_main_screen: false,
+          icon_url: undefined,
+          image_url: undefined,
+          tags: [],
+          properties: {
+            color: '#3B82F6',
+            tax_rate: 0,
+            commission_rate: 0,
+            featured: false,
+            seasonal: false
+          }
+        });
+      }
+      
+      setErrors({});
+      setHasChanges(false);
+    });
   };
 
   const saveAllChanges = () => {
@@ -1002,6 +1009,31 @@ const CategoryEditPage: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Confirm Dialogs */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={discardDialog.dialogState.isOpen}
+        onClose={discardDialog.closeDialog}
+        onConfirm={discardDialog.handleConfirm}
+        title={discardDialog.dialogState.title}
+        message={discardDialog.dialogState.message}
+        confirmText={discardDialog.dialogState.confirmText}
+        cancelText={discardDialog.dialogState.cancelText}
+        variant={discardDialog.dialogState.variant}
+        isLoading={discardDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

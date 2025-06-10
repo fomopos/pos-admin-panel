@@ -13,6 +13,8 @@ export { default as LanguageSwitcher } from './LanguageSwitcher';
 export { Tabs, TabsList, TabsTrigger, TabsContent, EnhancedTabs } from './Tabs';
 export { PageHeader } from './PageHeader';
 export { Alert } from './Alert';
+export { ConfirmDialog } from './ConfirmDialog';
+export { Modal } from './Modal';
 
 // Re-export types
 export type { ButtonProps } from './Button';

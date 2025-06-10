@@ -12,7 +12,8 @@ import {
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Input, Card, PageHeader, Alert, EnhancedTabs } from '../components/ui';
+import { Button, Input, Card, PageHeader, Alert, EnhancedTabs, ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { taxServices } from '../services/tax';
 import type {
   TaxAuthority,
@@ -35,6 +36,10 @@ const TaxSettings: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Dialog hooks
+  const deleteDialog = useDeleteConfirmDialog();
+  const discardDialog = useDiscardChangesDialog();
 
   // Fetch tax configuration using services
   useEffect(() => {
@@ -227,26 +232,32 @@ const TaxSettings: React.FC = () => {
   };
 
   const deleteRule = (groupId: string, ruleSeq: number) => {
-    if (!taxConfig || !window.confirm('Are you sure you want to delete this tax rule?')) return;
+    if (!taxConfig) return;
 
-    setTaxConfig(prev => ({
-      ...prev!,
-      tax_group: prev!.tax_group.map(group =>
-        group.tax_group_id === groupId
-          ? {
-              ...group,
-              group_rule: group.group_rule.filter(rule => rule.tax_rule_seq !== ruleSeq)
-            }
-          : group
-      )
-    }));
+    const group = taxConfig.tax_group.find(g => g.tax_group_id === groupId);
+    const rule = group?.group_rule.find(r => r.tax_rule_seq === ruleSeq);
+    const ruleName = rule ? rule.name : 'this tax rule';
 
-    // Remove from editing items
-    const key = `rule_${groupId}_${ruleSeq}`;
-    setEditingItems(prev => {
-      const newState = { ...prev };
-      delete newState[key];
-      return newState;
+    deleteDialog.openDeleteDialog(ruleName, () => {
+      setTaxConfig(prev => ({
+        ...prev!,
+        tax_group: prev!.tax_group.map(group =>
+          group.tax_group_id === groupId
+            ? {
+                ...group,
+                group_rule: group.group_rule.filter(rule => rule.tax_rule_seq !== ruleSeq)
+              }
+            : group
+        )
+      }));
+
+      // Remove from editing items
+      const key = `rule_${groupId}_${ruleSeq}`;
+      setEditingItems(prev => {
+        const newState = { ...prev };
+        delete newState[key];
+        return newState;
+      });
     });
   };
 
@@ -287,26 +298,32 @@ const TaxSettings: React.FC = () => {
   };
 
   const deleteItem = (type: 'authority' | 'group', id: string) => {
-    if (!taxConfig || !window.confirm('Are you sure you want to delete this item?')) return;
-    
-    if (type === 'authority') {
-      setTaxConfig(prev => ({
-        ...prev!,
-        authority: prev!.authority.filter(auth => auth.authority_id !== id)
-      }));
-    } else if (type === 'group') {
-      setTaxConfig(prev => ({
-        ...prev!,
-        tax_group: prev!.tax_group.filter(group => group.tax_group_id !== id)
-      }));
-    }
+    if (!taxConfig) return;
 
-    // Remove from editing items
-    const key = `${type}_${id}`;
-    setEditingItems(prev => {
-      const newState = { ...prev };
-      delete newState[key];
-      return newState;
+    const itemName = type === 'authority' 
+      ? taxConfig.authority.find(auth => auth.authority_id === id)?.name || 'this item'
+      : taxConfig.tax_group.find(group => group.tax_group_id === id)?.name || 'this item';
+
+    deleteDialog.openDeleteDialog(itemName, () => {
+      if (type === 'authority') {
+        setTaxConfig(prev => ({
+          ...prev!,
+          authority: prev!.authority.filter(auth => auth.authority_id !== id)
+        }));
+      } else if (type === 'group') {
+        setTaxConfig(prev => ({
+          ...prev!,
+          tax_group: prev!.tax_group.filter(group => group.tax_group_id !== id)
+        }));
+      }
+
+      // Remove from editing items
+      const key = `${type}_${id}`;
+      setEditingItems(prev => {
+        const newState = { ...prev };
+        delete newState[key];
+        return newState;
+      });
     });
   };
 
@@ -364,20 +381,20 @@ const TaxSettings: React.FC = () => {
   };
 
   const discardChanges = () => {
-    if (!window.confirm('Are you sure you want to discard all changes?')) return;
-    
-    if (originalTaxConfig) {
-      // Restore to original configuration
-      setTaxConfig(JSON.parse(JSON.stringify(originalTaxConfig)));
-    } else {
-      // For new configurations, clear the form
-      setTaxConfig(null);
-      setFetchError('No tax configuration available. Please reload the page to fetch data.');
-    }
-    
-    setEditingItems({});
-    setErrors({});
-    setSuccessMessage(null);
+    discardDialog.openDiscardDialog(() => {
+      if (originalTaxConfig) {
+        // Restore to original configuration
+        setTaxConfig(JSON.parse(JSON.stringify(originalTaxConfig)));
+      } else {
+        // For new configurations, clear the form
+        setTaxConfig(null);
+        setFetchError('No tax configuration available. Please reload the page to fetch data.');
+      }
+      
+      setEditingItems({});
+      setErrors({});
+      setSuccessMessage(null);
+    });
   };
 
   const getTotalTaxRate = (group: TaxGroup) => {
@@ -1145,6 +1162,31 @@ const TaxSettings: React.FC = () => {
           {errors.submit}
         </Alert>
       )}
+
+      {/* Confirm Dialogs */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
+
+      <ConfirmDialog
+        isOpen={discardDialog.dialogState.isOpen}
+        onClose={discardDialog.closeDialog}
+        onConfirm={discardDialog.handleConfirm}
+        title={discardDialog.dialogState.title}
+        message={discardDialog.dialogState.message}
+        confirmText={discardDialog.dialogState.confirmText}
+        cancelText={discardDialog.dialogState.cancelText}
+        variant={discardDialog.dialogState.variant}
+        isLoading={discardDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

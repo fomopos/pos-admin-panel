@@ -14,7 +14,8 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader } from '../components/ui';
+import { Button, Card, PageHeader, ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 
 interface Customer {
   id: string;
@@ -56,6 +57,10 @@ const Customers: React.FC = () => {
   
   // Suppress TS6133 warnings for unused variables that are defined but not used
   console.log({ showForm, selectedCustomer, showDetails });
+  
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
+  
   const [formData, setFormData] = useState<Partial<Customer>>({
     firstName: '',
     lastName: '',
@@ -315,9 +320,12 @@ const Customers: React.FC = () => {
   };
 
   const handleDelete = async (customerId: string) => {
-    if (window.confirm('Are you sure you want to delete this customer?')) {
+    const customer = customers.find(c => c.id === customerId);
+    const customerName = customer ? `${customer.firstName} ${customer.lastName}` : 'this customer';
+    
+    deleteDialog.openDeleteDialog(customerName, () => {
       setCustomers(prev => prev.filter(c => c.id !== customerId));
-    }
+    });
   };
 
   const handleViewDetails = (customer: Customer) => {
@@ -631,6 +639,19 @@ const Customers: React.FC = () => {
           )}
         </Card>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

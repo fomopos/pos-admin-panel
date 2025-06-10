@@ -11,6 +11,8 @@ import { useTenantStore } from '../tenants/tenantStore';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
+import { ConfirmDialog } from '../components/ui';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import DataTable, { type Column } from '../components/ui/DataTable';
 
 interface Product {
@@ -52,6 +54,9 @@ const ProductsWithDataTable: React.FC = () => {
     status: 'active',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Dialog hook
+  const deleteDialog = useDeleteConfirmDialog();
 
   // Mock data - in real app, this would come from API
   useEffect(() => {
@@ -226,9 +231,12 @@ const ProductsWithDataTable: React.FC = () => {
   };
 
   const handleDelete = async (productId: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    const product = products.find(p => p.id === productId);
+    const productName = product ? product.name : 'this product';
+    
+    deleteDialog.openDeleteDialog(productName, () => {
       setProducts(prev => prev.filter(p => p.id !== productId));
-    }
+    });
   };
 
   const handleCloseForm = () => {
@@ -588,6 +596,19 @@ const ProductsWithDataTable: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
     </div>
   );
 };
