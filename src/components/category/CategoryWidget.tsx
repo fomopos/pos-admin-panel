@@ -19,8 +19,8 @@ export const CategoryWidget: React.FC<CategoryWidgetProps> = ({
   headerActions
 }) => {
   return (
-    <Card className={`overflow-hidden ${className}`}>
-      <div className="px-6 py-4 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
+    <Card className={`${className.includes('overflow-visible') ? 'overflow-visible' : 'overflow-hidden'} ${className}`}>
+      <div className="px-4 sm:px-6 py-4 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {Icon && (
@@ -42,7 +42,7 @@ export const CategoryWidget: React.FC<CategoryWidgetProps> = ({
           )}
         </div>
       </div>
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {children}
       </div>
     </Card>

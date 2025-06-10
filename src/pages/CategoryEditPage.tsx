@@ -452,7 +452,7 @@ const CategoryEditPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <PageHeader
         title={isEditing ? 'Edit Category' : 'Create Category'}
@@ -592,13 +592,13 @@ const CategoryEditPage: React.FC = () => {
 
       {/* Main Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
           {/* Basic Information Widget */}
           <CategoryWidget
             title="Basic Information"
             description="Essential category details and identification"
             icon={InformationCircleIcon}
-            className="xl:col-span-2"
+            className="lg:col-span-2"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
@@ -682,10 +682,11 @@ const CategoryEditPage: React.FC = () => {
             title="Organization"
             description="Category hierarchy and ordering"
             icon={FolderIcon}
+            className="overflow-visible"
           >
-            <div className="space-y-6">
+            <div className="space-y-6 relative">
               <div className="relative">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Parent Category
                 </label>
                 <div className="relative" ref={parentDropdownRef}>
@@ -697,7 +698,7 @@ const CategoryEditPage: React.FC = () => {
                         setParentSearchQuery(''); // Reset search when opening
                       }
                     }}
-                    className={`w-full flex items-center justify-between px-4 py-3 border border-gray-300 rounded-lg bg-white hover:border-blue-300 transition-colors ${showParentDropdown ? 'border-blue-500 ring-2 ring-blue-200' : ''}`}
+                    className={`w-full flex items-center justify-between px-4 py-3 sm:py-4 border border-gray-300 rounded-lg bg-white hover:border-blue-300 transition-colors min-h-[48px] ${showParentDropdown ? 'border-blue-500 ring-2 ring-blue-200' : ''}`}
                   >
                     <span className="text-gray-700 truncate">
                       {formData.parent_category_id
@@ -709,10 +710,17 @@ const CategoryEditPage: React.FC = () => {
                   </button>
 
                   {showParentDropdown && (
-                    <div className="absolute z-[100] mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-2xl max-h-80 overflow-hidden"
-                         style={{ minWidth: '100%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+                    <div className="absolute z-[9999] mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-2xl max-h-80 sm:max-h-96"
+                         style={{ 
+                           minWidth: '100%', 
+                           maxHeight: 'min(400px, 60vh)', 
+                           boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                           zIndex: 9999,
+                           transform: 'translateZ(0)', // Force new stacking context
+                           willChange: 'auto' // Optimize for changes
+                         }}>
                       {/* Search Input */}
-                      <div className="p-3 border-b border-gray-100 bg-gray-50 sticky top-0">
+                      <div className="p-3 border-b border-gray-100 bg-gray-50 sticky top-0 z-10">
                         <div className="relative">
                           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                           <input
@@ -720,14 +728,14 @@ const CategoryEditPage: React.FC = () => {
                             placeholder="Search categories..."
                             value={parentSearchQuery}
                             onChange={(e) => setParentSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
+                            className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
                             autoFocus
                           />
                         </div>
                       </div>
 
                       {/* Category List */}
-                      <div className="max-h-60 overflow-y-auto">
+                      <div className="overflow-y-auto" style={{ maxHeight: 'min(280px, 45vh)' }}>
                         <button
                           type="button"
                           onClick={() => {
@@ -800,7 +808,7 @@ const CategoryEditPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Sort Order
                 </label>
                 <Input
@@ -810,6 +818,9 @@ const CategoryEditPage: React.FC = () => {
                   className="w-full"
                   placeholder="0"
                 />
+                <p className="text-xs text-gray-500 mt-2">
+                  Lower numbers appear first in the category list
+                </p>
               </div>
             </div>
           </CategoryWidget>
@@ -872,17 +883,17 @@ const CategoryEditPage: React.FC = () => {
             title="Settings"
             description="Category behavior and display options"
             icon={Cog6ToothIcon}
-            className="xl:col-span-2"
+            className="lg:col-span-2"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1 pr-4">
                   <h4 className="font-semibold text-gray-900">Active Status</h4>
                   <p className="text-sm text-gray-600 mt-1">
                     Whether this category is active and visible to customers
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                   <input
                     type="checkbox"
                     checked={formData.is_active}
@@ -893,14 +904,14 @@ const CategoryEditPage: React.FC = () => {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
+              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1 pr-4">
                   <h4 className="font-semibold text-gray-900">Display on Main Screen</h4>
                   <p className="text-sm text-gray-600 mt-1">
                     Show this category prominently on the main screen
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                   <input
                     type="checkbox"
                     checked={formData.display_on_main_screen}
@@ -911,14 +922,14 @@ const CategoryEditPage: React.FC = () => {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
+              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1 pr-4">
                   <h4 className="font-semibold text-gray-900">Featured Category</h4>
                   <p className="text-sm text-gray-600 mt-1">
                     Mark this category as featured for special promotion
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                   <input
                     type="checkbox"
                     checked={formData.properties?.featured || false}
@@ -929,14 +940,14 @@ const CategoryEditPage: React.FC = () => {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
+              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1 pr-4">
                   <h4 className="font-semibold text-gray-900">Seasonal Category</h4>
                   <p className="text-sm text-gray-600 mt-1">
                     This category contains seasonal or time-limited products
                   </p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                   <input
                     type="checkbox"
                     checked={formData.properties?.seasonal || false}
@@ -962,11 +973,12 @@ const CategoryEditPage: React.FC = () => {
         )}
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
           <Button
             type="button"
             variant="outline"
             onClick={() => navigate('/categories')}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
@@ -974,7 +986,7 @@ const CategoryEditPage: React.FC = () => {
           <Button
             type="submit"
             disabled={isSaving}
-            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6"
+            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 w-full sm:w-auto"
           >
             {isSaving ? (
               <>
