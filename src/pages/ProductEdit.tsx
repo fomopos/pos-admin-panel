@@ -18,7 +18,9 @@ import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService } from '../services/product';
 import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
+import { taxServices } from '../services/tax';
 import type { EnhancedCategory } from '../types/category';
+import type { TaxGroup } from '../services/types/tax.types';
 import type { 
   Product,
   ProductFormErrors
@@ -94,6 +96,10 @@ const ProductEdit: React.FC = () => {
   // Category state
   const [categories, setCategories] = useState<EnhancedCategory[]>([]);
 
+  // Tax groups state
+  const [taxGroups, setTaxGroups] = useState<TaxGroup[]>([]);
+  const [taxGroupsLoading, setTaxGroupsLoading] = useState(false);
+
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
@@ -115,6 +121,28 @@ const ProductEdit: React.FC = () => {
 
     loadCategories();
   }, [currentTenant, currentStore]);
+
+  // Load tax groups for dropdown
+  useEffect(() => {
+    const loadTaxGroups = async () => {
+      if (currentTenant) {
+        setTaxGroupsLoading(true);
+        try {
+          const taxConfig = await taxServices.configuration.getTaxConfiguration(currentTenant.id);
+          if (taxConfig && taxConfig.tax_group) {
+            setTaxGroups(taxConfig.tax_group);
+          }
+        } catch (error) {
+          console.error('Error loading tax groups:', error);
+          // If tax configuration fails, we'll fall back to empty array (already set in state)
+        } finally {
+          setTaxGroupsLoading(false);
+        }
+      }
+    };
+
+    loadTaxGroups();
+  }, [currentTenant]);
 
   // Load existing product data for editing
   useEffect(() => {
@@ -191,12 +219,11 @@ const ProductEdit: React.FC = () => {
 
   // Tax Group dropdown options
   const getTaxGroupDropdownOptions = (): DropdownSearchOption[] => {
-    return [
-      { id: 'standard', label: 'Standard', description: 'Standard tax rate applies' },
-      { id: 'reduced', label: 'Reduced', description: 'Reduced tax rate applies' },
-      { id: 'zero', label: 'Zero', description: 'Zero tax rate applies' },
-      { id: 'exempt', label: 'Exempt', description: 'Tax exempt product' }
-    ];
+    return taxGroups.map(group => ({
+      id: group.tax_group_id,
+      label: group.name,
+      description: group.description || `${group.group_rule.length} tax rules`
+    }));
   };
 
   // Handle tax group selection
@@ -528,12 +555,18 @@ const ProductEdit: React.FC = () => {
                     <DropdownSearch
                       label="Tax Group"
                       value={formData.tax_group}
-                      placeholder="Select tax group"
+                      placeholder={taxGroupsLoading ? "Loading tax groups..." : "Select tax group"}
                       searchPlaceholder="Search tax groups..."
                       options={getTaxGroupDropdownOptions()}
                       onSelect={handleTaxGroupSelect}
                       clearLabel="No Tax Group"
-                      noOptionsMessage="No tax groups available"
+                      noOptionsMessage={
+                        taxGroupsLoading 
+                          ? "Loading tax groups..." 
+                          : taxGroups.length === 0 
+                            ? "No tax groups configured. Please set up tax configuration first."
+                            : "No tax groups match your search"
+                      }
                       allowClear={true}
                       closeOnSelect={true}
                     />
