@@ -532,6 +532,33 @@ const ProductEdit: React.FC = () => {
                     colSpan="md:col-span-2"
                   />
 
+                  {/* Product ID */}
+                  <InputTextField
+                    label="Product ID"
+                    value={formData.item_id || ''}
+                    onChange={(value) => handleInputChange({ target: { name: 'item_id', value, type: 'text' } } as any)}
+                    placeholder={isEditing ? "Product ID (system generated)" : "Enter product ID (optional)"}
+                    disabled={isEditing}
+                    helperText={isEditing ? "Product ID cannot be changed after creation" : "Leave empty to auto-generate"}
+                  />
+
+                  {/* Category */}
+                  <div>
+                    <DropdownSearch
+                      label="Category"
+                      value={formData.attributes?.category_id}
+                      placeholder="No Category Selected"
+                      searchPlaceholder="Search categories..."
+                      options={getCategoryDropdownOptions()}
+                      onSelect={handleCategorySelect}
+                      displayValue={getCategoryDisplayValue}
+                      clearLabel="No Category"
+                      noOptionsMessage="No categories available"
+                      allowClear={true}
+                      closeOnSelect={true}
+                    />
+                  </div>
+
                   {/* UOM */}
                   <InputTextField
                     label="Unit of Measure"
@@ -942,25 +969,8 @@ const ProductEdit: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-900">Attributes & Properties</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Category */}
-                  <div>
-                    <DropdownSearch
-                      label="Category"
-                      value={formData.attributes?.category_id}
-                      placeholder="No Category Selected"
-                      searchPlaceholder="Search categories..."
-                      options={getCategoryDropdownOptions()}
-                      onSelect={handleCategorySelect}
-                      displayValue={getCategoryDisplayValue}
-                      clearLabel="No Category"
-                      noOptionsMessage="No categories available"
-                      allowClear={true}
-                      closeOnSelect={true}
-                    />
-                  </div>
-
                   {/* Tags */}
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Tags
                     </label>
