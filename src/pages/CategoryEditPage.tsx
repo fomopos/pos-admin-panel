@@ -19,7 +19,7 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading } from '../components/ui';
+import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox } from '../components/ui';
 import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -892,77 +892,34 @@ const CategoryEditPage: React.FC = () => {
             className="lg:col-span-2"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1 pr-4">
-                  <h4 className="font-semibold text-gray-900">Active Status</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Whether this category is active and visible to customers
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_active}
-                    onChange={(e) => handleInputChange('is_active', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                </label>
-              </div>
+              <PropertyCheckbox
+                title="Active Status"
+                description="Whether this category is active and visible to customers"
+                checked={formData.is_active}
+                onChange={(checked) => handleInputChange('is_active', checked)}
+              />
 
-              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1 pr-4">
-                  <h4 className="font-semibold text-gray-900">Display on Main Screen</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Show this category prominently on the main screen
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={formData.display_on_main_screen}
-                    onChange={(e) => handleInputChange('display_on_main_screen', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                </label>
-              </div>
+              <PropertyCheckbox
+                title="Display on Main Screen"
+                description="Show this category prominently on the main screen"
+                checked={formData.display_on_main_screen}
+                onChange={(checked) => handleInputChange('display_on_main_screen', checked)}
+              />
 
-              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1 pr-4">
-                  <h4 className="font-semibold text-gray-900">Featured Category</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Mark this category as featured for special promotion
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={formData.properties?.featured || false}
-                    onChange={(e) => handlePropertyChange('featured', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                </label>
-              </div>
+              <PropertyCheckbox
+                title="Featured Category"
+                description="Mark this category as featured for special promotion"
+                checked={formData.properties?.featured || false}
+                onChange={(checked) => handlePropertyChange('featured', checked)}
+              />
 
-              <div className="flex items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1 pr-4">
-                  <h4 className="font-semibold text-gray-900">Seasonal Category</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    This category contains seasonal or time-limited products
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={formData.properties?.seasonal || false}
-                    onChange={(e) => handlePropertyChange('seasonal', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                </label>
-              </div>
+              <PropertyCheckbox
+                title="Seasonal Category"
+                description="This category contains seasonal or time-limited products"
+                checked={formData.properties?.seasonal || false}
+                onChange={(checked) => handlePropertyChange('seasonal', checked)}
+              />
+
             </div>
           </CategoryWidget>
         </div>
