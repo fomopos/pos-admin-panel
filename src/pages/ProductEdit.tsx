@@ -189,6 +189,55 @@ const ProductEdit: React.FC = () => {
     return category.name;
   };
 
+  // Tax Group dropdown options
+  const getTaxGroupDropdownOptions = (): DropdownSearchOption[] => {
+    return [
+      { id: 'standard', label: 'Standard', description: 'Standard tax rate applies' },
+      { id: 'reduced', label: 'Reduced', description: 'Reduced tax rate applies' },
+      { id: 'zero', label: 'Zero', description: 'Zero tax rate applies' },
+      { id: 'exempt', label: 'Exempt', description: 'Tax exempt product' }
+    ];
+  };
+
+  // Handle tax group selection
+  const handleTaxGroupSelect = (option: DropdownSearchOption | null) => {
+    handleInputChange({
+      target: { name: 'tax_group', value: option?.id || '' }
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  // Stock Status dropdown options
+  const getStockStatusDropdownOptions = (): DropdownSearchOption[] => {
+    return [
+      { id: 'in_stock', label: 'In Stock', description: 'Product is available' },
+      { id: 'out_of_stock', label: 'Out of Stock', description: 'Product is not available' },
+      { id: 'backorder', label: 'Backorder', description: 'Can be ordered but not immediately available' },
+      { id: 'discontinued', label: 'Discontinued', description: 'Product is no longer available' }
+    ];
+  };
+
+  // Handle stock status selection
+  const handleStockStatusSelect = (option: DropdownSearchOption | null) => {
+    handleInputChange({
+      target: { name: 'stock_status', value: option?.id || 'in_stock' }
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  // Discount Type dropdown options
+  const getDiscountTypeDropdownOptions = (): DropdownSearchOption[] => {
+    return [
+      { id: 'percentage', label: 'Percentage', description: 'Discount as a percentage of price' },
+      { id: 'fixed', label: 'Fixed Amount', description: 'Discount as a fixed dollar amount' }
+    ];
+  };
+
+  // Handle discount type selection
+  const handleDiscountTypeSelect = (option: DropdownSearchOption | null) => {
+    handleInputChange({
+      target: { name: 'pricing.discount_type', value: option?.id || 'percentage' }
+    } as React.ChangeEvent<HTMLInputElement>);
+  };
+
   const validateForm = (): boolean => {
     const newErrors: ProductFormErrors = {};
 
@@ -476,21 +525,18 @@ const ProductEdit: React.FC = () => {
 
                   {/* Tax Group */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tax Group
-                    </label>
-                    <select
-                      name="tax_group"
-                      value={formData.tax_group || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Select tax group</option>
-                      <option value="standard">Standard</option>
-                      <option value="reduced">Reduced</option>
-                      <option value="zero">Zero</option>
-                      <option value="exempt">Exempt</option>
-                    </select>
+                    <DropdownSearch
+                      label="Tax Group"
+                      value={formData.tax_group}
+                      placeholder="Select tax group"
+                      searchPlaceholder="Search tax groups..."
+                      options={getTaxGroupDropdownOptions()}
+                      onSelect={handleTaxGroupSelect}
+                      clearLabel="No Tax Group"
+                      noOptionsMessage="No tax groups available"
+                      allowClear={true}
+                      closeOnSelect={true}
+                    />
                   </div>
 
                   {/* Fiscal ID */}
@@ -503,20 +549,18 @@ const ProductEdit: React.FC = () => {
 
                   {/* Stock Status */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Stock Status
-                    </label>
-                    <select
-                      name="stock_status"
+                    <DropdownSearch
+                      label="Stock Status"
                       value={formData.stock_status || 'in_stock'}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="in_stock">In Stock</option>
-                      <option value="out_of_stock">Out of Stock</option>
-                      <option value="backorder">Backorder</option>
-                      <option value="discontinued">Discontinued</option>
-                    </select>
+                      placeholder="Select stock status"
+                      searchPlaceholder="Search stock status..."
+                      options={getStockStatusDropdownOptions()}
+                      onSelect={handleStockStatusSelect}
+                      clearLabel="Default Status"
+                      noOptionsMessage="No status options available"
+                      allowClear={false}
+                      closeOnSelect={true}
+                    />
                   </div>
 
                   {/* Description */}
@@ -613,18 +657,18 @@ const ProductEdit: React.FC = () => {
 
                   {/* Discount Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Discount Type
-                    </label>
-                    <select
-                      name="pricing.discount_type"
+                    <DropdownSearch
+                      label="Discount Type"
                       value={formData.pricing?.discount_type || 'percentage'}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="percentage">Percentage</option>
-                      <option value="fixed">Fixed Amount</option>
-                    </select>
+                      placeholder="Select discount type"
+                      searchPlaceholder="Search discount types..."
+                      options={getDiscountTypeDropdownOptions()}
+                      onSelect={handleDiscountTypeSelect}
+                      clearLabel="Default Type"
+                      noOptionsMessage="No discount types available"
+                      allowClear={false}
+                      closeOnSelect={true}
+                    />
                   </div>
 
                   {/* Discount Value */}
