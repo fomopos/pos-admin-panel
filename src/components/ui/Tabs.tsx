@@ -121,6 +121,7 @@ interface EnhancedTabsProps {
   onTabChange: (tabId: string) => void;
   className?: string;
   children: React.ReactNode;
+  allowOverflow?: boolean; // Add option to control overflow behavior
 }
 
 export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({ 
@@ -128,10 +129,15 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
   activeTab, 
   onTabChange, 
   className,
-  children 
+  children,
+  allowOverflow = false // Default to false to maintain existing behavior
 }) => {
   return (
-    <div className={cn('w-full bg-white rounded-2xl shadow-sm overflow-hidden', className)}>
+    <div className={cn(
+      'w-full bg-white rounded-2xl shadow-sm', 
+      allowOverflow ? 'overflow-visible' : 'overflow-hidden', 
+      className
+    )}>
       <div className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
         <nav className="flex overflow-x-auto px-4">
           {tabs.map((tab) => {

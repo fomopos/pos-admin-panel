@@ -201,14 +201,10 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
         {/* Dropdown Menu */}
         {isOpen && (
           <div 
-            className={`absolute z-[9999] mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-2xl max-h-80 sm:max-h-96 ${dropdownClassName}`}
+            className={`absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg ${dropdownClassName}`}
             style={{ 
-              minWidth: '100%', 
-              maxHeight: maxHeight, 
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
-              zIndex: 9999,
-              transform: 'translateZ(0)',
-              willChange: 'auto'
+              maxHeight: maxHeight,
+              minWidth: '100%'
             }}
           >
             {/* Search Input */}

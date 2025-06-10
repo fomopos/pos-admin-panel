@@ -435,6 +435,7 @@ const ProductEdit: React.FC = () => {
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            allowOverflow={true}
           >
             {/* Tab Content */}
             <div className="px-6 py-8">
