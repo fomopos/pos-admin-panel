@@ -86,7 +86,7 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       className={cn(
         'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors',
         'hover:text-slate-700 hover:border-slate-300',
-        'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+        'focus:outline-none',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         isActive
           ? 'border-primary-500 text-primary-600'
@@ -152,7 +152,7 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
                 className={cn(
                   'relative whitespace-nowrap py-3 px-4 font-medium text-sm flex items-center space-x-2',
                   'transition-all duration-200 ease-in-out',
-                  'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+                  'focus:outline-none',
                   'disabled:opacity-50 disabled:cursor-not-allowed',
                   'hover:text-primary-600',
                   isActive
