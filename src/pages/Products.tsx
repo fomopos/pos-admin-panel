@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   PlusIcon, 
@@ -10,8 +10,11 @@ import {
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline';
-import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useTenantStore } from '../tenants/tenantStore';
+import { productService } from '../services/product';
+import type { ApiProduct } from '../services/types/product.types';
 
 // Types for advanced filters
 interface PriceRange {
@@ -52,118 +55,6 @@ interface Product {
   createdAt: Date;
   updatedAt: Date;
 }
-
-// Mock data for demonstration
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Premium Coffee Beans',
-    description: 'High-quality arabica coffee beans sourced from Colombia',
-    price: 24.99,
-    cost: 12.50,
-    sku: 'COFFEE-001',
-    category: 'Beverages',
-    stockQuantity: 150,
-    minStockLevel: 20,
-    unit: 'bag',
-    supplier: 'Colombian Coffee Co.',
-    barcode: '1234567890123',
-    tags: ['coffee', 'premium', 'arabica'],
-    isActive: true,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-20'),
-  },
-  {
-    id: '2',
-    name: 'Wireless Headphones',
-    description: 'Bluetooth wireless headphones with noise cancellation',
-    price: 199.99,
-    cost: 89.99,
-    sku: 'AUDIO-002',
-    category: 'Electronics',
-    stockQuantity: 45,
-    minStockLevel: 10,
-    unit: 'piece',
-    supplier: 'Tech Supply Inc.',
-    barcode: '2345678901234',
-    tags: ['wireless', 'bluetooth', 'audio'],
-    isActive: true,
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-18'),
-  },
-  {
-    id: '3',
-    name: 'Organic Green Tea',
-    description: 'Premium organic green tea leaves',
-    price: 18.50,
-    cost: 8.25,
-    sku: 'TEA-003',
-    category: 'Beverages',
-    stockQuantity: 75,
-    minStockLevel: 15,
-    unit: 'box',
-    supplier: 'Organic Tea Farms',
-    barcode: '3456789012345',
-    tags: ['tea', 'organic', 'green'],
-    isActive: true,
-    createdAt: new Date('2024-01-12'),
-    updatedAt: new Date('2024-01-19'),
-  },
-  {
-    id: '4',
-    name: 'Smartphone Case',
-    description: 'Protective case for iPhone 15 Pro',
-    price: 29.99,
-    cost: 15.00,
-    sku: 'CASE-004',
-    category: 'Electronics',
-    stockQuantity: 8,
-    minStockLevel: 10,
-    unit: 'piece',
-    supplier: 'Mobile Accessories Ltd.',
-    barcode: '4567890123456',
-    tags: ['case', 'protection', 'mobile'],
-    isActive: true,
-    createdAt: new Date('2024-01-05'),
-    updatedAt: new Date('2024-01-15'),
-  },
-  {
-    id: '5',
-    name: 'Luxury Chocolate',
-    description: 'Belgian dark chocolate premium collection',
-    price: 45.00,
-    cost: 22.50,
-    sku: 'CHOC-005',
-    category: 'Food',
-    stockQuantity: 0,
-    minStockLevel: 5,
-    unit: 'box',
-    supplier: 'European Delights',
-    barcode: '5678901234567',
-    tags: ['chocolate', 'luxury', 'belgian'],
-    isActive: false,
-    createdAt: new Date('2024-01-08'),
-    updatedAt: new Date('2024-01-22'),
-  },
-  {
-    id: '6',
-    name: 'Office Chair',
-    description: 'Ergonomic office chair with lumbar support',
-    price: 299.99,
-    cost: 150.00,
-    sku: 'FURN-006',
-    category: 'Furniture',
-    stockQuantity: 25,
-    minStockLevel: 5,
-    unit: 'piece',
-    supplier: 'Office Solutions Inc.',
-    barcode: '6789012345678',
-    tags: ['chair', 'ergonomic', 'office'],
-    isActive: true,
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-25'),
-  },
-];
 
 const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => void; onDelete: (id: string) => void }> = ({
   product,
@@ -535,7 +426,9 @@ const AdvancedFilterPanel: React.FC<{
 
 const Products: React.FC = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const { currentTenant, currentStore } = useTenantStore();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -556,6 +449,42 @@ const Products: React.FC = () => {
   const categories = Array.from(new Set(products.map(p => p.category)));
   const suppliers = Array.from(new Set(products.map(p => p.supplier)));
   const allTags = Array.from(new Set(products.flatMap(p => p.tags)));
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!currentTenant || !currentStore) return;
+      setIsLoading(true);
+      try {
+        const res = await productService.getProducts(currentTenant.id, currentStore.store_id);
+        // Map API products to UI Product type
+        const mapped = res.items.map(apiProduct => ({
+          id: apiProduct.item_id,
+          name: apiProduct.name,
+          description: apiProduct.description || '',
+          price: apiProduct.list_price,
+          cost: 0, // Not available in API, set to 0 or fetch if available
+          sku: apiProduct.item_id,
+          category: apiProduct.categories?.[0] || '',
+          stockQuantity: 0, // Not available in API, set to 0 or fetch if available
+          minStockLevel: 0, // Not available in API, set to 0 or fetch if available
+          unit: apiProduct.uom || '',
+          supplier: '', // Not available in API
+          barcode: '', // Not available in API
+          tags: apiProduct.categories || [],
+          isActive: apiProduct.active !== false,
+          createdAt: new Date(apiProduct.created_at),
+          updatedAt: new Date(apiProduct.updated_at),
+        }));
+        setProducts(mapped);
+      } catch (error) {
+        console.error('Failed to fetch products', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [currentTenant, currentStore]);
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(product => {
@@ -651,8 +580,20 @@ const Products: React.FC = () => {
     const product = products.find(p => p.id === id);
     const productName = product ? product.name : 'this product';
     
-    deleteDialog.openDeleteDialog(productName, () => {
-      setProducts(products.filter(p => p.id !== id));
+    deleteDialog.openDeleteDialog(productName, async () => {
+      if (!currentTenant || !currentStore) {
+        console.error('Tenant or store not selected');
+        return;
+      }
+
+      try {
+        await productService.deleteProduct(currentTenant.id, currentStore.store_id, id);
+        setProducts(products.filter(p => p.id !== id));
+        console.log('Product deleted successfully');
+      } catch (error) {
+        console.error('Failed to delete product:', error);
+        // Could show a toast notification here
+      }
     });
   };
 
@@ -676,6 +617,18 @@ const Products: React.FC = () => {
     advancedFilters.stockLevel !== 'all' || advancedFilters.suppliers.length > 0 ||
     advancedFilters.tags.length > 0 || advancedFilters.dateRange.start ||
     advancedFilters.dateRange.end || advancedFilters.status !== 'all';
+
+  // Show loading spinner
+  if (isLoading) {
+    return (
+      <Loading
+        title="Loading Products"
+        description="Please wait while we fetch your product data..."
+        fullScreen={false}
+        size="lg"
+      />
+    );
+  }
 
   return (
     <div className="p-6">

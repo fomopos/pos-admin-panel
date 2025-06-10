@@ -12,8 +12,9 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { PageHeader, EnhancedTabs, Button, ConfirmDialog } from '../components/ui';
+import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { productService } from '../services/product';
 import type { 
   Product,
   ProductFormErrors
@@ -23,7 +24,7 @@ const ProductEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
-  const { currentStore } = useTenantStore();
+  const { currentStore, currentTenant } = useTenantStore();
   
   const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -84,78 +85,35 @@ const ProductEdit: React.FC = () => {
 
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
-  // Mock data for editing - in real app, this would fetch from API
+  // Load existing product data for editing
   useEffect(() => {
-    if (isEditing && id) {
-      // Simulate loading existing product data
-      setFormData({
-        item_id: id,
-        name: 'Premium Coffee Beans',
-        description: 'High-quality coffee beans sourced from the best farms around the world. Perfect for espresso and drip coffee.',
-        store_id: currentStore?.store_id || '',
-        uom: 'lb',
-        brand: 'Premium Coffee Co.',
-        tax_group: 'standard',
-        fiscal_id: 'PCB001',
-        stock_status: 'in_stock',
-        pricing: {
-          list_price: 24.99,
-          sale_price: 19.99,
-          tare_value: 0.1,
-          tare_uom: 'lb',
-          discount_type: 'percentage',
-          discount_value: 20,
-          min_discount_value: 5,
-          max_discount_value: 30
-        },
-        settings: {
-          track_inventory: true,
-          allow_backorder: false,
-          require_serial: false,
-          taxable: true,
-          measure_required: false,
-          non_inventoried: false,
-          shippable: true,
-          serialized: false,
-          active: true,
-          disallow_discount: false,
-          online_only: false
-        },
-        prompts: {
-          prompt_qty: true,
-          prompt_price: false,
-          prompt_weight: 1.0,
-          prompt_uom: false,
-          prompt_description: false,
-          prompt_cost: false,
-          prompt_serial: false,
-          prompt_lot: false,
-          prompt_expiry: false
-        },
-        attributes: {
-          manufacturer: 'Premium Coffee Co.',
-          model_number: 'PCB-001',
-          category_id: 'beverages',
-          tags: ['coffee', 'premium', 'organic'],
-          custom_attributes: {
-            origin: 'Colombia',
-            roast_level: 'Medium'
-          },
-          properties: {
-            organic: 'true',
-            fair_trade: 'true'
-          }
-        },
-        media: {
-          image_url: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&h=400&fit=crop'
+    const loadProduct = async () => {
+      if (isEditing && id && currentTenant && currentStore) {
+        setIsLoadingData(true);
+        try {
+          const apiProduct = await productService.getProduct(
+            currentTenant.id,
+            currentStore.store_id,
+            id
+          );
+          const product = productService.mapApiProductToProduct(apiProduct);
+          setFormData(product);
+        } catch (error) {
+          console.error('Error loading product:', error);
+          // Handle error - maybe show a toast or redirect
+        } finally {
+          setIsLoadingData(false);
         }
-      });
-    }
-  }, [isEditing, id, currentStore]);
+      }
+    };
+
+    loadProduct();
+  }, [isEditing, id, currentTenant, currentStore]);
 
   const validateForm = (): boolean => {
     const newErrors: ProductFormErrors = {};
@@ -276,33 +234,65 @@ const ProductEdit: React.FC = () => {
       return;
     }
 
+    if (!currentTenant || !currentStore) {
+      console.error('Tenant or store not selected');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (isEditing && id) {
+        // Update existing product
+        const updateRequest = productService.mapProductToCreateRequest(formData as Product);
+        await productService.updateProduct(
+          currentTenant.id,
+          currentStore.store_id,
+          id,
+          updateRequest
+        );
+        console.log('Product updated successfully');
+      } else {
+        // Create new product
+        const createRequest = productService.mapProductToCreateRequest(formData as Product);
+        await productService.createProduct(
+          currentTenant.id,
+          currentStore.store_id,
+          createRequest
+        );
+        console.log('Product created successfully');
+      }
       
-      console.log('Saving product:', formData);
       navigate('/products');
     } catch (error) {
       console.error('Error saving product:', error);
+      // Handle error - maybe show a toast notification
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = async () => {
+    if (!currentTenant || !currentStore || !id) {
+      console.error('Missing required data for deletion');
+      return;
+    }
+
     const productName = formData.name || 'this product';
     
     deleteDialog.openDeleteDialog(productName, async () => {
       setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Deleting product:', id);
+        await productService.deleteProduct(
+          currentTenant.id,
+          currentStore.store_id,
+          id
+        );
+        console.log('Product deleted successfully');
         navigate('/products');
       } catch (error) {
         console.error('Error deleting product:', error);
+        // Handle error - maybe show a toast notification
       } finally {
         setIsLoading(false);
       }
@@ -320,6 +310,18 @@ const ProductEdit: React.FC = () => {
     { id: 'attributes', name: 'Attributes', icon: TagIcon },
     { id: 'media', name: 'Media', icon: PhotoIcon }
   ];
+
+  // Show loading screen while fetching data
+  if (isLoadingData) {
+    return (
+      <Loading
+        title={isEditing ? "Loading Product" : "Initializing"}
+        description={isEditing ? "Please wait while we fetch the product details..." : "Setting up the product form..."}
+        fullScreen={true}
+        size="lg"
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

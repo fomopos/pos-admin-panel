@@ -1,4 +1,4 @@
-// Product Types - Based on comprehensive JSON payload structure
+// Product Types - Based on API response structure
 
 export interface ProductPricing {
   list_price: number;
@@ -48,6 +48,51 @@ export interface ProductAttributes {
 
 export interface ProductMedia {
   image_url?: string;
+}
+
+// API Response Product structure - matches actual API response
+export interface ApiProduct {
+  item_id: string;
+  tenant_id: string;
+  store_id: string;
+  name: string;
+  description?: string;
+  merch_level1?: string | null;
+  merch_level2?: string | null;
+  merch_level3?: string | null;
+  merch_level4?: string | null;
+  image_url?: string | null;
+  list_price: number;
+  sale_price?: number;
+  measure_required?: boolean | null;
+  parent_item_id?: string | null;
+  non_inventoried?: boolean | null;
+  brand?: string | null;
+  serialized?: boolean | null;
+  tax_group?: string;
+  uom?: string | null;
+  active?: boolean | null;
+  categories?: string[];
+  custom_attribute?: Record<string, any> | null;
+  properties?: Record<string, any> | null;
+  created_at: string;
+  create_user_id: string;
+  updated_at: string;
+  update_user_id?: string | null;
+  // Additional API fields
+  shippable?: boolean;
+  fiscal_item_id?: string;
+  fiscal_item_description?: string;
+  disallow_discount?: boolean;
+  prompt_qty?: boolean;
+  prompt_price?: boolean;
+  prompt_description?: boolean;
+  non_returnable?: boolean;
+  food_stamp_eligible?: boolean;
+  stock_status?: string;
+  tare_value?: number;
+  tare_uom?: string | null;
+  online_only?: boolean;
 }
 
 export interface Product {
