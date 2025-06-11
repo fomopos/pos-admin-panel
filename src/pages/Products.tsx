@@ -29,7 +29,7 @@ interface DateRange {
 interface AdvancedFilters {
   priceRange: PriceRange;
   stockLevel: 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
-  suppliers: string[];
+  supplier: string;
   tags: string[];
   dateRange: DateRange;
   status: 'all' | 'active' | 'inactive';
@@ -64,16 +64,16 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
   const isOutOfStock = product.stockQuantity === 0;
   
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:border-primary-200 group">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 sm:p-6 hover:shadow-md transition-all duration-200 hover:border-primary-200 group">
+      <div className="flex justify-between items-start mb-3 sm:mb-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
             {product.name}
           </h3>
-          <p className="text-sm text-gray-500 mt-1 font-mono">{product.sku}</p>
-          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{product.description}</p>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 font-mono">{product.sku}</p>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 line-clamp-2">{product.description}</p>
         </div>
-        <div className="flex space-x-1 ml-4">
+        <div className="flex space-x-1 ml-2 sm:ml-4">
           <Button
             variant="ghost"
             size="sm"
@@ -93,15 +93,15 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-50 rounded-lg p-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
+        <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
           <span className="text-xs text-gray-500 uppercase tracking-wide">Price</span>
-          <p className="font-semibold text-lg text-green-600">${product.price}</p>
+          <p className="font-semibold text-sm sm:text-lg text-green-600">${product.price}</p>
           <span className="text-xs text-gray-500">Cost: ${product.cost}</span>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
+        <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
           <span className="text-xs text-gray-500 uppercase tracking-wide">Stock</span>
-          <p className={`font-semibold text-lg ${
+          <p className={`font-semibold text-sm sm:text-lg ${
             isOutOfStock ? 'text-red-600' : 
             stockStatus === 'low' ? 'text-yellow-600' : 'text-gray-900'
           }`}>
@@ -112,18 +112,18 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
       </div>
       
       <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded-full font-medium">
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-primary-100 text-primary-700 text-xs rounded-full font-medium">
             {product.category}
           </span>
           {product.tags.length > 0 && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+            <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
               +{product.tags.length} tags
             </span>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          <span className={`px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs rounded-full font-medium ${
             product.isActive 
               ? 'bg-green-100 text-green-800' 
               : 'bg-red-100 text-red-800'
@@ -131,12 +131,12 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
             {product.isActive ? 'Active' : 'Inactive'}
           </span>
           {isOutOfStock && (
-            <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">
+            <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">
               Out of Stock
             </span>
           )}
           {stockStatus === 'low' && !isOutOfStock && (
-            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
+            <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
               Low Stock
             </span>
           )}
@@ -162,27 +162,27 @@ const ProductListItem: React.FC<{
   
   return (
     <tr className={`hover:bg-primary-50 transition-colors group ${isEven ? 'bg-gray-25' : 'bg-white'}`}>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div>
-          <div className="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+          <div className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
             {product.name}
           </div>
-          <div className="text-sm text-gray-500 font-mono">{product.sku}</div>
+          <div className="text-xs sm:text-sm text-gray-500 font-mono">{product.sku}</div>
           <div className="text-xs text-gray-400 mt-1 truncate max-w-xs">{product.description}</div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
           {product.category}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-semibold text-green-600">${product.price}</div>
+      <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+        <div className="text-xs sm:text-sm font-semibold text-green-600">${product.price}</div>
         <div className="text-xs text-gray-500">Cost: ${product.cost}</div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div className="flex items-center space-x-2">
-          <span className={`text-sm font-semibold ${
+          <span className={`text-xs sm:text-sm font-semibold ${
             isOutOfStock ? 'text-red-600' : 
             stockStatus === 'low' ? 'text-yellow-600' : 'text-gray-900'
           }`}>
@@ -201,7 +201,7 @@ const ProductListItem: React.FC<{
         </div>
         <div className="text-xs text-gray-500">Min: {product.minStockLevel}</div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div className="flex flex-col space-y-1">
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
             product.isActive 
@@ -217,8 +217,8 @@ const ProductListItem: React.FC<{
           )}
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        <div className="flex space-x-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+      <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+        <div className="flex space-x-1 sm:space-x-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="sm"
@@ -250,9 +250,9 @@ const AdvancedFilterPanel: React.FC<{
   allTags: string[];
 }> = ({ filters, onFiltersChange, onClearFilters, suppliers, allTags }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Advanced Filters</h3>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Advanced Filters</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -264,7 +264,7 @@ const AdvancedFilterPanel: React.FC<{
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Price Range */}
         <div className="space-y-3">
           <label className="block text-sm font-medium text-gray-700">Price Range</label>
@@ -630,7 +630,7 @@ const Products: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
       <PageHeader
         title="Products"
@@ -646,7 +646,7 @@ const Products: React.FC = () => {
       </PageHeader>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="flex-1 relative">
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -776,7 +776,7 @@ const Products: React.FC = () => {
       )}
 
       {/* Results Summary and Sorting */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 bg-white rounded-lg border border-gray-200 p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
         <div className="flex items-center space-x-4 mb-4 sm:mb-0">
           <div className="text-sm text-gray-600">
             <span className="font-semibold text-gray-900">{filteredProducts.length}</span> products found
@@ -816,8 +816,8 @@ const Products: React.FC = () => {
       </div>
 
       {/* Products Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

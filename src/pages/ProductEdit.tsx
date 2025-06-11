@@ -475,7 +475,7 @@ const ProductEdit: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         {/* Header */}
         <PageHeader
           title={isEditing ? 'Edit Product' : 'Create Product'}
@@ -514,13 +514,13 @@ const ProductEdit: React.FC = () => {
             allowOverflow={true}
           >
             {/* Tab Content */}
-            <div className="px-6 py-8">
+            <div className="px-3 sm:px-6 py-4 sm:py-8">
             {/* Basic Info Tab */}
             {activeTab === 'basic' && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Basic Information</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Product Name */}
                   <InputTextField
                     label="Product Name"
@@ -643,10 +643,10 @@ const ProductEdit: React.FC = () => {
 
             {/* Pricing Tab */}
             {activeTab === 'pricing' && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">Pricing Information</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Pricing Information</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* List Price */}
                   <InputMoneyField
                     label="List Price"
@@ -738,10 +738,10 @@ const ProductEdit: React.FC = () => {
 
             {/* Settings Tab */}
             {activeTab === 'settings' && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">Product Settings</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Product Settings</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Inventory Settings */}
                   <div className="space-y-4">
                     <h3 className="text-md font-medium text-gray-800">Inventory Settings</h3>
@@ -934,10 +934,10 @@ const ProductEdit: React.FC = () => {
 
             {/* Attributes Tab */}
             {activeTab === 'attributes' && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">Attributes & Properties</h2>
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Attributes & Properties</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Tags */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
