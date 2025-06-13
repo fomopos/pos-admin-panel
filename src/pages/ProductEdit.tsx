@@ -1142,7 +1142,7 @@ const ProductEdit: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2  bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isLoading ? (
                 <>
