@@ -25,7 +25,9 @@ import {
   EnhancedTabs,
   ConfirmDialog,
   Loading,
-  InputTextField
+  InputTextField,
+  PropertyCheckbox,
+  InputMoneyField
 } from '../components/ui';
 import { useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { storeServices } from '../services/store';
@@ -64,8 +66,22 @@ const StoreSettingsPage: React.FC = () => {
       setState(prev => ({ ...prev, isLoading: true }));
       
       try {
-        // Use the store settings service
-        const settings = await storeServices.settings.getMockStoreSettings();
+        const tenantId = currentTenant?.id || '272e';
+        const storeId = currentStore?.store_id || '*';
+        
+        // Try to fetch real settings first, fallback to mock data
+        let settings: StoreSettings | null = null;
+        
+        try {
+          settings = await storeServices.settings.getStoreSettings({
+            tenant_id: tenantId,
+            store_id: storeId
+          });
+        } catch (apiError) {
+          console.warn('Failed to fetch real store settings, using mock data:', apiError);
+          settings = await storeServices.settings.getMockStoreSettings();
+        }
+        
         setState(prev => ({ ...prev, settings, isLoading: false }));
       } catch (error) {
         console.error('Failed to fetch store settings:', error);
@@ -74,7 +90,7 @@ const StoreSettingsPage: React.FC = () => {
     };
 
     fetchSettings();
-  }, [currentTenant]);
+  }, [currentTenant, currentStore]);
 
   const tabs = [
     { id: 'information', name: 'Store Information', icon: BuildingStorefrontIcon },
@@ -475,7 +491,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
           {formData.business_hours.map((hours, index) => (
             <div key={hours.day} className="flex items-center space-x-4">
               <div className="w-24">
-                <span className="text-sm font-medium text-slate-700">{hours.day}</span>
+                <span className="text-sm font-medium text-slate-700 capitalize">{hours.day}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <input
@@ -523,25 +539,13 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
   );
 };
 
-// Regional Settings Tab Component (simplified for now)
+// Regional Settings Tab Component 
 const RegionalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }) => {
   const [formData, setFormData] = useState(settings.regional_settings);
 
-  const currencies = [
-    { code: 'USD', name: 'US Dollar', symbol: '$' },
-    { code: 'EUR', name: 'Euro', symbol: '€' },
-    { code: 'GBP', name: 'British Pound', symbol: '£' },
-    { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
-    { code: 'INR', name: 'Indian Rupee', symbol: '₹' }
-  ];
-
-  const timezones = [
-    { code: 'America/New_York', name: 'Eastern Time (US)' },
-    { code: 'America/Chicago', name: 'Central Time (US)' },
-    { code: 'America/Los_Angeles', name: 'Pacific Time (US)' },
-    { code: 'Europe/London', name: 'Greenwich Mean Time' },
-    { code: 'Asia/Dubai', name: 'Gulf Standard Time' }
-  ];
+  // Get supported currencies and timezones from the service
+  const currencies = storeServices.settings.getSupportedCurrencies();
+  const timezones = storeServices.settings.getSupportedTimezones();
 
   const handleFieldChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -626,17 +630,12 @@ const RegionalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
         </div>
 
         <div className="mt-6">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.tax_inclusive_pricing}
-              onChange={(e) => handleFieldChange('tax_inclusive_pricing', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <span className="ml-2 text-sm text-slate-700">
-              Tax-inclusive pricing (prices include tax)
-            </span>
-          </label>
+          <PropertyCheckbox
+            title="Tax-inclusive pricing"
+            description="Prices include tax in the displayed amount"
+            checked={formData.tax_inclusive_pricing}
+            onChange={(checked) => handleFieldChange('tax_inclusive_pricing', checked)}
+          />
         </div>
       </Card>
 
@@ -718,42 +717,26 @@ const ReceiptSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChang
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="showLogo"
-              checked={formData.show_logo}
-              onChange={(e) => handleFieldChange('show_logo', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="showLogo" className="ml-2 text-sm text-slate-700">
-              Show Logo
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="showBarcode"
-              checked={formData.show_barcode}
-              onChange={(e) => handleFieldChange('show_barcode', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="showBarcode" className="ml-2 text-sm text-slate-700">
-              Show Barcode
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="showQrCode"
-              checked={formData.show_qr_code}
-              onChange={(e) => handleFieldChange('show_qr_code', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="showQrCode" className="ml-2 text-sm text-slate-700">
-              Show QR Code
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Show Logo"
+            description="Display store logo on receipts"
+            checked={formData.show_logo}
+            onChange={(checked) => handleFieldChange('show_logo', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Show Barcode"
+            description="Include transaction barcode on receipts"
+            checked={formData.show_barcode}
+            onChange={(checked) => handleFieldChange('show_barcode', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Show QR Code"
+            description="Display QR code for digital receipt access"
+            checked={formData.show_qr_code}
+            onChange={(checked) => handleFieldChange('show_qr_code', checked)}
+          />
         </div>
       </Card>
 
@@ -761,42 +744,26 @@ const ReceiptSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChang
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Receipt Content</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="showCustomerInfo"
-              checked={formData.show_customer_info}
-              onChange={(e) => handleFieldChange('show_customer_info', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="showCustomerInfo" className="ml-2 text-sm text-slate-700">
-              Show Customer Info
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="showTaxBreakdown"
-              checked={formData.show_tax_breakdown}
-              onChange={(e) => handleFieldChange('show_tax_breakdown', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="showTaxBreakdown" className="ml-2 text-sm text-slate-700">
-              Show Tax Breakdown
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="showPaymentDetails"
-              checked={formData.show_payment_details}
-              onChange={(e) => handleFieldChange('show_payment_details', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="showPaymentDetails" className="ml-2 text-sm text-slate-700">
-              Show Payment Details
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Show Customer Info"
+            description="Display customer information on receipts"
+            checked={formData.show_customer_info}
+            onChange={(checked) => handleFieldChange('show_customer_info', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Show Tax Breakdown"
+            description="Include detailed tax calculations"
+            checked={formData.show_tax_breakdown}
+            onChange={(checked) => handleFieldChange('show_tax_breakdown', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Show Payment Details"
+            description="Display payment method information"
+            checked={formData.show_payment_details}
+            onChange={(checked) => handleFieldChange('show_payment_details', checked)}
+          />
         </div>
       </Card>
 
@@ -835,18 +802,12 @@ const ReceiptSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChang
         </div>
         
         <div className="mt-6">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="autoPrint"
-              checked={formData.auto_print}
-              onChange={(e) => handleFieldChange('auto_print', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="autoPrint" className="ml-2 text-sm text-slate-700">
-              Auto Print Receipt After Sale
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Auto Print Receipt After Sale"
+            description="Automatically print receipts when transactions are completed"
+            checked={formData.auto_print}
+            onChange={(checked) => handleFieldChange('auto_print', checked)}
+          />
         </div>
       </Card>
 
@@ -973,18 +934,12 @@ const HardwareConfigTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Barcode Scanner</h3>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="barcodeEnabled"
-              checked={formData.barcode_scanner.enabled}
-              onChange={(e) => handleBarcodeFieldChange('enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="barcodeEnabled" className="ml-2 text-sm text-slate-700">
-              Enable Barcode Scanner
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Enable Barcode Scanner"
+            description="Allow barcode scanning for product identification"
+            checked={formData.barcode_scanner.enabled}
+            onChange={(checked) => handleBarcodeFieldChange('enabled', checked)}
+          />
 
           {formData.barcode_scanner.enabled && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -1047,18 +1002,12 @@ const HardwareConfigTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Receipt Printer</h3>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="printerEnabled"
-              checked={formData.receipt_printer.enabled}
-              onChange={(e) => handlePrinterFieldChange('enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="printerEnabled" className="ml-2 text-sm text-slate-700">
-              Enable Receipt Printer
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Enable Receipt Printer"
+            description="Allow printing receipts to a connected printer"
+            checked={formData.receipt_printer.enabled}
+            onChange={(checked) => handlePrinterFieldChange('enabled', checked)}
+          />
 
           {formData.receipt_printer.enabled && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -1125,33 +1074,22 @@ const HardwareConfigTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Cash Drawer</h3>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="cashDrawerEnabled"
-              checked={formData.cash_drawer.enabled}
-              onChange={(e) => handleCashDrawerFieldChange('enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="cashDrawerEnabled" className="ml-2 text-sm text-slate-700">
-              Enable Cash Drawer
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Enable Cash Drawer"
+            description="Connect and control a cash drawer for cash transactions"
+            checked={formData.cash_drawer.enabled}
+            onChange={(checked) => handleCashDrawerFieldChange('enabled', checked)}
+          />
 
           {formData.cash_drawer.enabled && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="autoOpen"
-                  checked={formData.cash_drawer.auto_open}
-                  onChange={(e) => handleCashDrawerFieldChange('auto_open', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                />
-                <label htmlFor="autoOpen" className="ml-2 text-sm text-slate-700">
-                  Auto Open Drawer
-                </label>
-              </div>
+              <PropertyCheckbox
+                title="Auto Open Drawer"
+                description="Automatically open cash drawer for cash transactions"
+                checked={formData.cash_drawer.auto_open}
+                onChange={(checked) => handleCashDrawerFieldChange('auto_open', checked)}
+              />
+              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Trigger Event
@@ -1174,18 +1112,12 @@ const HardwareConfigTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Customer Display</h3>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="displayEnabled"
-              checked={formData.customer_display.enabled}
-              onChange={(e) => handleDisplayFieldChange('enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="displayEnabled" className="ml-2 text-sm text-slate-700">
-              Enable Customer Display
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Enable Customer Display"
+            description="Show transaction details on a customer-facing display"
+            checked={formData.customer_display.enabled}
+            onChange={(checked) => handleDisplayFieldChange('enabled', checked)}
+          />
 
           {formData.customer_display.enabled && (
             <div className="text-sm text-slate-600">
@@ -1305,42 +1237,26 @@ const OperationalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldC
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="outOfStockNotifications"
-              checked={formData.inventory_alerts.out_of_stock_notifications}
-              onChange={(e) => handleInventoryFieldChange('out_of_stock_notifications', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="outOfStockNotifications" className="ml-2 text-sm text-slate-700">
-              Out of Stock Notifications
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="negativeInventory"
-              checked={formData.inventory_alerts.negative_inventory_allowed}
-              onChange={(e) => handleInventoryFieldChange('negative_inventory_allowed', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="negativeInventory" className="ml-2 text-sm text-slate-700">
-              Allow Negative Inventory
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="autoReorder"
-              checked={formData.inventory_alerts.auto_reorder}
-              onChange={(e) => handleInventoryFieldChange('auto_reorder', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="autoReorder" className="ml-2 text-sm text-slate-700">
-              Auto Reorder
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Out of Stock Notifications"
+            description="Receive alerts when products are out of stock"
+            checked={formData.inventory_alerts.out_of_stock_notifications}
+            onChange={(checked) => handleInventoryFieldChange('out_of_stock_notifications', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Allow Negative Inventory"
+            description="Permit selling items with negative stock levels"
+            checked={formData.inventory_alerts.negative_inventory_allowed}
+            onChange={(checked) => handleInventoryFieldChange('negative_inventory_allowed', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Auto Reorder"
+            description="Automatically create reorder requests at reorder point"
+            checked={formData.inventory_alerts.auto_reorder}
+            onChange={(checked) => handleInventoryFieldChange('auto_reorder', checked)}
+          />
         </div>
       </Card>
 
@@ -1361,72 +1277,47 @@ const OperationalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldC
               placeholder="30"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Restocking Fee (%)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={formData.return_policy.restocking_fee_percentage || ''}
-              onChange={(e) => handleReturnFieldChange('restocking_fee_percentage', parseFloat(e.target.value) || undefined)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="0.00"
-            />
-          </div>
+          <InputMoneyField
+            label="Restocking Fee (%)"
+            value={formData.return_policy.restocking_fee_percentage?.toString() || ''}
+            onChange={(value) => handleReturnFieldChange('restocking_fee_percentage', parseFloat(value) || undefined)}
+            placeholder="0.00"
+            min={0}
+            max={100}
+            step={0.01}
+            currencySymbol="%"
+            currencyPosition="after"
+          />
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="returnsAllowed"
-              checked={formData.return_policy.returns_allowed}
-              onChange={(e) => handleReturnFieldChange('returns_allowed', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="returnsAllowed" className="ml-2 text-sm text-slate-700">
-              Allow Returns
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="requireReceipt"
-              checked={formData.return_policy.require_receipt}
-              onChange={(e) => handleReturnFieldChange('require_receipt', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="requireReceipt" className="ml-2 text-sm text-slate-700">
-              Require Receipt
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="partialReturns"
-              checked={formData.return_policy.partial_returns_allowed}
-              onChange={(e) => handleReturnFieldChange('partial_returns_allowed', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="partialReturns" className="ml-2 text-sm text-slate-700">
-              Allow Partial Returns
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="exchangeAllowed"
-              checked={formData.return_policy.exchange_allowed}
-              onChange={(e) => handleReturnFieldChange('exchange_allowed', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="exchangeAllowed" className="ml-2 text-sm text-slate-700">
-              Allow Exchanges
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Allow Returns"
+            description="Enable customers to return purchased items"
+            checked={formData.return_policy.returns_allowed}
+            onChange={(checked) => handleReturnFieldChange('returns_allowed', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Require Receipt"
+            description="Require receipt for processing returns"
+            checked={formData.return_policy.require_receipt}
+            onChange={(checked) => handleReturnFieldChange('require_receipt', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Allow Partial Returns"
+            description="Enable partial quantity returns for items"
+            checked={formData.return_policy.partial_returns_allowed}
+            onChange={(checked) => handleReturnFieldChange('partial_returns_allowed', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Allow Exchanges"
+            description="Enable product exchanges instead of refunds"
+            checked={formData.return_policy.exchange_allowed}
+            onChange={(checked) => handleReturnFieldChange('exchange_allowed', checked)}
+          />
         </div>
       </Card>
 
@@ -1434,79 +1325,58 @@ const OperationalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldC
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Discount Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Maximum Discount (%)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={formData.discount_settings.max_discount_percentage}
-              onChange={(e) => handleDiscountFieldChange('max_discount_percentage', parseFloat(e.target.value))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="25.00"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Approval Threshold (%)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={formData.discount_settings.approval_threshold_percentage}
-              onChange={(e) => handleDiscountFieldChange('approval_threshold_percentage', parseFloat(e.target.value))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="10.00"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Employee Discount (%)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={formData.discount_settings.employee_discount_percentage || ''}
-              onChange={(e) => handleDiscountFieldChange('employee_discount_percentage', parseFloat(e.target.value) || undefined)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="15.00"
-              disabled={!formData.discount_settings.employee_discount_allowed}
-            />
-          </div>
+          <InputMoneyField
+            label="Maximum Discount (%)"
+            value={formData.discount_settings.max_discount_percentage?.toString() || ''}
+            onChange={(value) => handleDiscountFieldChange('max_discount_percentage', parseFloat(value) || 0)}
+            placeholder="25.00"
+            min={0}
+            max={100}
+            step={0.01}
+            currencySymbol="%"
+            currencyPosition="after"
+          />
+          
+          <InputMoneyField
+            label="Approval Threshold (%)"
+            value={formData.discount_settings.approval_threshold_percentage?.toString() || ''}
+            onChange={(value) => handleDiscountFieldChange('approval_threshold_percentage', parseFloat(value) || 0)}
+            placeholder="10.00"
+            min={0}
+            max={100}
+            step={0.01}
+            currencySymbol="%"
+            currencyPosition="after"
+          />
+          
+          <InputMoneyField
+            label="Employee Discount (%)"
+            value={formData.discount_settings.employee_discount_percentage?.toString() || ''}
+            onChange={(value) => handleDiscountFieldChange('employee_discount_percentage', parseFloat(value) || undefined)}
+            placeholder="15.00"
+            min={0}
+            max={100}
+            step={0.01}
+            currencySymbol="%"
+            currencyPosition="after"
+            disabled={!formData.discount_settings.employee_discount_allowed}
+          />
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="managerApproval"
-              checked={formData.discount_settings.manager_approval_required}
-              onChange={(e) => handleDiscountFieldChange('manager_approval_required', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="managerApproval" className="ml-2 text-sm text-slate-700">
-              Manager Approval Required
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="employeeDiscount"
-              checked={formData.discount_settings.employee_discount_allowed}
-              onChange={(e) => handleDiscountFieldChange('employee_discount_allowed', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="employeeDiscount" className="ml-2 text-sm text-slate-700">
-              Employee Discount Allowed
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Manager Approval Required"
+            description="Require manager approval for discounts above threshold"
+            checked={formData.discount_settings.manager_approval_required}
+            onChange={(checked) => handleDiscountFieldChange('manager_approval_required', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Employee Discount Allowed"
+            description="Allow employees to apply special discount rates"
+            checked={formData.discount_settings.employee_discount_allowed}
+            onChange={(checked) => handleDiscountFieldChange('employee_discount_allowed', checked)}
+          />
         </div>
       </Card>
 
@@ -1527,73 +1397,47 @@ const OperationalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldC
               placeholder="100"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Minimum Sale Amount
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.transaction_settings.minimum_sale_amount || ''}
-              onChange={(e) => handleTransactionFieldChange('minimum_sale_amount', parseFloat(e.target.value) || undefined)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="0.00"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Maximum Sale Amount
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.transaction_settings.maximum_sale_amount || ''}
-              onChange={(e) => handleTransactionFieldChange('maximum_sale_amount', parseFloat(e.target.value) || undefined)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="10000.00"
-            />
-          </div>
+          
+          <InputMoneyField
+            label="Minimum Sale Amount"
+            value={formData.transaction_settings.minimum_sale_amount?.toString() || ''}
+            onChange={(value) => handleTransactionFieldChange('minimum_sale_amount', parseFloat(value) || undefined)}
+            placeholder="0.00"
+            min={0}
+            step={0.01}
+          />
+          
+          <InputMoneyField
+            label="Maximum Sale Amount"
+            value={formData.transaction_settings.maximum_sale_amount?.toString() || ''}
+            onChange={(value) => handleTransactionFieldChange('maximum_sale_amount', parseFloat(value) || undefined)}
+            placeholder="10000.00"
+            min={0}
+            step={0.01}
+          />
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="voidApproval"
-              checked={formData.transaction_settings.void_requires_approval}
-              onChange={(e) => handleTransactionFieldChange('void_requires_approval', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="voidApproval" className="ml-2 text-sm text-slate-700">
-              Void Requires Approval
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="refundApproval"
-              checked={formData.transaction_settings.refund_requires_approval}
-              onChange={(e) => handleTransactionFieldChange('refund_requires_approval', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="refundApproval" className="ml-2 text-sm text-slate-700">
-              Refund Requires Approval
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="priceOverride"
-              checked={formData.transaction_settings.price_override_allowed}
-              onChange={(e) => handleTransactionFieldChange('price_override_allowed', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="priceOverride" className="ml-2 text-sm text-slate-700">
-              Allow Price Override
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Void Requires Approval"
+            description="Require manager approval to void transactions"
+            checked={formData.transaction_settings.void_requires_approval}
+            onChange={(checked) => handleTransactionFieldChange('void_requires_approval', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Refund Requires Approval"  
+            description="Require manager approval for refund transactions"
+            checked={formData.transaction_settings.refund_requires_approval}
+            onChange={(checked) => handleTransactionFieldChange('refund_requires_approval', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Allow Price Override"
+            description="Allow cashiers to override product prices"
+            checked={formData.transaction_settings.price_override_allowed}
+            onChange={(checked) => handleTransactionFieldChange('price_override_allowed', checked)}
+          />
         </div>
       </Card>
 
@@ -1815,18 +1659,12 @@ const UserManagementTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange
         </div>
         
         <div className="mt-6">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="autoLogoutIdle"
-              checked={formData.session_settings.auto_logout_on_idle}
-              onChange={(e) => handleSessionSettingsChange('auto_logout_on_idle', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="autoLogoutIdle" className="ml-2 text-sm text-slate-700">
-              Auto Logout on Idle
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Auto Logout on Idle"
+            description="Automatically log out users after idle timeout period"
+            checked={formData.session_settings.auto_logout_on_idle}
+            onChange={(checked) => handleSessionSettingsChange('auto_logout_on_idle', checked)}
+          />
         </div>
       </Card>
 
@@ -1950,18 +1788,12 @@ const IntegrationsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Accounting Software</h3>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="accountingEnabled"
-              checked={formData.accounting_software.enabled}
-              onChange={(e) => handleAccountingChange('enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="accountingEnabled" className="ml-2 text-sm text-slate-700">
-              Enable Accounting Integration
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Enable Accounting Integration"
+            description="Sync sales data with your accounting software"
+            checked={formData.accounting_software.enabled}
+            onChange={(checked) => handleAccountingChange('enabled', checked)}
+          />
 
           {formData.accounting_software.enabled && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -1997,18 +1829,12 @@ const IntegrationsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }
                 </select>
               </div>
               <div className="md:col-span-2">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="autoSync"
-                    checked={formData.accounting_software.auto_sync}
-                    onChange={(e) => handleAccountingChange('auto_sync', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                  />
-                  <label htmlFor="autoSync" className="ml-2 text-sm text-slate-700">
-                    Enable Auto Sync
-                  </label>
-                </div>
+                <PropertyCheckbox
+                  title="Enable Auto Sync"
+                  description="Automatically sync data at specified intervals"
+                  checked={formData.accounting_software.auto_sync}
+                  onChange={(checked) => handleAccountingChange('auto_sync', checked)}
+                />
                 {formData.accounting_software.last_sync && (
                   <p className="text-sm text-slate-500 mt-2">
                     Last sync: {new Date(formData.accounting_software.last_sync).toLocaleString()}
@@ -2370,18 +2196,12 @@ const SecuritySettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="cloudBackup"
-                  checked={formData.data_backup.cloud_backup_enabled}
-                  onChange={(e) => handleDataBackupChange('cloud_backup_enabled', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                />
-                <label htmlFor="cloudBackup" className="ml-2 text-sm text-slate-700">
-                  Enable Cloud Backup
-                </label>
-              </div>
+              <PropertyCheckbox
+                title="Enable Cloud Backup"
+                description="Store backups securely in the cloud"
+                checked={formData.data_backup.cloud_backup_enabled}
+                onChange={(checked) => handleDataBackupChange('cloud_backup_enabled', checked)}
+              />
             </div>
           )}
         </div>
@@ -2391,18 +2211,12 @@ const SecuritySettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Audit Logs</h3>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="auditEnabled"
-              checked={formData.audit_logs.enabled}
-              onChange={(e) => handleAuditLogsChange('enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="auditEnabled" className="ml-2 text-sm text-slate-700">
-              Enable Audit Logging
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="Enable Audit Logging"
+            description="Track and log system activities for security monitoring"
+            checked={formData.audit_logs.enabled}
+            onChange={(checked) => handleAuditLogsChange('enabled', checked)}
+          />
 
           {formData.audit_logs.enabled && (
             <div className="space-y-4">
@@ -2466,54 +2280,33 @@ const SecuritySettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Compliance</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="pciCompliance"
-              checked={formData.compliance.pci_compliance_enabled}
-              onChange={(e) => handleComplianceChange('pci_compliance_enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="pciCompliance" className="ml-2 text-sm text-slate-700">
-              PCI Compliance
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="gdprCompliance"
-              checked={formData.compliance.gdpr_compliance_enabled}
-              onChange={(e) => handleComplianceChange('gdpr_compliance_enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="gdprCompliance" className="ml-2 text-sm text-slate-700">
-              GDPR Compliance
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="dataEncryption"
-              checked={formData.compliance.data_encryption_enabled}
-              onChange={(e) => handleComplianceChange('data_encryption_enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="dataEncryption" className="ml-2 text-sm text-slate-700">
-              Data Encryption
-            </label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="accessLogging"
-              checked={formData.compliance.access_logging_enabled}
-              onChange={(e) => handleComplianceChange('access_logging_enabled', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-            />
-            <label htmlFor="accessLogging" className="ml-2 text-sm text-slate-700">
-              Access Logging
-            </label>
-          </div>
+          <PropertyCheckbox
+            title="PCI Compliance"
+            description="Enable Payment Card Industry compliance features"
+            checked={formData.compliance.pci_compliance_enabled}
+            onChange={(checked) => handleComplianceChange('pci_compliance_enabled', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="GDPR Compliance"
+            description="Enable General Data Protection Regulation compliance"
+            checked={formData.compliance.gdpr_compliance_enabled}
+            onChange={(checked) => handleComplianceChange('gdpr_compliance_enabled', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Data Encryption"
+            description="Enable encryption for sensitive data storage"
+            checked={formData.compliance.data_encryption_enabled}
+            onChange={(checked) => handleComplianceChange('data_encryption_enabled', checked)}
+          />
+          
+          <PropertyCheckbox
+            title="Access Logging"
+            description="Log all system access attempts and activities"
+            checked={formData.compliance.access_logging_enabled}
+            onChange={(checked) => handleComplianceChange('access_logging_enabled', checked)}
+          />
         </div>
       </Card>
 
@@ -2551,30 +2344,19 @@ const SecuritySettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="twoFactorAuth"
-                checked={formData.security_policies.two_factor_authentication_required}
-                onChange={(e) => handleSecurityPoliciesChange('two_factor_authentication_required', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-              />
-              <label htmlFor="twoFactorAuth" className="ml-2 text-sm text-slate-700">
-                Require Two-Factor Authentication
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="ipWhitelist"
-                checked={formData.security_policies.ip_whitelist_enabled}
-                onChange={(e) => handleSecurityPoliciesChange('ip_whitelist_enabled', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-              />
-              <label htmlFor="ipWhitelist" className="ml-2 text-sm text-slate-700">
-                Enable IP Whitelist
-              </label>
-            </div>
+            <PropertyCheckbox
+              title="Require Two-Factor Authentication"
+              description="Mandate 2FA for all user accounts"
+              checked={formData.security_policies.two_factor_authentication_required}
+              onChange={(checked) => handleSecurityPoliciesChange('two_factor_authentication_required', checked)}
+            />
+            
+            <PropertyCheckbox
+              title="IP Whitelist Enabled"
+              description="Restrict access to specified IP addresses only"
+              checked={formData.security_policies.ip_whitelist_enabled}
+              onChange={(checked) => handleSecurityPoliciesChange('ip_whitelist_enabled', checked)}
+            />
           </div>
 
           {formData.security_policies.ip_whitelist_enabled && (
