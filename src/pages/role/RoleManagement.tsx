@@ -5,7 +5,7 @@ import type { UserRole } from '../../services/types/store.types';
 import { RoleManagerGuard } from '../../components/ui';
 
 // Import role management components
-import RoleList from './RoleList';
+import { RoleList } from './RoleList';
 import CreateRole from './CreateRole';
 import EditRole from './EditRole';
 import RoleDetail from './RoleDetail';
@@ -65,16 +65,6 @@ const RoleManagement: React.FC = () => {
     setState(prev => ({ 
       ...prev, 
       currentView: 'list', 
-      selectedRoleId: null,
-      errors: {},
-      successMessage: null
-    }));
-  };
-
-  const handleNavigateToCreate = () => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'create', 
       selectedRoleId: null,
       errors: {},
       successMessage: null
@@ -221,8 +211,6 @@ const RoleManagement: React.FC = () => {
             onViewRole={handleNavigateToDetail}
             onEditRole={handleNavigateToEdit}
             onDeleteRole={handleRoleDelete}
-            onCreateRole={handleNavigateToCreate}
-            onDuplicateRole={handleDuplicateRole}
           />
         );
     }

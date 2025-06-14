@@ -2,10 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { roleService } from '../../services/role';
 import type { UpdateRoleRequest } from '../../services/role';
 import type { Permission, UserRole } from '../../services/types/store.types';
-import { Card } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { ArrowLeftIcon, ShieldCheckIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { 
+  ArrowLeftIcon, 
+  ShieldCheckIcon, 
+  CheckIcon, 
+  UserGroupIcon,
+  LockClosedIcon,
+  ClipboardDocumentListIcon,
+  Cog6ToothIcon,
+  ChartBarIcon,
+  CubeIcon,
+  BanknotesIcon,
+  XMarkIcon,
+  ExclamationTriangleIcon,
+  SparklesIcon
+} from '@heroicons/react/24/outline';
 
 interface EditRoleProps {
   roleId: string;
@@ -108,10 +121,8 @@ const EditRole: React.FC<EditRoleProps> = ({ roleId, onBack, onSave }) => {
       const allSelected = category.every(p => newSelected.has(p));
       
       if (allSelected) {
-        // Deselect all in category
         category.forEach(p => newSelected.delete(p));
       } else {
-        // Select all in category
         category.forEach(p => newSelected.add(p));
       }
       
@@ -171,6 +182,32 @@ const EditRole: React.FC<EditRoleProps> = ({ roleId, onBack, onSave }) => {
       .replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Sales & Transactions': return BanknotesIcon;
+      case 'Products & Inventory': return CubeIcon;
+      case 'Customer Management': return UserGroupIcon;
+      case 'User & Role Management': return LockClosedIcon;
+      case 'Reports & Analytics': return ChartBarIcon;
+      case 'System Settings': return Cog6ToothIcon;
+      case 'Management Functions': return ClipboardDocumentListIcon;
+      default: return ShieldCheckIcon;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Sales & Transactions': return 'emerald';
+      case 'Products & Inventory': return 'blue';
+      case 'Customer Management': return 'purple';
+      case 'User & Role Management': return 'red';
+      case 'Reports & Analytics': return 'orange';
+      case 'System Settings': return 'gray';
+      case 'Management Functions': return 'indigo';
+      default: return 'slate';
+    }
+  };
+
   const getPermissionsByCategory = () => {
     const categories: Record<string, Permission[]> = {};
     
@@ -206,20 +243,38 @@ const EditRole: React.FC<EditRoleProps> = ({ roleId, onBack, onSave }) => {
 
   if (state.isLoading) {
     return (
-      <div className="space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-4 space-y-8">
         <PageHeader
           title="Edit Role"
           description="Loading role data..."
         >
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <button onClick={onBack} className="hover:text-gray-700">Role Management</button>
-            <span>/</span>
-            <span>Edit Role</span>
-          </div>
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
+          >
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Back to Roles
+          </Button>
         </PageHeader>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+        
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 animate-pulse">
+            <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/3 mb-4"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-full"></div>
+              <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-2/3"></div>
+            </div>
+          </div>
+          
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 animate-pulse">
+            <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-1/4 mb-6"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl"></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -227,21 +282,36 @@ const EditRole: React.FC<EditRoleProps> = ({ roleId, onBack, onSave }) => {
 
   if (state.errors.load) {
     return (
-      <div className="space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-4 space-y-8">
         <PageHeader
           title="Edit Role"
           description="Error loading role"
         >
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <button onClick={onBack} className="hover:text-gray-700">Role Management</button>
-            <span>/</span>
-            <span>Edit Role</span>
-          </div>
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
+          >
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Back to Roles
+          </Button>
         </PageHeader>
-        <Card className="p-6 text-center">
-          <p className="text-red-600">{state.errors.load}</p>
-          <Button onClick={onBack} className="mt-4">Back to Roles</Button>
-        </Card>
+        
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <XMarkIcon className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Role</h3>
+            <p className="text-red-600 mb-6">{state.errors.load}</p>
+            <Button 
+              onClick={onBack}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300"
+            >
+              Back to Roles
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -249,211 +319,260 @@ const EditRole: React.FC<EditRoleProps> = ({ roleId, onBack, onSave }) => {
   const permissionCategories = getPermissionsByCategory();
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-4 space-y-8">
       <PageHeader
         title={`Edit Role: ${state.role?.role_name}`}
         description="Update role permissions and information"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <button onClick={onBack} className="hover:text-gray-700">Role Management</button>
-            <span>/</span>
-            <span>Edit Role</span>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Back to Roles</span>
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
+        >
+          <ArrowLeftIcon className="w-4 h-4 mr-2" />
+          Back to Roles
+        </Button>
       </PageHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Role Information */}
-        <Card className="p-6">
-          <div className="space-y-6">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <ShieldCheckIcon className="h-5 w-5 text-blue-600" />
-              </div>
-              <h2 className="text-lg font-semibold text-gray-900">Role Information</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role Name *
-                </label>
-                <input
-                  type="text"
-                  value={state.formData.role_name || ''}
-                  onChange={(e) => handleInputChange('role_name', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    state.errors.role_name ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Enter role name"
-                />
-                {state.errors.role_name && (
-                  <p className="mt-1 text-sm text-red-600">{state.errors.role_name}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Selected Permissions
-                </label>
-                <div className="px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-sm text-gray-600">
-                  {state.selectedPermissions.size} permission(s) selected
+      <div className="max-w-6xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Role Information */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6">
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <ShieldCheckIcon className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Role Information</h2>
+                  <p className="text-gray-600">Basic details about this role</p>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={state.formData.description || ''}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Describe the role and its responsibilities..."
-              />
-            </div>
-          </div>
-        </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
+                    Role Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={state.formData.role_name || ''}
+                    onChange={(e) => handleInputChange('role_name', e.target.value)}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/70 backdrop-blur-sm ${
+                      state.errors.role_name ? 'border-red-300 bg-red-50/50' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    placeholder="Enter role name"
+                  />
+                  {state.errors.role_name && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
+                      {state.errors.role_name}
+                    </p>
+                  )}
+                </div>
 
-        {/* Permissions */}
-        <Card className="p-6">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Permissions</h2>
-              <div className="text-sm text-gray-500">
-                {state.selectedPermissions.size} of {state.availablePermissions.length} selected
-              </div>
-            </div>
-
-            {state.errors.permissions && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{state.errors.permissions}</p>
-              </div>
-            )}
-
-            <div className="space-y-6">
-              {Object.entries(permissionCategories).map(([category, permissions]) => {
-                const allSelected = permissions.every(p => state.selectedPermissions.has(p));
-                const someSelected = permissions.some(p => state.selectedPermissions.has(p));
-                
-                return (
-                  <div key={category} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-md font-medium text-gray-900">{category}</h3>
-                      <button
-                        type="button"
-                        onClick={() => handleSelectAllInCategory(permissions)}
-                        className={`text-sm px-3 py-1 rounded-full transition-colors ${
-                          allSelected 
-                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
-                            : someSelected
-                            ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {allSelected ? 'Deselect All' : someSelected ? 'Select All' : 'Select All'}
-                      </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {permissions.map((permission) => {
-                        const isSelected = state.selectedPermissions.has(permission);
-                        
-                        return (
-                          <label
-                            key={permission}
-                            className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
-                              isSelected
-                                ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-200'
-                                : 'bg-white border-gray-200 hover:bg-gray-50'
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handlePermissionToggle(permission)}
-                              className="sr-only"
-                            />
-                            <div className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              isSelected
-                                ? 'bg-blue-600 border-blue-600'
-                                : 'border-gray-300'
-                            }`}>
-                              {isSelected && (
-                                <CheckIcon className="w-3 h-3 text-white" />
-                              )}
-                            </div>
-                            <span className={`ml-3 text-sm font-medium ${
-                              isSelected ? 'text-blue-900' : 'text-gray-700'
-                            }`}>
-                              {formatPermissionName(permission)}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
+                    Selected Permissions
+                  </label>
+                  <div className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 text-sm text-gray-700 flex items-center">
+                    <SparklesIcon className="w-4 h-4 mr-2 text-blue-600" />
+                    {state.selectedPermissions.size} permission(s) selected
                   </div>
-                );
-              })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={state.formData.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-white/70 backdrop-blur-sm hover:border-gray-300"
+                  placeholder="Describe the role and its responsibilities..."
+                />
+              </div>
             </div>
           </div>
-        </Card>
 
-        {/* Actions */}
-        <Card className="p-6">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              {hasChanges() ? (
-                <span className="text-yellow-600 font-medium">You have unsaved changes</span>
-              ) : (
-                <span>No changes made</span>
+          {/* Permissions */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Permissions</h2>
+                  <p className="text-gray-600">Choose what this role can access</p>
+                </div>
+                <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  {state.selectedPermissions.size} of {state.availablePermissions.length} selected
+                </div>
+              </div>
+
+              {state.errors.permissions && (
+                <div className="p-4 bg-red-50/80 backdrop-blur-sm border-2 border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600 flex items-center">
+                    <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
+                    {state.errors.permissions}
+                  </p>
+                </div>
               )}
-            </div>
-            <div className="flex space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onBack}
-                disabled={state.isSaving}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={state.isSaving || !hasChanges()}
-                className="min-w-[120px]"
-              >
-                {state.isSaving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </form>
 
-      {/* Success Message */}
-      {state.successMessage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-              <CheckIcon className="h-6 w-6 text-green-600" />
+              <div className="space-y-6">
+                {Object.entries(permissionCategories).map(([category, permissions]) => {
+                  const allSelected = permissions.every(p => state.selectedPermissions.has(p));
+                  const someSelected = permissions.some(p => state.selectedPermissions.has(p));
+                  const color = getCategoryColor(category);
+                  const IconComponent = getCategoryIcon(category);
+                  
+                  return (
+                    <div key={category} className="border-2 border-gray-100 rounded-xl p-6 bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-all duration-300">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-10 h-10 bg-gradient-to-br from-${color}-500 to-${color}-600 rounded-lg flex items-center justify-center shadow-lg`}>
+                            <IconComponent className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{category}</h3>
+                            <p className="text-sm text-gray-600">{permissions.length} permissions</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectAllInCategory(permissions)}
+                          className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${
+                            allSelected 
+                              ? `bg-gradient-to-r from-${color}-500 to-${color}-600 text-white shadow-lg` 
+                              : someSelected
+                              ? `bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg`
+                              : `bg-gray-100 text-gray-700 hover:bg-gray-200`
+                          }`}
+                        >
+                          {allSelected ? 'Deselect All' : someSelected ? 'Select All' : 'Select All'}
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {permissions.map((permission) => {
+                          const isSelected = state.selectedPermissions.has(permission);
+                          
+                          return (
+                            <label
+                              key={permission}
+                              className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
+                                isSelected
+                                  ? `bg-gradient-to-r from-${color}-50 to-${color}-100/50 border-${color}-200 shadow-lg`
+                                  : 'bg-white/70 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handlePermissionToggle(permission)}
+                                className="sr-only"
+                              />
+                              <div className={`flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
+                                isSelected
+                                  ? `bg-gradient-to-r from-${color}-500 to-${color}-600 border-${color}-500`
+                                  : 'border-gray-300 hover:border-gray-400'
+                              }`}>
+                                {isSelected && (
+                                  <CheckIcon className="w-4 h-4 text-white" />
+                                )}
+                              </div>
+                              <span className={`ml-3 text-sm font-medium transition-colors duration-300 ${
+                                isSelected ? `text-${color}-900` : 'text-gray-700'
+                              }`}>
+                                {formatPermissionName(permission)}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Success!</h3>
-            <p className="text-sm text-gray-500">{state.successMessage}</p>
           </div>
-        </div>
-      )}
+
+          {/* Actions */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6">
+            <div className="flex justify-between items-center">
+              <div className="text-sm">
+                {hasChanges() ? (
+                  <span className="text-yellow-600 font-semibold flex items-center">
+                    <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
+                    You have unsaved changes
+                  </span>
+                ) : (
+                  <span className="text-gray-500 flex items-center">
+                    <CheckIcon className="w-4 h-4 mr-2" />
+                    No changes made
+                  </span>
+                )}
+              </div>
+              <div className="flex space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBack}
+                  disabled={state.isSaving}
+                  className="backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={state.isSaving || !hasChanges()}
+                  className="min-w-[140px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:transform-none"
+                >
+                  {state.isSaving ? (
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Saving...
+                    </div>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {/* Success Message */}
+        {state.successMessage && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl transform animate-pulse">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 mb-6 shadow-lg">
+                <CheckIcon className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
+              <p className="text-gray-600">{state.successMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {state.errors.submit && (
+          <div className="fixed bottom-4 right-4 max-w-md">
+            <div className="bg-red-50/90 backdrop-blur-md border-2 border-red-200 rounded-xl p-4 shadow-lg">
+              <div className="flex items-center">
+                <ExclamationTriangleIcon className="w-5 h-5 text-red-600 mr-3" />
+                <p className="text-red-800 font-medium">{state.errors.submit}</p>
+                <button
+                  onClick={() => setState(prev => ({ ...prev, errors: { ...prev.errors, submit: '' } }))}
+                  className="ml-auto text-red-600 hover:text-red-800"
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
