@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { authService } from '../auth/authService';
 import { PermissionManager, usePermissions } from '../utils/permissions';
-import PermissionDebug from '../components/PermissionDebug';
 import {
   HomeIcon,
   CubeIcon,
@@ -521,9 +520,6 @@ const DashboardLayout: React.FC = () => {
       {storeMenuOpen && (
         <div className="fixed inset-0 z-30" onClick={() => setStoreMenuOpen(false)} />
       )}
-      
-      {/* Temporary debug component for development */}
-      <PermissionDebug />
     </div>
   );
 };

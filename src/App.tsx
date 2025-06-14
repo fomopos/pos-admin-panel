@@ -17,6 +17,7 @@ import ProductEdit from './pages/ProductEdit';
 import Categories from './pages/Categories';
 import CategoryEditPage from './pages/CategoryEditPage';
 import Sales from './pages/Sales';
+import SalesDetail from './pages/SalesDetail';
 import Customers from './pages/Customers';
 import TaxSettings from './pages/TaxSettings';
 import PaymentSettings from './pages/PaymentSettings';
@@ -90,6 +91,7 @@ function App() {
               <Route path="categories/new" element={<CategoryEditPage />} />
               <Route path="categories/edit/:id" element={<CategoryEditPage />} />
               <Route path="sales" element={<Sales />} />
+              <Route path="sales/:transId" element={<SalesDetail />} />
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
               <Route path="settings/store" element={<StoreSettings />} />
