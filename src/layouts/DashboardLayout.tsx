@@ -3,6 +3,8 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { authService } from '../auth/authService';
+import { PermissionManager, usePermissions } from '../utils/permissions';
+import PermissionDebug from '../components/PermissionDebug';
 import {
   HomeIcon,
   CubeIcon,
@@ -45,6 +47,17 @@ const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentTenant, currentStore, tenants, switchTenant, switchStore, getCurrentTenantStores } = useTenantStore();
+  const { canManageUsers, canManageRoles } = usePermissions();
+  const [permissionsInitialized, setPermissionsInitialized] = React.useState(false);
+  
+  // Debug logging for navigation
+  React.useEffect(() => {
+    console.log('Navigation check:', {
+      permissionsInitialized,
+      canManageUsers: canManageUsers(),
+      canManageRoles: canManageRoles()
+    });
+  }, [canManageUsers, canManageRoles, permissionsInitialized]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
@@ -54,7 +67,8 @@ const DashboardLayout: React.FC = () => {
   // Note: Tenants are loaded via TenantStoreSelection flow before reaching this layout
   // No need to fetch tenants here as it would interfere with the hierarchical auth flow
 
-  const navigation: NavigationSection[] = [
+  // Navigation sections - recalculated when permissions change
+  const navigation: NavigationSection[] = React.useMemo(() => [
     {
       category: 'DASHBOARD',
       items: [
@@ -84,13 +98,14 @@ const DashboardLayout: React.FC = () => {
       category: t('nav.settings'),
       items: [
         { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },
-        { name: 'User Management', href: '/settings/users', icon: UserIcon },
+        ...(permissionsInitialized && canManageUsers() ? [{ name: 'User Management', href: '/settings/users', icon: UserIcon }] : []),
+        ...(permissionsInitialized && canManageRoles() ? [{ name: 'Role Management', href: '/settings/roles', icon: UserGroupIcon }] : []),
         { name: 'Payment Settings', href: '/payment-settings', icon: CreditCardIcon },
         { name: 'Tax Settings', href: '/tax-settings', icon: TableCellsIcon },
         { name: 'System Settings', href: '/settings/system', icon: Cog6ToothIcon },
       ]
     }
-  ];
+  ], [permissionsInitialized, canManageUsers, canManageRoles, t]);
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -153,6 +168,17 @@ const DashboardLayout: React.FC = () => {
           email: user.email,
           name: user.name || user.email.split('@')[0] || 'User'
         });
+        
+        // Initialize permission manager
+        try {
+          await PermissionManager.initialize();
+          console.log('Permission manager initialized successfully');
+          // Debug permission state
+          PermissionManager.debug();
+          setPermissionsInitialized(true);
+        } catch (error) {
+          console.error('Failed to initialize permissions:', error);
+        }
       }
     };
     getCurrentUserInfo();
@@ -495,6 +521,9 @@ const DashboardLayout: React.FC = () => {
       {storeMenuOpen && (
         <div className="fixed inset-0 z-30" onClick={() => setStoreMenuOpen(false)} />
       )}
+      
+      {/* Temporary debug component for development */}
+      <PermissionDebug />
     </div>
   );
 };

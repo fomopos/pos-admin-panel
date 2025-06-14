@@ -7,7 +7,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button, Card, PageHeader, Loading, InputTextField } from '../../components/ui';
 import { userService } from '../../services/user';
+import { roleService } from '../../services/role';
 import type { StoreUser, UpdateUserRequest, Department } from '../../services/types/user.types';
+import type { UserRole } from '../../services/types/store.types';
 import { DEPARTMENTS } from '../../services/types/user.types';
 
 interface UserEditProps {
@@ -19,13 +21,16 @@ interface UserEditProps {
 const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
   const [user, setUser] = useState<StoreUser | null>(null);
   const [formData, setFormData] = useState<UpdateUserRequest>({});
+  const [availableRoles, setAvailableRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     loadUser();
+    loadAvailableRoles();
   }, [userId]);
 
   const loadUser = async () => {
@@ -55,6 +60,19 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
     }
   };
 
+  const loadAvailableRoles = async () => {
+    try {
+      setIsLoadingRoles(true);
+      const rolesResponse = await roleService.getRoles(user?.store_id || '');
+      setAvailableRoles(rolesResponse.roles);
+    } catch (error) {
+      console.error('Failed to load roles:', error);
+      setErrors(prev => ({ ...prev, roles: 'Failed to load available roles' }));
+    } finally {
+      setIsLoadingRoles(false);
+    }
+  };
+
   const handleInputChange = (field: keyof UpdateUserRequest, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -68,6 +86,24 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
         delete newErrors[field];
         return newErrors;
       });
+    }
+  };
+
+  const handleRoleChange = (roleId: string) => {
+    const selectedRole = availableRoles.find(role => role.role_id === roleId);
+    if (selectedRole) {
+      setFormData(prev => ({
+        ...prev,
+        role: roleId,
+        role_name: selectedRole.role_name,
+        permissions: selectedRole.permissions as any[] // Type casting for compatibility
+      }));
+    } else {
+      // Allow manual role entry for backwards compatibility
+      setFormData(prev => ({
+        ...prev,
+        role: roleId
+      }));
     }
   };
 
@@ -272,17 +308,20 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                       </label>
                       <select
                         value={formData.role || ''}
-                        onChange={(e) => handleInputChange('role', e.target.value)}
+                        onChange={(e) => handleRoleChange(e.target.value)}
                         className={`input-base ${
                           errors.role ? 'border-red-300 focus:ring-red-500' : ''
                         }`}
+                        disabled={isLoadingRoles}
                       >
-                        <option value="">Select role</option>
-                        <option value="admin">Admin</option>
-                        <option value="manager">Manager</option>
-                        <option value="cashier">Cashier</option>
-                        <option value="inventory">Inventory</option>
-                        <option value="sales">Sales</option>
+                        <option value="">
+                          {isLoadingRoles ? 'Loading roles...' : 'Select role'}
+                        </option>
+                        {availableRoles.map((role) => (
+                          <option key={role.role_id} value={role.role_id}>
+                            {role.role_name}
+                          </option>
+                        ))}
                       </select>
                       {errors.role && (
                         <p className="mt-1 text-sm text-red-600">{errors.role}</p>
@@ -292,10 +331,13 @@ const UserEdit: React.FC<UserEditProps> = ({ userId, onBack, onSave }) => {
                     <InputTextField
                       label="Role Name"
                       required
-                      value={formData.role_name}
+                      value={formData.role_name || ''}
                       onChange={(value) => handleInputChange('role_name', value)}
-                      placeholder="Enter role name"
+                      placeholder={formData.role && availableRoles.some(r => r.role_id === formData.role) 
+                        ? 'Role name (auto-filled)' 
+                        : 'Enter role name'}
                       error={errors.role_name}
+                      disabled={!!formData.role && availableRoles.some(r => r.role_id === formData.role)}
                     />
 
                     <div>

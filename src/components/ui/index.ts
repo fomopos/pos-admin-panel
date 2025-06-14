@@ -20,6 +20,7 @@ export { PropertyCheckbox } from './PropertyCheckbox';
 export { InputTextField } from './InputTextField';
 export { InputMoneyField } from './InputMoneyField';
 export { DropdownSearch } from './DropdownSearch';
+export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGuard } from './PermissionGuard';
 
 // Re-export types
 export type { ButtonProps } from './Button';

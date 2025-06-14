@@ -29,7 +29,7 @@ interface DateRange {
 interface AdvancedFilters {
   priceRange: PriceRange;
   stockLevel: 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
-  supplier: string;
+  suppliers: string[];
   tags: string[];
   dateRange: DateRange;
   status: 'all' | 'active' | 'inactive';

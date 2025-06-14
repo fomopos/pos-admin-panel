@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeftIcon,
   UserIcon,
@@ -10,8 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button, Card, Input, PageHeader } from '../../components/ui';
 import { userService } from '../../services/user';
+import { roleService } from '../../services/role';
 import type { CreateUserRequest, Department } from '../../services/types/user.types';
 import type { Permission } from '../../services/types/store.types';
+import type { UserRole } from '../../services/types/store.types';
 import { DEPARTMENTS } from '../../services/types/user.types';
 
 interface CreateUserProps {
@@ -35,9 +37,29 @@ const CreateUser: React.FC<CreateUserProps> = ({ storeId, onBack, onSave }) => {
     pin_code: ''
   });
   
+  const [availableRoles, setAvailableRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Load available roles on component mount
+  useEffect(() => {
+    loadAvailableRoles();
+  }, [storeId]);
+
+  const loadAvailableRoles = async () => {
+    try {
+      setIsLoadingRoles(true);
+      const rolesResponse = await roleService.getRoles(storeId);
+      setAvailableRoles(rolesResponse.roles);
+    } catch (error) {
+      console.error('Failed to load roles:', error);
+      setErrors(prev => ({ ...prev, roles: 'Failed to load available roles' }));
+    } finally {
+      setIsLoadingRoles(false);
+    }
+  };
 
   const handleInputChange = (field: keyof CreateUserRequest, value: any) => {
     setFormData(prev => ({
@@ -124,13 +146,24 @@ const CreateUser: React.FC<CreateUserProps> = ({ storeId, onBack, onSave }) => {
     }
   };
 
-  const handleRoleChange = (role: string) => {
-    const permissions = getDefaultPermissions(role);
-    setFormData(prev => ({
-      ...prev,
-      role,
-      permissions
-    }));
+  const handleRoleChange = (roleId: string) => {
+    const selectedRole = availableRoles.find(role => role.role_id === roleId);
+    if (selectedRole) {
+      setFormData(prev => ({
+        ...prev,
+        role: roleId,
+        role_name: selectedRole.role_name,
+        permissions: selectedRole.permissions as Permission[]
+      }));
+    } else {
+      // Fallback to default permissions for backwards compatibility
+      const permissions = getDefaultPermissions(roleId);
+      setFormData(prev => ({
+        ...prev,
+        role: roleId,
+        permissions
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -283,13 +316,16 @@ const CreateUser: React.FC<CreateUserProps> = ({ storeId, onBack, onSave }) => {
                         className={`input-base ${
                           errors.role ? 'border-red-300 focus:ring-red-500' : ''
                         }`}
+                        disabled={isLoadingRoles}
                       >
-                        <option value="">Select role</option>
-                        <option value="admin">Admin</option>
-                        <option value="manager">Manager</option>
-                        <option value="cashier">Cashier</option>
-                        <option value="inventory">Inventory</option>
-                        <option value="sales">Sales</option>
+                        <option value="">
+                          {isLoadingRoles ? 'Loading roles...' : 'Select role'}
+                        </option>
+                        {availableRoles.map((role) => (
+                          <option key={role.role_id} value={role.role_id}>
+                            {role.role_name}
+                          </option>
+                        ))}
                       </select>
                       {errors.role && (
                         <p className="mt-1 text-sm text-red-600">{errors.role}</p>
@@ -302,8 +338,12 @@ const CreateUser: React.FC<CreateUserProps> = ({ storeId, onBack, onSave }) => {
                         type="text"
                         value={formData.role_name}
                         onChange={(e) => handleInputChange('role_name', e.target.value)}
-                        placeholder="Enter role name"
+                        placeholder={formData.role ? 'Role name (auto-filled)' : 'Enter role name'}
                         error={errors.role_name}
+                        disabled={!!formData.role && availableRoles.some(r => r.role_id === formData.role)}
+                        helperText={formData.role && availableRoles.some(r => r.role_id === formData.role) 
+                          ? 'Role name is automatically set based on selected role' 
+                          : undefined}
                       />
                     </div>
 
