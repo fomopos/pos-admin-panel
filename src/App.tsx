@@ -24,6 +24,7 @@ import PaymentSettings from './pages/PaymentSettings';
 import PaymentAnalyticsDashboard from './pages/PaymentAnalyticsDashboard';
 import StoreSettings from './pages/StoreSettings';
 import CreateStore from './pages/CreateStore';
+import TerminalSettings from './pages/TerminalSettings';
 import { UserManagement } from './pages/user';
 import { RoleManagement } from './pages/role';
 
@@ -95,6 +96,7 @@ function App() {
               <Route path="customers" element={<Customers />} />
               <Route path="settings" element={<Settings />} />
               <Route path="settings/store" element={<StoreSettings />} />
+              <Route path="settings/terminals" element={<TerminalSettings />} />
               <Route path="settings/users" element={<UserManagement />} />
               <Route path="settings/roles" element={<RoleManagement />} />
               <Route path="tax-settings" element={<TaxSettings />} />

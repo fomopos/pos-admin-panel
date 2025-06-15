@@ -26,6 +26,7 @@ import {
   CreditCardIcon,
   DocumentTextIcon,
   ChevronUpDownIcon,
+  ComputerDesktopIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavigationItem {
@@ -97,6 +98,7 @@ const DashboardLayout: React.FC = () => {
       category: t('nav.settings'),
       items: [
         { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },
+        { name: 'Terminal Settings', href: '/settings/terminals', icon: ComputerDesktopIcon },
         ...(permissionsInitialized && canManageUsers() ? [{ name: 'User Management', href: '/settings/users', icon: UserIcon }] : []),
         ...(permissionsInitialized && canManageRoles() ? [{ name: 'Role Management', href: '/settings/roles', icon: UserGroupIcon }] : []),
         { name: 'Payment Settings', href: '/payment-settings', icon: CreditCardIcon },
