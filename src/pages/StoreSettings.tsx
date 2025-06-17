@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   BuildingStorefrontIcon,
-  GlobeAltIcon,
   PrinterIcon,
   ComputerDesktopIcon,
   CogIcon,
@@ -14,7 +13,8 @@ import {
   CurrencyDollarIcon,
   PlusIcon,
   CheckIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ServerIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import { 
@@ -31,10 +31,11 @@ import {
 } from '../components/ui';
 import { useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { storeServices } from '../services/store';
-import type { StoreSettings } from '../services/types/store.types';
+import type { StoreSettings, StoreDetails } from '../services/types/store.types';
 
 interface StoreSettingsState {
   settings: StoreSettings | null;
+  storeDetails: StoreDetails | null;
   isLoading: boolean;
   activeTab: string;
   showForm: boolean;
@@ -49,6 +50,7 @@ const StoreSettingsPage: React.FC = () => {
   
   const [state, setState] = useState<StoreSettingsState>({
     settings: null,
+    storeDetails: null,
     isLoading: true,
     activeTab: 'information',
     showForm: false,
@@ -60,46 +62,61 @@ const StoreSettingsPage: React.FC = () => {
 
   const discardDialog = useDiscardChangesDialog();
 
-  // Fetch store settings
+  // Fetch store settings and store details
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchData = async () => {
       setState(prev => ({ ...prev, isLoading: true }));
       
       try {
         const tenantId = currentTenant?.id || '272e';
         const storeId = currentStore?.store_id || '*';
         
-        // Try to fetch real settings first, fallback to mock data
-        let settings: StoreSettings | null = null;
+        // Fetch store settings
+        const settingsPromise = async () => {
+          try {
+            return await storeServices.settings.getStoreSettings({
+              tenant_id: tenantId,
+              store_id: storeId
+            });
+          } catch (apiError) {
+            console.warn('Failed to fetch real store settings, using mock data:', apiError);
+            return await storeServices.settings.getMockStoreSettings();
+          }
+        };
         
-        try {
-          settings = await storeServices.settings.getStoreSettings({
-            tenant_id: tenantId,
-            store_id: storeId
-          });
-        } catch (apiError) {
-          console.warn('Failed to fetch real store settings, using mock data:', apiError);
-          settings = await storeServices.settings.getMockStoreSettings();
-        }
+        // Fetch store details
+        const detailsPromise = async () => {
+          try {
+            return await storeServices.store.getStoreDetails(tenantId, storeId);
+          } catch (apiError) {
+            console.warn('Failed to fetch real store details, using mock data:', apiError);
+            return await storeServices.store.getMockStoreDetails();
+          }
+        };
         
-        setState(prev => ({ ...prev, settings, isLoading: false }));
+        const [settings, storeDetails] = await Promise.all([
+          settingsPromise(),
+          detailsPromise()
+        ]);
+        
+        setState(prev => ({ ...prev, settings, storeDetails, isLoading: false }));
       } catch (error) {
-        console.error('Failed to fetch store settings:', error);
-        setState(prev => ({ ...prev, settings: null, isLoading: false }));
+        console.error('Failed to fetch store data:', error);
+        setState(prev => ({ ...prev, settings: null, storeDetails: null, isLoading: false }));
       }
     };
 
-    fetchSettings();
+    fetchData();
   }, [currentTenant, currentStore]);
 
   const tabs = [
     { id: 'information', name: 'Store Information', icon: BuildingStorefrontIcon },
-    { id: 'regional', name: 'Regional Settings', icon: GlobeAltIcon },
     { id: 'receipt', name: 'Receipt Settings', icon: PrinterIcon },
     { id: 'hardware', name: 'Hardware Configuration', icon: ComputerDesktopIcon },
     { id: 'operational', name: 'Operational Settings', icon: CogIcon },
     { id: 'users', name: 'User Management', icon: UserGroupIcon },
     { id: 'integrations', name: 'Integrations', icon: LinkIcon },
+    { id: 'api', name: 'API Information', icon: ServerIcon },
     { id: 'security', name: 'Security Settings', icon: ShieldCheckIcon }
   ];
 
@@ -117,44 +134,66 @@ const StoreSettingsPage: React.FC = () => {
     try {
       setState(prev => ({ ...prev, errors: {} }));
       
-      let updatedSettings: StoreSettings;
       const tenantId = currentTenant?.id || '272e';
       const storeId = currentStore?.store_id || '*';
 
       switch (section) {
         case 'information':
-          updatedSettings = await storeServices.settings.updateStoreInformation(tenantId, storeId, data);
-          break;
-        case 'regional':
-          updatedSettings = await storeServices.settings.updateRegionalSettings(tenantId, storeId, data);
+          // Handle store information update using real store API
+          if (data.store_information) {
+            const storeInfoData = data.store_information;
+            
+            // Update store details via the real store API
+            if (state.storeDetails) {
+              const updateData = storeServices.store.convertFromStoreInformation(storeInfoData, state.storeDetails);
+              const updatedStoreDetails = await storeServices.store.updateStoreDetails(tenantId, storeId, updateData);
+              
+              setState(prev => ({ 
+                ...prev, 
+                storeDetails: updatedStoreDetails,
+                hasUnsavedChanges: false 
+              }));
+            }
+            
+            // Also update legacy store settings for compatibility
+            const updatedSettings = await storeServices.settings.updateStoreInformation(tenantId, storeId, data);
+            setState(prev => ({ 
+              ...prev, 
+              settings: updatedSettings
+            }));
+          }
           break;
         case 'receipt':
-          updatedSettings = await storeServices.settings.updateReceiptSettings(tenantId, storeId, data);
+          const receiptSettings = await storeServices.settings.updateReceiptSettings(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: receiptSettings, hasUnsavedChanges: false }));
           break;
         case 'hardware':
-          updatedSettings = await storeServices.settings.updateHardwareConfig(tenantId, storeId, data);
+          const hardwareSettings = await storeServices.settings.updateHardwareConfig(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: hardwareSettings, hasUnsavedChanges: false }));
           break;
         case 'operational':
-          updatedSettings = await storeServices.settings.updateOperationalSettings(tenantId, storeId, data);
+          const operationalSettings = await storeServices.settings.updateOperationalSettings(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: operationalSettings, hasUnsavedChanges: false }));
           break;
         case 'users':
-          updatedSettings = await storeServices.settings.updateUserManagement(tenantId, storeId, data);
+          const userSettings = await storeServices.settings.updateUserManagement(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: userSettings, hasUnsavedChanges: false }));
           break;
         case 'integrations':
-          updatedSettings = await storeServices.settings.updateIntegrationSettings(tenantId, storeId, data);
+          const integrationSettings = await storeServices.settings.updateIntegrationSettings(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: integrationSettings, hasUnsavedChanges: false }));
+          break;
+        case 'api':
+          const apiSettings = await storeServices.settings.updateApiInformation(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: apiSettings, hasUnsavedChanges: false }));
           break;
         case 'security':
-          updatedSettings = await storeServices.settings.updateSecuritySettings(tenantId, storeId, data);
+          const securitySettings = await storeServices.settings.updateSecuritySettings(tenantId, storeId, data);
+          setState(prev => ({ ...prev, settings: securitySettings, hasUnsavedChanges: false }));
           break;
         default:
           throw new Error('Invalid settings section');
       }
-
-      setState(prev => ({ 
-        ...prev, 
-        settings: updatedSettings,
-        hasUnsavedChanges: false 
-      }));
     } catch (error) {
       console.error('Failed to save settings:', error);
       setState(prev => ({
@@ -167,15 +206,15 @@ const StoreSettingsPage: React.FC = () => {
   if (state.isLoading) {
     return (
       <Loading
-        title="Loading Store Settings"
-        description="Please wait while we fetch your store configuration..."
+        title="Loading Store Data"
+        description="Please wait while we fetch your store configuration and details..."
         fullScreen={false}
         size="md"
       />
     );
   }
 
-  if (!state.settings) {
+  if (!state.settings || !state.storeDetails) {
     return (
       <div className="space-y-8">
         <div className="flex items-center justify-between">
@@ -189,13 +228,13 @@ const StoreSettingsPage: React.FC = () => {
         
         <Card className="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-sm">
           <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-          <h3 className="text-lg font-medium text-slate-900 mb-2">No store settings found</h3>
+          <h3 className="text-lg font-medium text-slate-900 mb-2">No store data found</h3>
           <p className="text-sm text-slate-500 mb-6">
-            Get started by configuring your store settings.
+            Unable to load store settings and details. Please try again.
           </p>
-          <Button onClick={() => setState(prev => ({ ...prev, showForm: true, formType: 'create' }))}>
+          <Button onClick={() => window.location.reload()}>
             <PlusIcon className="h-5 w-5 mr-2" />
-            Configure Store Settings
+            Reload Page
           </Button>
         </Card>
       </div>
@@ -233,15 +272,8 @@ const StoreSettingsPage: React.FC = () => {
         {state.activeTab === 'information' && (
           <StoreInformationTab 
             settings={state.settings}
+            storeDetails={state.storeDetails}
             onSave={(data) => handleSave('information', data)}
-            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
-          />
-        )}
-
-        {state.activeTab === 'regional' && (
-          <RegionalSettingsTab 
-            settings={state.settings}
-            onSave={(data) => handleSave('regional', data)}
             onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
           />
         )}
@@ -286,6 +318,14 @@ const StoreSettingsPage: React.FC = () => {
           />
         )}
 
+        {state.activeTab === 'api' && (
+          <ApiInformationTab 
+            settings={state.settings}
+            onSave={(data) => handleSave('api', data)}
+            onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
+          />
+        )}
+
         {state.activeTab === 'security' && (
           <SecuritySettingsTab 
             settings={state.settings}
@@ -314,20 +354,40 @@ const StoreSettingsPage: React.FC = () => {
 // Store Information Tab Component
 interface TabProps {
   settings: StoreSettings;
+  storeDetails?: StoreDetails | null;
   onSave: (data: any) => void;
   onFieldChange: () => void;
 }
 
-const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }) => {
-  const [formData, setFormData] = useState(settings.store_information);
+const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSave, onFieldChange }) => {
+  // Initialize form data using real store details when available, fallback to settings
+  const initializeFormData = () => {
+    if (storeDetails) {
+      return storeServices.store.convertToStoreInformation(storeDetails);
+    }
+    return settings.store_information;
+  };
 
-  const handleFieldChange = (field: string, value: any) => {
-    setFormData(prev => {
+  const [formData, setFormData] = useState(initializeFormData());
+
+  // Update form data when storeDetails changes
+  useEffect(() => {
+    if (storeDetails) {
+      const convertedData = storeServices.store.convertToStoreInformation(storeDetails);
+      setFormData(convertedData);
+    }
+  }, [storeDetails]);
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData((prev: any) => {
       const keys = field.split('.');
       const result = { ...prev };
       let current: any = result;
       
       for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+          current[keys[i]] = {};
+        }
         current[keys[i]] = { ...current[keys[i]] };
         current = current[keys[i]];
       }
@@ -338,10 +398,14 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
     onFieldChange();
   };
 
-  const handleBusinessHoursChange = (index: number, field: string, value: any) => {
-    const updatedHours = [...formData.business_hours];
-    updatedHours[index] = { ...updatedHours[index], [field]: value };
-    setFormData(prev => ({ ...prev, business_hours: updatedHours }));
+  const handleTimingChange = (day: string, value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      store_timing: {
+        ...prev.store_timing,
+        [day]: value
+      }
+    }));
     onFieldChange();
   };
 
@@ -350,299 +414,390 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
   };
 
   return (
-    <div className="space-y-6">
-      {/* Basic Information */}
-      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">Basic Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-8">
+      {/* Basic Information Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-2xl p-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl">
+            <BuildingStorefrontIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              Store Details
+            </h3>
+            <p className="text-blue-600 mt-1">Configure your store's basic information and settings</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
           <InputTextField
-            label="Store Name"
-            value={formData.store_name}
-            onChange={(value) => handleFieldChange('store_name', value)}
-            placeholder="Enter store name"
-          />
-
-          <InputTextField
-            label="Business Name"
-            value={formData.business_name}
-            onChange={(value) => handleFieldChange('business_name', value)}
-            placeholder="Enter business name"
-          />
-
-          <InputTextField
-            label="Registration Number"
-            value={formData.registration_number || ''}
-            onChange={(value) => handleFieldChange('registration_number', value)}
-            placeholder="Enter registration number"
-          />
-
-          <InputTextField
-            label="Tax Number"
-            value={formData.tax_number || ''}
-            onChange={(value) => handleFieldChange('tax_number', value)}
-            placeholder="Enter tax number"
+            label="Store ID"
+            value={storeDetails?.store_id || ''}
+            onChange={(value) => handleInputChange('store_id', value)}
+            placeholder="Auto-generated store ID"
+            disabled
+            helperText="This is auto-generated and cannot be changed"
           />
         </div>
-      </Card>
 
-      {/* Address Information */}
-      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-          <MapPinIcon className="h-5 w-5 mr-2" />
-          Address Information
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <InputTextField
-              label="Street Address 1"
-              value={formData.address.street1}
-              onChange={(value) => handleFieldChange('address.street1', value)}
-              placeholder="Enter street address"
-            />
+        <div>
+          <InputTextField
+            label="Store Name"
+            required
+            value={formData.store_name || ''}
+            onChange={(value) => handleInputChange('store_name', value)}
+            placeholder="Enter store name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <div className="flex items-center space-x-2">
+              <MapPinIcon className="w-4 h-4 text-blue-500" />
+              <span>Location Type</span>
+            </div>
+          </label>
+          <select
+            value={storeDetails?.location_type || 'retail'}
+            onChange={(e) => handleInputChange('location_type', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 appearance-none"
+          >
+            <option value="retail">Retail</option>
+            <option value="warehouse">Warehouse</option>
+            <option value="outlet">Outlet</option>
+            <option value="kiosk">Kiosk</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <div className="flex items-center space-x-2">
+              <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
+              <span>Store Type</span>
+            </div>
+          </label>
+          <select
+            value={storeDetails?.store_type || 'general'}
+            onChange={(e) => handleInputChange('store_type', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 appearance-none"
+          >
+            <option value="general">General Store</option>
+            <option value="grocery">Grocery</option>
+            <option value="clothing">Clothing</option>
+            <option value="electronics">Electronics</option>
+            <option value="pharmacy">Pharmacy</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="cafe">Cafe</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Description
+        </label>
+        <textarea
+          value={storeDetails?.description || ''}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+          placeholder="Brief description of your store"
+          rows={3}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
+        />
+      </div>
+
+      {/* Address Information Section */}
+      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl p-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 rounded-xl">
+            <MapPinIcon className="w-6 h-6 text-white" />
           </div>
-
-          <div className="md:col-span-2">
-            <InputTextField
-              label="Street Address 2"
-              value={formData.address.street2 || ''}
-              onChange={(value) => handleFieldChange('address.street2', value)}
-              placeholder="Apartment, suite, etc. (optional)"
-            />
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent">
+              Store Address
+            </h3>
+            <p className="text-emerald-600 mt-1">Enter your store's physical location details</p>
           </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 gap-6">
+        <InputTextField
+          label="Address Line 1"
+          required
+          value={formData.address?.street1 || ''}
+          onChange={(value) => handleInputChange('address.street1', value)}
+          placeholder="Street address, P.O. box, company name"
+        />
 
+        <InputTextField
+          label="Address Line 2"
+          value={formData.address?.street2 || ''}
+          onChange={(value) => handleInputChange('address.street2', value)}
+          placeholder="Apartment, suite, unit, building, floor, etc."
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <InputTextField
             label="City"
-            value={formData.address.city}
-            onChange={(value) => handleFieldChange('address.city', value)}
+            required
+            value={formData.address?.city || ''}
+            onChange={(value) => handleInputChange('address.city', value)}
             placeholder="Enter city"
           />
 
           <InputTextField
             label="State/Province"
-            value={formData.address.state}
-            onChange={(value) => handleFieldChange('address.state', value)}
+            required
+            value={formData.address?.state || ''}
+            onChange={(value) => handleInputChange('address.state', value)}
             placeholder="Enter state/province"
           />
 
           <InputTextField
             label="Postal Code"
-            value={formData.address.postal_code}
-            onChange={(value) => handleFieldChange('address.postal_code', value)}
+            required
+            value={formData.address?.postal_code || ''}
+            onChange={(value) => handleInputChange('address.postal_code', value)}
             placeholder="Enter postal code"
           />
-
-          <InputTextField
-            label="Country"
-            value={formData.address.country}
-            onChange={(value) => handleFieldChange('address.country', value)}
-            placeholder="Enter country"
-          />
         </div>
-      </Card>
 
-      {/* Contact Information */}
-      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-          <PhoneIcon className="h-5 w-5 mr-2" />
-          Contact Information
-        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <InputTextField
-            label="Phone Number"
-            type="tel"
-            value={formData.contact_info.phone}
-            onChange={(value) => handleFieldChange('contact_info.phone', value)}
-            placeholder="Enter phone number"
+            label="Country"
+            required
+            value={formData.address?.country || ''}
+            onChange={(value) => handleInputChange('address.country', value)}
+            placeholder="Enter country"
           />
 
           <InputTextField
-            label="Email Address"
-            type="email"
-            value={formData.contact_info.email}
-            onChange={(value) => handleFieldChange('contact_info.email', value)}
-            placeholder="Enter email address"
-          />
-
-          <InputTextField
-            label="Website"
-            type="url"
-            value={formData.contact_info.website || ''}
-            onChange={(value) => handleFieldChange('contact_info.website', value)}
-            placeholder="Enter website URL"
-          />
-
-          <InputTextField
-            label="Fax Number"
-            type="tel"
-            value={formData.contact_info.fax || ''}
-            onChange={(value) => handleFieldChange('contact_info.fax', value)}
-            placeholder="Enter fax number"
+            label="District"
+            value={storeDetails?.address?.district || ''}
+            onChange={(value) => handleInputChange('address.district', value)}
+            placeholder="Enter district"
           />
         </div>
-      </Card>
 
-      {/* Business Hours */}
-      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-          <ClockIcon className="h-5 w-5 mr-2" />
-          Business Hours
-        </h3>
-        <div className="space-y-4">
-          {formData.business_hours.map((hours, index) => (
-            <div key={hours.day} className="flex items-center space-x-4">
-              <div className="w-24">
-                <span className="text-sm font-medium text-slate-700 capitalize">{hours.day}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={hours.is_open}
-                  onChange={(e) => handleBusinessHoursChange(index, 'is_open', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                />
-                <span className="text-sm text-slate-600">Open</span>
-              </div>
-              {hours.is_open && (
-                <>
-                  <div>
-                    <input
-                      type="time"
-                      value={hours.open_time}
-                      onChange={(e) => handleBusinessHoursChange(index, 'open_time', e.target.value)}
-                      className="px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <span className="text-slate-500">to</span>
-                  <div>
-                    <input
-                      type="time"
-                      value={hours.close_time}
-                      onChange={(e) => handleBusinessHoursChange(index, 'close_time', e.target.value)}
-                      className="px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </>
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputTextField
+            label="Latitude"
+            value={storeDetails?.latitude || ''}
+            onChange={(value) => handleInputChange('latitude', value)}
+            placeholder="e.g., 40.7128"
+          />
+
+          <InputTextField
+            label="Longitude"
+            value={storeDetails?.longitude || ''}
+            onChange={(value) => handleInputChange('longitude', value)}
+            placeholder="e.g., -74.0060"
+          />
+        </div>
+      </div>
+
+      {/* Contact Information Section */}
+      <div className="bg-gradient-to-r from-purple-50 to-purple-100/50 border border-purple-200 rounded-2xl p-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-3 rounded-xl">
+            <PhoneIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+              Contact Information
+            </h3>
+            <p className="text-purple-600 mt-1">Add contact details for customer communication</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputTextField
+          label="Primary Phone"
+          type="tel"
+          value={formData.contact_info?.phone || storeDetails?.telephone1 || ''}
+          onChange={(value) => handleInputChange('contact_info.phone', value)}
+          placeholder="Enter primary phone number"
+        />
+
+        <InputTextField
+          label="Secondary Phone"
+          type="tel"
+          value={storeDetails?.telephone2 || ''}
+          onChange={(value) => handleInputChange('telephone2', value)}
+          placeholder="Enter secondary phone number"
+        />
+
+        <InputTextField
+          label="Email Address"
+          type="email"
+          value={formData.contact_info?.email || storeDetails?.email || ''}
+          onChange={(value) => handleInputChange('contact_info.email', value)}
+          placeholder="Enter email address"
+        />
+
+        <InputTextField
+          label="Website"
+          type="url"
+          value={formData.contact_info?.website || ''}
+          onChange={(value) => handleInputChange('contact_info.website', value)}
+          placeholder="Enter website URL"
+        />
+      </div>
+
+      {/* Legal Entity Information Section */}
+      <div className="bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200 rounded-2xl p-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-3 rounded-xl">
+            <CurrencyDollarIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
+              Legal Entity Information
+            </h3>
+            <p className="text-amber-600 mt-1">Configure legal entity details for compliance</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputTextField
+          label="Legal Entity ID"
+          value={storeDetails?.legal_entity_id || ''}
+          onChange={(value) => handleInputChange('legal_entity_id', value)}
+          placeholder="Enter legal entity ID"
+        />
+
+        <InputTextField
+          label="Legal Entity Name"
+          value={storeDetails?.legal_entity_name || ''}
+          onChange={(value) => handleInputChange('legal_entity_name', value)}
+          placeholder="Enter legal entity name"
+        />
+      </div>
+
+      {/* Store Timing Section */}
+      <div className="bg-gradient-to-r from-green-50 to-green-100/50 border border-green-200 rounded-2xl p-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl">
+            <ClockIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+              Store Operating Hours
+            </h3>
+            <p className="text-green-600 mt-1">Configure your store's operating schedule</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Holidays'].map((day) => (
+          <div key={day} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border border-gray-200 rounded-xl hover:border-green-300 transition-all duration-200">
+            <div className="flex items-center space-x-2">
+              <ClockIcon className="w-4 h-4 text-green-500" />
+              <span className="font-semibold text-gray-700">{day}</span>
             </div>
-          ))}
+            <div className="md:col-span-2">
+              <InputTextField
+                label=""
+                value={storeDetails?.store_timing?.[day as keyof typeof storeDetails.store_timing] || ''}
+                onChange={(value) => handleTimingChange(day, value)}
+                placeholder={day === 'Holidays' ? 'Closed' : '09:00-18:00'}
+                className="w-full"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+        
+      <div className="bg-gradient-to-r from-green-50 to-green-100/50 border border-green-200 rounded-xl p-6">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckIcon className="w-4 h-4 text-green-600" />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-green-800 mb-2">Format Guide</h4>
+            <p className="text-sm text-green-700">
+              Use 24-hour format (e.g., "09:00-18:00") or "Closed" for non-operating days.
+              Separate multiple time slots with commas (e.g., "09:00-12:00,14:00-18:00").
+            </p>
+          </div>
         </div>
-      </Card>
+      </div>
+
+      {/* Regional Settings Section */}
+      <div className="bg-gradient-to-r from-indigo-50 to-indigo-100/50 border border-indigo-200 rounded-2xl p-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-3 rounded-xl">
+            <CurrencyDollarIcon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
+              Regional Settings
+            </h3>
+            <p className="text-indigo-600 mt-1">Configure locale and currency preferences</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <div className="flex items-center space-x-2">
+              <CurrencyDollarIcon className="w-4 h-4 text-indigo-500" />
+              <span>Locale</span>
+            </div>
+          </label>
+          <select
+            value={storeDetails?.locale || 'en-US'}
+            onChange={(e) => handleInputChange('locale', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-300 appearance-none"
+          >
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="es-ES">Spanish (Spain)</option>
+            <option value="es-MX">Spanish (Mexico)</option>
+            <option value="fr-FR">French (France)</option>
+            <option value="de-DE">German (Germany)</option>
+            <option value="it-IT">Italian (Italy)</option>
+            <option value="pt-BR">Portuguese (Brazil)</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <div className="flex items-center space-x-2">
+              <CurrencyDollarIcon className="w-4 h-4 text-indigo-500" />
+              <span>Currency</span>
+            </div>
+          </label>
+          <select
+            value={storeDetails?.currency || 'USD'}
+            onChange={(e) => handleInputChange('currency', e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-300 appearance-none"
+          >
+            <option value="USD">USD - US Dollar</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="GBP">GBP - British Pound</option>
+            <option value="CAD">CAD - Canadian Dollar</option>
+            <option value="AUD">AUD - Australian Dollar</option>
+            <option value="JPY">JPY - Japanese Yen</option>
+            <option value="CNY">CNY - Chinese Yuan</option>
+            <option value="INR">INR - Indian Rupee</option>
+          </select>
+        </div>
+      </div>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="px-6">
+        <Button onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
           <CheckIcon className="h-5 w-5 mr-2" />
           Save Store Information
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-// Regional Settings Tab Component 
-const RegionalSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }) => {
-  const [formData, setFormData] = useState(settings.regional_settings);
-
-  // Get supported currencies and timezones from the service
-  const currencies = storeServices.settings.getSupportedCurrencies();
-  const timezones = storeServices.settings.getSupportedTimezones();
-
-  const handleFieldChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    onFieldChange();
-  };
-
-  const handleSave = () => {
-    onSave({ regional_settings: formData });
-  };
-
-  return (
-    <div className="space-y-6">
-      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-          <CurrencyDollarIcon className="h-5 w-5 mr-2" />
-          Currency Settings
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Currency
-            </label>
-            <select
-              value={formData.currency}
-              onChange={(e) => handleFieldChange('currency', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {currencies.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.name} ({currency.symbol})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Currency Position
-            </label>
-            <select
-              value={formData.currency_position}
-              onChange={(e) => handleFieldChange('currency_position', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="before">Before amount ($100.00)</option>
-              <option value="after">After amount (100.00$)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Decimal Places
-            </label>
-            <select
-              value={formData.decimal_places}
-              onChange={(e) => handleFieldChange('decimal_places', parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value={0}>0 (100)</option>
-              <option value={1}>1 (100.0)</option>
-              <option value={2}>2 (100.00)</option>
-              <option value={3}>3 (100.000)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Timezone
-            </label>
-            <select
-              value={formData.timezone}
-              onChange={(e) => handleFieldChange('timezone', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {timezones.map((timezone) => (
-                <option key={timezone.code} value={timezone.code}>
-                  {timezone.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <PropertyCheckbox
-            title="Tax-inclusive pricing"
-            description="Prices include tax in the displayed amount"
-            checked={formData.tax_inclusive_pricing}
-            onChange={(checked) => handleFieldChange('tax_inclusive_pricing', checked)}
-          />
-        </div>
-      </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSave} className="px-6">
-          <CheckIcon className="h-5 w-5 mr-2" />
-          Save Regional Settings
         </Button>
       </div>
     </div>
@@ -2402,6 +2557,290 @@ const SecuritySettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChan
         <Button onClick={handleSave} className="px-6">
           <CheckIcon className="h-5 w-5 mr-2" />
           Save Security Settings
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// API Information Tab Component
+const ApiInformationTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }) => {
+  const [formData, setFormData] = useState(settings.api_information);
+
+  const handleFieldChange = (field: string, value: any) => {
+    setFormData(prev => {
+      const keys = field.split('.');
+      const result = { ...prev };
+      let current: any = result;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      
+      current[keys[keys.length - 1]] = value;
+      return result;
+    });
+    onFieldChange();
+  };
+
+  const handleEndpointChange = (endpoint: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      endpoints: { ...prev.endpoints, [endpoint]: value }
+    }));
+    onFieldChange();
+  };
+
+  const handleSupportedEventChange = (index: number, value: string) => {
+    const updatedEvents = [...formData.webhooks.supported_events];
+    updatedEvents[index] = value;
+    setFormData(prev => ({
+      ...prev,
+      webhooks: { ...prev.webhooks, supported_events: updatedEvents }
+    }));
+    onFieldChange();
+  };
+
+  const addSupportedEvent = () => {
+    setFormData(prev => ({
+      ...prev,
+      webhooks: {
+        ...prev.webhooks,
+        supported_events: [...prev.webhooks.supported_events, '']
+      }
+    }));
+    onFieldChange();
+  };
+
+  const removeSupportedEvent = (index: number) => {
+    const updatedEvents = formData.webhooks.supported_events.filter((_, i) => i !== index);
+    setFormData(prev => ({
+      ...prev,
+      webhooks: { ...prev.webhooks, supported_events: updatedEvents }
+    }));
+    onFieldChange();
+  };
+
+  const handleSave = () => {
+    onSave({ api_information: formData });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* API Version & Base URL */}
+      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+          <ServerIcon className="h-5 w-5 mr-2" />
+          API Configuration
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputTextField
+            label="API Version"
+            value={formData.api_version}
+            onChange={(value) => handleFieldChange('api_version', value)}
+            placeholder="v1.0.0"
+            helperText="Current API version being used"
+          />
+
+          <InputTextField
+            label="Base URL"
+            value={formData.base_url}
+            onChange={(value) => handleFieldChange('base_url', value)}
+            placeholder="https://api.yourstore.com/v1"
+            helperText="Base URL for all API endpoints"
+          />
+        </div>
+      </Card>
+
+      {/* API Endpoints */}
+      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">API Endpoints</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Object.entries(formData.endpoints).map(([key, value]) => (
+            <InputTextField
+              key={key}
+              label={key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              value={value}
+              onChange={(newValue) => handleEndpointChange(key, newValue)}
+              placeholder={`/${key.replace(/_/g, '-')}`}
+            />
+          ))}
+        </div>
+      </Card>
+
+      {/* Authentication Settings */}
+      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Authentication</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Authentication Method
+            </label>
+            <select
+              value={formData.authentication.method}
+              onChange={(e) => handleFieldChange('authentication.method', e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="bearer_token">Bearer Token</option>
+              <option value="api_key">API Key</option>
+              <option value="oauth2">OAuth 2.0</option>
+            </select>
+          </div>
+
+          <InputTextField
+            label="Token Expires In (seconds)"
+            type="number"
+            value={formData.authentication.token_expires_in?.toString() || ''}
+            onChange={(value) => handleFieldChange('authentication.token_expires_in', parseInt(value) || undefined)}
+            placeholder="3600"
+          />
+
+          <div className="flex items-center">
+            <PropertyCheckbox
+              title="Refresh Token Enabled"
+              description="Allow token refresh without re-authentication"
+              checked={formData.authentication.refresh_token_enabled}
+              onChange={(checked) => handleFieldChange('authentication.refresh_token_enabled', checked)}
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Rate Limiting */}
+      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Rate Limiting</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex items-center">
+            <PropertyCheckbox
+              title="Rate Limiting Enabled"
+              description="Enable API rate limiting"
+              checked={formData.rate_limiting.enabled}
+              onChange={(checked) => handleFieldChange('rate_limiting.enabled', checked)}
+            />
+          </div>
+
+          <InputTextField
+            label="Requests Per Minute"
+            type="number"
+            value={formData.rate_limiting.requests_per_minute.toString()}
+            onChange={(value) => handleFieldChange('rate_limiting.requests_per_minute', parseInt(value) || 0)}
+            placeholder="1000"
+            disabled={!formData.rate_limiting.enabled}
+          />
+
+          <InputTextField
+            label="Burst Limit"
+            type="number"
+            value={formData.rate_limiting.burst_limit.toString()}
+            onChange={(value) => handleFieldChange('rate_limiting.burst_limit', parseInt(value) || 0)}
+            placeholder="100"
+            disabled={!formData.rate_limiting.enabled}
+          />
+        </div>
+      </Card>
+
+      {/* Webhooks */}
+      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Webhooks</h3>
+        
+        <div className="mb-6">
+          <PropertyCheckbox
+            title="Webhooks Enabled"
+            description="Enable webhook notifications for events"
+            checked={formData.webhooks.enabled}
+            onChange={(checked) => handleFieldChange('webhooks.enabled', checked)}
+          />
+        </div>
+
+        {formData.webhooks.enabled && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputTextField
+                label="Callback URL"
+                value={formData.webhooks.callback_url || ''}
+                onChange={(value) => handleFieldChange('webhooks.callback_url', value)}
+                placeholder="https://your-store.com/webhooks"
+              />
+
+              <InputTextField
+                label="Secret Key"
+                value={formData.webhooks.secret_key || ''}
+                onChange={(value) => handleFieldChange('webhooks.secret_key', value)}
+                placeholder="whsec_..."
+                type="password"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-3">
+                Supported Events
+              </label>
+              <div className="space-y-2">
+                {formData.webhooks.supported_events.map((event, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={event}
+                      onChange={(e) => handleSupportedEventChange(index, e.target.value)}
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="order.created"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSupportedEvent(index)}
+                      className="text-red-600 hover:text-red-800 px-2 py-1 rounded"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addSupportedEvent}
+                  className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border border-blue-300 rounded-xl hover:bg-blue-50"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1 inline" />
+                  Add Event
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* Documentation Links */}
+      <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Documentation</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <InputTextField
+            label="Swagger URL"
+            value={formData.documentation.swagger_url || ''}
+            onChange={(value) => handleFieldChange('documentation.swagger_url', value)}
+            placeholder="https://api.yourstore.com/docs"
+          />
+
+          <InputTextField
+            label="Postman Collection URL"
+            value={formData.documentation.postman_collection_url || ''}
+            onChange={(value) => handleFieldChange('documentation.postman_collection_url', value)}
+            placeholder="https://api.yourstore.com/postman"
+          />
+
+          <InputTextField
+            label="API Documentation URL"
+            value={formData.documentation.api_docs_url || ''}
+            onChange={(value) => handleFieldChange('documentation.api_docs_url', value)}
+            placeholder="https://docs.yourstore.com"
+          />
+        </div>
+      </Card>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button onClick={handleSave} className="px-6">
+          <CheckIcon className="h-5 w-5 mr-2" />
+          Save API Information
         </Button>
       </div>
     </div>

@@ -9,11 +9,8 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
-  SignalIcon,
   CpuChipIcon,
   IdentificationIcon,
-  QrCodeIcon,
-  WifiIcon,
   BoltIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -52,7 +49,7 @@ interface TerminalSettingsState {
 }
 
 const TerminalSettings: React.FC = () => {
-  const { currentTenant, currentStore, isLoading: storeLoading } = useTenantStore();
+  const { currentStore, isLoading: storeLoading } = useTenantStore();
   const [state, setState] = useState<TerminalSettingsState>({
     terminals: {},
     isLoading: false,
@@ -97,6 +94,7 @@ const TerminalSettings: React.FC = () => {
   const handleDeleteTerminal = (terminalId: string) => {
     const terminal = state.terminals[terminalId];
     deleteDialog.openDeleteDialog(
+      terminal?.name || terminalId,
       () => {
         // In a real implementation, this would make an API call
         setState(prev => {
@@ -107,9 +105,7 @@ const TerminalSettings: React.FC = () => {
           };
         });
         deleteDialog.closeDialog();
-      },
-      'terminal',
-      terminal?.name || terminalId
+      }
     );
   };
 

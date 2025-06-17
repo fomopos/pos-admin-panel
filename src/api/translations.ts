@@ -36,7 +36,7 @@ export const translationAPI = {
       const response = await apiClient.get(`/translations/${language}`);
       return {
         success: true,
-        data: response.data
+        data: response.data as TranslationData
       };
     } catch (error: any) {
       console.error('Failed to fetch translations:', error);
@@ -55,7 +55,7 @@ export const translationAPI = {
       
       return {
         success: true,
-        message: response.data.message || 'Translations saved successfully'
+        message: (response.data as any)?.message || 'Translations saved successfully'
       };
     } catch (error: any) {
       console.error('Failed to save translations:', error);
@@ -69,7 +69,7 @@ export const translationAPI = {
   async getAvailableLanguages(): Promise<string[]> {
     try {
       const response = await apiClient.get('/translations/languages');
-      return response.data.languages || ['en', 'es'];
+      return (response.data as any)?.languages || ['en', 'es'];
     } catch (error: any) {
       console.error('Failed to fetch available languages:', error);
       // Return default languages as fallback
@@ -89,7 +89,7 @@ export const translationAPI = {
       
       return {
         success: true,
-        message: response.data.message || `Language ${language} created successfully`
+        message: (response.data as any)?.message || `Language ${language} created successfully`
       };
     } catch (error: any) {
       console.error('Failed to create language:', error);

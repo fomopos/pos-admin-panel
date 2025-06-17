@@ -1,4 +1,64 @@
 // Store configuration type definitions
+
+// Real Store API Types (from v0/tenant/:tenantId/store/:storeId)
+export interface StoreAddress {
+  address1: string;
+  address2?: string;
+  address3?: string;
+  address4?: string;
+  city: string;
+  state: string;
+  district?: string;
+  area?: string;
+  postal_code: string;
+  country: string;
+  county?: string;
+}
+
+export interface StoreTimings {
+  [day: string]: string; // Format: "HH:MM-HH:MM"
+}
+
+export interface Terminal {
+  terminal_id: string;
+  device_id: string;
+  status: 'active' | 'inactive';
+  platform: string;
+  model: string;
+  arch: string;
+  name: string;
+}
+
+export interface StoreDetails {
+  tenant_id: string;
+  store_id: string;
+  status: 'active' | 'inactive' | 'suspended';
+  store_name: string;
+  description?: string;
+  location_type: string;
+  store_type: string;
+  address: StoreAddress;
+  locale: string;
+  currency: string;
+  latitude?: string;
+  longitude?: string;
+  telephone1?: string;
+  telephone2?: string;
+  telephone3?: string;
+  telephone4?: string;
+  email?: string;
+  legal_entity_id?: string;
+  legal_entity_name?: string;
+  store_timing: StoreTimings;
+  terminals: Record<string, Terminal>;
+  properties?: any;
+  created_at: string;
+  create_user_id: string;
+  updated_at: string;
+  update_user_id?: string;
+}
+
+// Legacy Store Settings Types (for compatibility)
 export interface BusinessHours {
   day: string;
   is_open: boolean;
@@ -222,6 +282,41 @@ export interface SecuritySettings {
   };
 }
 
+export interface ApiInformation {
+  api_version: string;
+  base_url: string;
+  endpoints: {
+    health_check: string;
+    products: string;
+    orders: string;
+    customers: string;
+    inventory: string;
+    reports: string;
+    settings: string;
+  };
+  authentication: {
+    method: 'bearer_token' | 'api_key' | 'oauth2';
+    token_expires_in?: number;
+    refresh_token_enabled: boolean;
+  };
+  rate_limiting: {
+    enabled: boolean;
+    requests_per_minute: number;
+    burst_limit: number;
+  };
+  webhooks: {
+    enabled: boolean;
+    supported_events: string[];
+    callback_url?: string;
+    secret_key?: string;
+  };
+  documentation: {
+    swagger_url?: string;
+    postman_collection_url?: string;
+    api_docs_url?: string;
+  };
+}
+
 export interface StoreSettings {
   tenant_id: string;
   store_id: string;
@@ -232,6 +327,7 @@ export interface StoreSettings {
   operational_settings: OperationalSettings;
   user_management: UserManagement;
   integration_settings: IntegrationSettings;
+  api_information: ApiInformation;
   security_settings: SecuritySettings;
   created_at: string;
   updated_at: string;
