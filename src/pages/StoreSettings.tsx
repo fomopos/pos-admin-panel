@@ -434,7 +434,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
         <div>
           <InputTextField
             label="Store ID"
-            value={storeDetails?.store_id || ''}
+            value={formData.store_id || ''}
             onChange={(value) => handleInputChange('store_id', value)}
             placeholder="Auto-generated store ID"
             disabled
@@ -460,7 +460,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
             </div>
           </label>
           <select
-            value={storeDetails?.location_type || 'retail'}
+            value={formData.location_type || 'retail'}
             onChange={(e) => handleInputChange('location_type', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 appearance-none"
           >
@@ -479,7 +479,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
             </div>
           </label>
           <select
-            value={storeDetails?.store_type || 'general'}
+            value={formData.store_type || 'general'}
             onChange={(e) => handleInputChange('store_type', e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 appearance-none"
           >
@@ -499,7 +499,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
           Description
         </label>
         <textarea
-          value={storeDetails?.description || ''}
+          value={formData.description || ''}
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder="Brief description of your store"
           rows={3}

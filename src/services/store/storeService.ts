@@ -85,6 +85,7 @@ export class StoreService {
    */
   convertToStoreInformation(storeDetails: StoreDetails): any {
     return {
+      store_id: storeDetails.store_id,
       store_name: storeDetails.store_name,
       business_name: storeDetails.legal_entity_name || storeDetails.store_name,
       registration_number: storeDetails.legal_entity_id,
