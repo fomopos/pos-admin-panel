@@ -835,6 +835,74 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
         />
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <DropdownSearch
+            label="Locale"
+            options={LOCALES}
+            value={formData.locale || 'en-US'}
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('locale', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with flag and locale code
+            displayValue={(option) => {
+              if (!option) return "Select locale";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{option.icon}</span>
+                  <span className="font-medium">{option.id}</span>
+                  <span className="text-gray-400 text-sm">•</span>
+                  <span className="text-gray-600">{option.label.split(' (')[0]}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
+            placeholder="Select locale"
+            searchPlaceholder="Search locales..."
+          />
+        </div>
+
+        <div>
+          <DropdownSearch
+            label="Currency"
+            options={CURRENCIES}
+            value={formData.currency || 'USD'}
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('currency', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with currency symbol and code
+            displayValue={(option) => {
+              if (!option) return "Select currency";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-green-600 min-w-[20px]">{option.icon}</span>
+                  <span className="font-medium">{option.id}</span>
+                  <span className="text-gray-400 text-sm">•</span>
+                  <span className="text-gray-600">{option.label.split(' - ')[1]}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-bold min-w-[24px]">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
+            placeholder="Select currency"
+            searchPlaceholder="Search currencies..."
+          />
+        </div>
+      </div>
+
       {/* Address Information Section */}
       <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl p-6">
         <div className="flex items-center space-x-4">
@@ -1114,90 +1182,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
           </div>
         </div>
       </div>
-
-      {/* Regional Settings Section */}
-      <div className="bg-gradient-to-r from-indigo-50 to-indigo-100/50 border border-indigo-200 rounded-2xl p-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-3 rounded-xl">
-            <CurrencyDollarIcon className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-800 bg-clip-text text-transparent">
-              Regional Settings
-            </h3>
-            <p className="text-indigo-600 mt-1">Configure locale and currency preferences</p>
-          </div>
-        </div>
-      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <DropdownSearch
-            label="Locale"
-            options={LOCALES}
-            value={formData.locale || 'en-US'}
-            onSelect={(selectedOption) => {
-              if (selectedOption) {
-                handleInputChange('locale', selectedOption.id);
-              }
-            }}
-            // Enhanced displayValue with flag and locale code
-            displayValue={(option) => {
-              if (!option) return "Select locale";
-              return (
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{option.icon}</span>
-                  <span className="font-medium">{option.id}</span>
-                  <span className="text-gray-400 text-sm">•</span>
-                  <span className="text-gray-600">{option.label.split(' (')[0]}</span>
-                </div>
-              );
-            }}
-            renderOption={(option) => (
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{option.icon}</span>
-                <span>{option.label}</span>
-              </div>
-            )}
-            placeholder="Select locale"
-            searchPlaceholder="Search locales..."
-          />
-        </div>
-
-        <div>
-          <DropdownSearch
-            label="Currency"
-            options={CURRENCIES}
-            value={formData.currency || 'USD'}
-            onSelect={(selectedOption) => {
-              if (selectedOption) {
-                handleInputChange('currency', selectedOption.id);
-              }
-            }}
-            // Enhanced displayValue with currency symbol and code
-            displayValue={(option) => {
-              if (!option) return "Select currency";
-              return (
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-green-600 min-w-[20px]">{option.icon}</span>
-                  <span className="font-medium">{option.id}</span>
-                  <span className="text-gray-400 text-sm">•</span>
-                  <span className="text-gray-600">{option.label.split(' - ')[1]}</span>
-                </div>
-              );
-            }}
-            renderOption={(option) => (
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold min-w-[24px]">{option.icon}</span>
-                <span>{option.label}</span>
-              </div>
-            )}
-            placeholder="Select currency"
-            searchPlaceholder="Search currencies..."
-          />
-        </div>
-      </div>
-
       {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={handleSave} className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
