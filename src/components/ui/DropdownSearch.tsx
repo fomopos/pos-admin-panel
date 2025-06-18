@@ -27,7 +27,7 @@ export interface DropdownSearchProps {
   onSelect: (option: DropdownSearchOption | null) => void;
   
   // Display customization
-  displayValue?: (option: DropdownSearchOption | null) => string;
+  displayValue?: (option: DropdownSearchOption | null) => string | ReactNode;
   renderOption?: (option: DropdownSearchOption) => ReactNode;
   noOptionsMessage?: string;
   clearSearchText?: string;
@@ -139,6 +139,26 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
     return selectedOption?.label || placeholder;
   };
 
+  const renderDisplayValue = () => {
+    const displayContent = getDisplayValue();
+    
+    // If displayValue returns a React component/element, render it directly
+    if (React.isValidElement(displayContent)) {
+      return (
+        <div className="flex items-center gap-2 truncate text-sm text-gray-900">
+          {displayContent}
+        </div>
+      );
+    }
+    
+    // If displayValue returns a string or selectedOption is null, render as text
+    return (
+      <span className={`truncate text-sm ${selectedOption ? 'text-gray-900' : 'text-slate-400'}`}>
+        {displayContent}
+      </span>
+    );
+  };
+
   const renderDefaultOption = (option: DropdownSearchOption) => (
     <div className="flex items-center w-full">
       {option.icon ? (
@@ -185,9 +205,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
             error ? 'border-red-500 focus-visible:ring-red-500' : ''
           } ${buttonClassName}`}
         >
-          <span className={`truncate text-sm ${selectedOption ? 'text-gray-900' : 'text-slate-400'}`}>
-            {getDisplayValue()}
-          </span>
+          {renderDisplayValue()}
           <ChevronDownIcon 
             className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
           />

@@ -11,6 +11,7 @@ const DropdownSearchDemo: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = React.useState<string | undefined>();
   const [selectedUser, setSelectedUser] = React.useState<string | undefined>();
   const [selectedCountry, setSelectedCountry] = React.useState<string | undefined>();
+  const [selectedCurrency, setSelectedCurrency] = React.useState<string | undefined>();
 
   // Sample category options with hierarchy
   const categoryOptions: DropdownSearchOption[] = [
@@ -46,6 +47,15 @@ const DropdownSearchDemo: React.FC = () => {
     { id: 'au', label: 'Australia', description: 'Oceania' },
   ];
 
+  // Enhanced options with icons for the new displayValue demo
+  const currencyOptions: DropdownSearchOption[] = [
+    { id: 'USD', label: 'US Dollar', description: 'United States Dollar', icon: <span className="font-bold text-green-600">$</span> },
+    { id: 'EUR', label: 'Euro', description: 'European Union Euro', icon: <span className="font-bold text-blue-600">€</span> },
+    { id: 'GBP', label: 'British Pound', description: 'British Pound Sterling', icon: <span className="font-bold text-purple-600">£</span> },
+    { id: 'JPY', label: 'Japanese Yen', description: 'Japanese Yen', icon: <span className="font-bold text-red-600">¥</span> },
+    { id: 'CAD', label: 'Canadian Dollar', description: 'Canadian Dollar', icon: <span className="font-bold text-indigo-600">C$</span> },
+  ];
+
   const handleCategorySelect = (option: DropdownSearchOption | null) => {
     setSelectedCategory(option?.id);
   };
@@ -56,6 +66,10 @@ const DropdownSearchDemo: React.FC = () => {
 
   const handleCountrySelect = (option: DropdownSearchOption | null) => {
     setSelectedCountry(option?.id);
+  };
+
+  const handleCurrencySelect = (option: DropdownSearchOption | null) => {
+    setSelectedCurrency(option?.id);
   };
 
   return (
@@ -150,6 +164,54 @@ const DropdownSearchDemo: React.FC = () => {
             buttonClassName="border-2 border-blue-300 hover:border-blue-400"
             dropdownClassName="border-2 border-blue-300"
           />
+        </div>
+      </div>
+
+      {/* Enhanced DisplayValue Component Example */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Enhanced DisplayValue with Components</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          This example shows how displayValue can now render React components, not just strings.
+        </p>
+        <div className="max-w-md">
+          <DropdownSearch
+            label="Currency"
+            value={selectedCurrency}
+            placeholder="Select currency"
+            searchPlaceholder="Search currencies..."
+            options={currencyOptions}
+            onSelect={handleCurrencySelect}
+            clearLabel="No Currency"
+            noOptionsMessage="No currencies found"
+            allowClear={true}
+            // Enhanced displayValue that returns a React component
+            displayValue={(option) => {
+              if (!option) return "Select currency";
+              return (
+                <div className="flex items-center gap-2">
+                  {option.icon}
+                  <span className="font-medium">{option.id}</span>
+                  <span className="text-gray-500">-</span>
+                  <span>{option.label}</span>
+                </div>
+              );
+            }}
+            // Custom option rendering for dropdown items
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <div className="text-lg">{option.icon}</div>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{option.id} - {option.label}</div>
+                  <div className="text-xs text-gray-500">{option.description}</div>
+                </div>
+              </div>
+            )}
+          />
+          {selectedCurrency && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected currency: {currencyOptions.find(c => c.id === selectedCurrency)?.label} ({selectedCurrency})
+            </p>
+          )}
         </div>
       </div>
 

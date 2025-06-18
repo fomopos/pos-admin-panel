@@ -27,11 +27,317 @@ import {
   Loading,
   InputTextField,
   PropertyCheckbox,
-  InputMoneyField
+  InputMoneyField,
+  DropdownSearch
 } from '../components/ui';
+import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { storeServices } from '../services/store';
 import type { StoreSettings, StoreDetails } from '../services/types/store.types';
+
+// Location types with icons
+const LOCATION_TYPES: DropdownSearchOption[] = [
+  { id: 'retail', label: 'Retail', icon: '🏪' },
+  { id: 'warehouse', label: 'Warehouse', icon: '🏭' },
+  { id: 'outlet', label: 'Outlet', icon: '🏬' },
+  { id: 'kiosk', label: 'Kiosk', icon: '🏪' },
+  { id: 'online', label: 'Online', icon: '💻' },
+  { id: 'popup', label: 'Pop-up', icon: '⏰' },
+];
+
+// Store types with icons
+const STORE_TYPES: DropdownSearchOption[] = [
+  { id: 'general', label: 'General Store', icon: '🏪' },
+  { id: 'grocery', label: 'Grocery', icon: '🛒' },
+  { id: 'clothing', label: 'Clothing', icon: '👕' },
+  { id: 'electronics', label: 'Electronics', icon: '📱' },
+  { id: 'pharmacy', label: 'Pharmacy', icon: '💊' },
+  { id: 'restaurant', label: 'Restaurant', icon: '🍽️' },
+  { id: 'cafe', label: 'Cafe', icon: '☕' },
+  { id: 'specialty', label: 'Specialty Store', icon: '🎯' },
+];
+
+// Currency options with symbols
+const CURRENCIES: DropdownSearchOption[] = [
+  { id: 'USD', label: 'USD - US Dollar', icon: '$' },
+  { id: 'EUR', label: 'EUR - Euro', icon: '€' },
+  { id: 'GBP', label: 'GBP - British Pound', icon: '£' },
+  { id: 'CAD', label: 'CAD - Canadian Dollar', icon: 'C$' },
+  { id: 'AUD', label: 'AUD - Australian Dollar', icon: 'A$' },
+  { id: 'JPY', label: 'JPY - Japanese Yen', icon: '¥' },
+  { id: 'CNY', label: 'CNY - Chinese Yuan', icon: '¥' },
+  { id: 'INR', label: 'INR - Indian Rupee', icon: '₹' },
+  { id: 'AED', label: 'AED - UAE Dirham', icon: 'د.إ' },
+  { id: 'CHF', label: 'CHF - Swiss Franc', icon: 'Fr' },
+];
+
+// Locale options with flag icons
+const LOCALES: DropdownSearchOption[] = [
+  { id: 'en-US', label: 'English (US)', icon: '🇺🇸' },
+  { id: 'en-GB', label: 'English (UK)', icon: '🇬🇧' },
+  { id: 'es-ES', label: 'Spanish (Spain)', icon: '🇪🇸' },
+  { id: 'es-MX', label: 'Spanish (Mexico)', icon: '🇲🇽' },
+  { id: 'fr-FR', label: 'French (France)', icon: '🇫🇷' },
+  { id: 'de-DE', label: 'German (Germany)', icon: '🇩🇪' },
+  { id: 'it-IT', label: 'Italian (Italy)', icon: '🇮🇹' },
+  { id: 'pt-BR', label: 'Portuguese (Brazil)', icon: '🇧🇷' },
+];
+
+// Countries with flags for dropdown
+const COUNTRIES: DropdownSearchOption[] = [
+  // Popular countries first
+  { id: 'US', label: 'United States', icon: '🇺🇸' },
+  { id: 'GB', label: 'United Kingdom', icon: '🇬🇧' },
+  { id: 'CA', label: 'Canada', icon: '🇨🇦' },
+  { id: 'AU', label: 'Australia', icon: '🇦🇺' },
+  { id: 'DE', label: 'Germany', icon: '🇩🇪' },
+  { id: 'FR', label: 'France', icon: '🇫🇷' },
+  { id: 'IN', label: 'India', icon: '🇮🇳' },
+  { id: 'JP', label: 'Japan', icon: '🇯🇵' },
+  { id: 'BR', label: 'Brazil', icon: '🇧🇷' },
+  { id: 'CN', label: 'China', icon: '🇨🇳' },
+  { id: 'separator', label: '─────────────────────', icon: '' },
+  // All countries alphabetically
+  { id: 'AD', label: 'Andorra', icon: '🇦🇩' },
+  { id: 'AE', label: 'United Arab Emirates', icon: '🇦🇪' },
+  { id: 'AF', label: 'Afghanistan', icon: '🇦🇫' },
+  { id: 'AG', label: 'Antigua and Barbuda', icon: '🇦🇬' },
+  { id: 'AI', label: 'Anguilla', icon: '🇦🇮' },
+  { id: 'AL', label: 'Albania', icon: '🇦🇱' },
+  { id: 'AM', label: 'Armenia', icon: '🇦🇲' },
+  { id: 'AO', label: 'Angola', icon: '🇦🇴' },
+  { id: 'AQ', label: 'Antarctica', icon: '🇦🇶' },
+  { id: 'AR', label: 'Argentina', icon: '🇦🇷' },
+  { id: 'AS', label: 'American Samoa', icon: '🇦🇸' },
+  { id: 'AT', label: 'Austria', icon: '🇦🇹' },
+  { id: 'AW', label: 'Aruba', icon: '🇦🇼' },
+  { id: 'AX', label: 'Åland Islands', icon: '🇦🇽' },
+  { id: 'AZ', label: 'Azerbaijan', icon: '🇦🇿' },
+  { id: 'BA', label: 'Bosnia and Herzegovina', icon: '🇧🇦' },
+  { id: 'BB', label: 'Barbados', icon: '🇧🇧' },
+  { id: 'BD', label: 'Bangladesh', icon: '🇧🇩' },
+  { id: 'BE', label: 'Belgium', icon: '🇧🇪' },
+  { id: 'BF', label: 'Burkina Faso', icon: '🇧🇫' },
+  { id: 'BG', label: 'Bulgaria', icon: '🇧🇬' },
+  { id: 'BH', label: 'Bahrain', icon: '🇧🇭' },
+  { id: 'BI', label: 'Burundi', icon: '🇧🇮' },
+  { id: 'BJ', label: 'Benin', icon: '🇧🇯' },
+  { id: 'BL', label: 'Saint Barthélemy', icon: '🇧🇱' },
+  { id: 'BM', label: 'Bermuda', icon: '🇧🇲' },
+  { id: 'BN', label: 'Brunei', icon: '🇧🇳' },
+  { id: 'BO', label: 'Bolivia', icon: '🇧🇴' },
+  { id: 'BQ', label: 'Caribbean Netherlands', icon: '🇧🇶' },
+  { id: 'BS', label: 'Bahamas', icon: '🇧🇸' },
+  { id: 'BT', label: 'Bhutan', icon: '🇧🇹' },
+  { id: 'BV', label: 'Bouvet Island', icon: '🇧🇻' },
+  { id: 'BW', label: 'Botswana', icon: '🇧🇼' },
+  { id: 'BY', label: 'Belarus', icon: '🇧🇾' },
+  { id: 'BZ', label: 'Belize', icon: '🇧🇿' },
+  { id: 'CC', label: 'Cocos (Keeling) Islands', icon: '🇨🇨' },
+  { id: 'CD', label: 'Congo (Democratic Republic)', icon: '🇨🇩' },
+  { id: 'CF', label: 'Central African Republic', icon: '🇨🇫' },
+  { id: 'CG', label: 'Congo', icon: '🇨🇬' },
+  { id: 'CH', label: 'Switzerland', icon: '🇨🇭' },
+  { id: 'CI', label: 'Côte d\'Ivoire', icon: '🇨🇮' },
+  { id: 'CK', label: 'Cook Islands', icon: '🇨🇰' },
+  { id: 'CL', label: 'Chile', icon: '🇨🇱' },
+  { id: 'CM', label: 'Cameroon', icon: '🇨🇲' },
+  { id: 'CO', label: 'Colombia', icon: '🇨🇴' },
+  { id: 'CR', label: 'Costa Rica', icon: '🇨🇷' },
+  { id: 'CU', label: 'Cuba', icon: '🇨🇺' },
+  { id: 'CV', label: 'Cape Verde', icon: '🇨🇻' },
+  { id: 'CW', label: 'Curaçao', icon: '🇨🇼' },
+  { id: 'CX', label: 'Christmas Island', icon: '🇨🇽' },
+  { id: 'CY', label: 'Cyprus', icon: '🇨🇾' },
+  { id: 'CZ', label: 'Czech Republic', icon: '🇨🇿' },
+  { id: 'DJ', label: 'Djibouti', icon: '🇩🇯' },
+  { id: 'DK', label: 'Denmark', icon: '🇩🇰' },
+  { id: 'DM', label: 'Dominica', icon: '🇩🇲' },
+  { id: 'DO', label: 'Dominican Republic', icon: '🇩🇴' },
+  { id: 'DZ', label: 'Algeria', icon: '🇩🇿' },
+  { id: 'EC', label: 'Ecuador', icon: '🇪🇨' },
+  { id: 'EE', label: 'Estonia', icon: '🇪🇪' },
+  { id: 'EG', label: 'Egypt', icon: '🇪🇬' },
+  { id: 'EH', label: 'Western Sahara', icon: '🇪🇭' },
+  { id: 'ER', label: 'Eritrea', icon: '🇪🇷' },
+  { id: 'ES', label: 'Spain', icon: '🇪🇸' },
+  { id: 'ET', label: 'Ethiopia', icon: '🇪🇹' },
+  { id: 'FI', label: 'Finland', icon: '🇫🇮' },
+  { id: 'FJ', label: 'Fiji', icon: '🇫🇯' },
+  { id: 'FK', label: 'Falkland Islands', icon: '🇫🇰' },
+  { id: 'FM', label: 'Micronesia', icon: '🇫🇲' },
+  { id: 'FO', label: 'Faroe Islands', icon: '🇫🇴' },
+  { id: 'GA', label: 'Gabon', icon: '🇬🇦' },
+  { id: 'GD', label: 'Grenada', icon: '🇬🇩' },
+  { id: 'GE', label: 'Georgia', icon: '🇬🇪' },
+  { id: 'GF', label: 'French Guiana', icon: '🇬🇫' },
+  { id: 'GG', label: 'Guernsey', icon: '🇬🇬' },
+  { id: 'GH', label: 'Ghana', icon: '🇬🇭' },
+  { id: 'GI', label: 'Gibraltar', icon: '🇬🇮' },
+  { id: 'GL', label: 'Greenland', icon: '🇬🇱' },
+  { id: 'GM', label: 'Gambia', icon: '🇬🇲' },
+  { id: 'GN', label: 'Guinea', icon: '🇬🇳' },
+  { id: 'GP', label: 'Guadeloupe', icon: '🇬🇵' },
+  { id: 'GQ', label: 'Equatorial Guinea', icon: '🇬🇶' },
+  { id: 'GR', label: 'Greece', icon: '🇬🇷' },
+  { id: 'GS', label: 'South Georgia and the South Sandwich Islands', icon: '🇬🇸' },
+  { id: 'GT', label: 'Guatemala', icon: '🇬🇹' },
+  { id: 'GU', label: 'Guam', icon: '🇬🇺' },
+  { id: 'GW', label: 'Guinea-Bissau', icon: '🇬🇼' },
+  { id: 'GY', label: 'Guyana', icon: '🇬🇾' },
+  { id: 'HK', label: 'Hong Kong', icon: '🇭🇰' },
+  { id: 'HM', label: 'Heard Island and McDonald Islands', icon: '🇭🇲' },
+  { id: 'HN', label: 'Honduras', icon: '🇭🇳' },
+  { id: 'HR', label: 'Croatia', icon: '🇭🇷' },
+  { id: 'HT', label: 'Haiti', icon: '🇭🇹' },
+  { id: 'HU', label: 'Hungary', icon: '🇭🇺' },
+  { id: 'ID', label: 'Indonesia', icon: '🇮🇩' },
+  { id: 'IE', label: 'Ireland', icon: '🇮🇪' },
+  { id: 'IL', label: 'Israel', icon: '🇮🇱' },
+  { id: 'IM', label: 'Isle of Man', icon: '🇮🇲' },
+  { id: 'IO', label: 'British Indian Ocean Territory', icon: '🇮🇴' },
+  { id: 'IQ', label: 'Iraq', icon: '🇮🇶' },
+  { id: 'IR', label: 'Iran', icon: '🇮🇷' },
+  { id: 'IS', label: 'Iceland', icon: '🇮🇸' },
+  { id: 'IT', label: 'Italy', icon: '🇮🇹' },
+  { id: 'JE', label: 'Jersey', icon: '🇯🇪' },
+  { id: 'JM', label: 'Jamaica', icon: '🇯🇲' },
+  { id: 'JO', label: 'Jordan', icon: '🇯🇴' },
+  { id: 'KE', label: 'Kenya', icon: '🇰🇪' },
+  { id: 'KG', label: 'Kyrgyzstan', icon: '🇰🇬' },
+  { id: 'KH', label: 'Cambodia', icon: '🇰🇭' },
+  { id: 'KI', label: 'Kiribati', icon: '🇰🇮' },
+  { id: 'KM', label: 'Comoros', icon: '🇰🇲' },
+  { id: 'KN', label: 'Saint Kitts and Nevis', icon: '🇰🇳' },
+  { id: 'KP', label: 'North Korea', icon: '🇰🇵' },
+  { id: 'KR', label: 'South Korea', icon: '🇰🇷' },
+  { id: 'KW', label: 'Kuwait', icon: '🇰🇼' },
+  { id: 'KY', label: 'Cayman Islands', icon: '🇰🇾' },
+  { id: 'KZ', label: 'Kazakhstan', icon: '🇰🇿' },
+  { id: 'LA', label: 'Laos', icon: '🇱🇦' },
+  { id: 'LB', label: 'Lebanon', icon: '🇱🇧' },
+  { id: 'LC', label: 'Saint Lucia', icon: '🇱🇨' },
+  { id: 'LI', label: 'Liechtenstein', icon: '🇱🇮' },
+  { id: 'LK', label: 'Sri Lanka', icon: '🇱🇰' },
+  { id: 'LR', label: 'Liberia', icon: '🇱🇷' },
+  { id: 'LS', label: 'Lesotho', icon: '🇱🇸' },
+  { id: 'LT', label: 'Lithuania', icon: '🇱🇹' },
+  { id: 'LU', label: 'Luxembourg', icon: '🇱🇺' },
+  { id: 'LV', label: 'Latvia', icon: '🇱🇻' },
+  { id: 'LY', label: 'Libya', icon: '🇱🇾' },
+  { id: 'MA', label: 'Morocco', icon: '🇲🇦' },
+  { id: 'MC', label: 'Monaco', icon: '🇲🇨' },
+  { id: 'MD', label: 'Moldova', icon: '🇲🇩' },
+  { id: 'ME', label: 'Montenegro', icon: '🇲🇪' },
+  { id: 'MF', label: 'Saint Martin', icon: '🇲🇫' },
+  { id: 'MG', label: 'Madagascar', icon: '🇲🇬' },
+  { id: 'MH', label: 'Marshall Islands', icon: '🇲🇭' },
+  { id: 'MK', label: 'North Macedonia', icon: '🇲🇰' },
+  { id: 'ML', label: 'Mali', icon: '🇲🇱' },
+  { id: 'MM', label: 'Myanmar', icon: '🇲🇲' },
+  { id: 'MN', label: 'Mongolia', icon: '🇲🇳' },
+  { id: 'MO', label: 'Macao', icon: '🇲🇴' },
+  { id: 'MP', label: 'Northern Mariana Islands', icon: '🇲🇵' },
+  { id: 'MQ', label: 'Martinique', icon: '🇲🇶' },
+  { id: 'MR', label: 'Mauritania', icon: '🇲🇷' },
+  { id: 'MS', label: 'Montserrat', icon: '🇲🇸' },
+  { id: 'MT', label: 'Malta', icon: '🇲🇹' },
+  { id: 'MU', label: 'Mauritius', icon: '🇲🇺' },
+  { id: 'MV', label: 'Maldives', icon: '🇲🇻' },
+  { id: 'MW', label: 'Malawi', icon: '🇲🇼' },
+  { id: 'MX', label: 'Mexico', icon: '🇲🇽' },
+  { id: 'MY', label: 'Malaysia', icon: '🇲🇾' },
+  { id: 'MZ', label: 'Mozambique', icon: '🇲🇿' },
+  { id: 'NA', label: 'Namibia', icon: '🇳🇦' },
+  { id: 'NC', label: 'New Caledonia', icon: '🇳🇨' },
+  { id: 'NE', label: 'Niger', icon: '🇳🇪' },
+  { id: 'NF', label: 'Norfolk Island', icon: '🇳🇫' },
+  { id: 'NG', label: 'Nigeria', icon: '🇳🇬' },
+  { id: 'NI', label: 'Nicaragua', icon: '🇳🇮' },
+  { id: 'NL', label: 'Netherlands', icon: '🇳🇱' },
+  { id: 'NO', label: 'Norway', icon: '🇳🇴' },
+  { id: 'NP', label: 'Nepal', icon: '🇳🇵' },
+  { id: 'NR', label: 'Nauru', icon: '🇳🇷' },
+  { id: 'NU', label: 'Niue', icon: '🇳🇺' },
+  { id: 'NZ', label: 'New Zealand', icon: '🇳🇿' },
+  { id: 'OM', label: 'Oman', icon: '🇴🇲' },
+  { id: 'PA', label: 'Panama', icon: '🇵🇦' },
+  { id: 'PE', label: 'Peru', icon: '🇵🇪' },
+  { id: 'PF', label: 'French Polynesia', icon: '🇵🇫' },
+  { id: 'PG', label: 'Papua New Guinea', icon: '🇵🇬' },
+  { id: 'PH', label: 'Philippines', icon: '🇵🇭' },
+  { id: 'PK', label: 'Pakistan', icon: '🇵🇰' },
+  { id: 'PL', label: 'Poland', icon: '🇵🇱' },
+  { id: 'PM', label: 'Saint Pierre and Miquelon', icon: '🇵🇲' },
+  { id: 'PN', label: 'Pitcairn', icon: '🇵🇳' },
+  { id: 'PR', label: 'Puerto Rico', icon: '🇵🇷' },
+  { id: 'PS', label: 'Palestinian Territory', icon: '🇵🇸' },
+  { id: 'PT', label: 'Portugal', icon: '🇵🇹' },
+  { id: 'PW', label: 'Palau', icon: '🇵🇼' },
+  { id: 'PY', label: 'Paraguay', icon: '🇵🇾' },
+  { id: 'QA', label: 'Qatar', icon: '🇶🇦' },
+  { id: 'RE', label: 'Réunion', icon: '🇷🇪' },
+  { id: 'RO', label: 'Romania', icon: '🇷🇴' },
+  { id: 'RS', label: 'Serbia', icon: '🇷🇸' },
+  { id: 'RU', label: 'Russia', icon: '🇷🇺' },
+  { id: 'RW', label: 'Rwanda', icon: '🇷🇼' },
+  { id: 'SA', label: 'Saudi Arabia', icon: '🇸🇦' },
+  { id: 'SB', label: 'Solomon Islands', icon: '🇸🇧' },
+  { id: 'SC', label: 'Seychelles', icon: '🇸🇨' },
+  { id: 'SD', label: 'Sudan', icon: '🇸🇩' },
+  { id: 'SE', label: 'Sweden', icon: '🇸🇪' },
+  { id: 'SG', label: 'Singapore', icon: '🇸🇬' },
+  { id: 'SH', label: 'Saint Helena', icon: '🇸🇭' },
+  { id: 'SI', label: 'Slovenia', icon: '🇸🇮' },
+  { id: 'SJ', label: 'Svalbard and Jan Mayen', icon: '🇸🇯' },
+  { id: 'SK', label: 'Slovakia', icon: '🇸🇰' },
+  { id: 'SL', label: 'Sierra Leone', icon: '🇸🇱' },
+  { id: 'SM', label: 'San Marino', icon: '🇸🇲' },
+  { id: 'SN', label: 'Senegal', icon: '🇸🇳' },
+  { id: 'SO', label: 'Somalia', icon: '🇸🇴' },
+  { id: 'SR', label: 'Suriname', icon: '🇸🇷' },
+  { id: 'SS', label: 'South Sudan', icon: '🇸🇸' },
+  { id: 'ST', label: 'São Tomé and Príncipe', icon: '🇸🇹' },
+  { id: 'SV', label: 'El Salvador', icon: '🇸🇻' },
+  { id: 'SX', label: 'Sint Maarten', icon: '🇸🇽' },
+  { id: 'SY', label: 'Syria', icon: '🇸🇾' },
+  { id: 'SZ', label: 'Eswatini', icon: '🇸🇿' },
+  { id: 'TC', label: 'Turks and Caicos Islands', icon: '🇹🇨' },
+  { id: 'TD', label: 'Chad', icon: '🇹🇩' },
+  { id: 'TF', label: 'French Southern Territories', icon: '🇹🇫' },
+  { id: 'TG', label: 'Togo', icon: '🇹🇬' },
+  { id: 'TH', label: 'Thailand', icon: '🇹🇭' },
+  { id: 'TJ', label: 'Tajikistan', icon: '🇹🇯' },
+  { id: 'TK', label: 'Tokelau', icon: '🇹🇰' },
+  { id: 'TL', label: 'Timor-Leste', icon: '🇹🇱' },
+  { id: 'TM', label: 'Turkmenistan', icon: '🇹🇲' },
+  { id: 'TN', label: 'Tunisia', icon: '🇹🇳' },
+  { id: 'TO', label: 'Tonga', icon: '🇹🇴' },
+  { id: 'TR', label: 'Turkey', icon: '🇹🇷' },
+  { id: 'TT', label: 'Trinidad and Tobago', icon: '🇹🇹' },
+  { id: 'TV', label: 'Tuvalu', icon: '🇹🇻' },
+  { id: 'TW', label: 'Taiwan', icon: '🇹🇼' },
+  { id: 'TZ', label: 'Tanzania', icon: '🇹🇿' },
+  { id: 'UA', label: 'Ukraine', icon: '🇺🇦' },
+  { id: 'UG', label: 'Uganda', icon: '🇺🇬' },
+  { id: 'UM', label: 'United States Minor Outlying Islands', icon: '🇺🇲' },
+  { id: 'UY', label: 'Uruguay', icon: '🇺🇾' },
+  { id: 'UZ', label: 'Uzbekistan', icon: '🇺🇿' },
+  { id: 'VA', label: 'Vatican City', icon: '🇻🇦' },
+  { id: 'VC', label: 'Saint Vincent and the Grenadines', icon: '🇻🇨' },
+  { id: 'VE', label: 'Venezuela', icon: '🇻🇪' },
+  { id: 'VG', label: 'Virgin Islands (British)', icon: '🇻🇬' },
+  { id: 'VI', label: 'Virgin Islands (U.S.)', icon: '🇻🇮' },
+  { id: 'VN', label: 'Vietnam', icon: '🇻🇳' },
+  { id: 'VU', label: 'Vanuatu', icon: '🇻🇺' },
+  { id: 'WF', label: 'Wallis and Futuna', icon: '🇼🇫' },
+  { id: 'WS', label: 'Samoa', icon: '🇼🇸' },
+  { id: 'YE', label: 'Yemen', icon: '🇾🇪' },
+  { id: 'YT', label: 'Mayotte', icon: '🇾🇹' },
+  { id: 'ZA', label: 'South Africa', icon: '🇿🇦' },
+  { id: 'ZM', label: 'Zambia', icon: '🇿🇲' },
+  { id: 'ZW', label: 'Zimbabwe', icon: '🇿🇼' }
+];
 
 interface StoreSettingsState {
   settings: StoreSettings | null;
@@ -268,6 +574,7 @@ const StoreSettingsPage: React.FC = () => {
         tabs={tabs}
         activeTab={state.activeTab}
         onTabChange={handleTabChange}
+        allowOverflow={true}
       >
         {state.activeTab === 'information' && (
           <StoreInformationTab 
@@ -453,44 +760,65 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <MapPinIcon className="w-4 h-4 text-blue-500" />
-              <span>Location Type</span>
-            </div>
-          </label>
-          <select
+          <DropdownSearch
+            label="Location Type"
+            options={LOCATION_TYPES}
             value={formData.location_type || 'retail'}
-            onChange={(e) => handleInputChange('location_type', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 appearance-none"
-          >
-            <option value="retail">Retail</option>
-            <option value="warehouse">Warehouse</option>
-            <option value="outlet">Outlet</option>
-            <option value="kiosk">Kiosk</option>
-          </select>
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('location_type', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with icon and location type
+            displayValue={(option) => {
+              if (!option) return "Select location type";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{option.icon}</span>
+                  <span className="font-medium">{option.label}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
+            placeholder="Select location type"
+            searchPlaceholder="Search location types..."
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
-              <span>Store Type</span>
-            </div>
-          </label>
-          <select
+          <DropdownSearch
+            label="Store Type"
+            options={STORE_TYPES}
             value={formData.store_type || 'general'}
-            onChange={(e) => handleInputChange('store_type', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300 appearance-none"
-          >
-            <option value="general">General Store</option>
-            <option value="grocery">Grocery</option>
-            <option value="clothing">Clothing</option>
-            <option value="electronics">Electronics</option>
-            <option value="pharmacy">Pharmacy</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="cafe">Cafe</option>
-          </select>
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('store_type', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with icon and type name
+            displayValue={(option) => {
+              if (!option) return "Select store type";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{option.icon}</span>
+                  <span className="font-medium">{option.label}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
+            placeholder="Select store type"
+            searchPlaceholder="Search store types..."
+          />
         </div>
       </div>
 
@@ -565,12 +893,69 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <InputTextField
+          <DropdownSearch
             label="Country"
             required
-            value={formData.address?.country || ''}
-            onChange={(value) => handleInputChange('address.country', value)}
-            placeholder="Enter country"
+            options={COUNTRIES}
+            value={(() => {
+              // Find the country option by label (since form stores the label)
+              const currentCountry = COUNTRIES.find(
+                country => country.label === formData.address?.country
+              );
+              return currentCountry?.id || '';
+            })()}
+            onSelect={(selectedOption) => {
+              if (selectedOption && selectedOption.id !== 'separator') {
+                handleInputChange('address.country', selectedOption.label);
+              } else if (!selectedOption) {
+                handleInputChange('address.country', '');
+              }
+            }}
+            displayValue={(option) => {
+              if (option) {
+                return (
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{option.icon}</span>
+                    <span className="font-medium">{option.label}</span>
+                  </div>
+                );
+              }
+              // If no option provided, try to find it by current value
+              const currentCountry = COUNTRIES.find(
+                country => country.label === formData.address?.country || 
+                          country.id === formData.address?.country
+              );
+              if (currentCountry) {
+                return (
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{currentCountry.icon}</span>
+                    <span className="font-medium">{currentCountry.label}</span>
+                  </div>
+                );
+              }
+              return formData.address?.country || "Select a country";
+            }}
+            placeholder="Select a country"
+            searchPlaceholder="Search countries..."
+            renderOption={(option) => {
+              // Handle separator
+              if (option.id === 'separator') {
+                return (
+                  <div className="px-3 py-1 text-center text-gray-400 text-xs border-t border-gray-200 bg-gray-50">
+                    All Countries
+                  </div>
+                );
+              }
+              
+              return (
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{option.icon}</span>
+                  <span>{option.label}</span>
+                </div>
+              );
+            }}
+            allowClear
+            clearLabel="Clear selection"
           />
 
           <InputTextField
@@ -747,49 +1132,69 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <CurrencyDollarIcon className="w-4 h-4 text-indigo-500" />
-              <span>Locale</span>
-            </div>
-          </label>
-          <select
-            value={storeDetails?.locale || 'en-US'}
-            onChange={(e) => handleInputChange('locale', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-300 appearance-none"
-          >
-            <option value="en-US">English (US)</option>
-            <option value="en-GB">English (UK)</option>
-            <option value="es-ES">Spanish (Spain)</option>
-            <option value="es-MX">Spanish (Mexico)</option>
-            <option value="fr-FR">French (France)</option>
-            <option value="de-DE">German (Germany)</option>
-            <option value="it-IT">Italian (Italy)</option>
-            <option value="pt-BR">Portuguese (Brazil)</option>
-          </select>
+          <DropdownSearch
+            label="Locale"
+            options={LOCALES}
+            value={formData.locale || 'en-US'}
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('locale', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with flag and locale code
+            displayValue={(option) => {
+              if (!option) return "Select locale";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{option.icon}</span>
+                  <span className="font-medium">{option.id}</span>
+                  <span className="text-gray-400 text-sm">•</span>
+                  <span className="text-gray-600">{option.label.split(' (')[0]}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
+            placeholder="Select locale"
+            searchPlaceholder="Search locales..."
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            <div className="flex items-center space-x-2">
-              <CurrencyDollarIcon className="w-4 h-4 text-indigo-500" />
-              <span>Currency</span>
-            </div>
-          </label>
-          <select
-            value={storeDetails?.currency || 'USD'}
-            onChange={(e) => handleInputChange('currency', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-300 appearance-none"
-          >
-            <option value="USD">USD - US Dollar</option>
-            <option value="EUR">EUR - Euro</option>
-            <option value="GBP">GBP - British Pound</option>
-            <option value="CAD">CAD - Canadian Dollar</option>
-            <option value="AUD">AUD - Australian Dollar</option>
-            <option value="JPY">JPY - Japanese Yen</option>
-            <option value="CNY">CNY - Chinese Yuan</option>
-            <option value="INR">INR - Indian Rupee</option>
-          </select>
+          <DropdownSearch
+            label="Currency"
+            options={CURRENCIES}
+            value={formData.currency || 'USD'}
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('currency', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with currency symbol and code
+            displayValue={(option) => {
+              if (!option) return "Select currency";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-green-600 min-w-[20px]">{option.icon}</span>
+                  <span className="font-medium">{option.id}</span>
+                  <span className="text-gray-400 text-sm">•</span>
+                  <span className="text-gray-600">{option.label.split(' - ')[1]}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => (
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-bold min-w-[24px]">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
+            placeholder="Select currency"
+            searchPlaceholder="Search currencies..."
+          />
         </div>
       </div>
 
