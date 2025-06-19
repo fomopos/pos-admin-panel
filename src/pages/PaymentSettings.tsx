@@ -16,6 +16,7 @@ import { Button, Card, PageHeader, Alert, ConfirmDialog, Loading } from '../comp
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { paymentServices } from '../services/payment';
 import type { Tender, CreateTenderRequest } from '../services/types/payment.types';
+import { TENDER_TYPES, PAYMENT_CURRENCIES } from '../constants/dropdownOptions';
 
 interface PaymentSettingsState {
   tenders: Tender[];
@@ -25,32 +26,6 @@ interface PaymentSettingsState {
   formData: CreateTenderRequest;
   errors: Record<string, string>;
 }
-
-const TENDER_TYPES = [
-  { value: 'cash', label: 'Cash', icon: BanknotesIcon },
-  { value: 'credit_card', label: 'Credit Card', icon: CreditCardIcon },
-  { value: 'debit_card', label: 'Debit Card', icon: CreditCardIcon },
-  { value: 'gift_card', label: 'Gift Card', icon: CreditCardIcon },
-  { value: 'store_credit', label: 'Store Credit', icon: CurrencyDollarIcon },
-  { value: 'check', label: 'Check', icon: BanknotesIcon },
-  { value: 'mobile_payment', label: 'Mobile Payment', icon: CreditCardIcon },
-  { value: 'voucher', label: 'Voucher', icon: CurrencyDollarIcon },
-  { value: 'bank_transfer', label: 'Bank Transfer', icon: BanknotesIcon },
-  { value: 'cryptocurrency', label: 'Cryptocurrency', icon: CurrencyDollarIcon }
-];
-
-const CURRENCIES = [
-  { value: 'usd', label: 'USD - US Dollar' },
-  { value: 'eur', label: 'EUR - Euro' },
-  { value: 'gbp', label: 'GBP - British Pound' },
-  { value: 'aed', label: 'AED - UAE Dirham' },
-  { value: 'inr', label: 'INR - Indian Rupee' },
-  { value: 'jpy', label: 'JPY - Japanese Yen' },
-  { value: 'cad', label: 'CAD - Canadian Dollar' },
-  { value: 'aud', label: 'AUD - Australian Dollar' },
-  { value: 'chf', label: 'CHF - Swiss Franc' },
-  { value: 'cny', label: 'CNY - Chinese Yuan' }
-];
 
 const PaymentSettings: React.FC = () => {
   const { currentTenant } = useTenantStore();
@@ -235,7 +210,7 @@ const PaymentSettings: React.FC = () => {
   };
 
   const getCurrencyLabel = (currencyId: string) => {
-    const currency = CURRENCIES.find(c => c.value === currencyId);
+    const currency = PAYMENT_CURRENCIES.find(c => c.value === currencyId);
     return currency?.label || currencyId.toUpperCase();
   };
 
@@ -485,7 +460,7 @@ const PaymentSettings: React.FC = () => {
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
-                    {CURRENCIES.map((currency) => (
+                    {PAYMENT_CURRENCIES.map((currency) => (
                       <option key={currency.value} value={currency.value}>
                         {currency.label}
                       </option>

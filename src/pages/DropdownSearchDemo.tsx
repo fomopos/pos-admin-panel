@@ -1,6 +1,12 @@
 import React from 'react';
 import { DropdownSearch } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
+import { 
+  DEMO_CATEGORIES, 
+  DEMO_USERS, 
+  DEMO_COUNTRIES, 
+  DEMO_CURRENCIES 
+} from '../constants/dropdownOptions';
 
 /**
  * DropdownSearchDemo - Example usage of the DropdownSearch component
@@ -12,49 +18,6 @@ const DropdownSearchDemo: React.FC = () => {
   const [selectedUser, setSelectedUser] = React.useState<string | undefined>();
   const [selectedCountry, setSelectedCountry] = React.useState<string | undefined>();
   const [selectedCurrency, setSelectedCurrency] = React.useState<string | undefined>();
-
-  // Sample category options with hierarchy
-  const categoryOptions: DropdownSearchOption[] = [
-    { id: '1', label: 'Electronics', description: 'Electronic devices and accessories', level: 0 },
-    { id: '2', label: 'Smartphones', description: 'Mobile phones and accessories', level: 1 },
-    { id: '3', label: 'iPhone', description: 'Apple smartphones', level: 2 },
-    { id: '4', label: 'Android', description: 'Android smartphones', level: 2 },
-    { id: '5', label: 'Laptops', description: 'Portable computers', level: 1 },
-    { id: '6', label: 'Gaming Laptops', description: 'High-performance gaming computers', level: 2 },
-    { id: '7', label: 'Business Laptops', description: 'Professional work computers', level: 2 },
-    { id: '8', label: 'Clothing', description: 'Apparel and fashion items', level: 0 },
-    { id: '9', label: 'Men\'s Clothing', description: 'Clothing for men', level: 1 },
-    { id: '10', label: 'Women\'s Clothing', description: 'Clothing for women', level: 1 },
-  ];
-
-  // Sample user options
-  const userOptions: DropdownSearchOption[] = [
-    { id: 'user1', label: 'John Doe', description: 'Administrator' },
-    { id: 'user2', label: 'Jane Smith', description: 'Manager' },
-    { id: 'user3', label: 'Bob Johnson', description: 'Sales Representative' },
-    { id: 'user4', label: 'Alice Brown', description: 'Customer Service' },
-    { id: 'user5', label: 'Charlie Wilson', description: 'IT Support' },
-  ];
-
-  // Sample country options
-  const countryOptions: DropdownSearchOption[] = [
-    { id: 'us', label: 'United States', description: 'North America' },
-    { id: 'ca', label: 'Canada', description: 'North America' },
-    { id: 'uk', label: 'United Kingdom', description: 'Europe' },
-    { id: 'fr', label: 'France', description: 'Europe' },
-    { id: 'de', label: 'Germany', description: 'Europe' },
-    { id: 'jp', label: 'Japan', description: 'Asia' },
-    { id: 'au', label: 'Australia', description: 'Oceania' },
-  ];
-
-  // Enhanced options with icons for the new displayValue demo
-  const currencyOptions: DropdownSearchOption[] = [
-    { id: 'USD', label: 'US Dollar', description: 'United States Dollar', icon: <span className="font-bold text-green-600">$</span> },
-    { id: 'EUR', label: 'Euro', description: 'European Union Euro', icon: <span className="font-bold text-blue-600">€</span> },
-    { id: 'GBP', label: 'British Pound', description: 'British Pound Sterling', icon: <span className="font-bold text-purple-600">£</span> },
-    { id: 'JPY', label: 'Japanese Yen', description: 'Japanese Yen', icon: <span className="font-bold text-red-600">¥</span> },
-    { id: 'CAD', label: 'Canadian Dollar', description: 'Canadian Dollar', icon: <span className="font-bold text-indigo-600">C$</span> },
-  ];
 
   const handleCategorySelect = (option: DropdownSearchOption | null) => {
     setSelectedCategory(option?.id);
@@ -88,7 +51,7 @@ const DropdownSearchDemo: React.FC = () => {
             value={selectedCategory}
             placeholder="Select a category"
             searchPlaceholder="Search categories..."
-            options={categoryOptions}
+            options={DEMO_CATEGORIES}
             onSelect={handleCategorySelect}
             clearLabel="No Category"
             noOptionsMessage="No categories found"
@@ -97,7 +60,7 @@ const DropdownSearchDemo: React.FC = () => {
           />
           {selectedCategory && (
             <p className="mt-2 text-sm text-gray-600">
-              Selected: {categoryOptions.find(c => c.id === selectedCategory)?.label}
+              Selected: {DEMO_CATEGORIES.find(c => c.id === selectedCategory)?.label}
             </p>
           )}
         </div>
@@ -110,7 +73,7 @@ const DropdownSearchDemo: React.FC = () => {
             value={selectedUser}
             placeholder="Choose a user"
             searchPlaceholder="Search users..."
-            options={userOptions}
+            options={DEMO_USERS}
             onSelect={handleUserSelect}
             clearLabel="Unassigned"
             noOptionsMessage="No users found"
@@ -118,7 +81,7 @@ const DropdownSearchDemo: React.FC = () => {
           />
           {selectedUser && (
             <p className="mt-2 text-sm text-gray-600">
-              Assigned to: {userOptions.find(u => u.id === selectedUser)?.label}
+              Assigned to: {DEMO_USERS.find(u => u.id === selectedUser)?.label}
             </p>
           )}
         </div>
@@ -131,7 +94,7 @@ const DropdownSearchDemo: React.FC = () => {
             value={selectedCountry}
             placeholder="Select country"
             searchPlaceholder="Search countries..."
-            options={countryOptions}
+            options={DEMO_COUNTRIES}
             onSelect={handleCountrySelect}
             clearLabel="No Country"
             noOptionsMessage="No countries found"
@@ -140,7 +103,7 @@ const DropdownSearchDemo: React.FC = () => {
           />
           {selectedCountry && (
             <p className="mt-2 text-sm text-gray-600">
-              Country: {countryOptions.find(c => c.id === selectedCountry)?.label}
+              Country: {DEMO_COUNTRIES.find(c => c.id === selectedCountry)?.label}
             </p>
           )}
         </div>
@@ -155,7 +118,7 @@ const DropdownSearchDemo: React.FC = () => {
             value={selectedCategory}
             placeholder="Choose premium category"
             searchPlaceholder="Search premium categories..."
-            options={categoryOptions.filter(c => c.level === 0)} // Only top-level categories
+            options={DEMO_CATEGORIES.filter(c => c.level === 0)} // Only top-level categories
             onSelect={handleCategorySelect}
             clearLabel="No Premium Category"
             noOptionsMessage="No premium categories available"
@@ -179,7 +142,7 @@ const DropdownSearchDemo: React.FC = () => {
             value={selectedCurrency}
             placeholder="Select currency"
             searchPlaceholder="Search currencies..."
-            options={currencyOptions}
+            options={DEMO_CURRENCIES}
             onSelect={handleCurrencySelect}
             clearLabel="No Currency"
             noOptionsMessage="No currencies found"
@@ -209,7 +172,7 @@ const DropdownSearchDemo: React.FC = () => {
           />
           {selectedCurrency && (
             <p className="mt-2 text-sm text-gray-600">
-              Selected currency: {currencyOptions.find(c => c.id === selectedCurrency)?.label} ({selectedCurrency})
+              Selected currency: {DEMO_CURRENCIES.find(c => c.id === selectedCurrency)?.label} ({selectedCurrency})
             </p>
           )}
         </div>
