@@ -38,7 +38,8 @@ import {
   LOCALES, 
   LOCATION_TYPES, 
   STORE_TYPES, 
-  CURRENCIES 
+  CURRENCIES,
+  TIMEZONES
 } from '../constants/dropdownOptions';
 
 interface StoreSettingsState {
@@ -601,6 +602,51 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
             )}
             placeholder="Select currency"
             searchPlaceholder="Search currencies..."
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <DropdownSearch
+            label="Timezone"
+            options={TIMEZONES}
+            value={formData.timezone || 'America/New_York'}
+            onSelect={(selectedOption) => {
+              if (selectedOption) {
+                handleInputChange('timezone', selectedOption.id);
+              }
+            }}
+            // Enhanced displayValue with timezone icon and name
+            displayValue={(option) => {
+              if (!option) return "Select timezone";
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{option.icon}</span>
+                  <span className="font-medium">{option.label}</span>
+                </div>
+              );
+            }}
+            renderOption={(option) => {
+              // Handle separator
+              if (option.id === 'separator') {
+                return (
+                  <div className="px-3 py-1 text-center text-gray-400 text-xs border-t border-gray-200 bg-gray-50">
+                    Regional Timezones
+                  </div>
+                );
+              }
+              
+              return (
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">{option.icon}</span>
+                  <span>{option.label}</span>
+                </div>
+              );
+            }}
+            placeholder="Select timezone"
+            searchPlaceholder="Search timezones..."
+            noOptionsMessage="No timezones found"
           />
         </div>
       </div>

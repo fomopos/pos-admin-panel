@@ -359,6 +359,171 @@ export const hasGeographicData = (countryName: string): boolean => {
 };
 
 /**
+ * Comprehensive timezone options for store operations
+ */
+export const TIMEZONES: DropdownSearchOption[] = [
+  // Popular timezones first
+  { id: 'America/New_York', label: 'Eastern Time (US & Canada)', icon: '🇺🇸' },
+  { id: 'America/Chicago', label: 'Central Time (US & Canada)', icon: '🇺🇸' },
+  { id: 'America/Denver', label: 'Mountain Time (US & Canada)', icon: '🇺🇸' },
+  { id: 'America/Los_Angeles', label: 'Pacific Time (US & Canada)', icon: '🇺🇸' },
+  { id: 'Europe/London', label: 'Greenwich Mean Time (London)', icon: '🇬🇧' },
+  { id: 'Europe/Paris', label: 'Central European Time (Paris)', icon: '🇫🇷' },
+  { id: 'Asia/Dubai', label: 'Gulf Standard Time (Dubai)', icon: '🇦🇪' },
+  { id: 'Asia/Kolkata', label: 'India Standard Time (Mumbai)', icon: '🇮🇳' },
+  { id: 'Asia/Tokyo', label: 'Japan Standard Time (Tokyo)', icon: '🇯🇵' },
+  { id: 'Asia/Shanghai', label: 'China Standard Time (Shanghai)', icon: '🇨🇳' },
+  { id: 'separator', label: '─────────────────────────────', icon: '' },
+  
+  // Americas
+  { id: 'America/Anchorage', label: 'Alaska Time', icon: '🇺🇸' },
+  { id: 'America/Phoenix', label: 'Arizona Time', icon: '🇺🇸' },
+  { id: 'America/Toronto', label: 'Eastern Time (Toronto)', icon: '🇨🇦' },
+  { id: 'America/Vancouver', label: 'Pacific Time (Vancouver)', icon: '🇨🇦' },
+  { id: 'America/Montreal', label: 'Eastern Time (Montreal)', icon: '🇨🇦' },
+  { id: 'America/Winnipeg', label: 'Central Time (Winnipeg)', icon: '🇨🇦' },
+  { id: 'America/Edmonton', label: 'Mountain Time (Edmonton)', icon: '🇨🇦' },
+  { id: 'America/Halifax', label: 'Atlantic Time (Halifax)', icon: '🇨🇦' },
+  { id: 'America/Mexico_City', label: 'Central Time (Mexico City)', icon: '🇲🇽' },
+  { id: 'America/Sao_Paulo', label: 'Brasília Time (São Paulo)', icon: '🇧🇷' },
+  { id: 'America/Buenos_Aires', label: 'Argentina Time (Buenos Aires)', icon: '🇦🇷' },
+  { id: 'America/Lima', label: 'Peru Time (Lima)', icon: '🇵🇪' },
+  { id: 'America/Santiago', label: 'Chile Time (Santiago)', icon: '🇨🇱' },
+  { id: 'America/Bogota', label: 'Colombia Time (Bogotá)', icon: '🇨🇴' },
+  { id: 'America/Caracas', label: 'Venezuela Time (Caracas)', icon: '🇻🇪' },
+  
+  // Europe
+  { id: 'Europe/Berlin', label: 'Central European Time (Berlin)', icon: '🇩🇪' },
+  { id: 'Europe/Amsterdam', label: 'Central European Time (Amsterdam)', icon: '🇳🇱' },
+  { id: 'Europe/Brussels', label: 'Central European Time (Brussels)', icon: '🇧🇪' },
+  { id: 'Europe/Vienna', label: 'Central European Time (Vienna)', icon: '🇦🇹' },
+  { id: 'Europe/Zurich', label: 'Central European Time (Zurich)', icon: '🇨🇭' },
+  { id: 'Europe/Rome', label: 'Central European Time (Rome)', icon: '🇮🇹' },
+  { id: 'Europe/Madrid', label: 'Central European Time (Madrid)', icon: '🇪🇸' },
+  { id: 'Europe/Stockholm', label: 'Central European Time (Stockholm)', icon: '🇸🇪' },
+  { id: 'Europe/Oslo', label: 'Central European Time (Oslo)', icon: '🇳🇴' },
+  { id: 'Europe/Copenhagen', label: 'Central European Time (Copenhagen)', icon: '🇩🇰' },
+  { id: 'Europe/Helsinki', label: 'Eastern European Time (Helsinki)', icon: '🇫🇮' },
+  { id: 'Europe/Athens', label: 'Eastern European Time (Athens)', icon: '🇬🇷' },
+  { id: 'Europe/Warsaw', label: 'Central European Time (Warsaw)', icon: '🇵🇱' },
+  { id: 'Europe/Prague', label: 'Central European Time (Prague)', icon: '🇨🇿' },
+  { id: 'Europe/Budapest', label: 'Central European Time (Budapest)', icon: '🇭🇺' },
+  { id: 'Europe/Dublin', label: 'Greenwich Mean Time (Dublin)', icon: '🇮🇪' },
+  { id: 'Europe/Lisbon', label: 'Western European Time (Lisbon)', icon: '🇵🇹' },
+  { id: 'Europe/Moscow', label: 'Moscow Standard Time', icon: '🇷🇺' },
+  { id: 'Europe/Istanbul', label: 'Turkey Time (Istanbul)', icon: '🇹🇷' },
+  
+  // Asia
+  { id: 'Asia/Hong_Kong', label: 'Hong Kong Time', icon: '🇭🇰' },
+  { id: 'Asia/Singapore', label: 'Singapore Time', icon: '🇸🇬' },
+  { id: 'Asia/Bangkok', label: 'Indochina Time (Bangkok)', icon: '🇹🇭' },
+  { id: 'Asia/Jakarta', label: 'Western Indonesia Time (Jakarta)', icon: '🇮🇩' },
+  { id: 'Asia/Manila', label: 'Philippines Time (Manila)', icon: '🇵🇭' },
+  { id: 'Asia/Kuala_Lumpur', label: 'Malaysia Time (Kuala Lumpur)', icon: '🇲🇾' },
+  { id: 'Asia/Seoul', label: 'Korea Standard Time (Seoul)', icon: '🇰🇷' },
+  { id: 'Asia/Taipei', label: 'Taiwan Time (Taipei)', icon: '🇹🇼' },
+  { id: 'Asia/Ho_Chi_Minh', label: 'Indochina Time (Ho Chi Minh)', icon: '🇻🇳' },
+  { id: 'Asia/Yangon', label: 'Myanmar Time (Yangon)', icon: '🇲🇲' },
+  { id: 'Asia/Dhaka', label: 'Bangladesh Time (Dhaka)', icon: '🇧🇩' },
+  { id: 'Asia/Karachi', label: 'Pakistan Time (Karachi)', icon: '🇵🇰' },
+  { id: 'Asia/Kabul', label: 'Afghanistan Time (Kabul)', icon: '🇦🇫' },
+  { id: 'Asia/Tehran', label: 'Iran Time (Tehran)', icon: '🇮🇷' },
+  { id: 'Asia/Baghdad', label: 'Arabia Standard Time (Baghdad)', icon: '🇮🇶' },
+  { id: 'Asia/Kuwait', label: 'Arabia Standard Time (Kuwait)', icon: '🇰🇼' },
+  { id: 'Asia/Riyadh', label: 'Arabia Standard Time (Riyadh)', icon: '🇸🇦' },
+  { id: 'Asia/Qatar', label: 'Arabia Standard Time (Qatar)', icon: '🇶🇦' },
+  { id: 'Asia/Bahrain', label: 'Arabia Standard Time (Bahrain)', icon: '🇧🇭' },
+  { id: 'Asia/Muscat', label: 'Gulf Standard Time (Muscat)', icon: '🇴🇲' },
+  { id: 'Asia/Baku', label: 'Azerbaijan Time (Baku)', icon: '🇦🇿' },
+  { id: 'Asia/Yerevan', label: 'Armenia Time (Yerevan)', icon: '🇦🇲' },
+  { id: 'Asia/Tbilisi', label: 'Georgia Time (Tbilisi)', icon: '🇬🇪' },
+  { id: 'Asia/Almaty', label: 'Almaty Time (Kazakhstan)', icon: '🇰🇿' },
+  { id: 'Asia/Tashkent', label: 'Uzbekistan Time (Tashkent)', icon: '🇺🇿' },
+  { id: 'Asia/Colombo', label: 'Sri Lanka Time (Colombo)', icon: '🇱🇰' },
+  { id: 'Asia/Kathmandu', label: 'Nepal Time (Kathmandu)', icon: '🇳🇵' },
+  
+  // Australia & Oceania
+  { id: 'Australia/Sydney', label: 'Australian Eastern Time (Sydney)', icon: '🇦🇺' },
+  { id: 'Australia/Melbourne', label: 'Australian Eastern Time (Melbourne)', icon: '🇦🇺' },
+  { id: 'Australia/Brisbane', label: 'Australian Eastern Time (Brisbane)', icon: '🇦🇺' },
+  { id: 'Australia/Perth', label: 'Australian Western Time (Perth)', icon: '🇦🇺' },
+  { id: 'Australia/Adelaide', label: 'Australian Central Time (Adelaide)', icon: '🇦🇺' },
+  { id: 'Australia/Darwin', label: 'Australian Central Time (Darwin)', icon: '🇦🇺' },
+  { id: 'Australia/Hobart', label: 'Australian Eastern Time (Hobart)', icon: '🇦🇺' },
+  { id: 'Pacific/Auckland', label: 'New Zealand Time (Auckland)', icon: '🇳🇿' },
+  { id: 'Pacific/Wellington', label: 'New Zealand Time (Wellington)', icon: '🇳🇿' },
+  { id: 'Pacific/Fiji', label: 'Fiji Time', icon: '🇫🇯' },
+  { id: 'Pacific/Honolulu', label: 'Hawaii Time (Honolulu)', icon: '🇺🇸' },
+  { id: 'Pacific/Guam', label: 'Chamorro Time (Guam)', icon: '🇬🇺' },
+  
+  // Africa
+  { id: 'Africa/Cairo', label: 'Eastern European Time (Cairo)', icon: '🇪🇬' },
+  { id: 'Africa/Lagos', label: 'West Africa Time (Lagos)', icon: '🇳🇬' },
+  { id: 'Africa/Johannesburg', label: 'South Africa Time (Johannesburg)', icon: '🇿🇦' },
+  { id: 'Africa/Nairobi', label: 'East Africa Time (Nairobi)', icon: '🇰🇪' },
+  { id: 'Africa/Casablanca', label: 'Western European Time (Casablanca)', icon: '🇲🇦' },
+  { id: 'Africa/Algiers', label: 'Central European Time (Algiers)', icon: '🇩🇿' },
+  { id: 'Africa/Tunis', label: 'Central European Time (Tunis)', icon: '🇹🇳' },
+  { id: 'Africa/Accra', label: 'Greenwich Mean Time (Accra)', icon: '🇬🇭' },
+  { id: 'Africa/Abidjan', label: 'Greenwich Mean Time (Abidjan)', icon: '🇨🇮' },
+  { id: 'Africa/Dakar', label: 'Greenwich Mean Time (Dakar)', icon: '🇸🇳' },
+  { id: 'Africa/Addis_Ababa', label: 'East Africa Time (Addis Ababa)', icon: '🇪🇹' },
+  { id: 'Africa/Kampala', label: 'East Africa Time (Kampala)', icon: '🇺🇬' },
+  { id: 'Africa/Dar_es_Salaam', label: 'East Africa Time (Dar es Salaam)', icon: '🇹🇿' },
+  { id: 'Africa/Khartoum', label: 'Central Africa Time (Khartoum)', icon: '🇸🇩' },
+  { id: 'Africa/Kinshasa', label: 'West Africa Time (Kinshasa)', icon: '🇨🇩' },
+  { id: 'Africa/Luanda', label: 'West Africa Time (Luanda)', icon: '🇦🇴' },
+  { id: 'Africa/Maputo', label: 'Central Africa Time (Maputo)', icon: '🇲🇿' },
+  { id: 'Africa/Windhoek', label: 'Central Africa Time (Windhoek)', icon: '🇳🇦' },
+  { id: 'Africa/Gaborone', label: 'Central Africa Time (Gaborone)', icon: '🇧🇼' },
+  { id: 'Africa/Harare', label: 'Central Africa Time (Harare)', icon: '🇿🇼' },
+  { id: 'Africa/Lusaka', label: 'Central Africa Time (Lusaka)', icon: '🇿🇲' },
+];
+
+/**
+ * Helper function to get timezone offset display
+ */
+export const getTimezoneOffset = (timezoneId: string): string => {
+  try {
+    const now = new Date();
+    const timezone = Intl.DateTimeFormat('en', {
+      timeZone: timezoneId,
+      timeZoneName: 'short'
+    }).formatToParts(now);
+    
+    const offsetPart = timezone.find(part => part.type === 'timeZoneName');
+    return offsetPart?.value || '';
+  } catch {
+    // Fallback offset mappings for common timezones
+    const offsetMap: Record<string, string> = {
+      'America/New_York': 'UTC-5/-4',
+      'America/Chicago': 'UTC-6/-5',
+      'America/Denver': 'UTC-7/-6',
+      'America/Los_Angeles': 'UTC-8/-7',
+      'Europe/London': 'UTC+0/+1',
+      'Europe/Paris': 'UTC+1/+2',
+      'Asia/Dubai': 'UTC+4',
+      'Asia/Kolkata': 'UTC+5:30',
+      'Asia/Tokyo': 'UTC+9',
+      'Asia/Shanghai': 'UTC+8',
+      'Australia/Sydney': 'UTC+10/+11',
+    };
+    
+    return offsetMap[timezoneId] || 'UTC';
+  }
+};
+
+/**
+ * Helper function to format timezone for display
+ */
+export const formatTimezoneDisplay = (timezone: DropdownSearchOption): string => {
+  if (!timezone || timezone.id === 'separator') return '';
+  
+  const offset = getTimezoneOffset(timezone.id);
+  return `${timezone.label} (${offset})`;
+};
+
+/**
  * Countries with flags - Popular countries first, then alphabetical
  */
 export const COUNTRIES: DropdownSearchOption[] = [
