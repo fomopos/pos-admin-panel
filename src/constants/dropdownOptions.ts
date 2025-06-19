@@ -12,6 +12,353 @@ import { BanknotesIcon, CreditCardIcon, CurrencyDollarIcon } from '@heroicons/re
 // ===== GEOGRAPHIC OPTIONS =====
 
 /**
+ * Geographic data structure for dynamic city/state selection
+ */
+export interface GeographicData {
+  states: DropdownSearchOption[];
+  cities: Record<string, DropdownSearchOption[]>;
+}
+
+/**
+ * Geographic data by country - States/Provinces and Cities
+ */
+export const GEOGRAPHIC_DATA: Record<string, GeographicData> = {
+  'United States': {
+    states: [
+      { id: 'AL', label: 'Alabama', icon: '🏛️' },
+      { id: 'AK', label: 'Alaska', icon: '🏔️' },
+      { id: 'AZ', label: 'Arizona', icon: '🌵' },
+      { id: 'AR', label: 'Arkansas', icon: '🌲' },
+      { id: 'CA', label: 'California', icon: '🌴' },
+      { id: 'CO', label: 'Colorado', icon: '⛰️' },
+      { id: 'CT', label: 'Connecticut', icon: '🏛️' },
+      { id: 'DE', label: 'Delaware', icon: '🏛️' },
+      { id: 'FL', label: 'Florida', icon: '🌴' },
+      { id: 'GA', label: 'Georgia', icon: '🍑' },
+      { id: 'HI', label: 'Hawaii', icon: '🌺' },
+      { id: 'ID', label: 'Idaho', icon: '🥔' },
+      { id: 'IL', label: 'Illinois', icon: '🌾' },
+      { id: 'IN', label: 'Indiana', icon: '🏁' },
+      { id: 'IA', label: 'Iowa', icon: '🌽' },
+      { id: 'KS', label: 'Kansas', icon: '🌾' },
+      { id: 'KY', label: 'Kentucky', icon: '🐎' },
+      { id: 'LA', label: 'Louisiana', icon: '🎭' },
+      { id: 'ME', label: 'Maine', icon: '🦞' },
+      { id: 'MD', label: 'Maryland', icon: '🦀' },
+      { id: 'MA', label: 'Massachusetts', icon: '🎓' },
+      { id: 'MI', label: 'Michigan', icon: '🚗' },
+      { id: 'MN', label: 'Minnesota', icon: '❄️' },
+      { id: 'MS', label: 'Mississippi', icon: '🎵' },
+      { id: 'MO', label: 'Missouri', icon: '🎯' },
+      { id: 'MT', label: 'Montana', icon: '🏔️' },
+      { id: 'NE', label: 'Nebraska', icon: '🌽' },
+      { id: 'NV', label: 'Nevada', icon: '🎰' },
+      { id: 'NH', label: 'New Hampshire', icon: '🍁' },
+      { id: 'NJ', label: 'New Jersey', icon: '🌊' },
+      { id: 'NM', label: 'New Mexico', icon: '🌵' },
+      { id: 'NY', label: 'New York', icon: '🗽' },
+      { id: 'NC', label: 'North Carolina', icon: '🏛️' },
+      { id: 'ND', label: 'North Dakota', icon: '🌾' },
+      { id: 'OH', label: 'Ohio', icon: '🏭' },
+      { id: 'OK', label: 'Oklahoma', icon: '🛢️' },
+      { id: 'OR', label: 'Oregon', icon: '🌲' },
+      { id: 'PA', label: 'Pennsylvania', icon: '🔔' },
+      { id: 'RI', label: 'Rhode Island', icon: '⚓' },
+      { id: 'SC', label: 'South Carolina', icon: '🏛️' },
+      { id: 'SD', label: 'South Dakota', icon: '🗿' },
+      { id: 'TN', label: 'Tennessee', icon: '🎵' },
+      { id: 'TX', label: 'Texas', icon: '🤠' },
+      { id: 'UT', label: 'Utah', icon: '🏔️' },
+      { id: 'VT', label: 'Vermont', icon: '🍁' },
+      { id: 'VA', label: 'Virginia', icon: '🏛️' },
+      { id: 'WA', label: 'Washington', icon: '🌲' },
+      { id: 'WV', label: 'West Virginia', icon: '⛰️' },
+      { id: 'WI', label: 'Wisconsin', icon: '🧀' },
+      { id: 'WY', label: 'Wyoming', icon: '🦌' },
+    ],
+    cities: {
+      'CA': [
+        { id: 'los-angeles', label: 'Los Angeles', icon: '🌴' },
+        { id: 'san-francisco', label: 'San Francisco', icon: '🌉' },
+        { id: 'san-diego', label: 'San Diego', icon: '🏄' },
+        { id: 'sacramento', label: 'Sacramento', icon: '🏛️' },
+        { id: 'san-jose', label: 'San Jose', icon: '💻' },
+        { id: 'fresno', label: 'Fresno', icon: '🍇' },
+        { id: 'long-beach', label: 'Long Beach', icon: '🏖️' },
+        { id: 'oakland', label: 'Oakland', icon: '🌉' },
+        { id: 'bakersfield', label: 'Bakersfield', icon: '🛢️' },
+        { id: 'anaheim', label: 'Anaheim', icon: '🎢' },
+      ],
+      'NY': [
+        { id: 'new-york-city', label: 'New York City', icon: '🗽' },
+        { id: 'buffalo', label: 'Buffalo', icon: '🦬' },
+        { id: 'rochester', label: 'Rochester', icon: '📸' },
+        { id: 'yonkers', label: 'Yonkers', icon: '🏙️' },
+        { id: 'syracuse', label: 'Syracuse', icon: '🏛️' },
+        { id: 'albany', label: 'Albany', icon: '🏛️' },
+        { id: 'new-rochelle', label: 'New Rochelle', icon: '🏙️' },
+        { id: 'mount-vernon', label: 'Mount Vernon', icon: '🏙️' },
+        { id: 'schenectady', label: 'Schenectady', icon: '⚡' },
+        { id: 'utica', label: 'Utica', icon: '🏭' },
+      ],
+      'TX': [
+        { id: 'houston', label: 'Houston', icon: '🚀' },
+        { id: 'san-antonio', label: 'San Antonio', icon: '🤠' },
+        { id: 'dallas', label: 'Dallas', icon: '🏙️' },
+        { id: 'austin', label: 'Austin', icon: '🎸' },
+        { id: 'fort-worth', label: 'Fort Worth', icon: '🤠' },
+        { id: 'el-paso', label: 'El Paso', icon: '🌵' },
+        { id: 'arlington', label: 'Arlington', icon: '⚾' },
+        { id: 'corpus-christi', label: 'Corpus Christi', icon: '🏖️' },
+        { id: 'plano', label: 'Plano', icon: '🏙️' },
+        { id: 'lubbock', label: 'Lubbock', icon: '🌾' },
+      ],
+      'FL': [
+        { id: 'jacksonville', label: 'Jacksonville', icon: '🏖️' },
+        { id: 'miami', label: 'Miami', icon: '🌴' },
+        { id: 'tampa', label: 'Tampa', icon: '⚡' },
+        { id: 'orlando', label: 'Orlando', icon: '🎢' },
+        { id: 'st-petersburg', label: 'St. Petersburg', icon: '🏖️' },
+        { id: 'hialeah', label: 'Hialeah', icon: '🌴' },
+        { id: 'tallahassee', label: 'Tallahassee', icon: '🏛️' },
+        { id: 'fort-lauderdale', label: 'Fort Lauderdale', icon: '🛥️' },
+        { id: 'port-st-lucie', label: 'Port St. Lucie', icon: '🏖️' },
+        { id: 'cape-coral', label: 'Cape Coral', icon: '🌊' },
+      ],
+    }
+  },
+  'Canada': {
+    states: [
+      { id: 'AB', label: 'Alberta', icon: '🏔️' },
+      { id: 'BC', label: 'British Columbia', icon: '🌲' },
+      { id: 'MB', label: 'Manitoba', icon: '🌾' },
+      { id: 'NB', label: 'New Brunswick', icon: '🦞' },
+      { id: 'NL', label: 'Newfoundland and Labrador', icon: '🐋' },
+      { id: 'NS', label: 'Nova Scotia', icon: '⚓' },
+      { id: 'NT', label: 'Northwest Territories', icon: '❄️' },
+      { id: 'NU', label: 'Nunavut', icon: '🐻‍❄️' },
+      { id: 'ON', label: 'Ontario', icon: '🍁' },
+      { id: 'PE', label: 'Prince Edward Island', icon: '🦞' },
+      { id: 'QC', label: 'Quebec', icon: '⚜️' },
+      { id: 'SK', label: 'Saskatchewan', icon: '🌾' },
+      { id: 'YT', label: 'Yukon', icon: '❄️' },
+    ],
+    cities: {
+      'ON': [
+        { id: 'toronto', label: 'Toronto', icon: '🏙️' },
+        { id: 'ottawa', label: 'Ottawa', icon: '🏛️' },
+        { id: 'mississauga', label: 'Mississauga', icon: '🏙️' },
+        { id: 'brampton', label: 'Brampton', icon: '🏙️' },
+        { id: 'hamilton', label: 'Hamilton', icon: '🏭' },
+        { id: 'london', label: 'London', icon: '🎓' },
+        { id: 'markham', label: 'Markham', icon: '🏙️' },
+        { id: 'vaughan', label: 'Vaughan', icon: '🏙️' },
+        { id: 'kitchener', label: 'Kitchener', icon: '🏭' },
+        { id: 'windsor', label: 'Windsor', icon: '🌊' },
+      ],
+      'BC': [
+        { id: 'vancouver', label: 'Vancouver', icon: '🌊' },
+        { id: 'surrey', label: 'Surrey', icon: '🏙️' },
+        { id: 'burnaby', label: 'Burnaby', icon: '🏙️' },
+        { id: 'richmond', label: 'Richmond', icon: '🏙️' },
+        { id: 'abbotsford', label: 'Abbotsford', icon: '🌲' },
+        { id: 'coquitlam', label: 'Coquitlam', icon: '🏙️' },
+        { id: 'victoria', label: 'Victoria', icon: '🏛️' },
+        { id: 'kelowna', label: 'Kelowna', icon: '🍷' },
+        { id: 'langley', label: 'Langley', icon: '🌲' },
+        { id: 'saanich', label: 'Saanich', icon: '🌲' },
+      ],
+      'QC': [
+        { id: 'montreal', label: 'Montreal', icon: '⚜️' },
+        { id: 'quebec-city', label: 'Quebec City', icon: '🏰' },
+        { id: 'laval', label: 'Laval', icon: '🏙️' },
+        { id: 'gatineau', label: 'Gatineau', icon: '🏛️' },
+        { id: 'longueuil', label: 'Longueuil', icon: '🏙️' },
+        { id: 'sherbrooke', label: 'Sherbrooke', icon: '🎓' },
+        { id: 'saguenay', label: 'Saguenay', icon: '🌲' },
+        { id: 'levis', label: 'Lévis', icon: '🏰' },
+        { id: 'trois-rivieres', label: 'Trois-Rivières', icon: '🌊' },
+        { id: 'terrebonne', label: 'Terrebonne', icon: '🏙️' },
+      ],
+    }
+  },
+  'United Kingdom': {
+    states: [
+      { id: 'ENG', label: 'England', icon: '🏴' },
+      { id: 'SCT', label: 'Scotland', icon: '🏴' },
+      { id: 'WLS', label: 'Wales', icon: '🏴' },
+      { id: 'NIR', label: 'Northern Ireland', icon: '🇬🇧' },
+    ],
+    cities: {
+      'ENG': [
+        { id: 'london', label: 'London', icon: '🏛️' },
+        { id: 'birmingham', label: 'Birmingham', icon: '🏭' },
+        { id: 'manchester', label: 'Manchester', icon: '⚽' },
+        { id: 'liverpool', label: 'Liverpool', icon: '🎵' },
+        { id: 'leeds', label: 'Leeds', icon: '🏭' },
+        { id: 'sheffield', label: 'Sheffield', icon: '🔧' },
+        { id: 'bristol', label: 'Bristol', icon: '🌉' },
+        { id: 'leicester', label: 'Leicester', icon: '🦊' },
+        { id: 'coventry', label: 'Coventry', icon: '🏰' },
+        { id: 'nottingham', label: 'Nottingham', icon: '🏹' },
+      ],
+      'SCT': [
+        { id: 'glasgow', label: 'Glasgow', icon: '🏴' },
+        { id: 'edinburgh', label: 'Edinburgh', icon: '🏰' },
+        { id: 'aberdeen', label: 'Aberdeen', icon: '🛢️' },
+        { id: 'dundee', label: 'Dundee', icon: '🏴' },
+        { id: 'stirling', label: 'Stirling', icon: '🏰' },
+        { id: 'perth', label: 'Perth', icon: '🏔️' },
+        { id: 'inverness', label: 'Inverness', icon: '🏔️' },
+        { id: 'paisley', label: 'Paisley', icon: '🏴' },
+      ],
+      'WLS': [
+        { id: 'cardiff', label: 'Cardiff', icon: '🏰' },
+        { id: 'swansea', label: 'Swansea', icon: '🌊' },
+        { id: 'newport', label: 'Newport', icon: '🏴' },
+        { id: 'bangor', label: 'Bangor', icon: '🎓' },
+        { id: 'wrexham', label: 'Wrexham', icon: '🏴' },
+        { id: 'merthyr-tydfil', label: 'Merthyr Tydfil', icon: '🏔️' },
+      ],
+      'NIR': [
+        { id: 'belfast', label: 'Belfast', icon: '🚢' },
+        { id: 'derry', label: 'Derry', icon: '🏰' },
+        { id: 'lisburn', label: 'Lisburn', icon: '🇬🇧' },
+        { id: 'newtownabbey', label: 'Newtownabbey', icon: '🇬🇧' },
+      ]
+    }
+  },
+  'Australia': {
+    states: [
+      { id: 'NSW', label: 'New South Wales', icon: '🏛️' },
+      { id: 'VIC', label: 'Victoria', icon: '🎭' },
+      { id: 'QLD', label: 'Queensland', icon: '🌴' },
+      { id: 'WA', label: 'Western Australia', icon: '🦘' },
+      { id: 'SA', label: 'South Australia', icon: '🍷' },
+      { id: 'TAS', label: 'Tasmania', icon: '🌿' },
+      { id: 'ACT', label: 'Australian Capital Territory', icon: '🏛️' },
+      { id: 'NT', label: 'Northern Territory', icon: '🐊' },
+    ],
+    cities: {
+      'NSW': [
+        { id: 'sydney', label: 'Sydney', icon: '🏛️' },
+        { id: 'newcastle', label: 'Newcastle', icon: '🏭' },
+        { id: 'wollongong', label: 'Wollongong', icon: '🌊' },
+        { id: 'central-coast', label: 'Central Coast', icon: '🏖️' },
+        { id: 'maitland', label: 'Maitland', icon: '🏞️' },
+        { id: 'albury', label: 'Albury', icon: '🌾' },
+      ],
+      'VIC': [
+        { id: 'melbourne', label: 'Melbourne', icon: '🎭' },
+        { id: 'geelong', label: 'Geelong', icon: '🌊' },
+        { id: 'ballarat', label: 'Ballarat', icon: '🏞️' },
+        { id: 'bendigo', label: 'Bendigo', icon: '🏞️' },
+        { id: 'frankston', label: 'Frankston', icon: '🏖️' },
+      ],
+      'QLD': [
+        { id: 'brisbane', label: 'Brisbane', icon: '🌴' },
+        { id: 'gold-coast', label: 'Gold Coast', icon: '🏄' },
+        { id: 'townsville', label: 'Townsville', icon: '🌴' },
+        { id: 'cairns', label: 'Cairns', icon: '🐠' },
+        { id: 'toowoomba', label: 'Toowoomba', icon: '🌸' },
+      ],
+    }
+  },
+  'India': {
+    states: [
+      { id: 'AP', label: 'Andhra Pradesh', icon: '🌶️' },
+      { id: 'AR', label: 'Arunachal Pradesh', icon: '🏔️' },
+      { id: 'AS', label: 'Assam', icon: '🍃' },
+      { id: 'BR', label: 'Bihar', icon: '🏛️' },
+      { id: 'CT', label: 'Chhattisgarh', icon: '🌾' },
+      { id: 'GA', label: 'Goa', icon: '🏖️' },
+      { id: 'GJ', label: 'Gujarat', icon: '🦁' },
+      { id: 'HR', label: 'Haryana', icon: '🌾' },
+      { id: 'HP', label: 'Himachal Pradesh', icon: '🏔️' },
+      { id: 'JH', label: 'Jharkhand', icon: '⛏️' },
+      { id: 'KA', label: 'Karnataka', icon: '💻' },
+      { id: 'KL', label: 'Kerala', icon: '🌴' },
+      { id: 'MP', label: 'Madhya Pradesh', icon: '🐅' },
+      { id: 'MH', label: 'Maharashtra', icon: '🏙️' },
+      { id: 'MN', label: 'Manipur', icon: '🏔️' },
+      { id: 'ML', label: 'Meghalaya', icon: '☔' },
+      { id: 'MZ', label: 'Mizoram', icon: '🏔️' },
+      { id: 'NL', label: 'Nagaland', icon: '🏔️' },
+      { id: 'OR', label: 'Odisha', icon: '🏛️' },
+      { id: 'PB', label: 'Punjab', icon: '🌾' },
+      { id: 'RJ', label: 'Rajasthan', icon: '🐪' },
+      { id: 'SK', label: 'Sikkim', icon: '🏔️' },
+      { id: 'TN', label: 'Tamil Nadu', icon: '🕺' },
+      { id: 'TG', label: 'Telangana', icon: '💻' },
+      { id: 'TR', label: 'Tripura', icon: '🌿' },
+      { id: 'UP', label: 'Uttar Pradesh', icon: '🕌' },
+      { id: 'UT', label: 'Uttarakhand', icon: '🏔️' },
+      { id: 'WB', label: 'West Bengal', icon: '🐟' },
+      { id: 'DL', label: 'Delhi', icon: '🏛️' },
+      { id: 'PY', label: 'Puducherry', icon: '🏖️' },
+    ],
+    cities: {
+      'MH': [
+        { id: 'mumbai', label: 'Mumbai', icon: '🏙️' },
+        { id: 'pune', label: 'Pune', icon: '🎓' },
+        { id: 'nagpur', label: 'Nagpur', icon: '🍊' },
+        { id: 'thane', label: 'Thane', icon: '🏙️' },
+        { id: 'nashik', label: 'Nashik', icon: '🍇' },
+        { id: 'aurangabad', label: 'Aurangabad', icon: '🏛️' },
+        { id: 'solapur', label: 'Solapur', icon: '🌾' },
+        { id: 'amravati', label: 'Amravati', icon: '🏛️' },
+      ],
+      'KA': [
+        { id: 'bangalore', label: 'Bangalore', icon: '💻' },
+        { id: 'mysore', label: 'Mysore', icon: '🏰' },
+        { id: 'hubli', label: 'Hubli', icon: '🏭' },
+        { id: 'mangalore', label: 'Mangalore', icon: '🌊' },
+        { id: 'belgaum', label: 'Belgaum', icon: '🏞️' },
+        { id: 'gulbarga', label: 'Gulbarga', icon: '🏛️' },
+      ],
+      'TN': [
+        { id: 'chennai', label: 'Chennai', icon: '🏛️' },
+        { id: 'coimbatore', label: 'Coimbatore', icon: '🏭' },
+        { id: 'madurai', label: 'Madurai', icon: '🏛️' },
+        { id: 'tiruchirappalli', label: 'Tiruchirappalli', icon: '🏛️' },
+        { id: 'salem', label: 'Salem', icon: '🏭' },
+        { id: 'tirunelveli', label: 'Tirunelveli', icon: '🌾' },
+      ],
+      'DL': [
+        { id: 'new-delhi', label: 'New Delhi', icon: '🏛️' },
+        { id: 'delhi', label: 'Delhi', icon: '🏛️' },
+        { id: 'gurgaon', label: 'Gurgaon', icon: '🏙️' },
+        { id: 'noida', label: 'Noida', icon: '🏙️' },
+        { id: 'faridabad', label: 'Faridabad', icon: '🏭' },
+      ],
+    }
+  },
+};
+
+/**
+ * Helper function to get states/provinces for a country
+ */
+export const getStatesForCountry = (countryName: string): DropdownSearchOption[] => {
+  const countryData = GEOGRAPHIC_DATA[countryName];
+  return countryData?.states || [];
+};
+
+/**
+ * Helper function to get cities for a country and state
+ */
+export const getCitiesForState = (countryName: string, stateId: string): DropdownSearchOption[] => {
+  const countryData = GEOGRAPHIC_DATA[countryName];
+  return countryData?.cities[stateId] || [];
+};
+
+/**
+ * Helper function to check if a country has geographic data
+ */
+export const hasGeographicData = (countryName: string): boolean => {
+  return countryName in GEOGRAPHIC_DATA;
+};
+
+/**
  * Countries with flags - Popular countries first, then alphabetical
  */
 export const COUNTRIES: DropdownSearchOption[] = [

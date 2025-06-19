@@ -12,13 +12,17 @@ import {
   GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import { Button, PageHeader, EnhancedTabs, Input, InputTextField, DropdownSearch } from '../components/ui';
+import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { useTenantStore } from '../tenants/tenantStore';
 import { 
   COUNTRIES, 
   LOCALES, 
   LOCATION_TYPES, 
   STORE_TYPES, 
-  CURRENCIES 
+  CURRENCIES,
+  getStatesForCountry,
+  getCitiesForState,
+  hasGeographicData
 } from '../constants/dropdownOptions';
 
 interface StoreFormData {
@@ -130,6 +134,12 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     }
   });
 
+  // Dynamic geographic data state
+  const [availableStates, setAvailableStates] = useState<DropdownSearchOption[]>([]);
+  const [availableCities, setAvailableCities] = useState<DropdownSearchOption[]>([]);
+  const [isLoadingStates, setIsLoadingStates] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
+
   const tabs = [
     { id: 'basic', name: 'Basic Information', icon: BuildingStorefrontIcon },
     { id: 'address', name: 'Address', icon: MapPinIcon },
@@ -181,6 +191,57 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
         delete newErrors[field];
         return newErrors;
       });
+    }
+  };
+
+  // Handle country change - update available states and clear state/city
+  const handleCountryChange = async (countryName: string) => {
+    // Update country in form data
+    handleInputChange('address.country', countryName);
+    
+    // Clear dependent fields
+    handleInputChange('address.state', '');
+    handleInputChange('address.city', '');
+    setAvailableCities([]);
+    
+    // Load states for the selected country
+    if (hasGeographicData(countryName)) {
+      setIsLoadingStates(true);
+      try {
+        // Simulate API call delay for smooth UX
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const states = getStatesForCountry(countryName);
+        setAvailableStates(states);
+      } finally {
+        setIsLoadingStates(false);
+      }
+    } else {
+      setAvailableStates([]);
+    }
+  };
+
+  // Handle state change - update available cities and clear city
+  const handleStateChange = async (stateId: string, stateName: string) => {
+    // Update state in form data
+    handleInputChange('address.state', stateName);
+    
+    // Clear city
+    handleInputChange('address.city', '');
+    
+    // Load cities for the selected state
+    const countryName = formData.address.country;
+    if (hasGeographicData(countryName) && stateId) {
+      setIsLoadingCities(true);
+      try {
+        // Simulate API call delay for smooth UX
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const cities = getCitiesForState(countryName, stateId);
+        setAvailableCities(cities);
+      } finally {
+        setIsLoadingCities(false);
+      }
+    } else {
+      setAvailableCities([]);
     }
   };
 
@@ -536,23 +597,93 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <InputTextField
-            label="City"
-            required
-            value={formData.address.city}
-            onChange={(value) => handleInputChange('address.city', value)}
-            placeholder="Enter city"
-            error={errors['address.city']}
-          />
+          {/* Dynamic City Field - shows dropdown if cities are available, otherwise text input */}
+          {availableCities.length > 0 ? (
+            <DropdownSearch
+              label="City"
+              required
+              options={availableCities}
+              value={availableCities.find(city => city.label === formData.address.city)?.id || ''}
+              onSelect={(selectedOption) => {
+                if (selectedOption) {
+                  handleInputChange('address.city', selectedOption.label);
+                }
+              }}
+              displayValue={(option) => {
+                if (option) {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{option.icon}</span>
+                      <span className="font-medium">{option.label}</span>
+                    </div>
+                  );
+                }
+                return formData.address.city || "Select a city";
+              }}
+              renderOption={(option) => (
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{option.icon}</span>
+                  <span>{option.label}</span>
+                </div>
+              )}
+              placeholder="Select a city"
+              searchPlaceholder="Search cities..."
+              error={errors['address.city']}
+            />
+          ) : (
+            <InputTextField
+              label="City"
+              required
+              value={formData.address.city}
+              onChange={(value) => handleInputChange('address.city', value)}
+              placeholder="Enter city"
+              error={errors['address.city']}
+            />
+          )}
 
-          <InputTextField
-            label="State/Province"
-            required
-            value={formData.address.state}
-            onChange={(value) => handleInputChange('address.state', value)}
-            placeholder="Enter state"
-            error={errors['address.state']}
-          />
+          {/* Dynamic State Field - shows dropdown if states are available, otherwise text input */}
+          {availableStates.length > 0 ? (
+            <DropdownSearch
+              label="State/Province"
+              required
+              options={availableStates}
+              value={availableStates.find(state => state.label === formData.address.state)?.id || ''}
+              onSelect={(selectedOption) => {
+                if (selectedOption) {
+                  handleStateChange(selectedOption.id, selectedOption.label);
+                }
+              }}
+              displayValue={(option) => {
+                if (option) {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{option.icon}</span>
+                      <span className="font-medium">{option.label}</span>
+                    </div>
+                  );
+                }
+                return formData.address.state || "Select a state";
+              }}
+              renderOption={(option) => (
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{option.icon}</span>
+                  <span>{option.label}</span>
+                </div>
+              )}
+              placeholder="Select a state/province"
+              searchPlaceholder="Search states..."
+              error={errors['address.state']}
+            />
+          ) : (
+            <InputTextField
+              label="State/Province"
+              required
+              value={formData.address.state}
+              onChange={(value) => handleInputChange('address.state', value)}
+              placeholder="Enter state/province"
+              error={errors['address.state']}
+            />
+          )}
 
           <InputTextField
             label="Postal Code"
@@ -576,9 +707,9 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             onSelect={(option) => {
               // Prevent selecting the separator
               if (option && option.id !== 'separator') {
-                handleInputChange('address.country', option.label);
+                handleCountryChange(option.label);
               } else if (!option) {
-                handleInputChange('address.country', '');
+                handleCountryChange('');
               }
             }}
             displayValue={(option) => {
@@ -637,6 +768,42 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             />
           </div>
         </div>
+
+        {/* Geographic Selection Info */}
+        {(availableStates.length > 0 || availableCities.length > 0) && (
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <MapPinIcon className="w-4 h-4 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-blue-800 mb-1">Smart Geographic Selection</h4>
+                <p className="text-sm text-blue-700">
+                  {availableStates.length > 0 && availableCities.length > 0
+                    ? `Found ${availableStates.length} states/provinces and ${availableCities.length} cities for ${formData.address.country}. Select from the dropdown options for better accuracy.`
+                    : availableStates.length > 0
+                    ? `Found ${availableStates.length} states/provinces for ${formData.address.country}. Select a state to view available cities.`
+                    : 'Geographic data loaded successfully.'
+                  }
+                </p>
+                {isLoadingStates && (
+                  <p className="text-sm text-blue-600 mt-1 flex items-center">
+                    <div className="animate-spin rounded-full h-3 w-3 border border-blue-600 border-t-transparent mr-2"></div>
+                    Loading states...
+                  </p>
+                )}
+                {isLoadingCities && (
+                  <p className="text-sm text-blue-600 mt-1 flex items-center">
+                    <div className="animate-spin rounded-full h-3 w-3 border border-blue-600 border-t-transparent mr-2"></div>
+                    Loading cities...
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <InputTextField
