@@ -805,12 +805,31 @@ export const LOCALES: DropdownSearchOption[] = [
  * Location types with icons
  */
 export const LOCATION_TYPES: DropdownSearchOption[] = [
-  { id: 'retail', label: 'Retail', icon: '🏪' },
+  { id: 'retail', label: 'Retail Store', icon: '🏪' },
+  { id: 'restaurant', label: 'Restaurant', icon: '🍽️' },
+  { id: 'quick_service', label: 'Quick Service', icon: '🍔' },
+  { id: 'cafe', label: 'Café', icon: '☕' },
+  { id: 'bar', label: 'Bar / Pub', icon: '🍻' },
+  { id: 'bakery', label: 'Bakery', icon: '🥐' },
+  { id: 'food_truck', label: 'Food Truck', icon: '🚚' },
+  { id: 'canteen', label: 'Canteen', icon: '🥗' },
+  { id: 'cloud_kitchen', label: 'Cloud Kitchen', icon: '📦' },
+  { id: 'kiosk', label: 'Kiosk', icon: '🛍️' },
+  { id: 'pharmacy', label: 'Pharmacy', icon: '💊' },
+  { id: 'salon', label: 'Salon / Spa', icon: '💇' },
+  { id: 'laundromat', label: 'Laundromat', icon: '🧺' },
+  { id: 'repair_shop', label: 'Repair Shop', icon: '🛠️' },
+  { id: 'clinic', label: 'Clinic', icon: '🏥' },
+  { id: 'cinema', label: 'Cinema / Theater', icon: '🎬' },
+  { id: 'theme_park', label: 'Theme Park', icon: '🎢' },
+  { id: 'hotel', label: 'Hotel / Resort', icon: '🏨' },
+  { id: 'airport_kiosk', label: 'Airport Kiosk', icon: '✈️' },
+  { id: 'school_canteen', label: 'School Canteen', icon: '🏫' },
+  { id: 'campus_store', label: 'Campus Store', icon: '🎓' },
+  { id: 'popup', label: 'Pop-up Store', icon: '⏰' },
+  { id: 'online', label: 'Online Store', icon: '💻' },
   { id: 'warehouse', label: 'Warehouse', icon: '🏭' },
   { id: 'outlet', label: 'Outlet', icon: '🏬' },
-  { id: 'kiosk', label: 'Kiosk', icon: '🏪' },
-  { id: 'online', label: 'Online', icon: '💻' },
-  { id: 'popup', label: 'Pop-up', icon: '⏰' },
 ];
 
 /**
@@ -818,14 +837,28 @@ export const LOCATION_TYPES: DropdownSearchOption[] = [
  */
 export const STORE_TYPES: DropdownSearchOption[] = [
   { id: 'general', label: 'General Store', icon: '🏪' },
-  { id: 'grocery', label: 'Grocery', icon: '🛒' },
-  { id: 'clothing', label: 'Clothing', icon: '👕' },
-  { id: 'electronics', label: 'Electronics', icon: '📱' },
-  { id: 'pharmacy', label: 'Pharmacy', icon: '💊' },
+  { id: 'grocery', label: 'Grocery Store', icon: '🛒' },
+  { id: 'clothing', label: 'Clothing & Apparel', icon: '👕' },
+  { id: 'electronics', label: 'Electronics Store', icon: '📱' },
+  { id: 'pharmacy', label: 'Pharmacy / Drugstore', icon: '💊' },
   { id: 'restaurant', label: 'Restaurant', icon: '🍽️' },
-  { id: 'cafe', label: 'Cafe', icon: '☕' },
+  { id: 'cafe', label: 'Café / Coffee Shop', icon: '☕' },
+  { id: 'bar', label: 'Bar / Pub / Lounge', icon: '🍺' },
+  { id: 'bakery', label: 'Bakery / Patisserie', icon: '🥐' },
+  { id: 'juice_bar', label: 'Juice / Smoothie Bar', icon: '🥤' },
+  { id: 'ice_cream_parlor', label: 'Ice Cream Shop', icon: '🍨' },
+  { id: 'salon', label: 'Salon / Beauty', icon: '💇' },
+  { id: 'spa', label: 'Spa & Wellness', icon: '💆' },
+  { id: 'laundry', label: 'Laundry / Dry Cleaner', icon: '🧺' },
+  { id: 'repair', label: 'Repair & Services', icon: '🔧' },
+  { id: 'clinic', label: 'Clinic / Dental / Optical', icon: '🏥' },
+  { id: 'bookstore', label: 'Bookstore / Stationery', icon: '📚' },
+  { id: 'toy_store', label: 'Toy & Kids Store', icon: '🧸' },
+  { id: 'home_decor', label: 'Home Decor / Furniture', icon: '🛋️' },
+  { id: 'jewelry', label: 'Jewelry Store', icon: '💍' },
   { id: 'specialty', label: 'Specialty Store', icon: '🎯' },
 ];
+
 
 // ===== FINANCIAL OPTIONS =====
 

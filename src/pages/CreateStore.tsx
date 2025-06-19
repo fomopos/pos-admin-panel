@@ -26,6 +26,7 @@ import {
   hasGeographicData
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
+import { detectUserCountryName } from '../utils/locationUtils';
 
 interface StoreFormData {
   // Basic Information
@@ -111,7 +112,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       district: '',
       area: '',
       postal_code: '',
-      country: '',
+      country: detectUserCountryName(),
       county: ''
     },
     telephone1: '',

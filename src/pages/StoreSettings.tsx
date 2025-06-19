@@ -42,6 +42,7 @@ import {
   TIMEZONES
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
+import { detectUserCountryName } from '../utils/locationUtils';
 
 interface StoreSettingsState {
   settings: StoreSettings | null;
@@ -374,9 +375,33 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
   // Initialize form data using real store details when available, fallback to settings
   const initializeFormData = () => {
     if (storeDetails) {
-      return storeServices.store.convertToStoreInformation(storeDetails);
+      const convertedData = storeServices.store.convertToStoreInformation(storeDetails);
+      
+      // Set default country if not present
+      if (!convertedData.address?.country) {
+        convertedData.address = {
+          ...convertedData.address,
+          country: detectUserCountryName()
+        };
+      }
+      
+      return convertedData;
     }
-    return settings.store_information;
+    
+    const settingsData = settings.store_information;
+    
+    // Set default country if not present in settings
+    if (!settingsData?.address?.country) {
+      return {
+        ...settingsData,
+        address: {
+          ...settingsData?.address,
+          country: detectUserCountryName()
+        }
+      };
+    }
+    
+    return settingsData;
   };
 
   const [formData, setFormData] = useState(initializeFormData());
@@ -385,6 +410,15 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
   useEffect(() => {
     if (storeDetails) {
       const convertedData = storeServices.store.convertToStoreInformation(storeDetails);
+      
+      // Set default country if not present
+      if (!convertedData.address?.country) {
+        convertedData.address = {
+          ...convertedData.address,
+          country: detectUserCountryName()
+        };
+      }
+      
       setFormData(convertedData);
     }
   }, [storeDetails]);
