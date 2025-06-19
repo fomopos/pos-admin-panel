@@ -41,6 +41,7 @@ import {
   CURRENCIES,
   TIMEZONES
 } from '../constants/dropdownOptions';
+import { getDefaultTimezone } from '../utils/timezoneUtils';
 
 interface StoreSettingsState {
   settings: StoreSettings | null;
@@ -611,7 +612,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
           <DropdownSearch
             label="Timezone"
             options={TIMEZONES}
-            value={formData.timezone || 'America/New_York'}
+            value={formData.timezone || getDefaultTimezone()}
             onSelect={(selectedOption) => {
               if (selectedOption) {
                 handleInputChange('timezone', selectedOption.id);

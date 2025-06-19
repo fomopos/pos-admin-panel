@@ -25,6 +25,7 @@ import {
   getCitiesForState,
   hasGeographicData
 } from '../constants/dropdownOptions';
+import { getDefaultTimezone } from '../utils/timezoneUtils';
 
 interface StoreFormData {
   // Basic Information
@@ -122,7 +123,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     longitude: '',
     locale: 'en-US',
     currency: 'USD',
-    timezone: 'America/New_York',
+    timezone: getDefaultTimezone(),
     legal_entity_id: '',
     legal_entity_name: '',
     store_timing: {
