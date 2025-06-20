@@ -14,20 +14,43 @@ export interface ApiResponse<T> {
 }
 
 export interface ApiErrorResponse {
+  code: number;
+  slug: string;
   message: string;
-  code?: string;
-  details?: any;
+  details?: Record<string, string>;
 }
 
 export class ApiError extends Error {
-  public code?: string;
-  public details?: any;
+  public code?: number;
+  public slug?: string;
+  public details?: Record<string, string>;
 
-  constructor(message: string, code?: string, details?: any) {
+  constructor(message: string, code?: number, slug?: string, details?: Record<string, string>) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
+    this.slug = slug;
     this.details = details;
+  }
+
+  /**
+   * Format error for user display
+   */
+  public getDisplayMessage(): string {
+    if (this.details && Object.keys(this.details).length > 0) {
+      const fieldErrors = Object.entries(this.details)
+        .map(([field, error]) => `${field}: ${error}`)
+        .join('\n');
+      return `${this.message}\n\n${fieldErrors}`;
+    }
+    return this.message;
+  }
+
+  /**
+   * Get validation errors as key-value pairs
+   */
+  public getValidationErrors(): Record<string, string> {
+    return this.details || {};
   }
 }
 
@@ -69,8 +92,19 @@ export class ApiClient {
       const response = await fetch(url, config);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({
+          code: response.status,
+          slug: 'UNKNOWN_ERROR',
+          message: `HTTP ${response.status}: ${response.statusText}`,
+          details: {}
+        }));
+        
+        throw new ApiError(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`,
+          errorData.code || response.status,
+          errorData.slug || 'UNKNOWN_ERROR',
+          errorData.details || {}
+        );
       }
 
       const data = await response.json();
@@ -90,11 +124,17 @@ export class ApiClient {
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
       
-      // Re-throw the error so services can handle fallback to mock data
+      // If it's already an ApiError, re-throw it
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      
+      // Re-throw other errors wrapped in ApiError
       throw new ApiError(
         error instanceof Error ? error.message : 'Network request failed',
+        0,
         'NETWORK_ERROR',
-        { endpoint, originalError: error }
+        { endpoint: endpoint, originalError: error instanceof Error ? error.message : 'Unknown error' }
       );
     }
   }

@@ -123,7 +123,7 @@ class CategoryApiService {
         const mockData = this.getMockCategories();
         const category = mockData.categories.find(c => c.category_id === categoryId);
         if (!category) {
-          throw new ApiError(`Category not found: ${categoryId}`, 'CATEGORY_NOT_FOUND');
+          throw new ApiError(`Category not found: ${categoryId}`, 1101, 'CATEGORY_NOT_FOUND');
         }
         return category;
       }
@@ -136,7 +136,7 @@ class CategoryApiService {
       
     } catch (error) {
       console.error('❌ Error fetching category:', error);
-      throw new ApiError(`Category not found: ${categoryId}`, 'CATEGORY_NOT_FOUND');
+      throw new ApiError(`Category not found: ${categoryId}`, 1101, 'CATEGORY_NOT_FOUND');
     }
   }
 
@@ -483,10 +483,27 @@ class CategoryApiService {
       return error;
     }
     
+    // Handle HTTP response errors that might have the new error format
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      
+      // Check if it has the new structured format
+      if (errorData.code && errorData.slug && errorData.message) {
+        return new ApiError(
+          errorData.message,
+          errorData.code,
+          errorData.slug,
+          errorData.details
+        );
+      }
+    }
+    
+    // Fallback error handling
     return new ApiError(
       error instanceof Error ? error.message : 'Category operation failed',
+      1100,
       'CATEGORY_ERROR',
-      { originalError: error }
+      { originalError: error?.message || 'Unknown error' }
     );
   }
 }

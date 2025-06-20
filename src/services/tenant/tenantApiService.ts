@@ -23,36 +23,36 @@ export interface TenantApiResponse {
 
 export interface StoreApiResponse {
   tenant_id: string;
-  store_id: string;
+  store_id: string | null;
   status: 'active' | 'inactive' | 'pending';
   store_name: string;
-  description: string;
+  description: string | null;
   location_type: string;
   store_type: string;
   address: {
-    address1: string;
-    address2?: string;
-    address3?: string;
-    address4?: string;
-    city: string;
-    state: string;
-    district: string;
-    area: string;
-    postal_code: string;
+    address1: string | null;
+    address2?: string | null;
+    address3?: string | null;
+    address4?: string | null;
+    city: string | null;
+    state: string | null;
+    district: string | null;
+    area: string | null;
+    postal_code: string | null;
     country: string;
-    county: string;
+    county: string | null;
   };
   locale: string;
   currency: string;
-  latitude?: string;
-  longitude?: string;
-  telephone1?: string;
-  telephone2?: string;
-  telephone3?: string;
-  telephone4?: string;
-  email?: string;
-  legal_entity_id?: string;
-  legal_entity_name?: string;
+  latitude?: string | null;
+  longitude?: string | null;
+  telephone1?: string | null;
+  telephone2?: string | null;
+  telephone3?: string | null;
+  telephone4?: string | null;
+  email?: string | null;
+  legal_entity_id?: string | null;
+  legal_entity_name?: string | null;
   store_timing?: {
     Monday: string;
     Tuesday: string;
@@ -104,7 +104,7 @@ class TenantApiService {
       
       if (USE_MOCK_DATA) {
         console.log('📝 Mock data mode enabled but no mock data available');
-        throw new ApiError('Mock data not available', 'NO_MOCK_DATA');
+        throw new ApiError('Mock data not available', 1000, 'NO_MOCK_DATA');
       }
 
       // Real API call using the API client
@@ -162,7 +162,7 @@ class TenantApiService {
       
       if (USE_MOCK_DATA) {
         console.log('📝 Mock data mode enabled but no mock data available');
-        throw new ApiError(`Tenant not found: ${tenantId}`, 'TENANT_NOT_FOUND');
+        throw new ApiError(`Tenant not found: ${tenantId}`, 1001, 'TENANT_NOT_FOUND');
       }
 
       // Real API call
@@ -173,7 +173,7 @@ class TenantApiService {
       console.error('❌ Error fetching tenant details:', error);
       
       // No fallback data available
-      throw new ApiError(`Tenant not found: ${tenantId}`, 'TENANT_NOT_FOUND');
+      throw new ApiError(`Tenant not found: ${tenantId}`, 1001, 'TENANT_NOT_FOUND');
     }
   }
 
@@ -189,7 +189,7 @@ class TenantApiService {
       
       if (USE_MOCK_DATA) {
         console.log('📝 Mock data mode enabled but no mock data available');
-        throw new ApiError(`Store not found: ${storeId}`, 'STORE_NOT_FOUND');
+        throw new ApiError(`Store not found: ${storeId}`, 1002, 'STORE_NOT_FOUND');
       }
 
       // Real API call
@@ -200,7 +200,7 @@ class TenantApiService {
       console.error('❌ Error fetching store details:', error);
       
       // No fallback data available
-      throw new ApiError(`Store not found: ${storeId}`, 'STORE_NOT_FOUND');
+      throw new ApiError(`Store not found: ${storeId}`, 1002, 'STORE_NOT_FOUND');
     }
   }
 
@@ -216,7 +216,7 @@ class TenantApiService {
       
       if (USE_MOCK_DATA) {
         console.log('📝 Mock data mode enabled but store creation not supported without backend');
-        throw new ApiError('Store creation requires real API backend', 'MOCK_CREATE_NOT_SUPPORTED');
+        throw new ApiError('Store creation requires real API backend', 1000, 'MOCK_CREATE_NOT_SUPPORTED');
       }
 
       // Real API call using the specified endpoint structure: POST /v0/store with X-Tenant-Id header

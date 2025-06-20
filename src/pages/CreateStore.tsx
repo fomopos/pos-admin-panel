@@ -21,12 +21,12 @@ import {
   STORE_TYPES, 
   CURRENCIES,
   TIMEZONES,
-  getStatesForCountry,
-  getCitiesForState,
-  hasGeographicData
+  getStatesForCountryCode,
+  getCitiesForStateByCountryCode,
+  hasGeographicDataByCountryCode
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
-import { detectUserCountryName } from '../utils/locationUtils';
+import { detectUserCountryCode } from '../utils/locationUtils';
 
 interface StoreFormData {
   // Basic Information
@@ -112,7 +112,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       district: '',
       area: '',
       postal_code: '',
-      country: detectUserCountryName(),
+      country: detectUserCountryCode(),
       county: ''
     },
     telephone1: '',
@@ -200,9 +200,9 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   };
 
   // Handle country change - update available states and clear state/city
-  const handleCountryChange = async (countryName: string) => {
-    // Update country in form data
-    handleInputChange('address.country', countryName);
+  const handleCountryChange = async (countryCode: string) => {
+    // Update country in form data (store the country code)
+    handleInputChange('address.country', countryCode);
     
     // Clear dependent fields
     handleInputChange('address.state', '');
@@ -210,12 +210,12 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     setAvailableCities([]);
     
     // Load states for the selected country
-    if (hasGeographicData(countryName)) {
+    if (hasGeographicDataByCountryCode(countryCode)) {
       setIsLoadingStates(true);
       try {
         // Simulate API call delay for smooth UX
         await new Promise(resolve => setTimeout(resolve, 300));
-        const states = getStatesForCountry(countryName);
+        const states = getStatesForCountryCode(countryCode);
         setAvailableStates(states);
       } finally {
         setIsLoadingStates(false);
@@ -234,13 +234,13 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     handleInputChange('address.city', '');
     
     // Load cities for the selected state
-    const countryName = formData.address.country;
-    if (hasGeographicData(countryName) && stateId) {
+    const countryCode = formData.address.country;
+    if (hasGeographicDataByCountryCode(countryCode) && stateId) {
       setIsLoadingCities(true);
       try {
         // Simulate API call delay for smooth UX
         await new Promise(resolve => setTimeout(resolve, 200));
-        const cities = getCitiesForState(countryName, stateId);
+        const cities = getCitiesForStateByCountryCode(countryCode, stateId);
         setAvailableCities(cities);
       } finally {
         setIsLoadingCities(false);
@@ -326,11 +326,74 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       setTimeout(() => {
         handleSave();
       }, 1500);
-    } catch (error) {
-      setErrors({ submit: 'Failed to create store. Please try again.' });
+    } catch (error: any) {
+      console.error('Store creation failed:', error);
+      
+      // Handle structured API errors with field-specific validation
+      if (error?.code && error?.slug && error?.details) {
+        // This is our new structured API error
+        const fieldErrors: Record<string, string> = {};
+        
+        // Map API field errors to form field errors
+        if (error.details) {
+          Object.entries(error.details).forEach(([apiField, message]) => {
+            // Map API field names to form field names
+            const formField = mapApiFieldToFormField(apiField);
+            fieldErrors[formField] = message as string;
+          });
+        }
+        
+        // Set field-specific errors and general error message
+        setErrors({
+          ...fieldErrors,
+          submit: error.getDisplayMessage ? error.getDisplayMessage() : error.message
+        });
+      } else {
+        // Fallback for non-structured errors
+        setErrors({ 
+          submit: error?.message || 'Failed to create store. Please try again.' 
+        });
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to map API field names to form field names
+  const mapApiFieldToFormField = (apiField: string): string => {
+    const fieldMap: Record<string, string> = {
+      'store_name': 'store_name',
+      'store_id': 'store_id',
+      'description': 'description',
+      'location_type': 'location_type',
+      'store_type': 'store_type',
+      'latitude': 'latitude',
+      'longitude': 'longitude',
+      'email': 'email',
+      'telephone1': 'telephone1',
+      'telephone2': 'telephone2',
+      'telephone3': 'telephone3',
+      'telephone4': 'telephone4',
+      'legal_entity_id': 'legal_entity_id',
+      'legal_entity_name': 'legal_entity_name',
+      'locale': 'locale',
+      'currency': 'currency',
+      'timezone': 'timezone',
+      // Address fields with nested mapping
+      'address1': 'address.address1',
+      'address2': 'address.address2',
+      'address3': 'address.address3',
+      'address4': 'address.address4',
+      'city': 'address.city',
+      'state': 'address.state',
+      'district': 'address.district',
+      'area': 'address.area',
+      'postal_code': 'address.postal_code',
+      'country': 'address.country',
+      'county': 'address.county',
+    };
+    
+    return fieldMap[apiField] || apiField;
   };
 
   const renderBasicInformation = () => (
@@ -757,7 +820,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             onSelect={(option) => {
               // Prevent selecting the separator
               if (option && option.id !== 'separator') {
-                handleCountryChange(option.label);
+                handleCountryChange(option.id); // Store country code
               } else if (!option) {
                 handleCountryChange('');
               }
@@ -771,10 +834,9 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                   </div>
                 );
               }
-              // If no option provided, try to find it by current value
+              // If no option provided, try to find it by current value (which should be a country code)
               const currentCountry = COUNTRIES.find(
-                country => country.label === formData.address.country || 
-                          country.id === formData.address.country
+                country => country.id === formData.address.country
               );
               if (currentCountry) {
                 return (

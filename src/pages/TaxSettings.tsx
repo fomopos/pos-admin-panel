@@ -24,7 +24,7 @@ import type {
 } from '../services/tax';
 
 const TaxSettings: React.FC = () => {
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, currentStore } = useTenantStore();
   const [taxConfig, setTaxConfig] = useState<TaxConfiguration | null>(null);
   const [originalTaxConfig, setOriginalTaxConfig] = useState<TaxConfiguration | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,8 +58,15 @@ const TaxSettings: React.FC = () => {
       console.log(`[API Call 1] Starting tax configuration fetch for tenant: ${currentTenant.id}`);
       
       try {
-        // Use the real tax configuration service with tenant ID
-        const config = await taxServices.configuration.getTaxConfiguration(currentTenant.id);
+        // Use the real tax configuration service with tenant ID, store ID, and country
+        const storeId = currentStore?.store_id || "*";
+        const country = currentStore?.address?.country;
+        
+        const config = await taxServices.configuration.getTaxConfiguration(
+          currentTenant.id, 
+          storeId, 
+          country
+        );
         
         if (config) {
           console.log('[API Call 1] Tax configuration loaded successfully from API');
@@ -344,15 +351,16 @@ const TaxSettings: React.FC = () => {
       };
 
       let updatedConfig: TaxConfiguration;
+      const storeId = currentStore?.store_id || "*";
 
       // Check if this is a new configuration or updating existing one
       if (originalTaxConfig) {
         console.log('Updating existing tax configuration');
-        updatedConfig = await taxServices.configuration.updateTaxConfiguration(currentTenant.id, requestData);
+        updatedConfig = await taxServices.configuration.updateTaxConfiguration(currentTenant.id, storeId, requestData);
         setSuccessMessage('Tax configuration updated successfully');
       } else {
         console.log('Creating new tax configuration');
-        updatedConfig = await taxServices.configuration.createTaxConfiguration(currentTenant.id, requestData);
+        updatedConfig = await taxServices.configuration.createTaxConfiguration(currentTenant.id, storeId, requestData);
         setSuccessMessage('Tax configuration created successfully');
       }
       

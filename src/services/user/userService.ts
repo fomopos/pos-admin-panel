@@ -395,6 +395,23 @@ export class UserService {
    * Handle API errors and convert to UserServiceError
    */
   private handleError(error: any, message: string): UserServiceError {
+    // Handle HTTP response errors that might have the new error format
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      
+      // Check if it has the new structured format
+      if (errorData.code && errorData.slug && errorData.message) {
+        const { ApiError } = require('../api');
+        throw new ApiError(
+          errorData.message,
+          errorData.code,
+          errorData.slug,
+          errorData.details
+        );
+      }
+    }
+    
+    // Fallback to legacy UserServiceError format
     return {
       message,
       code: error.response?.status || 500,

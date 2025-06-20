@@ -11,12 +11,28 @@ export class TaxConfigurationService {
   private readonly basePath = '/v0/tenant';
 
   /**
-   * Get tax configuration for a tenant
+   * Get tax configuration for a tenant and store
+   * @param tenantId - The tenant ID
+   * @param storeId - The store ID (optional, defaults to "*")
+   * @param country - The country code from store address (optional)
    */
-  async getTaxConfiguration(tenantId: string): Promise<TaxConfiguration | null> {
+  async getTaxConfiguration(
+    tenantId: string, 
+    storeId: string = "*", 
+    country?: string
+  ): Promise<TaxConfiguration | null> {
     try {
-      console.log(`Fetching tax configuration for tenant: ${tenantId}`);
-      const response = await apiClient.get<TaxApiResponse>(`${this.basePath}/${tenantId}/tax`);
+      console.log(`Fetching tax configuration for tenant: ${tenantId}, store: ${storeId}${country ? `, country: ${country}` : ''}`);
+      
+      // Construct the URL with store ID
+      let url = `${this.basePath}/${tenantId}/store/${storeId}/tax`;
+      
+      // Add country parameter if provided
+      if (country) {
+        url += `?country=${country.toLowerCase()}`;
+      }
+      
+      const response = await apiClient.get<TaxApiResponse>(url);
       
       console.log('Tax configuration API response:', response.data);
       
@@ -58,26 +74,33 @@ export class TaxConfigurationService {
   }
 
   /**
-   * Create a new tax configuration for a tenant
+   * Create a new tax configuration for a tenant and store
+   * @param tenantId - The tenant ID
+   * @param storeId - The store ID
+   * @param data - The tax configuration data
    */
-  async createTaxConfiguration(tenantId: string, data: CreateTaxConfigurationRequest): Promise<TaxConfiguration> {
+  async createTaxConfiguration(
+    tenantId: string, 
+    storeId: string, 
+    data: CreateTaxConfigurationRequest
+  ): Promise<TaxConfiguration> {
     try {
       // Prepare the request data with required fields
       const requestData = {
         tenant_id: tenantId,
-        store_id: "*", // Default to wildcard for new configurations
+        store_id: storeId,
         authority: data.authority,
         tax_location: data.tax_location,
         tax_group: data.tax_group,
         properties: null
       };
 
-      console.log(`Creating tax configuration for tenant: ${tenantId}`, requestData);
+      console.log(`Creating tax configuration for tenant: ${tenantId}, store: ${storeId}`, requestData);
 
       // Validate required fields
       this.validateTaxConfigurationData(requestData);
       
-      const response = await apiClient.post<TaxApiResponseItem>(`${this.basePath}/${tenantId}/tax`, requestData);
+      const response = await apiClient.post<TaxApiResponseItem>(`${this.basePath}/${tenantId}/store/${storeId}/tax`, requestData);
       
       console.log('Create tax configuration API response:', response.data);
       
@@ -109,27 +132,34 @@ export class TaxConfigurationService {
   }
 
   /**
-   * Update tax configuration for a tenant
+   * Update tax configuration for a tenant and store
+   * @param tenantId - The tenant ID
+   * @param storeId - The store ID
+   * @param data - The tax configuration data
    */
-  async updateTaxConfiguration(tenantId: string, data: CreateTaxConfigurationRequest): Promise<TaxConfiguration> {
+  async updateTaxConfiguration(
+    tenantId: string, 
+    storeId: string, 
+    data: CreateTaxConfigurationRequest
+  ): Promise<TaxConfiguration> {
     try {
       // Prepare the request data with required fields
       const requestData = {
         tenant_id: tenantId,
-        store_id: "*", // Default to wildcard for configurations
+        store_id: storeId,
         authority: data.authority,
         tax_location: data.tax_location,
         tax_group: data.tax_group,
         properties: null
       };
 
-      console.log(`Updating tax configuration for tenant: ${tenantId}`, requestData);
+      console.log(`Updating tax configuration for tenant: ${tenantId}, store: ${storeId}`, requestData);
 
       // Validate required fields
       this.validateTaxConfigurationData(requestData);
       
       // Use POST for both create and update as per the API specification
-      const response = await apiClient.post<TaxApiResponseItem>(`${this.basePath}/${tenantId}/tax`, requestData);
+      const response = await apiClient.post<TaxApiResponseItem>(`${this.basePath}/${tenantId}/store/${storeId}/tax`, requestData);
       
       console.log('Update tax configuration API response:', response.data);
       
@@ -191,6 +221,32 @@ export class TaxConfigurationService {
    * Handle API errors
    */
   private handleError(error: any): Error {
+    // Check if it's already our structured ApiError
+    if (error.name === 'ApiError') {
+      return error;
+    }
+    
+    // Handle HTTP response errors that might have the new error format
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      
+      // Check if it has the new structured format
+      if (errorData.code && errorData.slug && errorData.message) {
+        const { ApiError } = require('../api');
+        return new ApiError(
+          errorData.message,
+          errorData.code,
+          errorData.slug,
+          errorData.details
+        );
+      }
+      
+      // Fallback to legacy format
+      if (errorData.message) {
+        return new Error(errorData.message);
+      }
+    }
+    
     if (error instanceof Error) {
       return error;
     }

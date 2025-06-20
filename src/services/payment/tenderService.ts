@@ -196,6 +196,32 @@ export class TenderService {
    * Handle API errors
    */
   private handleError(error: any): Error {
+    // Check if it's already our structured ApiError
+    if (error.name === 'ApiError') {
+      return error;
+    }
+    
+    // Handle HTTP response errors that might have the new error format
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      
+      // Check if it has the new structured format
+      if (errorData.code && errorData.slug && errorData.message) {
+        const { ApiError } = require('../api');
+        return new ApiError(
+          errorData.message,
+          errorData.code,
+          errorData.slug,
+          errorData.details
+        );
+      }
+      
+      // Fallback to legacy format
+      if (errorData.message) {
+        return new Error(errorData.message);
+      }
+    }
+    
     if (error instanceof Error) {
       return error;
     }

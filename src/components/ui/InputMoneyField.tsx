@@ -137,7 +137,7 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
         
         {/* Currency Symbol/Icon - Positioned to align with input field center */}
         {currencyPosition === 'before' && (
-          <div className="absolute left-4 top-[0.75rem] flex items-center justify-center z-10 pointer-events-none">
+          <div className="absolute left-4 top-[0.90rem] flex items-center justify-center z-10 pointer-events-none">
             {currencyIcon ? (
               <CurrencyIconComponent className="h-4 w-4 text-slate-400" />
             ) : (

@@ -359,6 +359,33 @@ export const hasGeographicData = (countryName: string): boolean => {
 };
 
 /**
+ * Helper function to get states/provinces for a country by country code
+ */
+export const getStatesForCountryCode = (countryCode: string): DropdownSearchOption[] => {
+  // Convert country code to country name for backward compatibility
+  const countryName = COUNTRIES.find(c => c.id === countryCode)?.label || countryCode;
+  return getStatesForCountry(countryName);
+};
+
+/**
+ * Helper function to get cities for a country and state by country code
+ */
+export const getCitiesForStateByCountryCode = (countryCode: string, stateId: string): DropdownSearchOption[] => {
+  // Convert country code to country name for backward compatibility
+  const countryName = COUNTRIES.find(c => c.id === countryCode)?.label || countryCode;
+  return getCitiesForState(countryName, stateId);
+};
+
+/**
+ * Helper function to check if a country has geographic data by country code
+ */
+export const hasGeographicDataByCountryCode = (countryCode: string): boolean => {
+  // Convert country code to country name for backward compatibility
+  const countryName = COUNTRIES.find(c => c.id === countryCode)?.label || countryCode;
+  return hasGeographicData(countryName);
+};
+
+/**
  * Comprehensive timezone options for store operations
  */
 export const TIMEZONES: DropdownSearchOption[] = [

@@ -77,6 +77,8 @@ export interface Store {
   telephone3?: string;
   telephone4?: string;
   email?: string;
+  legal_entity_id?: string;
+  legal_entity_name?: string;
   store_timing?: StoreTiming;
   terminals?: Record<string, Terminal>;
   properties?: any;
@@ -95,34 +97,36 @@ export interface TenantWithStores extends Tenant {
 const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
   return {
     tenant_id: apiStore.tenant_id,
-    store_id: apiStore.store_id,
+    store_id: apiStore.store_id || '',
     status: apiStore.status,
     store_name: apiStore.store_name,
-    description: apiStore.description,
+    description: apiStore.description || undefined,
     location_type: apiStore.location_type,
     store_type: apiStore.store_type,
     address: {
-      address1: apiStore.address.address1,
-      address2: apiStore.address.address2,
-      address3: apiStore.address.address3,
-      address4: apiStore.address.address4,
-      city: apiStore.address.city,
-      state: apiStore.address.state,
-      district: apiStore.address.district,
-      area: apiStore.address.area,
-      postal_code: apiStore.address.postal_code,
+      address1: apiStore.address.address1 || '',
+      address2: apiStore.address.address2 || undefined,
+      address3: apiStore.address.address3 || undefined,
+      address4: apiStore.address.address4 || undefined,
+      city: apiStore.address.city || '',
+      state: apiStore.address.state || '',
+      district: apiStore.address.district || '',
+      area: apiStore.address.area || '',
+      postal_code: apiStore.address.postal_code || '',
       country: apiStore.address.country,
-      county: apiStore.address.county,
+      county: apiStore.address.county || '',
     },
     locale: apiStore.locale,
     currency: apiStore.currency,
-    latitude: apiStore.latitude,
-    longitude: apiStore.longitude,
-    telephone1: apiStore.telephone1,
-    telephone2: apiStore.telephone2,
-    telephone3: apiStore.telephone3,
-    telephone4: apiStore.telephone4,
-    email: apiStore.email,
+    latitude: apiStore.latitude || undefined,
+    longitude: apiStore.longitude || undefined,
+    telephone1: apiStore.telephone1 || undefined,
+    telephone2: apiStore.telephone2 || undefined,
+    telephone3: apiStore.telephone3 || undefined,
+    telephone4: apiStore.telephone4 || undefined,
+    email: apiStore.email || undefined,
+    legal_entity_id: apiStore.legal_entity_id || undefined,
+    legal_entity_name: apiStore.legal_entity_name || undefined,
     store_timing: apiStore.store_timing,
     terminals: apiStore.terminals || {},
     properties: apiStore.properties,
@@ -180,6 +184,21 @@ interface TenantState {
   clearSelection: () => void;
   clearAllData: () => void;
 }
+
+// Helper function to convert empty strings to null
+const cleanEmptyStrings = (value: any): any => {
+  if (typeof value === 'string' && value.trim() === '') {
+    return null;
+  }
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const cleaned: any = {};
+    for (const [key, val] of Object.entries(value)) {
+      cleaned[key] = cleanEmptyStrings(val);
+    }
+    return cleaned;
+  }
+  return value;
+};
 
 // Store state with duplicate call prevention
 let isCurrentlyFetching = false;
@@ -344,44 +363,55 @@ export const useTenantStore = create<TenantState>()(
         try {
           console.log('🏪 Creating store using API service for tenant:', tenantId, storeData);
           
-          // Transform store data to API format if needed
+          // Helper function to convert empty strings to null
+          const toNullIfEmpty = (value: string | undefined): string | null => {
+            if (!value || value.trim() === '') return null;
+            return value.trim();
+          };
+          
+          // Transform store data to API format with null for empty strings
           const apiStoreData: Partial<StoreApiResponse> = {
-            store_id: storeData.store_id || '',
-            store_name: storeData.store_name || 'New Store',
-            description: storeData.description || '',
+            store_id: toNullIfEmpty(storeData.store_id),
+            store_name: storeData.store_name?.trim() || 'New Store',
+            description: toNullIfEmpty(storeData.description),
             location_type: storeData.location_type || 'retail',
             store_type: storeData.store_type || 'general',
             address: storeData.address ? {
-              address1: storeData.address.address1 || '',
-              address2: storeData.address.address2,
-              address3: storeData.address.address3,
-              address4: storeData.address.address4,
-              city: storeData.address.city || '',
-              state: storeData.address.state || '',
-              district: storeData.address.district || '',
-              area: storeData.address.area || '',
-              postal_code: storeData.address.postal_code || '',
-              country: storeData.address.country || 'India',
-              county: storeData.address.county || '',
+              address1: toNullIfEmpty(storeData.address.address1),
+              address2: toNullIfEmpty(storeData.address.address2),
+              address3: toNullIfEmpty(storeData.address.address3),
+              address4: toNullIfEmpty(storeData.address.address4),
+              city: toNullIfEmpty(storeData.address.city),
+              state: toNullIfEmpty(storeData.address.state),
+              district: toNullIfEmpty(storeData.address.district),
+              area: toNullIfEmpty(storeData.address.area),
+              postal_code: toNullIfEmpty(storeData.address.postal_code),
+              country: storeData.address.country?.trim() || 'India',
+              county: toNullIfEmpty(storeData.address.county),
             } : {
-              address1: '',
-              city: '',
-              state: '',
-              district: '',
-              area: '',
-              postal_code: '',
+              address1: null,
+              address2: null,
+              address3: null,
+              address4: null,
+              city: null,
+              state: null,
+              district: null,
+              area: null,
+              postal_code: null,
               country: 'India',
-              county: '',
+              county: null,
             },
             locale: storeData.locale || 'en-IN',
             currency: storeData.currency || 'INR',
-            latitude: storeData.latitude,
-            longitude: storeData.longitude,
-            telephone1: storeData.telephone1,
-            telephone2: storeData.telephone2,
-            telephone3: storeData.telephone3,
-            telephone4: storeData.telephone4,
-            email: storeData.email,
+            latitude: toNullIfEmpty(storeData.latitude),
+            longitude: toNullIfEmpty(storeData.longitude),
+            telephone1: toNullIfEmpty(storeData.telephone1),
+            telephone2: toNullIfEmpty(storeData.telephone2),
+            telephone3: toNullIfEmpty(storeData.telephone3),
+            telephone4: toNullIfEmpty(storeData.telephone4),
+            email: toNullIfEmpty(storeData.email),
+            legal_entity_id: toNullIfEmpty(storeData.legal_entity_id),
+            legal_entity_name: toNullIfEmpty(storeData.legal_entity_name),
             store_timing: storeData.store_timing || {
               Monday: "09:00-18:00",
               Tuesday: "09:00-18:00",

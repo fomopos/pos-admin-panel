@@ -42,7 +42,7 @@ import {
   TIMEZONES
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
-import { detectUserCountryName } from '../utils/locationUtils';
+import { detectUserCountryCode } from '../utils/locationUtils';
 
 interface StoreSettingsState {
   settings: StoreSettings | null;
@@ -145,8 +145,12 @@ const StoreSettingsPage: React.FC = () => {
     try {
       setState(prev => ({ ...prev, errors: {} }));
       
-      const tenantId = currentTenant?.id || '272e';
+      const tenantId = currentTenant?.id;
       const storeId = currentStore?.store_id || '*';
+
+      if (!tenantId) {
+        throw new Error('Tenant ID is required but not available');
+      }
 
       switch (section) {
         case 'information':
@@ -167,11 +171,11 @@ const StoreSettingsPage: React.FC = () => {
             }
             
             // Also update legacy store settings for compatibility
-            const updatedSettings = await storeServices.settings.updateStoreInformation(tenantId, storeId, data);
-            setState(prev => ({ 
-              ...prev, 
-              settings: updatedSettings
-            }));
+            // const updatedSettings = await storeServices.settings.updateStoreInformation(tenantId, storeId, data);
+            // setState(prev => ({ 
+            //   ...prev, 
+            //   settings: updatedSettings
+            // }));
           }
           break;
         case 'receipt':
@@ -381,7 +385,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
       if (!convertedData.address?.country) {
         convertedData.address = {
           ...convertedData.address,
-          country: detectUserCountryName()
+          country: detectUserCountryCode()
         };
       }
       
@@ -396,7 +400,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
         ...settingsData,
         address: {
           ...settingsData?.address,
-          country: detectUserCountryName()
+          country: detectUserCountryCode()
         }
       };
     }
@@ -415,7 +419,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
       if (!convertedData.address?.country) {
         convertedData.address = {
           ...convertedData.address,
-          country: detectUserCountryName()
+          country: detectUserCountryCode()
         };
       }
       
@@ -635,6 +639,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
                 <span>{option.label}</span>
               </div>
             )}
+            disabled={true} // Disable selection for now
             placeholder="Select currency"
             searchPlaceholder="Search currencies..."
           />
@@ -748,16 +753,14 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
             label="Country"
             required
             options={COUNTRIES}
+            disabled={true}
             value={(() => {
-              // Find the country option by label (since form stores the label)
-              const currentCountry = COUNTRIES.find(
-                country => country.label === formData.address?.country
-              );
-              return currentCountry?.id || '';
+              // The form now stores country codes, so we can use it directly
+              return formData.address?.country || '';
             })()}
             onSelect={(selectedOption) => {
               if (selectedOption && selectedOption.id !== 'separator') {
-                handleInputChange('address.country', selectedOption.label);
+                handleInputChange('address.country', selectedOption.id); // Store country code
               } else if (!selectedOption) {
                 handleInputChange('address.country', '');
               }
@@ -771,10 +774,9 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
                   </div>
                 );
               }
-              // If no option provided, try to find it by current value
+              // If no option provided, try to find it by current value (which should be a country code)
               const currentCountry = COUNTRIES.find(
-                country => country.label === formData.address?.country || 
-                          country.id === formData.address?.country
+                country => country.id === formData.address?.country
               );
               if (currentCountry) {
                 return (

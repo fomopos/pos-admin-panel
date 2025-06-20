@@ -39,6 +39,7 @@ export interface StoreDetails {
   store_type: string;
   address: StoreAddress;
   locale: string;
+  timezone: string;
   currency: string;
   latitude?: string;
   longitude?: string;

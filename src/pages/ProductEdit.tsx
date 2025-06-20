@@ -137,7 +137,14 @@ const ProductEdit: React.FC = () => {
       if (currentTenant) {
         setTaxGroupsLoading(true);
         try {
-          const taxConfig = await taxServices.configuration.getTaxConfiguration(currentTenant.id);
+          const storeId = currentStore?.store_id || "*";
+          const country = currentStore?.address?.country;
+          
+          const taxConfig = await taxServices.configuration.getTaxConfiguration(
+            currentTenant.id, 
+            storeId, 
+            country
+          );
           if (taxConfig && taxConfig.tax_group) {
             setTaxGroups(taxConfig.tax_group);
           }
