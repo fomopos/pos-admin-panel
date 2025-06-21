@@ -17,123 +17,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button, Card, PageHeader, Loading } from '../components/ui';
 import { useTenantStore } from '../tenants/tenantStore';
-
-// Types based on the API response
-interface TaxModifier {
-  authority_id: string;
-  authority_name: string | null;
-  authority_type: string;
-  tax_group_id: string;
-  tax_rule_id: number;
-  tax_rule_name: string;
-  tax_location_id: string;
-  taxable_amount: string;
-  tax_amount: string;
-  tax_percent: string;
-  tax_override: boolean;
-}
-
-interface PriceModifier {
-  price_modifier_seq: number;
-  price_change_amount: string;
-  price_change_reason_code: string;
-  deal_id: string | null;
-  amount: string | null;
-  percent: string | null;
-  extended_amount: string;
-  notes: string | null;
-  description: string | null;
-  is_void: boolean;
-}
-
-interface LineItem {
-  line_item_id: number;
-  item_id: string;
-  item_description: string;
-  entered_description: string | null;
-  is_void: boolean;
-  quantity: string;
-  gross_quantity: string;
-  net_quantity: string;
-  unit_price: string;
-  extended_amount: string;
-  net_amount: string;
-  gross_amount: string;
-  tax_group_id: string;
-  base_unit_price: string;
-  base_extended_amount: string;
-  notes: string | null;
-  tax_modifiers: TaxModifier[];
-  price_modifiers: PriceModifier[];
-}
-
-interface PaymentLineItem {
-  payment_seq: number;
-  amount: string;
-  change_flag: boolean;
-  tender_id: string;
-  tender_description: string;
-  is_void: boolean;
-  foreign_amount: string | null;
-  exchange_rate: string | null;
-}
-
-interface TransactionDocument {
-  document_id: number;
-  data: string; // JSON string containing receipt data
-}
-
-interface TransactionTotals {
-  subTotal: string;
-  total: string;
-  discountTotal: string;
-  taxTotal: string;
-  tenderedAmount: string;
-  amountDue: string;
-  transactionDiscountAmount: string | null;
-  transactionDiscountReasonCode: string | null;
-  transactionDiscountDescription: string | null;
-}
-
-interface Transaction {
-  tenant_id: string;
-  store_id: string;
-  terminal_id: string;
-  trans_id: string;
-  store_locale: string;
-  store_currency: string;
-  transaction_type: string;
-  business_date: string;
-  begin_datetime: string;
-  end_datetime: string;
-  total: string;
-  tax_total: string;
-  sub_total: string;
-  round_total: string;
-  status: 'completed' | 'pending' | 'cancelled' | 'refunded';
-  is_void: boolean;
-  customer_id: string | null;
-  associates: string[];
-  notes: string | null;
-  return_ref: string | null;
-  external_order_id: string | null;
-  external_order_source: string | null;
-  line_items: LineItem[];
-  documents: TransactionDocument[];
-  payment_line_items: PaymentLineItem[];
-  totals: TransactionTotals;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
-  updated_by: string;
-}
+import { transactionService, type TransactionDetail } from '../services/transaction';
 
 const SalesDetail: React.FC = () => {
   const { transId } = useParams<{ transId: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
   
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [transaction, setTransaction] = useState<TransactionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -144,193 +35,36 @@ const SalesDetail: React.FC = () => {
   }, [transId, currentTenant, currentStore]);
 
   const loadTransaction = async () => {
+    if (!currentTenant || !currentStore || !transId) {
+      setError('Missing required information to load transaction');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
       
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/v0/tenant/${currentTenant?.id}/store/${currentStore?.store_id}/transaction/${transId}`);
-      // const data = await response.json();
+      console.log('🔄 Loading transaction detail:', {
+        tenantId: currentTenant.id,
+        storeId: currentStore.store_id,
+        transId
+      });
+
+      // Fetch transaction detail from API
+      const transactionData = await transactionService.getTransactionDetail(
+        currentTenant.id,
+        currentStore.store_id,
+        transId
+      );
       
-      // Mock data based on your API structure
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      const mockTransaction: Transaction = {
-        created_at: "2025-06-14T19:54:36.644806Z",
-        created_by: "Y8Z4UL",
-        updated_at: "2025-06-14T19:55:14.620257Z",
-        updated_by: "Y8Z4UL",
-        tenant_id: "2711",
-        store_id: "10001",
-        terminal_id: "101",
-        trans_id: transId || "448",
-        store_locale: "en-IN",
-        store_currency: "INR",
-        transaction_type: "sale",
-        business_date: "2025-06-13T20:00:00.000Z",
-        begin_datetime: "2025-06-14T19:54:36.644779Z",
-        end_datetime: "2025-06-14T19:55:14.620253Z",
-        total: "36.50",
-        tax_total: "6.04",
-        sub_total: "41.2",
-        round_total: "0",
-        status: "completed",
-        is_void: false,
-        customer_id: null,
-        associates: ["Y8Z4UL"],
-        notes: null,
-        return_ref: null,
-        external_order_id: null,
-        external_order_source: null,
-        line_items: [
-          {
-            line_item_id: 1,
-            item_id: "babyspinatsalat",
-            item_description: "mit birnen, nüssen, frischkäse, walnussöl & honig",
-            entered_description: null,
-            is_void: false,
-            quantity: "1",
-            gross_quantity: "1",
-            net_quantity: "1",
-            unit_price: "12.9",
-            extended_amount: "12.9",
-            net_amount: "10.77",
-            gross_amount: "12.9",
-            tax_group_id: "GST18",
-            base_unit_price: "12.9",
-            base_extended_amount: "12.9",
-            notes: null,
-            tax_modifiers: [
-              {
-                authority_id: "IN-CGST",
-                authority_name: null,
-                authority_type: "VAT",
-                tax_group_id: "GST18",
-                tax_rule_id: 1,
-                tax_rule_name: "Central GST",
-                tax_location_id: "TL-IN",
-                taxable_amount: "12.9",
-                tax_amount: "1.07",
-                tax_percent: "0.09",
-                tax_override: false
-              },
-              {
-                authority_id: "IN-SGST",
-                authority_name: null,
-                authority_type: "VAT",
-                tax_group_id: "GST18",
-                tax_rule_id: 2,
-                tax_rule_name: "State GST",
-                tax_location_id: "TL-IN",
-                taxable_amount: "12.9",
-                tax_amount: "1.07",
-                tax_percent: "0.09",
-                tax_override: false
-              }
-            ],
-            price_modifiers: []
-          },
-          {
-            line_item_id: 2,
-            item_id: "beef_tatar",
-            item_description: "klassisch mariniert",
-            entered_description: null,
-            is_void: false,
-            quantity: "1",
-            gross_quantity: "1",
-            net_quantity: "1",
-            unit_price: "10.0",
-            extended_amount: "10.0",
-            net_amount: "8.35",
-            gross_amount: "14.5",
-            tax_group_id: "GST18",
-            base_unit_price: "14.5",
-            base_extended_amount: "14.5",
-            notes: "Price Override: EMPLOYEE_DISCOUNT",
-            tax_modifiers: [
-              {
-                authority_id: "IN-CGST",
-                authority_name: null,
-                authority_type: "VAT",
-                tax_group_id: "GST18",
-                tax_rule_id: 1,
-                tax_rule_name: "Central GST",
-                tax_location_id: "TL-IN",
-                taxable_amount: "10.0",
-                tax_amount: "0.83",
-                tax_percent: "0.09",
-                tax_override: false
-              }
-            ],
-            price_modifiers: [
-              {
-                price_modifier_seq: 1,
-                price_change_amount: "10.0",
-                price_change_reason_code: "EMPLOYEE_DISCOUNT",
-                deal_id: null,
-                amount: null,
-                percent: null,
-                extended_amount: "0",
-                notes: null,
-                description: null,
-                is_void: false
-              }
-            ]
-          }
-        ],
-        documents: [
-          {
-            document_id: 1,
-            data: JSON.stringify([
-              { flex: 1, type: "text", text: "Spice Garden", align: "center" },
-              { flex: 1, type: "text", text: "store.address.address1", align: "center" },
-              { type: "horizontalline" },
-              { type: "row", children: [
-                { flex: 1, type: "text", text: "Table: 0", align: "left" },
-                { flex: 1, type: "text", text: `Ticket: ${transId}`, align: "right" }
-              ]}
-            ])
-          }
-        ],
-        payment_line_items: [
-          {
-            payment_seq: 1,
-            amount: "10",
-            change_flag: false,
-            tender_id: "credit",
-            tender_description: "Credit Card",
-            is_void: false,
-            foreign_amount: null,
-            exchange_rate: null
-          },
-          {
-            payment_seq: 2,
-            amount: "26.50",
-            change_flag: false,
-            tender_id: "cash",
-            tender_description: "Cash",
-            is_void: false,
-            foreign_amount: null,
-            exchange_rate: null
-          }
-        ],
-        totals: {
-          subTotal: "41.2",
-          total: "36.50",
-          discountTotal: "4.70",
-          taxTotal: "6.04",
-          tenderedAmount: "36.50",
-          amountDue: "0.00",
-          transactionDiscountAmount: null,
-          transactionDiscountReasonCode: null,
-          transactionDiscountDescription: null
-        }
-      };
-      
-      setTransaction(mockTransaction);
-    } catch (err) {
-      console.error('Failed to load transaction:', err);
-      setError('Failed to load transaction details. Please try again.');
+      setTransaction(transactionData);
+      console.log('✅ Successfully loaded transaction detail:', transactionData);
+
+    } catch (error) {
+      console.error('❌ Error loading transaction detail:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load transaction details');
+      setTransaction(null);
     } finally {
       setIsLoading(false);
     }
@@ -356,12 +90,13 @@ const SalesDetail: React.FC = () => {
     });
   };
 
-  const getStatusBadge = (status: Transaction['status']) => {
+  const getStatusBadge = (status: TransactionDetail['status']) => {
     const statusConfig = {
       completed: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon },
-      pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ClockIcon },
+      new: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ClockIcon },
+      suspended: { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
       cancelled: { bg: 'bg-gray-100', text: 'text-gray-800', icon: ExclamationTriangleIcon },
-      refunded: { bg: 'bg-red-100', text: 'text-red-800', icon: ExclamationTriangleIcon }
+      cancel_orphaned: { bg: 'bg-gray-100', text: 'text-gray-800', icon: ExclamationTriangleIcon }
     };
     
     const config = statusConfig[status];
@@ -622,19 +357,12 @@ const SalesDetail: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-slate-600">Subtotal</span>
-                <span className="font-medium">{formatCurrency(transaction.totals.subTotal, transaction.store_currency)}</span>
+                <span className="font-medium">{formatCurrency(transaction.sub_total, transaction.store_currency)}</span>
               </div>
-              
-              {parseFloat(transaction.totals.discountTotal) > 0 && (
-                <div className="flex justify-between text-orange-600">
-                  <span>Total Discounts</span>
-                  <span className="font-medium">-{formatCurrency(transaction.totals.discountTotal, transaction.store_currency)}</span>
-                </div>
-              )}
               
               <div className="flex justify-between">
                 <span className="text-slate-600">Tax Total</span>
-                <span className="font-medium">{formatCurrency(transaction.totals.taxTotal, transaction.store_currency)}</span>
+                <span className="font-medium">{formatCurrency(transaction.tax_total, transaction.store_currency)}</span>
               </div>
               
               {parseFloat(transaction.round_total) !== 0 && (
@@ -647,18 +375,24 @@ const SalesDetail: React.FC = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>{formatCurrency(transaction.totals.total, transaction.store_currency)}</span>
+                  <span>{formatCurrency(transaction.total, transaction.store_currency)}</span>
                 </div>
               </div>
               
               <div className="border-t pt-4">
                 <div className="flex justify-between">
                   <span className="text-slate-600">Amount Tendered</span>
-                  <span className="font-medium">{formatCurrency(transaction.totals.tenderedAmount, transaction.store_currency)}</span>
+                  <span className="font-medium">{formatCurrency(
+                    transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0).toString(),
+                    transaction.store_currency
+                  )}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Amount Due</span>
-                  <span className="font-medium">{formatCurrency(transaction.totals.amountDue, transaction.store_currency)}</span>
+                  <span className="font-medium">{formatCurrency(
+                    (parseFloat(transaction.total) - transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0)).toString(),
+                    transaction.store_currency
+                  )}</span>
                 </div>
               </div>
             </div>

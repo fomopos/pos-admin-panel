@@ -7,5 +7,11 @@ export type {
   TransactionSummaryResponse,
   TransactionQueryParams,
   TenderSummary,
-  ConvertedSale
+  ConvertedSale,
+  TransactionDetail,
+  TransactionLineItem,
+  PaymentLineItem,
+  TaxModifier,
+  PriceModifier,
+  TransactionDocument
 } from './transactionService';

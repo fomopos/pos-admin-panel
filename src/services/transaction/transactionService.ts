@@ -74,6 +74,182 @@ export interface ConvertedSale {
   isVoid: boolean;
 }
 
+// Detailed Transaction Types for Transaction Detail API
+export interface TaxModifier {
+  created_at: string;
+  created_by: string;
+  updated_at: string | null;
+  updated_by: string | null;
+  deleted_at: string | null;
+  tenant_id: string;
+  store_id: string;
+  terminal_id: string;
+  trans_id: string;
+  line_item_id: number;
+  tax_modifier_seq: number;
+  authority_id: string;
+  authority_name: string | null;
+  authority_type: string;
+  tax_group_id: string;
+  tax_rule_id: number;
+  tax_rule_name: string;
+  tax_location_id: string;
+  taxable_amount: string;
+  tax_amount: string;
+  tax_percent: string;
+  original_taxable_amount: string | null;
+  raw_tax_percentage: string | null;
+  raw_tax_amount: string;
+  tax_override: boolean;
+  tax_override_amount: string | null;
+  tax_override_reason_code: string | null;
+}
+
+export interface PriceModifier {
+  // Based on the response, price_modifiers array is empty, but keeping the structure for future use
+  price_modifier_seq: number;
+  price_change_amount: string;
+  price_change_reason_code: string;
+  deal_id: string | null;
+  amount: string | null;
+  percent: string | null;
+  extended_amount: string;
+  notes: string | null;
+  description: string | null;
+  is_void: boolean;
+}
+
+export interface TransactionLineItem {
+  created_at: string;
+  created_by: string;
+  updated_at: string | null;
+  updated_by: string | null;
+  deleted_at: string | null;
+  tenant_id: string;
+  store_id: string;
+  terminal_id: string;
+  trans_id: string;
+  line_item_id: number;
+  business_date: string;
+  category: string | null;
+  item_id: string;
+  item_description: string;
+  entered_description: string | null;
+  is_void: boolean;
+  quantity: string;
+  gross_quantity: string;
+  net_quantity: string;
+  unit_price: string;
+  extended_amount: string;
+  vat_amount: string | null;
+  return_flag: string | null;
+  item_id_entry_method: string | null;
+  price_entry_method: string | null;
+  price_property_code: string | null;
+  net_amount: string;
+  gross_amount: string;
+  serial_number: string | null;
+  scanned_item_id: string | null;
+  tax_group_id: string;
+  original_trans_seq: string | null;
+  original_store_id: string | null;
+  original_line_item_seq: string | null;
+  original_terminal_id: string | null;
+  original_business_date: string | null;
+  return_comment: string | null;
+  return_reason: string | null;
+  return_type_code: string | null;
+  base_unit_price: string;
+  base_extended_amount: string;
+  food_stamp_applied_amount: string | null;
+  vendor_id: string | null;
+  regular_base_price: string;
+  shipping_weight: string | null;
+  unit_cost: string | null;
+  initial_quantity: string | null;
+  non_returnable: string | null;
+  exclude_from_net_sales: string | null;
+  measure_required: string | null;
+  weight_entry_method: string | null;
+  tare_value: string | null;
+  tare_type: string | null;
+  tare_uom: string | null;
+  notes: string | null;
+  tax_modifiers: TaxModifier[];
+  price_modifiers: PriceModifier[];
+}
+
+export interface PaymentLineItem {
+  created_at: string;
+  created_by: string;
+  updated_at: string | null;
+  updated_by: string | null;
+  deleted_at: string | null;
+  tenant_id: string;
+  store_id: string;
+  terminal_id: string;
+  trans_id: string;
+  payment_seq: number;
+  amount: string;
+  change_flag: boolean;
+  tender_id: string;
+  tender_description: string;
+  is_void: boolean;
+  serial_number: string | null;
+  tender_stat_code: string | null;
+  foreign_amount: string | null;
+  exchange_rate: string | null;
+}
+
+export interface TransactionDocument {
+  created_at: string;
+  created_by: string;
+  updated_at: string | null;
+  updated_by: string | null;
+  deleted_at: string | null;
+  tenant_id: string;
+  store_id: string;
+  terminal_id: string;
+  trans_id: string;
+  document_id: number;
+  data: string; // JSON string containing receipt data
+}
+
+export interface TransactionDetail {
+  transaction_id: string;
+  created_at: string;
+  created_by: string;
+  updated_at: string;
+  updated_by: string;
+  deleted_at: string | null;
+  tenant_id: string;
+  store_id: string;
+  terminal_id: string;
+  barcode: string | null;
+  trans_id: string;
+  store_locale: string;
+  store_currency: string;
+  transaction_type: string;
+  business_date: string;
+  begin_datetime: string;
+  end_datetime: string;
+  total: string;
+  tax_total: string;
+  sub_total: string;
+  round_total: string;
+  status: 'completed' | 'cancelled' | 'cancel_orphaned' | 'new' | 'suspended';
+  is_void: boolean;
+  customer_id: string | null;
+  associates: string[];
+  notes: string | null;
+  return_ref: string | null;
+  external_order_id: string | null;
+  external_order_source: string | null;
+  line_items: TransactionLineItem[];
+  documents: TransactionDocument[];
+  payment_line_items: PaymentLineItem[];
+}
+
 export class TransactionService {
   private readonly basePath = '/v0/tenant';
 
@@ -292,6 +468,27 @@ export class TransactionService {
     }
     
     return new Error(error.message || 'Failed to fetch transaction data');
+  }
+
+  /**
+   * Fetch detailed transaction by transaction ID
+   */
+  async getTransactionDetail(
+    tenantId: string,
+    storeId: string,
+    transactionId: string
+  ): Promise<TransactionDetail> {
+    try {
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/transaction/${transactionId}`;
+
+      console.log('🔄 Fetching transaction detail:', endpoint);
+
+      const response = await apiClient.get<TransactionDetail>(endpoint);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch transaction detail:', error);
+      throw this.handleError(error);
+    }
   }
 }
 
