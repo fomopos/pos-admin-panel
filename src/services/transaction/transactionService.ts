@@ -7,7 +7,7 @@ export interface TenderSummary {
 }
 
 export interface TransactionSummary {
-  trans_id: string;
+  transaction_id: string;
   terminal_id: string;
   business_date: string;
   created_at: string;
@@ -140,8 +140,8 @@ export class TransactionService {
     const status = this.mapTransactionStatus(transaction.status, transaction.is_void);
 
     return {
-      id: transaction.trans_id,
-      saleNumber: `TXN-${transaction.trans_id}`,
+      id: transaction.transaction_id,
+      saleNumber: `TXN-${transaction.transaction_id}`,
       customerName: 'Walk-in Customer', // API doesn't provide customer info
       customerEmail: undefined,
       items: [], // Would need separate API call to get line items
