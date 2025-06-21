@@ -28,39 +28,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import { Button, Card, PageHeader, Loading } from '../components/ui';
+import { transactionService, type ConvertedSale, type TransactionQueryParams } from '../services/transaction';
 
-interface SaleItem {
-  id: string;
-  productId: string;
-  productName: string;
-  sku: string;
-  quantity: number;
-  unitPrice: number;
-  discount: number;
-  tax: number;
-  total: number;
-}
-
-interface Sale {
-  id: string;
-  saleNumber: string;
-  customerId?: string;
-  customerName: string;
-  customerEmail?: string;
-  items: SaleItem[];
-  subtotal: number;
-  totalDiscount: number;
-  totalTax: number;
-  total: number;
-  paymentMethod: 'cash' | 'card' | 'digital_wallet' | 'bank_transfer';
-  paymentStatus: 'paid' | 'pending' | 'partial' | 'refunded';
-  status: 'completed' | 'pending' | 'cancelled' | 'refunded';
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-  cashierId: string;
-  cashierName: string;
-}
+// Use ConvertedSale from transaction service
+type Sale = ConvertedSale;
 
 const Sales: React.FC = () => {
   const { t } = useTranslation();
@@ -68,6 +39,10 @@ const Sales: React.FC = () => {
   const { currentTenant, currentStore } = useTenantStore();
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   
   // Enhanced Filter State
   const [searchTerm, setSearchTerm] = useState('');
@@ -85,156 +60,157 @@ const Sales: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // Mock data - in real app, this would come from API
+  // API Integration - Fetch transactions from API
   useEffect(() => {
-    const fetchSales = async () => {
+    const fetchTransactions = async () => {
+      if (!currentTenant || !currentStore) {
+        console.log('⚠️ Missing tenant or store information');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
+      setError(null);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSales([
-        {
-          id: '1',
-          saleNumber: 'SALE-2024-001',
-          customerName: 'John Doe',
-          customerEmail: 'john.doe@email.com',
-          items: [
-            {
-              id: '1',
-              productId: '1',
-              productName: 'Wireless Headphones',
-              sku: 'WH-001',
-              quantity: 1,
-              unitPrice: 199.99,
-              discount: 10,
-              tax: 8.5,
-              total: 197.49
-            },
-            {
-              id: '2',
-              productId: '2',
-              productName: 'Cotton T-Shirt',
-              sku: 'CT-002',
-              quantity: 2,
-              unitPrice: 29.99,
-              discount: 0,
-              tax: 8.5,
-              total: 65.08
-            }
-          ],
-          subtotal: 259.97,
-          totalDiscount: 20.00,
-          totalTax: 22.60,
-          total: 262.57,
-          paymentMethod: 'card',
-          paymentStatus: 'paid',
-          status: 'completed',
-          notes: 'Customer requested gift wrapping',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
-          cashierId: 'user1',
-          cashierName: 'Alice Johnson'
-        },
-        {
-          id: '2',
-          saleNumber: 'SALE-2024-002',
-          customerName: 'Jane Smith',
-          customerEmail: 'jane.smith@email.com',
-          items: [
-            {
-              id: '3',
-              productId: '3',
-              productName: 'Coffee Beans',
-              sku: 'CB-003',
-              quantity: 3,
-              unitPrice: 15.99,
-              discount: 5,
-              tax: 0,
-              total: 45.57
-            }
-          ],
-          subtotal: 47.97,
-          totalDiscount: 2.40,
-          totalTax: 0,
-          total: 45.57,
-          paymentMethod: 'cash',
-          paymentStatus: 'paid',
-          status: 'completed',
-          createdAt: '2024-01-15T14:20:00Z',
-          updatedAt: '2024-01-15T14:20:00Z',
-          cashierId: 'user2',
-          cashierName: 'Bob Wilson'
-        },
-        {
-          id: '3',
-          saleNumber: 'SALE-2024-003',
-          customerName: 'Mike Johnson',
-          items: [
-            {
-              id: '4',
-              productId: '4',
-              productName: 'Programming Book',
-              sku: 'PB-004',
-              quantity: 1,
-              unitPrice: 49.99,
-              discount: 15,
-              tax: 0,
-              total: 42.49
-            }
-          ],
-          subtotal: 49.99,
-          totalDiscount: 7.50,
-          totalTax: 0,
-          total: 42.49,
-          paymentMethod: 'digital_wallet',
-          paymentStatus: 'pending',
-          status: 'pending',
-          createdAt: '2024-01-15T16:45:00Z',
-          updatedAt: '2024-01-15T16:45:00Z',
-          cashierId: 'user1',
-          cashierName: 'Alice Johnson'
-        },
-        {
-          id: '4',
-          saleNumber: 'SALE-2024-004',
-          customerName: 'Sarah Brown',
-          customerEmail: 'sarah.brown@email.com',
-          items: [
-            {
-              id: '5',
-              productId: '1',
-              productName: 'Wireless Headphones',
-              sku: 'WH-001',
-              quantity: 1,
-              unitPrice: 199.99,
-              discount: 10,
-              tax: 8.5,
-              total: 197.49
-            }
-          ],
-          subtotal: 199.99,
-          totalDiscount: 20.00,
-          totalTax: 17.49,
-          total: 197.49,
-          paymentMethod: 'card',
-          paymentStatus: 'refunded',
-          status: 'refunded',
-          notes: 'Product defective, full refund issued',
-          createdAt: '2024-01-14T09:15:00Z',
-          updatedAt: '2024-01-15T11:30:00Z',
-          cashierId: 'user2',
-          cashierName: 'Bob Wilson'
+      try {
+        console.log('🔄 Fetching transactions for:', {
+          tenantId: currentTenant.id,
+          storeId: currentStore.store_id,
+          dateFilter
+        });
+
+        // Build query parameters based on current filters
+        const queryParams: TransactionQueryParams = {};
+        
+        // Add date range
+        const dateRange = transactionService.getDateRange(dateFilter);
+        if (dateRange.start_date) {
+          queryParams.start_date = dateRange.start_date;
         }
-      ]);
-      
-      setIsLoading(false);
+        if (dateRange.end_date) {
+          queryParams.end_date = dateRange.end_date;
+        }
+        
+        // Handle custom date range
+        if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+          queryParams.start_date = customDateRange.start;
+          queryParams.end_date = customDateRange.end;
+        }
+        
+        // Add filters based on current state
+        if (statusFilter !== 'all') {
+          queryParams.filter_type = 'status';
+          queryParams.value = statusFilter;
+        } else if (cashierFilter !== 'all') {
+          queryParams.filter_type = 'cashier';
+          queryParams.value = cashierFilter;
+        }
+
+        // Fetch data from API
+        const response = await transactionService.getTransactionSummary(
+          currentTenant.id,
+          currentStore.store_id,
+          queryParams
+        );
+
+        // Convert API response to Sale format
+        const convertedSales = response.datalist.map(transaction => 
+          transactionService.convertTransactionToSale(transaction)
+        );
+        
+        setSales(convertedSales);
+        setHasNextPage(!!response.next);
+        setNextCursor(response.next);
+        
+        console.log('✅ Successfully loaded transactions:', {
+          count: convertedSales.length,
+          hasNext: !!response.next
+        });
+
+      } catch (error) {
+        console.error('❌ Error fetching transactions:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load transaction data');
+        setSales([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchSales();
-  }, [currentTenant]);
+    fetchTransactions();
+  }, [currentTenant, currentStore, dateFilter, statusFilter, cashierFilter, customDateRange]);
 
-  // Enhanced filtering logic
+  // Load more transactions (pagination)
+  const loadMoreTransactions = async () => {
+    if (!hasNextPage || !nextCursor || !currentTenant || !currentStore) return;
+
+    setIsLoadingMore(true);
+    
+    try {
+      console.log('📄 Loading more transactions with cursor:', nextCursor);
+
+      // Build query parameters with cursor for pagination
+      const queryParams: TransactionQueryParams = {
+        cursor: nextCursor
+      };
+      
+      // Add current filters
+      const dateRange = transactionService.getDateRange(dateFilter);
+      if (dateRange.start_date) {
+        queryParams.start_date = dateRange.start_date;
+      }
+      if (dateRange.end_date) {
+        queryParams.end_date = dateRange.end_date;
+      }
+      
+      if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+        queryParams.start_date = customDateRange.start;
+        queryParams.end_date = customDateRange.end;
+      }
+      
+      if (statusFilter !== 'all') {
+        queryParams.filter_type = 'status';
+        queryParams.value = statusFilter;
+      } else if (cashierFilter !== 'all') {
+        queryParams.filter_type = 'cashier';
+        queryParams.value = cashierFilter;
+      }
+
+      // Fetch additional data
+      let response;
+      try {
+        response = await transactionService.getTransactionSummary(
+          currentTenant.id,
+          currentStore.store_id,
+          queryParams
+        );
+      } catch (apiError) {
+        console.warn('Failed to fetch additional transaction data:', apiError);
+        return;
+      }
+
+      // Convert and append new sales
+      const newSales = response.datalist.map(transaction => 
+        transactionService.convertTransactionToSale(transaction)
+      );
+      
+      setSales(prevSales => [...prevSales, ...newSales]);
+      setHasNextPage(!!response.next);
+      setNextCursor(response.next);
+      
+      console.log('✅ Loaded additional transactions:', {
+        newCount: newSales.length,
+        totalCount: sales.length + newSales.length,
+        hasNext: !!response.next
+      });
+
+    } catch (error) {
+      console.error('❌ Error loading more transactions:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  // Enhanced filtering logic (client-side for additional filters not supported by API)
   const filteredSales = sales.filter(sale => {
     // Search filter
     const matchesSearch = searchTerm === '' || 
@@ -358,6 +334,7 @@ const Sales: React.FC = () => {
     const statusConfig = {
       completed: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon },
       pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ClockIcon },
+      suspended: { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
       cancelled: { bg: 'bg-gray-100', text: 'text-gray-800', icon: XMarkIcon },
       refunded: { bg: 'bg-red-100', text: 'text-red-800', icon: ExclamationTriangleIcon }
     };
@@ -449,6 +426,25 @@ const Sales: React.FC = () => {
         fullScreen={false}
         size="md"
       />
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-6 flex items-center justify-center">
+        <Card className="max-w-md mx-auto p-8 text-center">
+          <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Sales Data</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Try Again
+          </Button>
+        </Card>
+      </div>
     );
   }
 
@@ -547,9 +543,10 @@ const Sales: React.FC = () => {
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
+              <option value="new">New</option>
+              <option value="suspended">Suspended</option>
               <option value="cancelled">Cancelled</option>
-              <option value="refunded">Refunded</option>
+              <option value="cancel_orphaned">Cancel Orphaned</option>
             </select>
             
             {/* Date Filter */}
@@ -987,6 +984,26 @@ const Sales: React.FC = () => {
           )}
         </div>
       </Card>
+
+      {/* Load More Button */}
+      {hasNextPage && (
+        <div className="flex justify-center">
+          <Button
+            onClick={loadMoreTransactions}
+            disabled={isLoadingMore}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoadingMore ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Loading more...
+              </>
+            ) : (
+              'Load More Sales'
+            )}
+          </Button>
+        </div>
+      )}
 
       {filteredSales.length === 0 && (
         <Card className="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-sm">
