@@ -151,9 +151,15 @@ const TenantStoreSelection: React.FC = () => {
     }
   };
 
-  const handleStoreSelect = (storeId: string) => {
-    switchStore(storeId);
-    // Navigation will happen automatically via useEffect when currentStore is set
+  const handleStoreSelect = async (storeId: string) => {
+    try {
+      await switchStore(storeId);
+      // Navigation will happen automatically via useEffect when currentStore is set
+    } catch (error) {
+      console.error('Failed to select store:', error);
+      // The store switch might have failed, but currentStore might still be set from cache
+      // Let the useEffect handle the navigation
+    }
   };
 
   const handleBackToTenants = () => {

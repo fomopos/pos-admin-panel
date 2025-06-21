@@ -154,9 +154,15 @@ const DashboardLayout: React.FC = () => {
     setStoreMenuOpen(false); // Close store menu when switching tenant
   };
 
-  const handleStoreSwitch = (storeId: string) => {
-    switchStore(storeId);
-    setStoreMenuOpen(false);
+  const handleStoreSwitch = async (storeId: string) => {
+    try {
+      await switchStore(storeId);
+      setStoreMenuOpen(false);
+    } catch (error) {
+      console.error('Failed to switch store:', error);
+      // Still close the menu even if the switch failed
+      setStoreMenuOpen(false);
+    }
   };
 
   // Get user info from Cognito auth service

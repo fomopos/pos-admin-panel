@@ -173,7 +173,7 @@ interface TenantState {
   setCurrentTenant: (tenant: Tenant | null) => void;
   setCurrentStore: (store: Store | null) => void;
   switchTenant: (tenantId: string) => void;
-  switchStore: (storeId: string) => void;
+  switchStore: (storeId: string) => Promise<void>;
   fetchTenants: (userId: string, clearSelections?: boolean) => Promise<void>;
   fetchStoresForTenant: (tenantId: string) => Promise<void>;
   createStore: (tenantId: string, storeData: Partial<Store>) => Promise<void>;
@@ -234,7 +234,7 @@ export const useTenantStore = create<TenantState>()(
         }
       },
 
-      switchStore: (storeId) => {
+      switchStore: async (storeId) => {
         const { tenants, currentTenant } = get();
         if (!currentTenant) return;
         
@@ -242,7 +242,93 @@ export const useTenantStore = create<TenantState>()(
         if (tenant) {
           const store = tenant.stores.find((s) => s.store_id === storeId);
           if (store) {
+            // Set the store from local data first for immediate UI update
             set({ currentStore: store });
+            
+            // Then fetch fresh store details from API in the background
+            try {
+              console.log('🔄 Fetching fresh store details after store switch:', { tenantId: currentTenant.id, storeId });
+              
+              // Import the store service to fetch store details
+              const { storeServices } = await import('../services/store');
+              
+              // Fetch fresh store details from API
+              const freshStoreDetails = await storeServices.store.getStoreDetails(currentTenant.id, storeId);
+              
+              // Transform the API response to match our Store interface
+              const updatedStore: Store = {
+                ...store, // Keep the existing store data as base
+                // Update with fresh data from API
+                status: freshStoreDetails.status === 'suspended' ? 'inactive' : freshStoreDetails.status as 'active' | 'inactive' | 'pending',
+                store_name: freshStoreDetails.store_name,
+                description: freshStoreDetails.description,
+                location_type: freshStoreDetails.location_type,
+                store_type: freshStoreDetails.store_type,
+                address: {
+                  address1: freshStoreDetails.address.address1,
+                  address2: freshStoreDetails.address.address2,
+                  address3: freshStoreDetails.address.address3,
+                  address4: freshStoreDetails.address.address4,
+                  city: freshStoreDetails.address.city,
+                  state: freshStoreDetails.address.state,
+                  district: freshStoreDetails.address.district || '',
+                  area: freshStoreDetails.address.area || '',
+                  postal_code: freshStoreDetails.address.postal_code,
+                  country: freshStoreDetails.address.country,
+                  county: freshStoreDetails.address.county,
+                },
+                locale: freshStoreDetails.locale,
+                currency: freshStoreDetails.currency,
+                latitude: freshStoreDetails.latitude,
+                longitude: freshStoreDetails.longitude,
+                telephone1: freshStoreDetails.telephone1,
+                telephone2: freshStoreDetails.telephone2,
+                telephone3: freshStoreDetails.telephone3,
+                telephone4: freshStoreDetails.telephone4,
+                email: freshStoreDetails.email,
+                legal_entity_id: freshStoreDetails.legal_entity_id,
+                legal_entity_name: freshStoreDetails.legal_entity_name,
+                store_timing: {
+                  Monday: freshStoreDetails.store_timing.Monday || store.store_timing?.Monday || '09:00-18:00',
+                  Tuesday: freshStoreDetails.store_timing.Tuesday || store.store_timing?.Tuesday || '09:00-18:00',
+                  Wednesday: freshStoreDetails.store_timing.Wednesday || store.store_timing?.Wednesday || '09:00-18:00',
+                  Thursday: freshStoreDetails.store_timing.Thursday || store.store_timing?.Thursday || '09:00-18:00',
+                  Friday: freshStoreDetails.store_timing.Friday || store.store_timing?.Friday || '09:00-18:00',
+                  Saturday: freshStoreDetails.store_timing.Saturday || store.store_timing?.Saturday || '09:00-18:00',
+                  Sunday: freshStoreDetails.store_timing.Sunday || store.store_timing?.Sunday || '10:00-17:00',
+                  Holidays: freshStoreDetails.store_timing.Holidays || store.store_timing?.Holidays || 'Closed',
+                },
+                terminals: freshStoreDetails.terminals,
+                properties: freshStoreDetails.properties,
+                created_at: freshStoreDetails.created_at,
+                create_user_id: freshStoreDetails.create_user_id,
+                updated_at: freshStoreDetails.updated_at,
+                update_user_id: freshStoreDetails.update_user_id,
+              };
+              
+              // Update the store in the tenants array
+              const updatedTenants = tenants.map(t => {
+                if (t.id === currentTenant.id) {
+                  return {
+                    ...t,
+                    stores: t.stores.map(s => s.store_id === storeId ? updatedStore : s)
+                  };
+                }
+                return t;
+              });
+              
+              // Update the state with fresh store details
+              set({ 
+                tenants: updatedTenants,
+                currentStore: updatedStore 
+              });
+              
+              console.log('✅ Store details refreshed successfully after switch');
+            } catch (error) {
+              console.error('❌ Failed to refresh store details after switch:', error);
+              // Don't throw error - the store switch already succeeded with cached data
+              // The UI will still work with the cached store data
+            }
           }
         }
       },
