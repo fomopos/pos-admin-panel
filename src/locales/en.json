@@ -189,6 +189,27 @@
     "totalSales": "Total Sales",
     "totalOrders": "Total Orders",
     "title": "Dashboard"
-
+  },
+  "discounts": {
+    "title": "Discounts",
+    "description": "Manage discount codes and promotions for your store",
+    "add": "Add Discount",
+    "empty": {
+      "title": "No discounts yet",
+      "description": "Create your first discount to boost sales"
+    },
+    "search": {
+      "placeholder": "Search discounts..."
+    },
+    "table": {
+      "code": "Code",
+      "description": "Description",
+      "type": "Type",
+      "value": "Value",
+      "dates": "Date Range",
+      "status": "Status"
+    },
+    "noResults": "No discounts found",
+    "noResults.description": "Try adjusting your search terms"
   }
 }

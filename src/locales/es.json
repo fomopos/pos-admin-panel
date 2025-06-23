@@ -132,5 +132,27 @@
     "search": "Buscar",
     "loading": "Cargando...",
     "goToDashboard": "Ir al Panel"
+  },
+  "discounts": {
+    "title": "Descuentos",
+    "description": "Gestiona códigos de descuento y promociones para tu tienda",
+    "add": "Agregar Descuento",
+    "empty": {
+      "title": "No hay descuentos aún",
+      "description": "Crea tu primer descuento para impulsar las ventas"
+    },
+    "search": {
+      "placeholder": "Buscar descuentos..."
+    },
+    "table": {
+      "code": "Código",
+      "description": "Descripción",
+      "type": "Tipo",
+      "value": "Valor",
+      "dates": "Rango de Fechas",
+      "status": "Estado"
+    },
+    "noResults": "No se encontraron descuentos",
+    "noResults.description": "Intenta ajustar tus términos de búsqueda"
   }
 }

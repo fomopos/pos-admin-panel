@@ -16,6 +16,9 @@ import Products from './pages/Products';
 import ProductEdit from './pages/ProductEdit';
 import Categories from './pages/Categories';
 import CategoryEditPage from './pages/CategoryEditPage';
+import Discounts from './pages/Discounts';
+import DiscountEditPage from './pages/DiscountEditPage';
+import DiscountDetailPage from './pages/DiscountDetailPage';
 import Sales from './pages/Sales';
 import SalesDetail from './pages/SalesDetail';
 import Customers from './pages/Customers';
@@ -92,6 +95,10 @@ function App() {
               <Route path="categories" element={<Categories />} />
               <Route path="categories/new" element={<CategoryEditPage />} />
               <Route path="categories/edit/:id" element={<CategoryEditPage />} />
+              <Route path="discounts" element={<Discounts />} />
+              <Route path="discounts/new" element={<DiscountEditPage />} />
+              <Route path="discounts/edit/:id" element={<DiscountEditPage />} />
+              <Route path="discounts/:id" element={<DiscountDetailPage />} />
               <Route path="sales" element={<Sales />} />
               <Route path="sales/:transId" element={<SalesDetail />} />
               <Route path="customers" element={<Customers />} />

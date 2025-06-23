@@ -28,6 +28,7 @@ import {
   ChevronUpDownIcon,
   ComputerDesktopIcon,
   LanguageIcon,
+  PercentBadgeIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavigationItem {
@@ -82,6 +83,7 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.sales'), href: '/sales', icon: ShoppingCartIcon },
         { name: t('nav.products'), href: '/products', icon: CubeIcon },
         { name: t('nav.categories'), href: '/categories', icon: TagIcon },
+        { name: 'Discounts', href: '/discounts', icon: PercentBadgeIcon },
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
       ]
     },
