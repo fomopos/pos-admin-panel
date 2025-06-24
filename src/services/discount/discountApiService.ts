@@ -8,7 +8,7 @@ import type {
 } from '../../types/discount';
 
 class DiscountApiService {
-  private readonly basePath = '/v1/discount';
+  private readonly basePath = '/v0/discount';
 
   /**
    * Get all discounts for a store
