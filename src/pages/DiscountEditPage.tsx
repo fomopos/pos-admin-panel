@@ -2,16 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ArrowLeftIcon, 
-  TagIcon,
   CalendarIcon,
   CogIcon,
   SparklesIcon,
   TrashIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  CloudArrowUpIcon,
+  InformationCircleIcon,
+  PercentBadgeIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import { discountApiService } from '../services/discount/discountApiService';
-import { PageHeader, Button, DropdownSearch, Alert, Loading, Card, PropertyCheckbox } from '../components/ui';
+import { PageHeader, Button, DropdownSearch, Alert, Loading, PropertyCheckbox, ConfirmDialog } from '../components/ui';
 import { InputTextField, InputMoneyField } from '../components/ui';
+import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { Discount, CreateDiscountRequest } from '../types/discount';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import useTenantStore from '../tenants/tenantStore';
@@ -23,10 +28,10 @@ const DISCOUNT_TEMPLATES = [
     id: 'welcome',
     name: 'Welcome Discount',
     description: '10% off for new customers',
-    typcode: 'PERCENT',
+    typcode: 'DISCOUNT',
+    calculation_mthd_code: 'PERCENT',
     percentage: 10,
-    app_mthd_code: 'AUTO',
-    calculation_mthd_code: 'BEFORE_TAX',
+    app_mthd_code: 'TRANSACTION',
     exclusive_discount_flag: 1,
     color: '#10B981',
     icon: '👋'
@@ -35,10 +40,10 @@ const DISCOUNT_TEMPLATES = [
     id: 'seasonal',
     name: 'Seasonal Sale',
     description: '$25 off summer collection',
-    typcode: 'AMOUNT',
+    typcode: 'VOUCHER',
+    calculation_mthd_code: 'AMOUNT',
     discount: 25,
-    app_mthd_code: 'AUTO',
-    calculation_mthd_code: 'BEFORE_TAX',
+    app_mthd_code: 'TRANSACTION',
     min_eligible_price: 100,
     color: '#F59E0B',
     icon: '🌞'
@@ -47,10 +52,10 @@ const DISCOUNT_TEMPLATES = [
     id: 'loyalty',
     name: 'Loyalty Reward',
     description: '15% off for returning customers',
-    typcode: 'PERCENT',
+    typcode: 'COUPON',
+    calculation_mthd_code: 'PERCENT',
     percentage: 15,
-    app_mthd_code: 'MANUAL',
-    calculation_mthd_code: 'BEFORE_TAX',
+    app_mthd_code: 'LINE_ITEM',
     max_trans_count: 3,
     color: '#8B5CF6',
     icon: '💎'
@@ -59,10 +64,10 @@ const DISCOUNT_TEMPLATES = [
     id: 'clearance',
     name: 'Clearance Sale',
     description: '30% off selected items',
-    typcode: 'PERCENT',
+    typcode: 'DISCOUNT',
+    calculation_mthd_code: 'PERCENT',
     percentage: 30,
-    app_mthd_code: 'AUTO',
-    calculation_mthd_code: 'BEFORE_TAX',
+    app_mthd_code: 'GROUP',
     max_percentage: 30,
     color: '#EF4444',
     icon: '🔥'
@@ -71,10 +76,10 @@ const DISCOUNT_TEMPLATES = [
     id: 'bulk',
     name: 'Bulk Purchase',
     description: '$50 off orders over $500',
-    typcode: 'AMOUNT',
+    typcode: 'VOUCHER',
+    calculation_mthd_code: 'AMOUNT',
     discount: 50,
-    app_mthd_code: 'AUTO',
-    calculation_mthd_code: 'BEFORE_TAX',
+    app_mthd_code: 'TRANSACTION',
     min_eligible_price: 500,
     color: '#06B6D4',
     icon: '📦'
@@ -83,23 +88,15 @@ const DISCOUNT_TEMPLATES = [
     id: 'flash',
     name: 'Flash Sale',
     description: '20% off limited time offer',
-    typcode: 'PERCENT',
+    typcode: 'COUPON',
+    calculation_mthd_code: 'PERCENT',
     percentage: 20,
-    app_mthd_code: 'AUTO',
-    calculation_mthd_code: 'BEFORE_TAX',
+    app_mthd_code: 'TRANSACTION',
     exclusive_discount_flag: 1,
     color: '#EC4899',
     icon: '⚡'
   }
 ];
-
-interface DiscountWidget {
-  id: string;
-  title: string;
-  icon: React.ComponentType<any>;
-  description: string;
-  content: React.ReactNode;
-}
 
 const DiscountEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -112,9 +109,9 @@ const DiscountEditPage: React.FC = () => {
   const [formData, setFormData] = useState<CreateDiscountRequest>({
     discount_code: '',
     description: '',
-    typcode: 'PERCENT',
-    app_mthd_code: 'AUTO',
-    calculation_mthd_code: 'BEFORE_TAX',
+    typcode: 'DISCOUNT',
+    app_mthd_code: 'TRANSACTION',
+    calculation_mthd_code: 'PERCENT',
     percentage: null,
     discount: null,
     effective_datetime: new Date().toISOString().slice(0, -1),
@@ -146,18 +143,22 @@ const DiscountEditPage: React.FC = () => {
 
   // Dropdown options
   const discountTypeOptions: DropdownSearchOption[] = [
-    { id: 'PERCENT', label: 'Percentage', description: 'Discount as a percentage of the total' },
-    { id: 'AMOUNT', label: 'Fixed Amount', description: 'Discount as a fixed dollar amount' }
+    { id: 'DISCOUNT', label: 'Discount', description: 'Standard discount applied to items' },
+    { id: 'VOUCHER', label: 'Voucher', description: 'Voucher-based discount or credit' },
+    { id: 'COUPON', label: 'Coupon', description: 'Coupon code discount' }
   ];
 
   const applicationMethodOptions: DropdownSearchOption[] = [
-    { id: 'AUTO', label: 'Automatic', description: 'Automatically applied when conditions are met' },
-    { id: 'MANUAL', label: 'Manual', description: 'Requires manual application by staff' }
+    { id: 'LINE_ITEM', label: 'Line Item', description: 'Applied to individual line items' },
+    { id: 'TRANSACTION', label: 'Transaction', description: 'Applied to the entire transaction' },
+    { id: 'GROUP', label: 'Group', description: 'Applied to a group of items' }
   ];
 
   const calculationMethodOptions: DropdownSearchOption[] = [
-    { id: 'BEFORE_TAX', label: 'Before Tax', description: 'Apply discount before tax calculation' },
-    { id: 'AFTER_TAX', label: 'After Tax', description: 'Apply discount after tax calculation' }
+    { id: 'PERCENT', label: 'Percentage', description: 'Calculate discount as a percentage' },
+    { id: 'AMOUNT', label: 'Fixed Amount', description: 'Calculate discount as a fixed amount' },
+    { id: 'PROMPT_PERCENT', label: 'Prompt Percentage', description: 'Prompt user for percentage amount' },
+    { id: 'PROMPT_AMOUNT', label: 'Prompt Amount', description: 'Prompt user for fixed amount' }
   ];
 
   useEffect(() => {
@@ -165,6 +166,64 @@ const DiscountEditPage: React.FC = () => {
       loadDiscount();
     }
   }, [id, isEditing]);
+
+  // Check for changes
+  useEffect(() => {
+    if (isEditing && originalDiscount) {
+      // Compare current form data with original discount
+      const currentData = {
+        discount_code: formData.discount_code,
+        description: formData.description,
+        typcode: formData.typcode,
+        app_mthd_code: formData.app_mthd_code,
+        calculation_mthd_code: formData.calculation_mthd_code,
+        percentage: formData.percentage,
+        discount: formData.discount,
+        effective_datetime: formData.effective_datetime + 'Z',
+        expr_datetime: formData.expr_datetime + 'Z',
+        prompt: formData.prompt,
+        sort_order: formData.sort_order,
+        min_eligible_price: formData.min_eligible_price,
+        max_discount: formData.max_discount,
+        max_amount: formData.max_amount,
+        max_trans_count: formData.max_trans_count,
+        max_percentage: formData.max_percentage,
+        exclusive_discount_flag: formData.exclusive_discount_flag,
+        serialized_discount_flag: formData.serialized_discount_flag,
+        disallow_change_flag: formData.disallow_change_flag
+      };
+
+      const originalData = {
+        discount_code: originalDiscount.discount_code,
+        description: originalDiscount.description,
+        typcode: originalDiscount.typcode,
+        app_mthd_code: originalDiscount.app_mthd_code,
+        calculation_mthd_code: originalDiscount.calculation_mthd_code,
+        percentage: originalDiscount.percentage,
+        discount: originalDiscount.discount,
+        effective_datetime: originalDiscount.effective_datetime,
+        expr_datetime: originalDiscount.expr_datetime,
+        prompt: originalDiscount.prompt,
+        sort_order: originalDiscount.sort_order,
+        min_eligible_price: originalDiscount.min_eligible_price,
+        max_discount: originalDiscount.max_discount,
+        max_amount: originalDiscount.max_amount,
+        max_trans_count: originalDiscount.max_trans_count,
+        max_percentage: originalDiscount.max_percentage,
+        exclusive_discount_flag: originalDiscount.exclusive_discount_flag,
+        serialized_discount_flag: originalDiscount.serialized_discount_flag,
+        disallow_change_flag: originalDiscount.disallow_change_flag
+      };
+
+      setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
+    } else if (!isEditing) {
+      // For new discounts, check if any fields are filled
+      const hasData = formData.discount_code.trim() !== '' || 
+                     formData.description.trim() !== '' ||
+                     formData.prompt.trim() !== '';
+      setHasChanges(hasData);
+    }
+  }, [formData, originalDiscount, isEditing]);
 
   const loadDiscount = async () => {
     if (!id || !currentTenant?.id || !currentStore?.store_id) return;
@@ -214,7 +273,6 @@ const DiscountEditPage: React.FC = () => {
       ...prev,
       [field]: value
     }));
-    setHasChanges(true);
     setSuccessMessage(null);
     setErrors(prev => ({ ...prev, [field]: '' }));
   };
@@ -256,11 +314,11 @@ const DiscountEditPage: React.FC = () => {
       newErrors.description = 'Description is required';
     }
 
-    if (formData.typcode === 'PERCENT' && (!formData.percentage || formData.percentage <= 0)) {
+    if (formData.calculation_mthd_code === 'PERCENT' && (!formData.percentage || formData.percentage <= 0)) {
       newErrors.percentage = 'Percentage must be greater than 0';
     }
 
-    if (formData.typcode === 'AMOUNT' && (!formData.discount || formData.discount <= 0)) {
+    if (formData.calculation_mthd_code === 'AMOUNT' && (!formData.discount || formData.discount <= 0)) {
       newErrors.discount = 'Discount amount must be greater than 0';
     }
 
@@ -335,7 +393,7 @@ const DiscountEditPage: React.FC = () => {
     }
   };
 
-  const handleDiscardChanges = () => {
+  const discardChanges = () => {
     if (hasChanges) {
       discardDialog.openDiscardDialog(() => {
         if (isEditing && originalDiscount) {
@@ -361,9 +419,29 @@ const DiscountEditPage: React.FC = () => {
             disallow_change_flag: originalDiscount.disallow_change_flag,
           });
         } else {
-          navigate('/discounts');
+          // Reset to empty form
+          setFormData({
+            discount_code: '',
+            description: '',
+            typcode: 'DISCOUNT',
+            app_mthd_code: 'TRANSACTION',
+            calculation_mthd_code: 'PERCENT',
+            percentage: null,
+            discount: null,
+            effective_datetime: new Date().toISOString().slice(0, -1),
+            expr_datetime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, -1),
+            prompt: '',
+            sort_order: 1,
+            min_eligible_price: null,
+            max_discount: null,
+            max_amount: null,
+            max_trans_count: null,
+            max_percentage: null,
+            exclusive_discount_flag: 0,
+            serialized_discount_flag: 0,
+            disallow_change_flag: 0
+          });
         }
-        setHasChanges(false);
         setErrors({});
         setSuccessMessage(null);
       });
@@ -372,485 +450,486 @@ const DiscountEditPage: React.FC = () => {
     }
   };
 
-  // Define widgets like in CategoryEditPage
-  const widgets: DiscountWidget[] = [
-    {
-      id: 'basic',
-      title: 'Basic Information',
-      icon: TagIcon,
-      description: 'Configure discount name, type, and value',
-      content: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputTextField
-              label="Discount Code"
-              value={formData.discount_code}
-              onChange={(value) => handleInputChange('discount_code', value)}
-              placeholder="e.g., WELCOME10"
-              error={errors.discount_code}
-              required
-            />
-
-            <DropdownSearch
-              label="Discount Type"
-              value={formData.typcode}
-              placeholder="Select discount type"
-              options={discountTypeOptions}
-              onSelect={(option) => handleInputChange('typcode', option?.id as 'PERCENT' | 'AMOUNT' || 'PERCENT')}
-              error={errors.typcode}
-              required
-            />
-
-            {formData.typcode === 'PERCENT' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Percentage (%)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value={formData.percentage || ''}
-                  onChange={(e) => handleInputChange('percentage', e.target.value ? parseFloat(e.target.value) : null)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.percentage ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="10.00"
-                />
-                {errors.percentage && (
-                  <p className="mt-1 text-sm text-red-600">{errors.percentage}</p>
-                )}
-              </div>
-            ) : (
-              <InputMoneyField
-                label="Discount Amount"
-                value={formData.discount || 0}
-                onChange={(value) => handleInputChange('discount', value)}
-                placeholder="25.00"
-                error={errors.discount}
-              />
-            )}
-
-            <DropdownSearch
-              label="Application Method"
-              value={formData.app_mthd_code}
-              placeholder="Select application method"
-              options={applicationMethodOptions}
-              onSelect={(option) => handleInputChange('app_mthd_code', option?.id as 'AUTO' | 'MANUAL' || 'AUTO')}
-              error={errors.app_mthd_code}
-              required
-            />
-          </div>
-
-          <InputTextField
-            label="Description"
-            value={formData.description}
-            onChange={(value) => handleInputChange('description', value)}
-            placeholder="Describe this discount"
-            error={errors.description}
-            required
-          />
-
-          <InputTextField
-            label="Prompt Message"
-            value={formData.prompt}
-            onChange={(value) => handleInputChange('prompt', value)}
-            placeholder="Message shown when discount is applied"
-            error={errors.prompt}
-          />
-        </div>
-      )
-    },
-    {
-      id: 'schedule',
-      title: 'Date & Time Range',
-      icon: CalendarIcon,
-      description: 'Set when this discount is active',
-      content: (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Start Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              value={formData.effective_datetime}
-              onChange={(e) => handleInputChange('effective_datetime', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.effective_datetime ? 'border-red-300' : 'border-gray-300'
-              }`}
-              required
-            />
-            {errors.effective_datetime && (
-              <p className="mt-1 text-sm text-red-600">{errors.effective_datetime}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              End Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              value={formData.expr_datetime}
-              onChange={(e) => handleInputChange('expr_datetime', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.expr_datetime ? 'border-red-300' : 'border-gray-300'
-              }`}
-              required
-            />
-            {errors.expr_datetime && (
-              <p className="mt-1 text-sm text-red-600">{errors.expr_datetime}</p>
-            )}
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'advanced',
-      title: 'Advanced Settings',
-      icon: CogIcon,
-      description: 'Configure limits, thresholds, and calculation methods',
-      content: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <DropdownSearch
-              label="Calculation Method"
-              value={formData.calculation_mthd_code}
-              placeholder="Select calculation method"
-              options={calculationMethodOptions}
-              onSelect={(option) => handleInputChange('calculation_mthd_code', option?.id as 'BEFORE_TAX' | 'AFTER_TAX' || 'BEFORE_TAX')}
-              error={errors.calculation_mthd_code}
-              required
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sort Order
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.sort_order}
-                onChange={(e) => handleInputChange('sort_order', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <InputMoneyField
-              label="Minimum Eligible Price"
-              value={formData.min_eligible_price || 0}
-              onChange={(value) => handleInputChange('min_eligible_price', value || null)}
-              placeholder="0.00"
-            />
-
-            <InputMoneyField
-              label="Maximum Discount Amount"
-              value={formData.max_discount || 0}
-              onChange={(value) => handleInputChange('max_discount', value || null)}
-              placeholder="0.00"
-            />
-
-            <InputMoneyField
-              label="Maximum Amount"
-              value={formData.max_amount || 0}
-              onChange={(value) => handleInputChange('max_amount', value || null)}
-              placeholder="0.00"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Max Transaction Count
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.max_trans_count || ''}
-                onChange={(e) => handleInputChange('max_trans_count', e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Unlimited"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Maximum Percentage
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={formData.max_percentage || ''}
-                onChange={(e) => handleInputChange('max_percentage', e.target.value ? parseFloat(e.target.value) : null)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="No limit"
-              />
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'flags',
-      title: 'Flags & Options',
-      icon: SparklesIcon,
-      description: 'Additional discount behavior settings',
-      content: (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <PropertyCheckbox
-            title="Exclusive Discount"
-            description="Cannot be combined with other discounts"
-            checked={formData.exclusive_discount_flag === 1}
-            onChange={(checked) => handleInputChange('exclusive_discount_flag', checked ? 1 : 0)}
-          />
-
-          <PropertyCheckbox
-            title="Serialized Discount"
-            description="Track usage with unique serial numbers"
-            checked={formData.serialized_discount_flag === 1}
-            onChange={(checked) => handleInputChange('serialized_discount_flag', checked ? 1 : 0)}
-          />
-
-          <PropertyCheckbox
-            title="Disallow Changes"
-            description="Discount cannot be modified after application"
-            checked={formData.disallow_change_flag === 1}
-            onChange={(checked) => handleInputChange('disallow_change_flag', checked ? 1 : 0)}
-          />
-        </div>
-      )
+  const saveAllChanges = () => {
+    const form = document.querySelector('form') as HTMLFormElement;
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     }
-  ];
+  };
 
+  // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loading />
+      <Loading
+        title="Loading Discount"
+        description="Please wait while we fetch the discount data..."
+        variant="primary"
+      />
+    );
+  }
+
+  // Error state
+  if (fetchError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md mx-auto">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Discount</h3>
+          <p className="text-gray-500 mb-4">{fetchError}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <PageHeader
-            title={isEditing ? `Edit Discount: ${originalDiscount?.discount_code}` : 'Create New Discount'}
-            description={isEditing ? 'Update discount details' : 'Add a new discount to your store'}
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
+      {/* Header Section */}
+      <PageHeader
+        title={isEditing ? 'Edit Discount' : 'Create Discount'}
+        description={isEditing ? 'Modify discount details and settings' : 'Create a new discount for your store'}
+      >
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={() => navigate('/discounts')}
+            variant="outline"
+            className="flex items-center space-x-2"
           >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>Back to Discounts</span>
+          </Button>
+          
+          {isEditing && (
             <Button
+              onClick={handleDelete}
               variant="outline"
-              onClick={() => navigate('/discounts')}
-              className="flex items-center gap-2"
+              className="text-red-600 border-red-300 hover:bg-red-50"
             >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back to Discounts
+              <TrashIcon className="h-4 w-4 mr-2" />
+              Delete
             </Button>
-          </PageHeader>
+          )}
         </div>
-      </div>
 
-      {/* Template Selection (for new discounts) */}
-      {showTemplates && !isEditing && (
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Choose a Template</h2>
-              <p className="text-sm text-gray-600">Start with a pre-configured discount template or create from scratch</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {DISCOUNT_TEMPLATES.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => applyTemplate(template)}
-                  className="text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">{template.icon}</span>
-                    <h3 className="font-medium text-gray-900">{template.name}</h3>
-                  </div>
-                  <p className="text-sm text-gray-600">{template.description}</p>
-                </button>
-              ))}
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={() => setShowTemplates(false)}
-              className="text-sm"
-            >
-              Skip Templates - Create from Scratch
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Unsaved Changes Banner */}
-      {hasChanges && (
-        <div className="bg-yellow-50 border-b border-yellow-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
-                <span className="text-sm text-yellow-800">You have unsaved changes</span>
+        {/* Save/Discard Actions */}
+        {hasChanges && (
+          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDiscardChanges}
-                >
-                  Discard
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSubmit}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </Button>
+              <div>
+                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
+                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
               </div>
             </div>
+            <div className="flex items-center justify-end space-x-3">
+              <Button
+                onClick={discardChanges}
+                variant="outline"
+                size="sm"
+                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
+              >
+                <span>Discard Changes</span>
+              </Button>
+              <Button
+                onClick={saveAllChanges}
+                disabled={isSaving}
+                size="sm"
+                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <CloudArrowUpIcon className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </PageHeader>
 
       {/* Success Message */}
       {successMessage && (
-        <Alert variant="success" className="max-w-7xl mx-auto my-4">
+        <Alert variant="success" className="mb-4">
+          <CheckCircleIcon className="h-5 w-5" />
           {successMessage}
         </Alert>
       )}
 
-      {/* Error Messages */}
-      {fetchError && (
-        <Alert variant="error" className="max-w-7xl mx-auto my-4">
-          {fetchError}
-        </Alert>
-      )}
-
-      {errors.general && (
-        <Alert variant="error" className="max-w-7xl mx-auto my-4">
-          {errors.general}
-        </Alert>
-      )}
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Widgets */}
-          {widgets.map((widget) => (
-            <Card key={widget.id} className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <widget.icon className="h-5 w-5 text-blue-600" />
+      {/* Template Selection for New Discounts */}
+      {showTemplates && !isEditing && (
+        <CategoryWidget
+          title="Discount Templates"
+          description="Choose a template to get started quickly, or skip to create from scratch"
+          icon={SparklesIcon}
+          headerActions={
+            <Button
+              onClick={() => setShowTemplates(false)}
+              variant="outline"
+              size="sm"
+            >
+              Skip Templates
+            </Button>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {DISCOUNT_TEMPLATES.map((template) => (
+              <div
+                key={template.id}
+                onClick={() => applyTemplate(template)}
+                className="group relative p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white"
+              >
+                <div className="flex items-start space-x-3">
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                    style={{ backgroundColor: template.color }}
+                  >
+                    {template.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {template.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {template.description}
+                    </p>
+                    <div className="flex items-center space-x-4 mt-3 text-xs text-gray-500">
+                      <span className="flex items-center">
+                        <PercentBadgeIcon className="h-3 w-3 mr-1" />
+                        {template.typcode}
+                      </span>
+                      <span className="flex items-center">
+                        {template.calculation_mthd_code}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{widget.title}</h3>
-                  <p className="text-sm text-gray-600">{widget.description}</p>
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <PlusIcon className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </div>
-              {widget.content}
-            </Card>
-          ))}
-
-          {/* Actions */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-            <div>
-              {isEditing && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleDelete}
-                  className="text-red-600 border-red-300 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                  Delete Discount
-                </Button>
-              )}
-            </div>
-            
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleDiscardChanges}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSaving}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isSaving ? 'Saving...' : (isEditing ? 'Update Discount' : 'Create Discount')}
-              </Button>
-            </div>
+            ))}
           </div>
-        </form>
-      </div>
+        </CategoryWidget>
+      )}
+
+      {/* Main Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+          {/* Basic Information Widget */}
+          <CategoryWidget
+            title="Basic Information"
+            description="Essential discount details and configuration"
+            icon={InformationCircleIcon}
+            className="lg:col-span-2 overflow-visible"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputTextField
+                label="Discount Code"
+                required
+                value={formData.discount_code}
+                onChange={(value) => handleInputChange('discount_code', value)}
+                placeholder="e.g., WELCOME10"
+                error={errors.discount_code}
+                colSpan="md:col-span-2"
+              />
+
+              <DropdownSearch
+                label="Discount Type"
+                value={formData.typcode}
+                placeholder="Select discount type"
+                options={discountTypeOptions}
+                onSelect={(option) => handleInputChange('typcode', option?.id as 'DISCOUNT' | 'VOUCHER' | 'COUPON' || 'DISCOUNT')}
+                error={errors.typcode}
+                required
+              />
+
+              <DropdownSearch
+                label="Calculation Method"
+                value={formData.calculation_mthd_code}
+                placeholder="Select calculation method"
+                options={calculationMethodOptions}
+                onSelect={(option) => handleInputChange('calculation_mthd_code', option?.id as 'PERCENT' | 'AMOUNT' | 'PROMPT_PERCENT' | 'PROMPT_AMOUNT' || 'PERCENT')}
+                error={errors.calculation_mthd_code}
+                required
+              />
+
+              {(formData.calculation_mthd_code === 'PERCENT' || formData.calculation_mthd_code === 'PROMPT_PERCENT') ? (
+                <InputTextField
+                  label="Percentage (%)"
+                  type="number"
+                  value={formData.percentage || ''}
+                  onChange={(value) => handleInputChange('percentage', value ? parseFloat(value) : null)}
+                  placeholder="10.00"
+                  error={errors.percentage}
+                  min={0}
+                  max={100}
+                  step={0.01}
+                />
+              ) : (formData.calculation_mthd_code === 'AMOUNT' || formData.calculation_mthd_code === 'PROMPT_AMOUNT') ? (
+                <InputMoneyField
+                  label="Discount Amount"
+                  value={formData.discount || 0}
+                  onChange={(value) => handleInputChange('discount', value)}
+                  placeholder="25.00"
+                  error={errors.discount}
+                />
+              ) : null}
+
+              <DropdownSearch
+                label="Application Method"
+                value={formData.app_mthd_code}
+                placeholder="Select application method"
+                options={applicationMethodOptions}
+                onSelect={(option) => handleInputChange('app_mthd_code', option?.id as 'LINE_ITEM' | 'TRANSACTION' | 'GROUP' || 'TRANSACTION')}
+                error={errors.app_mthd_code}
+                required
+              />
+            </div>
+
+            <div className="mt-6">
+              <InputTextField
+                label="Description"
+                value={formData.description}
+                onChange={(value) => handleInputChange('description', value)}
+                placeholder="Describe this discount"
+                error={errors.description}
+                required
+              />
+            </div>
+
+            <div className="mt-6">
+              <InputTextField
+                label="Prompt Message"
+                value={formData.prompt}
+                onChange={(value) => handleInputChange('prompt', value)}
+                placeholder="Message shown when discount is applied"
+                error={errors.prompt}
+              />
+            </div>
+          </CategoryWidget>
+
+          {/* Schedule Widget */}
+          <CategoryWidget
+            title="Schedule"
+            description="Set when this discount is active"
+            icon={CalendarIcon}
+          >
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Start Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.effective_datetime}
+                  onChange={(e) => handleInputChange('effective_datetime', e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.effective_datetime ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.effective_datetime && (
+                  <p className="mt-1 text-sm text-red-600">{errors.effective_datetime}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  End Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.expr_datetime}
+                  onChange={(e) => handleInputChange('expr_datetime', e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.expr_datetime ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.expr_datetime && (
+                  <p className="mt-1 text-sm text-red-600">{errors.expr_datetime}</p>
+                )}
+              </div>
+            </div>
+          </CategoryWidget>
+
+          {/* Advanced Settings Widget */}
+          <CategoryWidget
+            title="Advanced Settings"
+            description="Configure limits, thresholds, and calculation methods"
+            icon={CogIcon}
+          >
+            <div className="space-y-6">
+              <InputTextField
+                label="Sort Order"
+                type="number"
+                value={formData.sort_order}
+                onChange={(value) => handleInputChange('sort_order', parseInt(value) || 1)}
+                placeholder="1"
+                helperText="Lower numbers appear first in the discount list"
+                min={1}
+              />
+
+              <div className="grid grid-cols-1 gap-6">
+                <InputMoneyField
+                  label="Minimum Eligible Price"
+                  value={formData.min_eligible_price || 0}
+                  onChange={(value) => handleInputChange('min_eligible_price', value || null)}
+                  placeholder="0.00"
+                />
+
+                <InputMoneyField
+                  label="Maximum Discount Amount"
+                  value={formData.max_discount || 0}
+                  onChange={(value) => handleInputChange('max_discount', value || null)}
+                  placeholder="0.00"
+                />
+
+                <InputMoneyField
+                  label="Maximum Amount"
+                  value={formData.max_amount || 0}
+                  onChange={(value) => handleInputChange('max_amount', value || null)}
+                  placeholder="0.00"
+                />
+
+                <InputTextField
+                  label="Max Transaction Count"
+                  type="number"
+                  value={formData.max_trans_count || ''}
+                  onChange={(value) => handleInputChange('max_trans_count', value ? parseInt(value) : null)}
+                  placeholder="Unlimited"
+                  min={0}
+                />
+
+                <InputTextField
+                  label="Maximum Percentage"
+                  type="number"
+                  value={formData.max_percentage || ''}
+                  onChange={(value) => handleInputChange('max_percentage', value ? parseFloat(value) : null)}
+                  placeholder="No limit"
+                  min={0}
+                  max={100}
+                  step={0.01}
+                />
+              </div>
+            </div>
+          </CategoryWidget>
+
+          {/* Settings Widget */}
+          <CategoryWidget
+            title="Settings"
+            description="Discount behavior and options"
+            icon={SparklesIcon}
+            className="lg:col-span-2"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <PropertyCheckbox
+                title="Exclusive Discount"
+                description="Cannot be combined with other discounts"
+                checked={formData.exclusive_discount_flag === 1}
+                onChange={(checked) => handleInputChange('exclusive_discount_flag', checked ? 1 : 0)}
+              />
+
+              <PropertyCheckbox
+                title="Serialized Discount"
+                description="Track usage with unique serial numbers"
+                checked={formData.serialized_discount_flag === 1}
+                onChange={(checked) => handleInputChange('serialized_discount_flag', checked ? 1 : 0)}
+              />
+
+              <PropertyCheckbox
+                title="Disallow Changes"
+                description="Discount cannot be modified after application"
+                checked={formData.disallow_change_flag === 1}
+                onChange={(checked) => handleInputChange('disallow_change_flag', checked ? 1 : 0)}
+              />
+            </div>
+          </CategoryWidget>
+        </div>
+
+        {/* Error Display */}
+        {errors.general && (
+          <Alert variant="error">
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            <div>
+              <h4 className="font-medium">Error</h4>
+              <p className="text-sm">{errors.general}</p>
+            </div>
+          </Alert>
+        )}
+
+        {/* Form Actions */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/discounts')}
+            className="w-full sm:w-auto"
+          >
+            Cancel
+          </Button>
+          
+          <Button
+            type="submit"
+            disabled={isSaving}
+            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 w-full sm:w-auto"
+          >
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <CloudArrowUpIcon className="h-4 w-4" />
+                <span>{isEditing ? 'Update Discount' : 'Create Discount'}</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
 
       {/* Confirm Dialogs */}
-      {deleteDialog.dialogState.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {deleteDialog.dialogState.title}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {deleteDialog.dialogState.message}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={deleteDialog.closeDialog}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={deleteDialog.handleConfirm}
-                className="bg-red-600 hover:bg-red-700"
-                disabled={deleteDialog.dialogState.isLoading}
-              >
-                {deleteDialog.dialogState.isLoading ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={deleteDialog.dialogState.isOpen}
+        onClose={deleteDialog.closeDialog}
+        onConfirm={deleteDialog.handleConfirm}
+        title={deleteDialog.dialogState.title}
+        message={deleteDialog.dialogState.message}
+        confirmText={deleteDialog.dialogState.confirmText}
+        cancelText={deleteDialog.dialogState.cancelText}
+        variant={deleteDialog.dialogState.variant}
+        isLoading={deleteDialog.dialogState.isLoading}
+      />
 
-      {discardDialog.dialogState.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {discardDialog.dialogState.title}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {discardDialog.dialogState.message}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={discardDialog.closeDialog}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={discardDialog.handleConfirm}
-                className="bg-orange-600 hover:bg-orange-700"
-                disabled={discardDialog.dialogState.isLoading}
-              >
-                {discardDialog.dialogState.isLoading ? 'Discarding...' : 'Discard Changes'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={discardDialog.dialogState.isOpen}
+        onClose={discardDialog.closeDialog}
+        onConfirm={discardDialog.handleConfirm}
+        title={discardDialog.dialogState.title}
+        message={discardDialog.dialogState.message}
+        confirmText={discardDialog.dialogState.confirmText}
+        cancelText={discardDialog.dialogState.cancelText}
+        variant={discardDialog.dialogState.variant}
+        isLoading={discardDialog.dialogState.isLoading}
+      />
     </div>
   );
 };

@@ -74,7 +74,7 @@ const DiscountDetailPage: React.FC = () => {
   };
 
   const getDiscountValue = (discount: Discount) => {
-    if (discount.typcode === 'PERCENT') {
+    if (discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT') {
       return `${discount.percentage}%`;
     } else {
       return `$${discount.discount}`;
@@ -173,7 +173,7 @@ const DiscountDetailPage: React.FC = () => {
                   Discount Type & Value
                 </label>
                 <div className="flex items-center">
-                  {discount.typcode === 'PERCENT' ? (
+                  {discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT' ? (
                     <PercentBadgeIcon className="h-5 w-5 text-gray-400 mr-2" />
                   ) : (
                     <CurrencyDollarIcon className="h-5 w-5 text-gray-400 mr-2" />
@@ -182,7 +182,7 @@ const DiscountDetailPage: React.FC = () => {
                     {getDiscountValue(discount)}
                   </span>
                   <span className="ml-2 text-sm text-gray-500">
-                    ({discount.typcode === 'PERCENT' ? 'Percentage' : 'Fixed Amount'})
+                    ({discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT' ? 'Percentage' : 'Fixed Amount'})
                   </span>
                 </div>
               </div>
@@ -238,7 +238,8 @@ const DiscountDetailPage: React.FC = () => {
                   Application Method
                 </label>
                 <span className="text-gray-900">
-                  {discount.app_mthd_code === 'AUTO' ? 'Automatic' : 'Manual'}
+                  {discount.app_mthd_code === 'TRANSACTION' ? 'Transaction' : 
+                   discount.app_mthd_code === 'LINE_ITEM' ? 'Line Item' : 'Group'}
                 </span>
               </div>
 
@@ -247,7 +248,9 @@ const DiscountDetailPage: React.FC = () => {
                   Calculation Method
                 </label>
                 <span className="text-gray-900">
-                  {discount.calculation_mthd_code === 'BEFORE_TAX' ? 'Before Tax' : 'After Tax'}
+                  {discount.calculation_mthd_code === 'PERCENT' ? 'Percentage' : 
+                   discount.calculation_mthd_code === 'AMOUNT' ? 'Fixed Amount' :
+                   discount.calculation_mthd_code === 'PROMPT_PERCENT' ? 'Prompt Percentage' : 'Prompt Amount'}
                 </span>
               </div>
 

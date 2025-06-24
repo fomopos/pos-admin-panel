@@ -12,7 +12,7 @@ import {
   PercentBadgeIcon
 } from '@heroicons/react/24/outline';
 import { discountApiService } from '../services/discount/discountApiService';
-import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, Loading } from '../components/ui';
 import type { Discount } from '../types/discount';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
@@ -86,7 +86,7 @@ const Discounts: React.FC = () => {
   };
 
   const getDiscountValue = (discount: Discount) => {
-    if (discount.typcode === 'PERCENT') {
+    if (discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT') {
       return `${discount.percentage}%`;
     } else {
       return `$${discount.discount}`;
@@ -95,9 +95,12 @@ const Discounts: React.FC = () => {
 
   if (loading || !currentTenant?.id || !currentStore?.store_id) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
+      <Loading
+        title="Loading Discounts."
+        description="Please wait while we fetch the discounts."
+        fullScreen={false}
+        size="md"
+    />
     );
   }
 
@@ -200,7 +203,8 @@ const Discounts: React.FC = () => {
                             {discount.discount_code}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {discount.app_mthd_code === 'AUTO' ? 'Automatic' : 'Manual'}
+                            {discount.app_mthd_code === 'TRANSACTION' ? 'Transaction' : 
+                             discount.app_mthd_code === 'LINE_ITEM' ? 'Line Item' : 'Group'}
                           </div>
                         </div>
                       </div>
@@ -214,7 +218,7 @@ const Discounts: React.FC = () => {
                       <div className="flex items-center">
                         <PercentBadgeIcon className="h-4 w-4 text-gray-400 mr-1" />
                         <span className="text-sm text-gray-900">
-                          {discount.typcode === 'PERCENT' ? 'Percentage' : 'Fixed Amount'}
+                          {discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT' ? 'Percentage' : 'Fixed Amount'}
                         </span>
                       </div>
                     </td>
@@ -248,21 +252,21 @@ const Discounts: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/discounts/${discount.discount_id}`)}
+                          onClick={() => navigate(`/discounts/${discount.discount_code}`)}
                         >
                           <EyeIcon className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/discounts/edit/${discount.discount_id}`)}
+                          onClick={() => navigate(`/discounts/edit/${discount.discount_code}`)}
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(discount.discount_id)}
+                          onClick={() => handleDelete(discount.discount_code)}
                           className="text-red-600 hover:text-red-900"
                         >
                           <TrashIcon className="h-4 w-4" />
