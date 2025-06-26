@@ -30,7 +30,10 @@ import CreateStore from './pages/CreateStore';
 import TerminalSettings from './pages/TerminalSettings';
 import TranslationManagement from './pages/TranslationManagement';
 import { UserManagement } from './pages/user';
-import { RoleManagement } from './pages/role';
+import RolesPage from './pages/roles/RolesPage';
+import CreateRolePage from './pages/roles/CreateRolePage';
+import EditRolePage from './pages/roles/EditRolePage';
+import RoleDetailPage from './pages/roles/RoleDetailPage';
 
 // Placeholder components for other pages
 const Settings: React.FC = () => (
@@ -107,7 +110,10 @@ function App() {
               <Route path="settings/terminals" element={<TerminalSettings />} />
               <Route path="settings/translations" element={<TranslationManagement />} />
               <Route path="settings/users" element={<UserManagement />} />
-              <Route path="settings/roles" element={<RoleManagement />} />
+              <Route path="settings/roles" element={<RolesPage />} />
+              <Route path="settings/roles/new" element={<CreateRolePage />} />
+              <Route path="settings/roles/edit/:id" element={<EditRolePage />} />
+              <Route path="settings/roles/:id" element={<RoleDetailPage />} />
               <Route path="tax-settings" element={<TaxSettings />} />
               <Route path="payment-settings" element={<PaymentSettings />} />
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
