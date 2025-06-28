@@ -192,6 +192,14 @@ const Tables: React.FC = () => {
           <Button
             size="sm"
             variant="outline"
+            onClick={() => navigate(`/tables/assign/${table.table_id}`)}
+            title="Assign Server"
+          >
+            <UserGroupIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => handleDeleteTable(table.table_id)}
             className="text-red-600 hover:text-red-700"
           >
@@ -377,6 +385,14 @@ const Tables: React.FC = () => {
           >
             <BuildingOfficeIcon className="w-5 h-5" />
             <span>Add Zone</span>
+          </Button>
+          <Button
+            onClick={() => navigate('/tables/merge')}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span>Merge Tables</span>
           </Button>
           <Button
             onClick={() => navigate('/tables/new')}

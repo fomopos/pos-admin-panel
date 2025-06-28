@@ -85,6 +85,7 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.categories'), href: '/categories', icon: TagIcon },
         { name: 'Discounts', href: '/discounts', icon: PercentBadgeIcon },
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
+        { name: 'Table Management', href: '/tables', icon: TableCellsIcon },
       ]
     },
     {
