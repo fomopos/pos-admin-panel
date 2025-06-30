@@ -35,6 +35,7 @@ import CreateRolePage from './pages/roles/CreateRolePage';
 import EditRolePage from './pages/roles/EditRolePage';
 import RoleDetailPage from './pages/roles/RoleDetailPage';
 import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPage, ServerAssignmentPage, TableMergeUnmergePage } from './pages/table';
+import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
 
 // Placeholder components for other pages
 const Settings: React.FC = () => (
@@ -116,6 +117,7 @@ function App() {
               <Route path="zones/edit/:zoneId" element={<ZoneEditPage />} />
               <Route path="reservations/new" element={<ReservationEditPage />} />
               <Route path="reservations/edit/:reservationId" element={<ReservationEditPage />} />
+              <Route path="employee-shifts" element={<EmployeeShiftManagement />} />
               <Route path="settings" element={<Settings />} />
               <Route path="settings/store" element={<StoreSettings />} />
               <Route path="settings/terminals" element={<TerminalSettings />} />

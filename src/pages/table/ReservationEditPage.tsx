@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
   PhoneIcon,
   XMarkIcon,
-  ClockIcon
+  CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { tableApiService } from '../../services/table';
 import { 
@@ -16,7 +16,9 @@ import {
   CardTitle, 
   CardContent,
   Input,
-  DropdownSearch
+  DropdownSearch,
+  Calendar,
+  TimeSlotPicker
 } from '../../components/ui';
 import type { 
   CreateReservationRequest, 
@@ -35,6 +37,8 @@ const ReservationEditPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tables, setTables] = useState<EnhancedTable[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState<string>('');
   const { currentTenant, currentStore } = useTenantStore();
 
   const [formData, setFormData] = useState<CreateReservationRequest & UpdateReservationRequest>({
@@ -73,30 +77,56 @@ const ReservationEditPage: React.FC = () => {
         const reservation = reservationsData.find(r => r.reservation_id === reservationId);
         
         if (reservation) {
+          const reservationDate = new Date(reservation.reservation_time);
+          setSelectedDate(reservationDate);
+          setSelectedTime(reservationDate.toTimeString().slice(0, 5)); // HH:MM format
+          
           setFormData({
             reservation_id: reservation.reservation_id,
             table_id: reservation.table_id,
             customer_name: reservation.customer_name,
             contact: reservation.contact,
-            reservation_time: new Date(reservation.reservation_time).toISOString().slice(0, 16),
+            reservation_time: reservation.reservation_time,
             number_of_guests: reservation.number_of_guests,
             notes: reservation.notes || '',
             status: reservation.status,
           });
         }
       } else {
-        // Set default reservation time to 1 hour from now
+        // Set default reservation date to today and time to next available hour
         const now = new Date();
-        now.setHours(now.getHours() + 1);
-        setFormData(prev => ({
-          ...prev,
-          reservation_time: now.toISOString().slice(0, 16)
-        }));
+        const nextHour = new Date();
+        nextHour.setHours(now.getHours() + 1, 0, 0, 0);
+        
+        setSelectedDate(nextHour);
+        setSelectedTime('19:00'); // Default to 7 PM
       }
     } catch (error) {
       console.error('Failed to load reservation data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    updateReservationTime(date, selectedTime);
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    updateReservationTime(selectedDate, time);
+  };
+
+  const updateReservationTime = (date?: Date, time?: string) => {
+    if (date && time) {
+      const [hours, minutes] = time.split(':');
+      const reservationDateTime = new Date(date);
+      reservationDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      setFormData(prev => ({
+        ...prev,
+        reservation_time: reservationDateTime.toISOString()
+      }));
     }
   };
 
@@ -115,13 +145,21 @@ const ReservationEditPage: React.FC = () => {
       newErrors.table_id = 'Table selection is required';
     }
 
-    if (!formData.reservation_time) {
-      newErrors.reservation_time = 'Reservation date and time is required';
-    } else {
-      const reservationDate = new Date(formData.reservation_time);
+    if (!selectedDate) {
+      newErrors.date = 'Reservation date is required';
+    }
+
+    if (!selectedTime) {
+      newErrors.time = 'Reservation time is required';
+    }
+
+    if (selectedDate && selectedTime) {
+      const [hours, minutes] = selectedTime.split(':');
+      const reservationDateTime = new Date(selectedDate);
+      reservationDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       const now = new Date();
-      if (reservationDate < now) {
-        newErrors.reservation_time = 'Reservation time cannot be in the past';
+      if (reservationDateTime < now) {
+        newErrors.time = 'Reservation time cannot be in the past';
       }
     }
 
@@ -294,26 +332,59 @@ const ReservationEditPage: React.FC = () => {
             </div>
 
             {/* Reservation Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Calendar Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date & Time *
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                  <CalendarDaysIcon className="inline h-4 w-4 mr-2" />
+                  Select Date *
                 </label>
-                <div className="relative">
-                  <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    type="datetime-local"
-                    value={formData.reservation_time}
-                    onChange={(e) => handleInputChange('reservation_time', e.target.value)}
-                    className="pl-10"
-                    error={errors.reservation_time}
-                  />
-                </div>
-                {errors.reservation_time && (
-                  <p className="mt-1 text-sm text-red-600">{errors.reservation_time}</p>
+                <Calendar
+                  selectedDate={selectedDate}
+                  onDateSelect={handleDateSelect}
+                  minDate={new Date()} // No past dates
+                  maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)} // 90 days in future
+                />
+                {errors.date && (
+                  <p className="mt-2 text-sm text-red-600">{errors.date}</p>
                 )}
               </div>
 
+              {/* Time Slot Section */}
+              <div>
+                <TimeSlotPicker
+                  selectedTime={selectedTime}
+                  onTimeSelect={handleTimeSelect}
+                  disabled={!selectedDate}
+                />
+                {errors.time && (
+                  <p className="mt-2 text-sm text-red-600">{errors.time}</p>
+                )}
+                
+                {/* Confirmation */}
+                {selectedDate && selectedTime && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">
+                        Reservation Time Confirmed
+                      </span>
+                    </div>
+                    <p className="text-sm text-green-700 mt-1">
+                      {selectedDate.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })} at {selectedTime}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Number of Guests *
