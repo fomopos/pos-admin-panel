@@ -37,9 +37,11 @@ const Tables: React.FC = () => {
     try {
       setLoading(true);
       const context = {
-        tenant_id: currentTenant?.id,
-        store_id: currentStore?.store_id,
+        tenant_id: currentTenant?.id || 'mock-tenant',
+        store_id: currentStore?.store_id || 'mock-store',
       };
+
+      console.log('Loading table data with context:', context);
 
       const [tablesData, zonesData, reservationsData] = await Promise.all([
         tableApiService.getTables(context),
@@ -47,11 +49,20 @@ const Tables: React.FC = () => {
         tableApiService.getReservations(context)
       ]);
 
+      console.log('Loaded data:', { tablesData, zonesData, reservationsData });
+
       setTables(tablesData);
       setZones(zonesData);
       setReservations(reservationsData);
     } catch (error) {
       console.error('Failed to load table data:', error);
+      // For development, provide fallback data
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Using fallback mock data');
+        setTables([]);
+        setZones([]);
+        setReservations([]);
+      }
     } finally {
       setLoading(false);
     }
