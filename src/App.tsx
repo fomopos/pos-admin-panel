@@ -34,6 +34,8 @@ import RolesPage from './pages/roles/RolesPage';
 import CreateRolePage from './pages/roles/CreateRolePage';
 import EditRolePage from './pages/roles/EditRolePage';
 import RoleDetailPage from './pages/roles/RoleDetailPage';
+import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPage, ServerAssignmentPage, TableMergeUnmergePage } from './pages/table';
+import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
 
 // Placeholder components for other pages
 const Settings: React.FC = () => (
@@ -105,6 +107,17 @@ function App() {
               <Route path="sales" element={<Sales />} />
               <Route path="sales/:transId" element={<SalesDetail />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="tables" element={<Tables />} />
+              <Route path="tables/new" element={<TableEditPage />} />
+              <Route path="tables/edit/:tableId" element={<TableEditPage />} />
+              <Route path="tables/:tableId" element={<TableDetailPage />} />
+              <Route path="tables/assign/:tableId" element={<ServerAssignmentPage />} />
+              <Route path="tables/merge" element={<TableMergeUnmergePage />} />
+              <Route path="zones/new" element={<ZoneEditPage />} />
+              <Route path="zones/edit/:zoneId" element={<ZoneEditPage />} />
+              <Route path="reservations/new" element={<ReservationEditPage />} />
+              <Route path="reservations/edit/:reservationId" element={<ReservationEditPage />} />
+              <Route path="employee-shifts" element={<EmployeeShiftManagement />} />
               <Route path="settings" element={<Settings />} />
               <Route path="settings/store" element={<StoreSettings />} />
               <Route path="settings/terminals" element={<TerminalSettings />} />

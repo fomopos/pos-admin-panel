@@ -8,6 +8,8 @@ export { default as DataTable } from './DataTable';
 export { default as Pagination } from './Pagination';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from './Table';
 export { default as LanguageSwitcher } from './LanguageSwitcher';
+export { default as Calendar } from './Calendar';
+export { default as TimeSlotPicker } from './TimeSlotPicker';
 
 // New unified components
 export { Tabs, TabsList, TabsTrigger, TabsContent, EnhancedTabs } from './Tabs';
