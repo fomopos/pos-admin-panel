@@ -9,17 +9,20 @@ import {
   TagIcon,
   PhotoIcon,
   CheckIcon,
-  XMarkIcon
+  XMarkIcon,
+  CubeIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading, InputTextField, InputMoneyField, PropertyCheckbox, DropdownSearch } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
+import { ProductModifierManager } from '../components/product';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService } from '../services/product';
 import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { taxServices } from '../services/tax';
 import { storeServices } from '../services/store';
+import { validateAllModifierGroups } from '../utils/modifierValidation';
 import type { EnhancedCategory } from '../types/category';
 import type { TaxGroup } from '../services/types/tax.types';
 import type { 
@@ -87,7 +90,8 @@ const ProductEdit: React.FC = () => {
     },
     media: {
       image_url: ''
-    }
+    },
+    modifier_groups: []
   });
 
   const [errors, setErrors] = useState<ProductFormErrors>({});
@@ -300,6 +304,21 @@ const ProductEdit: React.FC = () => {
       newErrors.list_price = 'List price must be greater than 0';
     }
 
+    // Validate modifiers if they exist
+    if (formData.modifier_groups && formData.modifier_groups.length > 0) {
+      const modifierErrors = validateAllModifierGroups(formData.modifier_groups);
+      
+      // Convert modifier errors to general form errors
+      if (Object.keys(modifierErrors).length > 0) {
+        newErrors.general = 'Please fix the errors in the modifiers section';
+        
+        // You could also set specific errors for display
+        Object.entries(modifierErrors).forEach(([key, value]) => {
+          newErrors[key] = value;
+        });
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -474,7 +493,8 @@ const ProductEdit: React.FC = () => {
     { id: 'pricing', name: 'Pricing', icon: CurrencyDollarIcon },
     { id: 'settings', name: 'Settings', icon: CogIcon },
     { id: 'attributes', name: 'Attributes', icon: TagIcon },
-    { id: 'media', name: 'Media', icon: PhotoIcon }
+    { id: 'media', name: 'Media', icon: PhotoIcon },
+    { id: 'modifiers', name: 'Modifiers', icon: CubeIcon }
   ];
 
   // Show loading screen while fetching data
@@ -1147,6 +1167,41 @@ const ProductEdit: React.FC = () => {
                     <li>• Supported formats: JPG, PNG, WebP</li>
                     <li>• Maximum file size: 5MB</li>
                     <li>• Use high-quality images for better visibility</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Modifiers Tab */}
+            {activeTab === 'modifiers' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Product Modifiers</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Add modifier groups to allow customers to customize this product with additional options, sizes, or variations.
+                  </p>
+                </div>
+                
+                <ProductModifierManager
+                  modifierGroups={formData.modifier_groups || []}
+                  onChange={(modifierGroups) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      modifier_groups: modifierGroups
+                    }));
+                  }}
+                  disabled={isLoading}
+                />
+
+                {/* Modifiers Help */}
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                  <h4 className="text-sm font-medium text-blue-900 mb-2">Modifier Guidelines</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• <strong>Modifier Groups:</strong> Organize related options (e.g., "Toppings", "Size", "Spice Level")</li>
+                    <li>• <strong>Selection Type:</strong> Choose "Single" for exclusive options or "Multiple" for add-ons</li>
+                    <li>• <strong>Price Delta:</strong> Use positive values to add cost, negative values for discounts</li>
+                    <li>• <strong>Required Groups:</strong> Force customers to make a selection from required groups</li>
+                    <li>• <strong>Sort Order:</strong> Controls the display order of groups and modifiers</li>
                   </ul>
                 </div>
               </div>

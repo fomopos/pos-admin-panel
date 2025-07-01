@@ -1,5 +1,26 @@
 // Product Types - Based on API response structure
 
+// Product Modifier Types
+export interface ProductModifier {
+  modifier_id?: string; // Optional for new modifiers
+  name: string;
+  price_delta: number; // Can be positive or negative
+  default_selected: boolean;
+  sort_order: number;
+}
+
+export interface ProductModifierGroup {
+  group_id?: string; // Optional for new groups
+  name: string; // e.g., "Toppings", "Spice Level"
+  selection_type: 'single' | 'multiple' | 'exact' | 'limited';
+  exact_selections?: number; // For 'exact' type, the exact number of selections required
+  max_selections?: number; // For 'limited' type, max number of selections allowed
+  min_selections?: number; // Minimum selections required (optional)
+  required: boolean; // Whether customer must choose
+  sort_order: number;
+  modifiers: ProductModifier[];
+}
+
 export interface ProductPricing {
   list_price: number;
   sale_price?: number;
@@ -119,6 +140,9 @@ export interface Product {
   create_user_id?: string;
   updated_at?: string;
   update_user_id?: string;
+
+  // Modifiers
+  modifier_groups?: ProductModifierGroup[]; // Optional, for products with modifiers
 }
 
 export interface CreateProductRequest {
@@ -135,6 +159,7 @@ export interface CreateProductRequest {
   prompts: ProductPrompts;
   attributes: ProductAttributes;
   media: ProductMedia;
+  modifier_groups?: ProductModifierGroup[]; // Optional, for new products with modifiers
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
@@ -233,5 +258,6 @@ export const DEFAULT_PRODUCT_VALUES: Partial<Product> = {
   },
   media: {
     image_url: ''
-  }
+  },
+  modifier_groups: [] // Default to empty array for modifiers
 };
