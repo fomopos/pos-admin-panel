@@ -5,7 +5,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon
 } from '@heroicons/react/24/outline';
-import { Button, InputTextField, DropdownSearch, PropertyCheckbox, CompactToggle } from '../ui';
+import { Button, InputTextField, DropdownSearch, CompactToggle } from '../ui';
 import type { ProductModifier, ProductModifierGroup } from '../../services/types/product.types';
 import type { DropdownSearchOption } from '../ui/DropdownSearch';
 
@@ -65,6 +65,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
       min_selections: undefined,
       required: false,
       sort_order: modifierGroups.length + 1,
+      price_delta: 0,
       modifiers: []
     };
     onChange([...modifierGroups, newGroup]);
@@ -390,10 +391,26 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                       />
                     </div>
 
-                    <div className="col-span-full">
-                      <PropertyCheckbox
-                        title="Required"
-                        description="Force customer to choose from this modifier group"
+                    <div>
+                      <InputTextField
+                        type="number"
+                        label="Group Price Delta ($)"
+                        value={group.price_delta?.toString() || '0'}
+                        onChange={(value) => updateModifierGroup(groupIndex, { 
+                          price_delta: parseFloat(value) || 0 
+                        })}
+                        disabled={disabled}
+                        helperText="Base price adjustment for this group"
+                        step={0.01}
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    <div>
+                      <CompactToggle
+                        label="Required"
+                        inlineLabel="Required Group"
+                        helperText="Force customer to choose from this group"
                         checked={group.required}
                         onChange={(checked) => updateModifierGroup(groupIndex, { required: checked })}
                         disabled={disabled}

@@ -1,6 +1,6 @@
 import { apiClient } from '../api';
-import type { ApiProduct, Product } from '../types/product.types';
-
+import type { ApiProduct, Product, ProductModifierGroup, ProductModifier } from '../types/product.types';
+import { productModifierService } from './productModifier.service';
 export interface ProductsResponse {
   items: ApiProduct[];
   next: string | null;
@@ -37,6 +37,7 @@ export interface CreateProductRequest {
   online_only?: boolean;
   custom_attribute?: Record<string, any>;
   properties?: Record<string, any>;
+  modifier_groups?: ProductModifierGroup[];
 }
 
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
@@ -79,10 +80,19 @@ class ProductService {
    */
   async createProduct(tenantId: string, storeId: string, productData: CreateProductRequest): Promise<ApiProduct> {
     try {
+      // Extract modifier groups before sending to API
+      const { modifier_groups, ...productApiData } = productData;
+      
       const response = await apiClient.post<ApiProduct>(
         `/v0/tenant/${tenantId}/store/${storeId}/item`,
-        productData
+        productApiData
       );
+      
+      // If modifier groups exist, save them after product creation
+      if (modifier_groups && modifier_groups.length > 0) {
+        await this.saveModifierGroups(tenantId, storeId, response.data.item_id, modifier_groups);
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Error creating product:', error);
@@ -95,10 +105,19 @@ class ProductService {
    */
   async updateProduct(tenantId: string, storeId: string, itemId: string, productData: UpdateProductRequest): Promise<ApiProduct> {
     try {
+      // Extract modifier groups before sending to API
+      const { modifier_groups, ...productApiData } = productData;
+      
       const response = await apiClient.put<ApiProduct>(
         `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
-        productData
+        productApiData
       );
+      
+      // Save modifier groups after product update
+      if (modifier_groups !== undefined) {
+        await this.saveModifierGroups(tenantId, storeId, itemId, modifier_groups);
+      }
+      
       return response.data;
     } catch (error) {
       console.error('Error updating product:', error);
@@ -121,7 +140,32 @@ class ProductService {
   /**
    * Convert API Product to internal Product format
    */
-  mapApiProductToProduct(apiProduct: ApiProduct): Product {
+  async mapApiProductToProduct(apiProduct: ApiProduct, tenantId: string, storeId: string): Promise<Product> {
+    // Load modifier groups for this product
+    let modifierGroups: ProductModifierGroup[] = [];
+    try {
+      const modifierGroupsResponse = await productModifierService.getModifierGroups(
+        tenantId, 
+        storeId, 
+        apiProduct.item_id
+      );
+      // Map API modifier groups to internal format
+      modifierGroups = await Promise.all(
+        modifierGroupsResponse.items.map(async (group) => {
+          const modifiersResponse = await productModifierService.getModifiers(
+            tenantId, 
+            storeId, 
+            apiProduct.item_id, 
+            group.group_id
+          );
+          return productModifierService.mapApiModifierGroupToInternal(group, modifiersResponse.items);
+        })
+      );
+    } catch (error) {
+      console.warn('Could not load modifier groups for product:', apiProduct.item_id, error);
+      // Continue without modifier groups if they fail to load
+    }
+
     return {
       item_id: apiProduct.item_id,
       store_id: apiProduct.store_id,
@@ -177,6 +221,7 @@ class ProductService {
       media: {
         image_url: apiProduct.image_url || ''
       },
+      modifier_groups: modifierGroups,
       created_at: apiProduct.created_at,
       create_user_id: apiProduct.create_user_id,
       updated_at: apiProduct.updated_at,
@@ -218,8 +263,192 @@ class ProductService {
       tare_uom: product.pricing.tare_uom,
       online_only: product.settings.online_only,
       custom_attribute: product.attributes.custom_attributes,
-      properties: product.attributes.properties
+      properties: product.attributes.properties,
+      modifier_groups: product.modifier_groups || []
     };
+  }
+
+  /**
+   * Save modifier groups for a product (create, update, delete as needed)
+   */
+  async saveModifierGroups(
+    tenantId: string, 
+    storeId: string, 
+    itemId: string, 
+    modifierGroups: ProductModifierGroup[]
+  ): Promise<void> {
+    try {
+      // Get current modifier groups from API
+      let existingGroups: ProductModifierGroup[] = [];
+      try {
+        const response = await productModifierService.getModifierGroups(tenantId, storeId, itemId);
+        existingGroups = await Promise.all(
+          response.items.map(async (group) => {
+            const modifiersResponse = await productModifierService.getModifiers(
+              tenantId, 
+              storeId, 
+              itemId, 
+              group.group_id
+            );
+            return productModifierService.mapApiModifierGroupToInternal(group, modifiersResponse.items);
+          })
+        );
+      } catch (error) {
+        console.log('No existing modifier groups found, will create new ones');
+      }
+
+      // Determine which groups to create, update, or delete
+      const existingGroupIds = existingGroups.map(g => g.group_id).filter(Boolean);
+      const newGroupIds = modifierGroups.map(g => g.group_id).filter(Boolean);
+
+      // Delete groups that are no longer present
+      for (const existingGroup of existingGroups) {
+        if (existingGroup.group_id && !newGroupIds.includes(existingGroup.group_id)) {
+          await productModifierService.deleteModifierGroup(
+            tenantId, 
+            storeId, 
+            itemId, 
+            existingGroup.group_id
+          );
+        }
+      }
+
+      // Create or update modifier groups
+      for (const group of modifierGroups) {
+        if (group.group_id && existingGroupIds.includes(group.group_id)) {
+          // Update existing group
+          await productModifierService.updateModifierGroup(
+            tenantId, 
+            storeId, 
+            itemId, 
+            group.group_id,
+            {
+              group_id: group.group_id,
+              name: group.name,
+              selection_type: group.selection_type,
+              exact_selections: group.exact_selections,
+              max_selections: group.max_selections,
+              min_selections: group.min_selections,
+              required: group.required,
+              sort_order: group.sort_order,
+              price_delta: group.price_delta
+            }
+          );
+
+          // Handle modifiers for this group
+          await this.saveModifiersForGroup(tenantId, storeId, itemId, group);
+        } else {
+          // Create new group
+          const createdGroup = await productModifierService.createModifierGroup(
+            tenantId, 
+            storeId, 
+            itemId,
+            {
+              item_id: itemId,
+              name: group.name,
+              selection_type: group.selection_type,
+              exact_selections: group.exact_selections,
+              max_selections: group.max_selections,
+              min_selections: group.min_selections,
+              required: group.required,
+              sort_order: group.sort_order,
+              price_delta: group.price_delta
+            }
+          );
+
+          // Create modifiers for the new group
+          group.group_id = createdGroup.group_id;
+          await this.saveModifiersForGroup(tenantId, storeId, itemId, group);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving modifier groups:', error);
+      throw new Error('Failed to save modifier groups');
+    }
+  }
+
+  /**
+   * Save modifiers for a specific group
+   */
+  private async saveModifiersForGroup(
+    tenantId: string, 
+    storeId: string, 
+    itemId: string, 
+    group: ProductModifierGroup
+  ): Promise<void> {
+    if (!group.group_id) return;
+
+    try {
+      // Get existing modifiers for this group
+      let existingModifiers: ProductModifier[] = [];
+      try {
+        const response = await productModifierService.getModifiers(
+          tenantId, 
+          storeId, 
+          itemId, 
+          group.group_id
+        );
+        existingModifiers = response.items.map(m => productModifierService.mapApiModifierToInternal(m));
+      } catch (error) {
+        console.log('No existing modifiers found for group, will create new ones');
+      }
+
+      // Determine which modifiers to create, update, or delete
+      const existingModifierIds = existingModifiers.map(m => m.modifier_id).filter(Boolean);
+      const newModifierIds = group.modifiers.map(m => m.modifier_id).filter(Boolean);
+
+      // Delete modifiers that are no longer present
+      for (const existingModifier of existingModifiers) {
+        if (existingModifier.modifier_id && !newModifierIds.includes(existingModifier.modifier_id)) {
+          await productModifierService.deleteModifier(
+            tenantId, 
+            storeId, 
+            itemId, 
+            group.group_id, 
+            existingModifier.modifier_id
+          );
+        }
+      }
+
+      // Create or update modifiers
+      for (const modifier of group.modifiers) {
+        if (modifier.modifier_id && existingModifierIds.includes(modifier.modifier_id)) {
+          // Update existing modifier
+          await productModifierService.updateModifier(
+            tenantId, 
+            storeId, 
+            itemId, 
+            group.group_id, 
+            modifier.modifier_id,
+            {
+              modifier_id: modifier.modifier_id,
+              name: modifier.name,
+              price_delta: modifier.price_delta,
+              default_selected: modifier.default_selected,
+              sort_order: modifier.sort_order
+            }
+          );
+        } else {
+          // Create new modifier
+          await productModifierService.createModifier(
+            tenantId, 
+            storeId, 
+            itemId, 
+            group.group_id,
+            {
+              group_id: group.group_id,
+              name: modifier.name,
+              price_delta: modifier.price_delta,
+              default_selected: modifier.default_selected,
+              sort_order: modifier.sort_order
+            }
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error saving modifiers for group:', group.group_id, error);
+      throw new Error(`Failed to save modifiers for group ${group.name}`);
+    }
   }
 
   /**

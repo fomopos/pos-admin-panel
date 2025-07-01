@@ -18,6 +18,7 @@ export interface ProductModifierGroup {
   min_selections?: number; // Minimum selections required (optional)
   required: boolean; // Whether customer must choose
   sort_order: number;
+  price_delta?: number; // Base price adjustment for the entire group (e.g., size surcharge)
   modifiers: ProductModifier[];
 }
 

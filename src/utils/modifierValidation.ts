@@ -22,6 +22,15 @@ export const validateModifierGroup = (group: ProductModifierGroup, index: number
     errors[`${prefix}.sort_order`] = 'Sort order must be at least 1';
   }
 
+  // Validate price delta
+  if (group.price_delta !== undefined && group.price_delta !== null) {
+    if (isNaN(group.price_delta)) {
+      errors[`${prefix}.price_delta`] = 'Price delta must be a valid number';
+    } else if (Math.abs(group.price_delta) > 999.99) {
+      errors[`${prefix}.price_delta`] = 'Price delta must be between -999.99 and 999.99';
+    }
+  }
+
   // Validate selection type and limits
   if (group.selection_type === 'limited') {
     if (!group.max_selections || group.max_selections < 1) {

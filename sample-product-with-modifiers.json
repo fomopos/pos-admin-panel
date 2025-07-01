@@ -64,6 +64,7 @@
       "selection_type": "multiple",
       "required": false,
       "sort_order": 1,
+      "price_delta": 0,
       "modifiers": [
         {
           "modifier_id": "pepperoni",
@@ -108,6 +109,7 @@
       "selection_type": "single",
       "required": true,
       "sort_order": 2,
+      "price_delta": 0,
       "modifiers": [
         {
           "modifier_id": "mild",
@@ -145,6 +147,7 @@
       "selection_type": "single",
       "required": true,
       "sort_order": 3,
+      "price_delta": 2.50,
       "modifiers": [
         {
           "modifier_id": "small",

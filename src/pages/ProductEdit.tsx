@@ -175,7 +175,11 @@ const ProductEdit: React.FC = () => {
             currentStore.store_id,
             id
           );
-          const product = productService.mapApiProductToProduct(apiProduct);
+          const product = await productService.mapApiProductToProduct(
+            apiProduct, 
+            currentTenant.id, 
+            currentStore.store_id
+          );
           setFormData(product);
         } catch (error) {
           console.error('Error loading product:', error);
