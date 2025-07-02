@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '../../utils/cn';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'destructiveReverse';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   children: React.ReactNode;
@@ -13,11 +13,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = 'inline-flex items-center justify-center rounded font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background';
     
     const variants = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700',
-      secondary: 'bg-secondary-100 text-secondary-900 hover:bg-secondary-200',
+      primary: 'bg-primary-600 text-white hover:bg-primary-700 bg-blue-600 hover:bg-blue-700',
+      secondary: 'bg-secondary-100 text-secondary-900 hover:bg-secondary-200 bg-teal-100 text-teal-900 hover:bg-teal-200',
       outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
       ghost: 'hover:bg-accent hover:text-accent-foreground',
       destructive: 'bg-red-600 text-white hover:bg-red-700',
+      destructiveReverse: 'text-red-600 bg-white border border-red-600 hover:bg-red-50',
     };
     
     const sizes = {

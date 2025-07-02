@@ -636,13 +636,22 @@ const Products: React.FC = () => {
         title="Products"
         description="Manage your product inventory"
       >
-        <Button
-          onClick={() => navigate('/products/new')}
-          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <PlusIcon className="w-5 h-5" />
-          <span>Add Product</span>
-        </Button>
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={() => navigate('/global-modifiers')}
+            className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span>Add Modifier</span>
+          </Button>
+          <Button
+            onClick={() => navigate('/products/new')}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span>Add Product</span>
+          </Button>
+        </div>
       </PageHeader>
 
       {/* Search and Filter Bar */}

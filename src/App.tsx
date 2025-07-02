@@ -14,6 +14,9 @@ import TenantStoreSelection from './pages/auth/TenantStoreSelection';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import ProductEdit from './pages/ProductEdit';
+import GlobalModifiers from './pages/GlobalModifiers';
+import GlobalModifierEdit from './pages/GlobalModifierEdit';
+import GlobalModifierDetail from './pages/GlobalModifierDetail';
 import Categories from './pages/Categories';
 import CategoryEditPage from './pages/CategoryEditPage';
 import Discounts from './pages/Discounts';
@@ -97,6 +100,10 @@ function App() {
               <Route path="products" element={<Products />} />
               <Route path="products/new" element={<ProductEdit />} />
               <Route path="products/edit/:id" element={<ProductEdit />} />
+              <Route path="global-modifiers" element={<GlobalModifiers />} />
+              <Route path="global-modifiers/new" element={<GlobalModifierEdit />} />
+              <Route path="global-modifiers/edit/:id" element={<GlobalModifierEdit />} />
+              <Route path="global-modifiers/:id" element={<GlobalModifierDetail />} />
               <Route path="categories" element={<Categories />} />
               <Route path="categories/new" element={<CategoryEditPage />} />
               <Route path="categories/edit/:id" element={<CategoryEditPage />} />

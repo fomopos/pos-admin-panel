@@ -18,6 +18,7 @@ import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { ProductModifierManager } from '../components/product';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService } from '../services/product';
+import { globalModifierService, type GlobalModifierTemplate } from '../services/modifier/globalModifier.service';
 import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { taxServices } from '../services/tax';
@@ -105,6 +106,11 @@ const ProductEdit: React.FC = () => {
   const [taxGroups, setTaxGroups] = useState<TaxGroup[]>([]);
   const [taxGroupsLoading, setTaxGroupsLoading] = useState(false);
 
+  // Global modifier templates state
+  const [globalTemplates, setGlobalTemplates] = useState<GlobalModifierTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [showTemplatesBrowser, setShowTemplatesBrowser] = useState(false);
+
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
@@ -163,6 +169,51 @@ const ProductEdit: React.FC = () => {
 
     loadTaxGroups();
   }, [currentTenant]);
+
+  // Load global modifier templates
+  useEffect(() => {
+    const loadGlobalTemplates = async () => {
+      if (currentTenant && currentStore) {
+        setTemplatesLoading(true);
+        try {
+          const response = await globalModifierService.getGlobalModifierGroups(
+            currentTenant.id,
+            currentStore.store_id,
+            { active: true, limit: 100 }
+          );
+
+          // Load modifiers for each template
+          const templatesWithModifiers = await Promise.all(
+            response.items.map(async (group) => {
+              try {
+                const modifiersResponse = await globalModifierService.getGlobalModifiers(
+                  currentTenant.id,
+                  currentStore.store_id,
+                  group.group_id
+                );
+                return globalModifierService.mapApiGlobalModifierGroupToInternal(
+                  group,
+                  modifiersResponse.items
+                );
+              } catch (error) {
+                console.warn('Failed to load modifiers for template:', group.group_id, error);
+                return globalModifierService.mapApiGlobalModifierGroupToInternal(group, []);
+              }
+            })
+          );
+
+          setGlobalTemplates(templatesWithModifiers);
+        } catch (error) {
+          console.error('Error loading global modifier templates:', error);
+          setGlobalTemplates([]);
+        } finally {
+          setTemplatesLoading(false);
+        }
+      }
+    };
+
+    loadGlobalTemplates();
+  }, [currentTenant, currentStore]);
 
   // Load existing product data for editing
   useEffect(() => {
@@ -226,6 +277,21 @@ const ProductEdit: React.FC = () => {
     }
     
     return option ? getCategoryDisplayName(option.id) : 'No Category Selected';
+  };
+
+  // Apply global modifier template to product
+  const applyGlobalTemplate = (template: GlobalModifierTemplate) => {
+    const productModifierGroup = globalModifierService.convertTemplateToProductModifierGroup(template);
+    
+    setFormData(prev => ({
+      ...prev,
+      modifier_groups: [
+        ...(prev.modifier_groups || []),
+        productModifierGroup
+      ]
+    }));
+    
+    setShowTemplatesBrowser(false);
   };
 
   // Helper function to get category display name with hierarchy path
@@ -1184,6 +1250,85 @@ const ProductEdit: React.FC = () => {
                   <p className="text-sm text-gray-600 mt-1">
                     Add modifier groups to allow customers to customize this product with additional options, sizes, or variations.
                   </p>
+                </div>
+
+                {/* Global Templates Browser */}
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="text-md font-medium text-purple-900">Global Modifier Templates</h3>
+                      <p className="text-sm text-purple-700">Apply pre-configured modifier templates to this product</p>
+                    </div>
+                    <Button
+                      onClick={() => setShowTemplatesBrowser(!showTemplatesBrowser)}
+                      variant="outline"
+                      size="sm"
+                      className="border-purple-300 text-purple-700 hover:bg-purple-100"
+                    >
+                      {showTemplatesBrowser ? 'Hide Templates' : 'Browse Templates'}
+                    </Button>
+                  </div>
+
+                  {showTemplatesBrowser && (
+                    <div className="mt-4">
+                      {templatesLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto"></div>
+                          <p className="text-sm text-purple-600 mt-2">Loading templates...</p>
+                        </div>
+                      ) : globalTemplates.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {globalTemplates.map((template) => (
+                            <div
+                              key={template.group_id}
+                              className="bg-white border border-purple-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <h4 className="text-sm font-medium text-gray-900">{template.name}</h4>
+                                  {template.description && (
+                                    <p className="text-xs text-gray-600 mt-1">{template.description}</p>
+                                  )}
+                                  <div className="flex items-center space-x-2 mt-2 text-xs">
+                                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                                      {template.selection_type}
+                                    </span>
+                                    {template.required && (
+                                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded">
+                                        Required
+                                      </span>
+                                    )}
+                                    <span className="text-gray-500">
+                                      {template.modifiers.length} modifiers
+                                    </span>
+                                  </div>
+                                </div>
+                                <Button
+                                  onClick={() => applyGlobalTemplate(template)}
+                                  size="sm"
+                                  className="ml-2 bg-purple-600 hover:bg-purple-700 text-white"
+                                >
+                                  Apply
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-purple-600">No global modifier templates available</p>
+                          <Button
+                            onClick={() => navigate('/global-modifiers/new')}
+                            size="sm"
+                            variant="outline"
+                            className="mt-2 border-purple-300 text-purple-700 hover:bg-purple-100"
+                          >
+                            Create Template
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 <ProductModifierManager
