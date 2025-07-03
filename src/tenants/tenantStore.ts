@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware';
 import { tenantApiService } from '../services/tenant/tenantApiService';
 import type { TenantApiResponse, StoreApiResponse } from '../services/tenant/tenantApiService';
 import { useErrorHandler } from '../services/errorHandler';
-import { createApiError, createNetworkError } from '../utils/errorUtils';
 
 export interface Address {
   address1: string;
@@ -98,13 +97,13 @@ export interface TenantWithStores extends Tenant {
 // Data transformation utilities
 const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
   return {
-    tenant_id: apiStore.tenant_id,
+    tenant_id: apiStore.tenant_id || '',
     store_id: apiStore.store_id || '',
-    status: apiStore.status,
-    store_name: apiStore.store_name,
+    status: apiStore.status || 'inactive',
+    store_name: apiStore.store_name || 'Unnamed Store',
     description: apiStore.description || undefined,
-    location_type: apiStore.location_type,
-    store_type: apiStore.store_type,
+    location_type: apiStore.location_type || 'retail',
+    store_type: apiStore.store_type || 'general',
     address: apiStore.address ? {
       address1: apiStore.address.address1 || '',
       address2: apiStore.address.address2 || undefined,
@@ -115,7 +114,7 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
       district: apiStore.address.district || '',
       area: apiStore.address.area || '',
       postal_code: apiStore.address.postal_code || '',
-      country: apiStore.address.country,
+      country: apiStore.address.country || 'India',
       county: apiStore.address.county || '',
     } : {
       address1: '',
@@ -127,11 +126,11 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
       district: '',
       area: '',
       postal_code: '',
-      country: '',
+      country: 'India',
       county: '',
     },
-    locale: apiStore.locale,
-    currency: apiStore.currency,
+    locale: apiStore.locale || 'en-IN',
+    currency: apiStore.currency || 'INR',
     latitude: apiStore.latitude || undefined,
     longitude: apiStore.longitude || undefined,
     telephone1: apiStore.telephone1 || undefined,

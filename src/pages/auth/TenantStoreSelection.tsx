@@ -142,6 +142,26 @@ const TenantStoreSelection: React.FC = () => {
       console.log('🔄 Fetching stores for selected tenant:', tenantId);
       await fetchStoresForTenant(tenantId);
       
+      // Debug: Log the stores data to see what we're getting
+      const stores = getCurrentTenantStores();
+      console.log('📦 Stores received for tenant:', {
+        tenantId,
+        storeCount: stores.length,
+        stores: stores.map(store => ({
+          store_id: store.store_id,
+          store_name: store.store_name,
+          status: store.status,
+          location_type: store.location_type,
+          description: store.description,
+          hasNullValues: {
+            store_name: store.store_name === null,
+            status: store.status === null,
+            location_type: store.location_type === null,
+            description: store.description === null
+          }
+        }))
+      });
+
       console.log('✅ Stores fetched successfully, moving to store selection');
       setStep('store');
     } catch (error) {
@@ -347,49 +367,82 @@ const TenantStoreSelection: React.FC = () => {
               ) : (
                 <div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {getCurrentTenantStores().map((store) => {
-                      // Add safety check for store object and required properties
-                      if (!store || !store.store_id || !store.store_name) {
-                        console.warn('Invalid store object found:', store);
-                        return null;
+                    {(() => {
+                      const validStores = getCurrentTenantStores()
+                        .filter(store => {
+                          // Filter out stores with missing critical information
+                          if (!store || !store.store_id) {
+                            console.warn('Store missing store_id:', store);
+                            return false;
+                          }
+                          // Allow stores even if store_name is null - we'll show fallback
+                          return true;
+                        });
+
+                      if (validStores.length === 0) {
+                        return (
+                          <div className="col-span-full text-center py-12">
+                            <BuildingStorefrontIcon className="mx-auto h-12 w-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">No stores available</h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              Get started by creating your first store.
+                            </p>
+                            <div className="mt-6">
+                              <button
+                                onClick={() => navigate('/create-store')}
+                                className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+                              >
+                                Create Store
+                              </button>
+                            </div>
+                          </div>
+                        );
                       }
-                      
-                      return (
-                      <button
-                        key={store.store_id}
-                        onClick={() => handleStoreSelect(store.store_id)}
-                        className="text-left p-6 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      >
-                        <div className="flex items-start space-x-4">
-                          <div className="flex-shrink-0">
-                            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                              <BuildingStorefrontIcon className="h-6 w-6 text-green-600" />
+
+                      return validStores.map((store) => (
+                        <button
+                          key={store.store_id}
+                          onClick={() => handleStoreSelect(store.store_id)}
+                          className="text-left p-6 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                          <div className="flex items-start space-x-4">
+                            <div className="flex-shrink-0">
+                              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <BuildingStorefrontIcon className="h-6 w-6 text-green-600" />
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                              {store.store_name}
-                            </h3>
-                            {store.description && (
-                              <p className="text-sm text-slate-500 mb-2">
-                                {store.description}
-                              </p>
-                            )}
-                            <div className="flex items-center space-x-4 text-xs text-slate-400">
-                              <span className={`px-2 py-1 rounded-full ${
-                                store.status === 'active' ? 'bg-green-100 text-green-700' :
-                                'bg-red-100 text-red-700'
-                              }`}>
-                                {capitalizeStatus(store.status)}
-                              </span>
-                              <span>{store.location_type}</span>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                                {store.store_name || 'Unnamed Store'}
+                              </h3>
+                              {store.description && store.description.trim() && (
+                                <p className="text-sm text-slate-500 mb-2">
+                                  {store.description}
+                                </p>
+                              )}
+                              <div className="flex items-center flex-wrap gap-2 text-xs text-slate-400">
+                                <span className={`px-2 py-1 rounded-full ${
+                                  store.status === 'active' ? 'bg-green-100 text-green-700' :
+                                  store.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {capitalizeStatus(store.status)}
+                                </span>
+                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                                  {store.location_type || 'General'}
+                                </span>
+                                {store.address && (store.address.city || store.address.state) && (
+                                  <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                                    {[store.address.city, store.address.state].filter(Boolean).join(', ')}
+                                  </span>
+                                )}
+                              </div>
                             </div>
+                            <ChevronRightIcon className="h-5 w-5 text-slate-400" />
                           </div>
-                          <ChevronRightIcon className="h-5 w-5 text-slate-400" />
-                        </div>
-                      </button>
-                      );
-                    })}
+                        </button>
+                      ));
+                    })()}
                     
                     {/* Add New Store Card */}
                     <button
