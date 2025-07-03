@@ -165,6 +165,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900">Product Modifiers</h3>
         <Button
+          type="button"
           onClick={addModifierGroup}
           disabled={disabled}
           size="sm"
@@ -188,6 +189,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
               <div className="p-4 border-b border-gray-200 bg-gray-50">
                 <div className="flex items-center justify-between">
                   <button
+                    type="button"
                     onClick={() => toggleGroupExpansion(groupIndex)}
                     className="flex items-center space-x-2 text-left flex-1"
                     disabled={disabled}
@@ -215,6 +217,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                   
                   <div className="flex items-center space-x-2">
                     <button
+                      type="button"
                       onClick={() => moveModifierGroup(groupIndex, 'up')}
                       disabled={disabled || groupIndex === 0}
                       className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
@@ -222,6 +225,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                       <ArrowUpIcon className="h-4 w-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => moveModifierGroup(groupIndex, 'down')}
                       disabled={disabled || groupIndex === modifierGroups.length - 1}
                       className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
@@ -229,6 +233,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                       <ArrowDownIcon className="h-4 w-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => removeModifierGroup(groupIndex)}
                       disabled={disabled}
                       className="p-1 text-red-400 hover:text-red-600 disabled:opacity-30"
@@ -423,6 +428,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="text-md font-medium text-gray-800">Modifiers</h4>
                       <Button
+                        type="button"
                         onClick={() => addModifier(groupIndex)}
                         disabled={disabled}
                         size="sm"
@@ -496,6 +502,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                               {/* Action buttons - centered on mobile, right-aligned on desktop */}
                               <div className="flex justify-center sm:justify-end items-center space-x-2 pt-2 border-t border-gray-200">
                                 <button
+                                  type="button"
                                   onClick={() => moveModifier(groupIndex, modifierIndex, 'up')}
                                   disabled={disabled || modifierIndex === 0}
                                   className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-30 rounded-md hover:bg-gray-100 transition-colors"
@@ -504,6 +511,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                                   <ArrowUpIcon className="h-4 w-4" />
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => moveModifier(groupIndex, modifierIndex, 'down')}
                                   disabled={disabled || modifierIndex === group.modifiers.length - 1}
                                   className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-30 rounded-md hover:bg-gray-100 transition-colors"
@@ -512,6 +520,7 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                                   <ArrowDownIcon className="h-4 w-4" />
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => removeModifier(groupIndex, modifierIndex)}
                                   disabled={disabled}
                                   className="p-2 text-red-400 hover:text-red-600 disabled:opacity-30 rounded-md hover:bg-red-50 transition-colors"

@@ -48,35 +48,25 @@ const GlobalModifiers: React.FC = () => {
 
       setIsLoading(true);
       try {
+        // Single API call to get all groups with embedded modifiers
         const response = await globalModifierService.getGlobalModifierGroups(
           currentTenant.id,
           currentStore.store_id,
           {
             active: filters.status === 'all' ? undefined : filters.status === 'active',
             search: filters.search || undefined,
-            limit: 100
+            limit: 100,
+            includeModifiers: true // Include modifiers in the response to avoid N+1 API calls
           }
         );
 
-        // Load modifiers for each group to create complete templates
-        const templatesWithModifiers = await Promise.all(
-          response.items.map(async (group) => {
-            try {
-              // Get the full group with embedded modifiers
-              const fullGroup = await globalModifierService.getGlobalModifierGroup(
-                currentTenant.id,
-                currentStore.store_id,
-                group.group_id
-              );
-              return globalModifierService.mapApiGlobalModifierGroupToInternal(fullGroup);
-            } catch (error) {
-              console.warn('Failed to load full group data for:', group.group_id, error);
-              return globalModifierService.mapApiGlobalModifierGroupToInternal(group);
-            }
-          })
+        // Map the response directly since modifiers are already included
+        // This eliminates the need for additional API calls per group
+        const templates = response.items.map(group => 
+          globalModifierService.mapApiGlobalModifierGroupToInternal(group)
         );
 
-        setModifierTemplates(templatesWithModifiers);
+        setModifierTemplates(templates);
       } catch (error) {
         console.error('Error loading modifier templates:', error);
         setModifierTemplates([]);
@@ -159,8 +149,9 @@ const GlobalModifiers: React.FC = () => {
         }))
       };
 
-      // Create the new global modifier group with modifiers included
-      await globalModifierService.createGlobalModifierGroup(
+      // Create the new global modifier group with all modifiers included in a single API call
+      // This avoids the need for separate modifier creation calls
+      const newGroup = await globalModifierService.createGlobalModifierGroup(
         currentTenant.id,
         currentStore.store_id,
         globalModifierService.mapInternalToCreateGlobalGroupRequest(
@@ -169,8 +160,9 @@ const GlobalModifiers: React.FC = () => {
         )
       );
 
-      // Reload the templates list to show the new template
-      window.location.reload();
+      // Add the new template to local state instead of full page reload
+      const newTemplate = globalModifierService.mapApiGlobalModifierGroupToInternal(newGroup);
+      setModifierTemplates(prev => [...prev, newTemplate]);
     } catch (error) {
       console.error('Error duplicating template:', error);
     } finally {

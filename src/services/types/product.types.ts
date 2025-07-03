@@ -115,6 +115,33 @@ export interface ApiProduct {
   tare_value?: number;
   tare_uom?: string | null;
   online_only?: boolean;
+  // Optional embedded modifier groups to avoid additional API calls
+  modifier_groups?: Array<{
+    group_id: string;
+    item_id: string;
+    name: string;
+    selection_type: 'single' | 'multiple' | 'exact' | 'limited';
+    exact_selections?: number;
+    max_selections?: number;
+    min_selections?: number;
+    required: boolean;
+    sort_order: number;
+    price_delta?: number;
+    active?: boolean;
+    created_at?: string;
+    updated_at?: string;
+    modifiers?: Array<{
+      modifier_id: string;
+      group_id: string;
+      name: string;
+      price_delta: number;
+      default_selected: boolean;
+      sort_order: number;
+      active?: boolean;
+      created_at?: string;
+      updated_at?: string;
+    }>;
+  }>;
 }
 
 export interface Product {

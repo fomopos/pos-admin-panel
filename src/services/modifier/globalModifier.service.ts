@@ -116,6 +116,7 @@ class GlobalModifierService {
       search?: string;
       page?: number;
       limit?: number;
+      includeModifiers?: boolean; // Add option to include embedded modifiers
     }
   ): Promise<GlobalModifierGroupsResponse> {
     if (USE_MOCK_DATA) {
@@ -270,6 +271,7 @@ class GlobalModifierService {
       if (filters?.search) params.append('search', filters.search);
       if (filters?.page) params.append('page', filters.page.toString());
       if (filters?.limit) params.append('limit', filters.limit.toString());
+      if (filters?.includeModifiers) params.append('include_modifiers', 'true'); // Add parameter for embedded modifiers
 
       const queryString = params.toString();
       const url = `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups${queryString ? `?${queryString}` : ''}`;

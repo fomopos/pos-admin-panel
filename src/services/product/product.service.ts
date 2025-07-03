@@ -63,11 +63,24 @@ class ProductService {
   /**
    * Get a single product by ID
    */
-  async getProduct(tenantId: string, storeId: string, itemId: string): Promise<ApiProduct> {
+  async getProduct(
+    tenantId: string, 
+    storeId: string, 
+    itemId: string,
+    options?: {
+      includeModifierGroups?: boolean;
+    }
+  ): Promise<ApiProduct> {
     try {
-      const response = await apiClient.get<ApiProduct>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`
-      );
+      const params = new URLSearchParams();
+      if (options?.includeModifierGroups) {
+        params.append('include_modifier_groups', 'true');
+      }
+      
+      const queryString = params.toString();
+      const url = `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await apiClient.get<ApiProduct>(url);
       return response.data;
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -80,20 +93,41 @@ class ProductService {
    */
   async createProduct(tenantId: string, storeId: string, productData: CreateProductRequest): Promise<ApiProduct> {
     try {
-      // Extract modifier groups before sending to API
-      const { modifier_groups, ...productApiData } = productData;
+      // For new product creation, try to send everything in a single API call with nested modifiers
+      // This optimizes for NoSQL databases where nested data is preferred
       
-      const response = await apiClient.post<ApiProduct>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item`,
-        productApiData
-      );
-      
-      // If modifier groups exist, save them after product creation
-      if (modifier_groups && modifier_groups.length > 0) {
-        await this.saveModifierGroups(tenantId, storeId, response.data.item_id, modifier_groups);
+      // First, try the optimized single API call with nested modifier groups
+      try {
+        // Prepare clean data for nested creation (remove IDs that should be generated)
+        const cleanedProductData = {
+          ...productData,
+          modifier_groups: productData.modifier_groups ? 
+            this.prepareModifierGroupsForCreation(productData.modifier_groups) : []
+        };
+        
+        const response = await apiClient.post<ApiProduct>(
+          `/v0/tenant/${tenantId}/store/${storeId}/item?include_nested_modifiers=true`,
+          cleanedProductData // Send complete data including cleaned modifier_groups
+        );
+        return response.data;
+      } catch (error) {
+        console.warn('Nested modifier creation not supported, falling back to separate API calls:', error);
+        
+        // Fallback: Use separate API calls for backward compatibility
+        const { modifier_groups, ...productApiData } = productData;
+        
+        const response = await apiClient.post<ApiProduct>(
+          `/v0/tenant/${tenantId}/store/${storeId}/item`,
+          productApiData
+        );
+        
+        // If modifier groups exist, save them after product creation
+        if (modifier_groups && modifier_groups.length > 0) {
+          await this.saveModifierGroups(tenantId, storeId, response.data.item_id, modifier_groups);
+        }
+        
+        return response.data;
       }
-      
-      return response.data;
     } catch (error) {
       console.error('Error creating product:', error);
       throw new Error('Failed to create product');
@@ -141,29 +175,54 @@ class ProductService {
    * Convert API Product to internal Product format
    */
   async mapApiProductToProduct(apiProduct: ApiProduct, tenantId: string, storeId: string): Promise<Product> {
-    // Load modifier groups for this product
+    // Use embedded modifier groups if available, otherwise fetch them separately
     let modifierGroups: ProductModifierGroup[] = [];
-    try {
-      const modifierGroupsResponse = await productModifierService.getModifierGroups(
-        tenantId, 
-        storeId, 
-        apiProduct.item_id
-      );
-      // Map API modifier groups to internal format
-      modifierGroups = await Promise.all(
-        modifierGroupsResponse.items.map(async (group) => {
-          const modifiersResponse = await productModifierService.getModifiers(
-            tenantId, 
-            storeId, 
-            apiProduct.item_id, 
-            group.group_id
-          );
-          return productModifierService.mapApiModifierGroupToInternal(group, modifiersResponse.items);
-        })
-      );
-    } catch (error) {
-      console.warn('Could not load modifier groups for product:', apiProduct.item_id, error);
-      // Continue without modifier groups if they fail to load
+    
+    if (apiProduct.modifier_groups) {
+      // Use embedded modifier groups to avoid additional API calls
+      modifierGroups = apiProduct.modifier_groups.map(group => ({
+        group_id: group.group_id,
+        item_id: group.item_id,
+        name: group.name,
+        selection_type: group.selection_type,
+        exact_selections: group.exact_selections,
+        max_selections: group.max_selections,
+        min_selections: group.min_selections,
+        required: group.required,
+        sort_order: group.sort_order,
+        price_delta: group.price_delta,
+        modifiers: (group.modifiers || []).map(modifier => ({
+          modifier_id: modifier.modifier_id,
+          name: modifier.name,
+          price_delta: modifier.price_delta,
+          default_selected: modifier.default_selected,
+          sort_order: modifier.sort_order
+        }))
+      }));
+    } else {
+      // Fallback: Load modifier groups with separate API calls (backward compatibility)
+      try {
+        const modifierGroupsResponse = await productModifierService.getModifierGroups(
+          tenantId, 
+          storeId, 
+          apiProduct.item_id
+        );
+        // Map API modifier groups to internal format
+        modifierGroups = await Promise.all(
+          modifierGroupsResponse.items.map(async (group) => {
+            const modifiersResponse = await productModifierService.getModifiers(
+              tenantId, 
+              storeId, 
+              apiProduct.item_id, 
+              group.group_id
+            );
+            return productModifierService.mapApiModifierGroupToInternal(group, modifiersResponse.items);
+          })
+        );
+      } catch (error) {
+        console.warn('Could not load modifier groups for product:', apiProduct.item_id, error);
+        // Continue without modifier groups if they fail to load
+      }
     }
 
     return {
@@ -449,6 +508,20 @@ class ProductService {
       console.error('Error saving modifiers for group:', group.group_id, error);
       throw new Error(`Failed to save modifiers for group ${group.name}`);
     }
+  }
+
+  /**
+   * Prepare modifier groups for nested creation by removing IDs that should be generated by the API
+   */
+  private prepareModifierGroupsForCreation(modifierGroups: ProductModifierGroup[]): ProductModifierGroup[] {
+    return modifierGroups.map(group => ({
+      ...group,
+      group_id: undefined, // Remove group_id so API generates new one
+      modifiers: group.modifiers.map(modifier => ({
+        ...modifier,
+        modifier_id: undefined // Remove modifier_id so API generates new one
+      }))
+    }));
   }
 
   /**

@@ -7,6 +7,5 @@ export type {
   UpdateGlobalModifierGroupRequest,
   CreateGlobalModifierRequest,
   UpdateGlobalModifierRequest,
-  GlobalModifierGroupsResponse,
-  GlobalModifiersResponse
+  GlobalModifierGroupsResponse
 } from './globalModifier.service';

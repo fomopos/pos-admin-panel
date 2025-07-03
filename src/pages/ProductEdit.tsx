@@ -176,33 +176,23 @@ const ProductEdit: React.FC = () => {
       if (currentTenant && currentStore) {
         setTemplatesLoading(true);
         try {
+          // Single API call to get all groups with embedded modifiers
           const response = await globalModifierService.getGlobalModifierGroups(
             currentTenant.id,
             currentStore.store_id,
-            { active: true, limit: 100 }
+            { 
+              active: true, 
+              limit: 100,
+              includeModifiers: true // Include modifiers to avoid N+1 API calls
+            }
           );
 
-          // Load modifiers for each template
-          const templatesWithModifiers = await Promise.all(
-            response.items.map(async (group) => {
-              try {
-                const modifiersResponse = await globalModifierService.getGlobalModifiers(
-                  currentTenant.id,
-                  currentStore.store_id,
-                  group.group_id
-                );
-                return globalModifierService.mapApiGlobalModifierGroupToInternal(
-                  group,
-                  modifiersResponse.items
-                );
-              } catch (error) {
-                console.warn('Failed to load modifiers for template:', group.group_id, error);
-                return globalModifierService.mapApiGlobalModifierGroupToInternal(group, []);
-              }
-            })
+          // Map the response directly since modifiers are already included
+          const templates = response.items.map(group => 
+            globalModifierService.mapApiGlobalModifierGroupToInternal(group)
           );
 
-          setGlobalTemplates(templatesWithModifiers);
+          setGlobalTemplates(templates);
         } catch (error) {
           console.error('Error loading global modifier templates:', error);
           setGlobalTemplates([]);
@@ -221,10 +211,12 @@ const ProductEdit: React.FC = () => {
       if (isEditing && id && currentTenant && currentStore) {
         setIsLoadingData(true);
         try {
+          // Fetch product with embedded modifier groups to avoid additional API calls
           const apiProduct = await productService.getProduct(
             currentTenant.id,
             currentStore.store_id,
-            id
+            id,
+            { includeModifierGroups: true }
           );
           const product = await productService.mapApiProductToProduct(
             apiProduct, 
@@ -1260,6 +1252,7 @@ const ProductEdit: React.FC = () => {
                       <p className="text-sm text-purple-700">Apply pre-configured modifier templates to this product</p>
                     </div>
                     <Button
+                      type="button"
                       onClick={() => setShowTemplatesBrowser(!showTemplatesBrowser)}
                       variant="outline"
                       size="sm"
@@ -1304,6 +1297,7 @@ const ProductEdit: React.FC = () => {
                                   </div>
                                 </div>
                                 <Button
+                                  type="button"
                                   onClick={() => applyGlobalTemplate(template)}
                                   size="sm"
                                   className="ml-2 bg-purple-600 hover:bg-purple-700 text-white"
@@ -1318,6 +1312,7 @@ const ProductEdit: React.FC = () => {
                         <div className="text-center py-4">
                           <p className="text-sm text-purple-600">No global modifier templates available</p>
                           <Button
+                            type="button"
                             onClick={() => navigate('/global-modifiers/new')}
                             size="sm"
                             variant="outline"
