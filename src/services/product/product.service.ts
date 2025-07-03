@@ -139,20 +139,46 @@ class ProductService {
    */
   async updateProduct(tenantId: string, storeId: string, itemId: string, productData: UpdateProductRequest): Promise<ApiProduct> {
     try {
-      // Extract modifier groups before sending to API
-      const { modifier_groups, ...productApiData } = productData;
-      
-      const response = await apiClient.put<ApiProduct>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
-        productApiData
-      );
-      
-      // Save modifier groups after product update
-      if (modifier_groups !== undefined) {
-        await this.saveModifierGroups(tenantId, storeId, itemId, modifier_groups);
+      // First, try to update the product with modifiers in a single API call (preferred approach)
+      if (productData.modifier_groups !== undefined) {
+        try {
+          // Prepare clean data for nested update (remove IDs that should be preserved)
+          const cleanedProductData = {
+            ...productData,
+            modifier_groups: productData.modifier_groups ? 
+              this.prepareModifierGroupsForUpdate(productData.modifier_groups) : []
+          };
+          
+          const response = await apiClient.put<ApiProduct>(
+            `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}?include_nested_modifiers=true`,
+            cleanedProductData // Send complete data including cleaned modifier_groups
+          );
+          return response.data;
+        } catch (error) {
+          console.warn('Nested modifier update not supported, falling back to separate API calls:', error);
+          
+          // Fallback: Use separate API calls for backward compatibility
+          const { modifier_groups, ...productApiData } = productData;
+          
+          const response = await apiClient.put<ApiProduct>(
+            `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
+            productApiData
+          );
+          
+          // Save modifier groups after product update
+          await this.saveModifierGroups(tenantId, storeId, itemId, modifier_groups);
+          
+          return response.data;
+        }
+      } else {
+        // No modifier groups to update, just update the product
+        const response = await apiClient.put<ApiProduct>(
+          `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
+          productData
+        );
+        
+        return response.data;
       }
-      
-      return response.data;
     } catch (error) {
       console.error('Error updating product:', error);
       throw new Error('Failed to update product');
@@ -520,6 +546,22 @@ class ProductService {
       modifiers: group.modifiers.map(modifier => ({
         ...modifier,
         modifier_id: undefined // Remove modifier_id so API generates new one
+      }))
+    }));
+  }
+
+  /**
+   * Prepare modifier groups for nested update by preserving existing IDs and removing IDs for new items
+   */
+  private prepareModifierGroupsForUpdate(modifierGroups: ProductModifierGroup[]): ProductModifierGroup[] {
+    return modifierGroups.map(group => ({
+      ...group,
+      // Keep existing group_id if it exists (for updates), remove if empty (for new groups)
+      group_id: group.group_id || undefined,
+      modifiers: group.modifiers.map(modifier => ({
+        ...modifier,
+        // Keep existing modifier_id if it exists (for updates), remove if empty (for new modifiers)
+        modifier_id: modifier.modifier_id || undefined
       }))
     }));
   }
