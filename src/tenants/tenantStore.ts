@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { tenantApiService } from '../services/tenant/tenantApiService';
 import type { TenantApiResponse, StoreApiResponse } from '../services/tenant/tenantApiService';
+import { useErrorHandler } from '../services/errorHandler';
+import { createApiError, createNetworkError } from '../utils/errorUtils';
 
 export interface Address {
   address1: string;
@@ -405,8 +407,16 @@ export const useTenantStore = create<TenantState>()(
           console.log(`🏁 [${callId}] fetchTenants completed successfully`);
         } catch (error) {
           console.error(`❌ [${callId}] Error in fetchTenants:`, error);
+          
+          // Use the error handler to process the error
+          const { handleError } = useErrorHandler.getState();
+          const appError = handleError(error, { 
+            showToast: true,
+            autoClose: 5000 
+          });
+          
           set({ 
-            error: error instanceof Error ? error.message : 'Failed to fetch tenants',
+            error: appError.message,
             isLoading: false 
           });
         } finally {
@@ -448,8 +458,16 @@ export const useTenantStore = create<TenantState>()(
           });
         } catch (error) {
           console.error('❌ Error in fetchStoresForTenant:', error);
+          
+          // Use the error handler to process the error
+          const { handleError } = useErrorHandler.getState();
+          const appError = handleError(error, { 
+            showToast: true,
+            autoClose: 5000 
+          });
+          
           set({ 
-            error: error instanceof Error ? error.message : 'Failed to fetch stores',
+            error: appError.message,
             isLoading: false 
           });
         }

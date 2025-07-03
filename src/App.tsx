@@ -40,6 +40,11 @@ import RoleDetailPage from './pages/roles/RoleDetailPage';
 import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPage, ServerAssignmentPage, TableMergeUnmergePage } from './pages/table';
 import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
 
+// Error handling imports
+import ErrorBoundary from './components/ErrorBoundary';
+import ToastContainer from './components/ToastContainer';
+import { setupGlobalErrorHandlers } from './services/errorHandler';
+
 // Placeholder components for other pages
 const Settings: React.FC = () => (
   <div className="space-y-6">
@@ -50,15 +55,17 @@ const Settings: React.FC = () => (
 
 function App() {
   useEffect(() => {
-    // Initialize the app
+    // Initialize the app and setup global error handlers
     console.log('POS Admin Panel initialized');
+    setupGlobalErrorHandlers();
   }, []);
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <Router>
-        <div className="App">
-          <Routes>
+    <ErrorBoundary>
+      <I18nextProvider i18n={i18n}>
+        <Router>
+          <div className="App">
+            <Routes>
             {/* Public routes */}
             <Route path="/auth/signin" element={<SignIn />} />
             <Route path="/auth/signup" element={<SignUp />} />
@@ -142,9 +149,13 @@ function App() {
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
+          
+          {/* Toast notifications container */}
+          <ToastContainer />
         </div>
       </Router>
     </I18nextProvider>
+  </ErrorBoundary>
   );
 }
 
