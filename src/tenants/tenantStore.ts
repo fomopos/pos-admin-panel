@@ -103,7 +103,7 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
     description: apiStore.description || undefined,
     location_type: apiStore.location_type,
     store_type: apiStore.store_type,
-    address: {
+    address: apiStore.address ? {
       address1: apiStore.address.address1 || '',
       address2: apiStore.address.address2 || undefined,
       address3: apiStore.address.address3 || undefined,
@@ -115,6 +115,18 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
       postal_code: apiStore.address.postal_code || '',
       country: apiStore.address.country,
       county: apiStore.address.county || '',
+    } : {
+      address1: '',
+      address2: undefined,
+      address3: undefined,
+      address4: undefined,
+      city: '',
+      state: '',
+      district: '',
+      area: '',
+      postal_code: '',
+      country: '',
+      county: '',
     },
     locale: apiStore.locale,
     currency: apiStore.currency,
