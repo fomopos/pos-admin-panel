@@ -19,12 +19,14 @@ export interface EnhancedCategory {
   icon_url: string | null;
   image_url: string | null;
   
+  // Visual properties
+  color?: string;
+  
   // Categorization and search
   tags: string[];
   
   // Extensible properties
   properties?: {
-    color?: string;
     theme?: string;
     tax_category?: string;
     seasonal?: boolean;
@@ -54,9 +56,9 @@ export interface CategoryFormData {
   display_on_main_screen: boolean;
   icon_url?: string;
   image_url?: string;
+  color?: string;
   tags: string[];
   properties?: {
-    color?: string;
     theme?: string;
     tax_category?: string;
     seasonal?: boolean;

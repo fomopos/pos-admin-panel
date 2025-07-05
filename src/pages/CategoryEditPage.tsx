@@ -20,6 +20,7 @@ import { categoryApiService } from '../services/category/categoryApiService';
 import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, IconPicker } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import { generateRandomColor } from '../utils/colorUtils';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { CategoryWidget } from '../components/category/CategoryWidget';
@@ -160,7 +161,7 @@ const CategoryEditPage: React.FC = () => {
             image_url: categoryData.image_url || undefined,
             tags: categoryData.tags || [],
             properties: {
-              color: categoryData.properties?.color || '#3B82F6',
+              color: categoryData.color || '#3B82F6',
               tax_rate: categoryData.properties?.tax_rate || 0,
               commission_rate: categoryData.properties?.commission_rate || 0,
               featured: categoryData.properties?.featured || false,
@@ -227,14 +228,24 @@ const CategoryEditPage: React.FC = () => {
   };
 
   const handlePropertyChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      properties: { ...prev.properties, [field]: value }
-    }));
+    if (field === 'color') {
+      // Handle color at parent level
+      setFormData(prev => ({ ...prev, color: value }));
+    } else {
+      // Handle other properties in properties object
+      setFormData(prev => ({
+        ...prev,
+        properties: { ...prev.properties, [field]: value }
+      }));
+    }
   };
 
   const handleIconSelect = (iconId: string) => {
     setFormData(prev => ({ ...prev, icon_url: iconId }));
+  };
+
+  const handleColorRefresh = (newColor: string) => {
+    handlePropertyChange('color', newColor);
   };
 
   const addTag = () => {
@@ -752,17 +763,25 @@ const CategoryEditPage: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <input
                     type="color"
-                    value={formData.properties?.color || '#3B82F6'}
+                    value={formData.color || '#3B82F6'}
                     onChange={(e) => handlePropertyChange('color', e.target.value)}
                     className="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer"
                   />
                   <Input
                     type="text"
-                    value={formData.properties?.color || '#3B82F6'}
+                    value={formData.color || '#3B82F6'}
                     onChange={(e) => handlePropertyChange('color', e.target.value)}
                     className="flex-1"
                     placeholder="#3B82F6"
                   />
+                  <button
+                    type="button"
+                    onClick={() => handleColorRefresh(generateRandomColor())}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-300 transition-colors"
+                    title="Generate random color"
+                  >
+                    <FontAwesomeIcon icon={faRotateRight} className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
 
@@ -776,7 +795,7 @@ const CategoryEditPage: React.FC = () => {
                     <IconPicker
                       selectedIconId={formData.icon_url || undefined}
                       onIconSelect={handleIconSelect}
-                      color={formData.properties?.color || '#3B82F6'}
+                      color={formData.color || '#3B82F6'}
                     />
                   </div>
                 </div>

@@ -203,7 +203,15 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
         store_id: currentStore?.store_id
       });
       if (onSuccess) {
-        onSuccess(newCategory);
+        // Convert CategoryApiResponse to EnhancedCategory
+        const enhancedCategory: EnhancedCategory = {
+          ...newCategory,
+          color: newCategory.color || undefined,
+          productCount: 0,
+          children: [],
+          level: 0
+        };
+        onSuccess(enhancedCategory);
       }
       onClose();
     } catch (error) {

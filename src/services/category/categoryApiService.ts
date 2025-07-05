@@ -13,6 +13,7 @@ export interface CategoryApiResponse {
   is_active: boolean | null;
   icon_url: string | null;
   image_url: string | null;
+  color?: string | null;
   display_on_main_screen: boolean | null;
   tags: string[];
   properties: Record<string, any> | null;
@@ -32,6 +33,7 @@ export interface CreateCategoryRequest {
   is_active?: boolean;
   icon_url?: string;
   image_url?: string;
+  color?: string;
   display_on_main_screen?: boolean;
   tags?: string[];
   properties?: Record<string, any>;
@@ -105,6 +107,7 @@ class CategoryApiService {
   private mapToEnhancedCategory(apiCategory: CategoryApiResponse): EnhancedCategory {
     return {
       ...apiCategory,
+      color: apiCategory.color || undefined,
       // Add computed properties if needed
       productCount: 0,
       children: [],
@@ -159,6 +162,7 @@ class CategoryApiService {
           is_active: data.is_active !== false,
           icon_url: data.icon_url || null,
           image_url: data.image_url || null,
+          color: data.color || null,
           display_on_main_screen: data.display_on_main_screen !== false,
           tags: data.tags || [],
           properties: data.properties || null,
@@ -393,11 +397,12 @@ class CategoryApiService {
         tags: ['electronics', 'technology', 'gadgets'],
         icon_url: 'https://example.com/icons/electronics.svg',
         image_url: null,
+        color: '#3B82F6',
         created_at: '2024-01-10T10:00:00Z',
         updated_at: '2024-01-15T14:30:00Z',
         create_user_id: 'user-123',
         update_user_id: null,
-        properties: { color: '#3B82F6' }
+        properties: {}
       },
       {
         category_id: '2',
@@ -410,11 +415,12 @@ class CategoryApiService {
         tags: ['clothing', 'fashion', 'apparel'],
         icon_url: 'https://example.com/icons/clothing.svg',
         image_url: null,
+        color: '#10B981',
         created_at: '2024-01-08T09:00:00Z',
         updated_at: '2024-01-12T16:45:00Z',
         create_user_id: 'user-123',
         update_user_id: null,
-        properties: { color: '#10B981' }
+        properties: {}
       },
       {
         category_id: '3',
@@ -427,11 +433,12 @@ class CategoryApiService {
         tags: ['food', 'beverages', 'drinks'],
         icon_url: 'https://example.com/icons/food.svg',
         image_url: null,
+        color: '#F59E0B',
         created_at: '2024-01-05T11:30:00Z',
         updated_at: '2024-01-14T12:15:00Z',
         create_user_id: 'user-123',
         update_user_id: null,
-        properties: { color: '#F59E0B' }
+        properties: {}
       },
       {
         category_id: '4',
@@ -444,11 +451,12 @@ class CategoryApiService {
         tags: ['mens', 'clothing', 'fashion'],
         icon_url: null,
         image_url: null,
+        color: '#06B6D4',
         created_at: '2024-01-08T10:00:00Z',
         updated_at: '2024-01-12T17:00:00Z',
         create_user_id: 'user-123',
         update_user_id: null,
-        properties: { color: '#06B6D4' }
+        properties: {}
       },
       {
         category_id: '5',
@@ -461,11 +469,12 @@ class CategoryApiService {
         tags: ['books', 'education', 'reading'],
         icon_url: 'https://example.com/icons/books.svg',
         image_url: null,
+        color: '#8B5CF6',
         created_at: '2024-01-03T15:20:00Z',
         updated_at: '2024-01-10T08:30:00Z',
         create_user_id: 'user-123',
         update_user_id: null,
-        properties: { color: '#8B5CF6' }
+        properties: {}
       }
     ];
 
