@@ -1,5 +1,6 @@
 // Category API service for real backend integration
 import { apiClient, ApiError, USE_MOCK_DATA, API_BASE_URL } from '../api';
+import { useErrorHandler } from '../errorHandler';
 
 // Types for Category API integration (matching backend schema)
 import type { EnhancedCategory } from '../../types/category';
@@ -96,8 +97,14 @@ class CategoryApiService {
       return response.data.categories.map(this.mapToEnhancedCategory);
       
     } catch (error) {
-      console.error('❌ Error fetching categories from API:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, 'Failed to fetch categories');
+      console.error('❌ Error fetching categories from API:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -138,8 +145,14 @@ class CategoryApiService {
       return response.data;
       
     } catch (error) {
-      console.error('❌ Error fetching category:', error);
-      throw new ApiError(`Category not found: ${categoryId}`, 1101, 'CATEGORY_NOT_FOUND');
+      const appError = this.handleError(error, `Failed to fetch category: ${categoryId}`);
+      console.error('❌ Error fetching category:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -185,8 +198,14 @@ class CategoryApiService {
       return response.data;
       
     } catch (error) {
-      console.error('❌ Error creating category:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, 'Failed to create category');
+      console.error('❌ Error creating category:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -218,8 +237,14 @@ class CategoryApiService {
       return response.data;
       
     } catch (error) {
-      console.error('❌ Error batch creating categories:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, 'Failed to batch create categories');
+      console.error('❌ Error batch creating categories:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -250,8 +275,14 @@ class CategoryApiService {
       return response.data;
       
     } catch (error) {
-      console.error('❌ Error updating category:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, `Failed to update category: ${categoryId}`);
+      console.error('❌ Error updating category:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -275,8 +306,14 @@ class CategoryApiService {
       console.log('✅ Successfully deleted category:', categoryId);
       
     } catch (error) {
-      console.error('❌ Error deleting category:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, `Failed to delete category: ${categoryId}`);
+      console.error('❌ Error deleting category:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -302,8 +339,14 @@ class CategoryApiService {
       return rootCategories.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       
     } catch (error) {
-      console.error('❌ Error fetching category hierarchy:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, 'Failed to fetch category hierarchy');
+      console.error('❌ Error fetching category hierarchy:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -339,8 +382,14 @@ class CategoryApiService {
       return result;
       
     } catch (error) {
-      console.error('❌ Error uploading category icon:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, `Failed to upload icon for category: ${categoryId}`);
+      console.error('❌ Error uploading category icon:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -376,8 +425,14 @@ class CategoryApiService {
       return result;
       
     } catch (error) {
-      console.error('❌ Error uploading category image:', error);
-      throw this.handleError(error);
+      const appError = this.handleError(error, `Failed to upload image for category: ${categoryId}`);
+      console.error('❌ Error uploading category image:', appError);
+      
+      // Display error to user
+      useErrorHandler.getState().handleError(appError);
+      
+      // Re-throw so calling code can handle if needed
+      throw appError;
     }
   }
 
@@ -485,9 +540,26 @@ class CategoryApiService {
   }
 
   /**
-   * Handle API errors consistently
+   * Handle API errors consistently and display to user
    */
-  private handleError(error: any): ApiError {
+  private handleError(error: any, userMessage?: string): ApiError {
+    const appError = this.createApiError(error, userMessage);
+    
+    // Log the error details
+    console.error('🚨 Category API Error:', {
+      message: appError.message,
+      code: appError.code,
+      slug: appError.slug,
+      details: appError.details
+    });
+    
+    return appError;
+  }
+
+  /**
+   * Create structured ApiError from various error types
+   */
+  private createApiError(error: any, userMessage?: string): ApiError {
     if (error instanceof ApiError) {
       return error;
     }
@@ -499,7 +571,7 @@ class CategoryApiService {
       // Check if it has the new structured format
       if (errorData.code && errorData.slug && errorData.message) {
         return new ApiError(
-          errorData.message,
+          userMessage || errorData.message,
           errorData.code,
           errorData.slug,
           errorData.details
@@ -509,7 +581,7 @@ class CategoryApiService {
     
     // Fallback error handling
     return new ApiError(
-      error instanceof Error ? error.message : 'Category operation failed',
+      userMessage || (error instanceof Error ? error.message : 'Category operation failed'),
       1100,
       'CATEGORY_ERROR',
       { originalError: error?.message || 'Unknown error' }

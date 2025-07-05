@@ -76,9 +76,9 @@ Enhanced the built-in category templates to include appropriate icons:
   
   // Visual properties
   icon_url: string,           // Icon ID (e.g., 'computer-desktop')
+  color: string,              // Hex color (e.g., '#3B82F6') - moved to parent level
   properties: {
-    color: string,            // Hex color (e.g., '#3B82F6')
-    // ... other properties
+    // ... other properties (theme, tax_category, etc.)
   }
 }
 ```
@@ -119,9 +119,7 @@ Enhanced the built-in category templates to include appropriate icons:
   name: "Electronics",
   description: "Electronic devices and accessories",
   icon_url: "computer-desktop",
-  properties: {
-    color: "#3B82F6"
-  }
+  color: "#3B82F6"
 }
 ```
 
@@ -131,15 +129,13 @@ Enhanced the built-in category templates to include appropriate icons:
 {
   name: "Premium Services",
   icon_url: "sparkles",        // Selected from icon picker
-  properties: {
-    color: "#8B5CF6"          // Custom purple color
-  }
+  color: "#8B5CF6"            // Custom purple color
 }
 ```
 
 ## Technical Benefits
 
-1. **Database Compatibility**: Uses existing `icon_url` and `properties.color` fields
+1. **Database Compatibility**: Uses existing `icon_url` field and moves `color` to parent level for better API structure
 2. **Performance**: Icons are SVG-based Heroicons with minimal bundle impact
 3. **Scalability**: Easy to add new icons by extending the `CATEGORY_ICONS` array
 4. **Accessibility**: Icons have proper names and descriptions
@@ -155,6 +151,37 @@ Enhanced the built-in category templates to include appropriate icons:
 - ✅ Real-time preview updates correctly
 - ✅ Form validation maintains all existing functionality
 - ✅ Category creation and editing preserve all data
+- ✅ Error handling framework integration complete
+- ✅ All API errors display user-friendly toast notifications
+
+## Error Handling Framework Integration
+
+### Comprehensive Error Handling
+All category API operations now use the project's error handling framework (`useErrorHandler`) for consistent user experience:
+
+- **Automatic Error Display**: API errors are converted to user-friendly toast notifications
+- **User-Friendly Messages**: Custom error messages for different operation types (create, update, delete, etc.)
+- **Consistent Experience**: Category errors follow the same pattern as other app features
+- **Error Logging**: Detailed error information is logged for debugging while showing simple messages to users
+
+### API Methods with Error Framework
+All category API service methods integrate with the error framework:
+- `getCategories()` - "Failed to fetch categories"
+- `getCategoryById()` - "Failed to fetch category: {categoryId}"
+- `createCategory()` - "Failed to create category"
+- `updateCategory()` - "Failed to update category: {categoryId}"
+- `deleteCategory()` - "Failed to delete category: {categoryId}"
+- `addBatch()` - "Failed to batch create categories"
+- `getCategoryHierarchy()` - "Failed to fetch category hierarchy"
+- `uploadCategoryIcon()` - "Failed to upload icon for category: {categoryId}"
+- `uploadCategoryImage()` - "Failed to upload image for category: {categoryId}"
+
+### Error Types Handled
+- **Network Errors**: Connection failures, timeouts
+- **API Errors**: Server validation, authentication issues
+- **File Upload Errors**: Icon and image upload failures
+- **Data Validation Errors**: Invalid category data
+- **Permission Errors**: Insufficient access rights
 
 ## Future Enhancements
 
