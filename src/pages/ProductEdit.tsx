@@ -22,8 +22,8 @@ import { globalModifierService, type GlobalModifierTemplate } from '../services/
 import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { taxServices } from '../services/tax';
-import { storeServices } from '../services/store';
 import { validateAllModifierGroups } from '../utils/modifierValidation';
+import { DEFAULT_UOM, getUOMDropdownOptions, getUOMById } from '../constants/uom';
 import type { EnhancedCategory } from '../types/category';
 import type { TaxGroup } from '../services/types/tax.types';
 import type { 
@@ -42,7 +42,7 @@ const ProductEdit: React.FC = () => {
     name: '',
     description: '',
     store_id: currentStore?.store_id || '',
-    uom: '',
+    uom: DEFAULT_UOM,
     brand: '',
     tax_group: '',
     fiscal_id: '',
@@ -113,14 +113,6 @@ const ProductEdit: React.FC = () => {
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
-
-  // Get currency symbol based on store currency
-  const getCurrencySymbol = (): string => {
-    const storeCurrency = currentStore?.currency || 'USD';
-    const supportedCurrencies = storeServices.settings.getSupportedCurrencies();
-    const currency = supportedCurrencies.find(c => c.code === storeCurrency);
-    return currency?.symbol || '$';
-  };
 
   // Load categories for dropdown
   useEffect(() => {
@@ -658,14 +650,30 @@ const ProductEdit: React.FC = () => {
                   </div>
 
                   {/* UOM */}
-                  <InputTextField
-                    label="Unit of Measure"
-                    required
-                    value={formData.uom}
-                    onChange={(value) => handleInputChange({ target: { name: 'uom', value, type: 'text' } } as any)}
-                    placeholder="e.g., lb, kg, each"
-                    error={errors.uom}
-                  />
+                  <div>
+                    <DropdownSearch
+                      label="Unit of Measure"
+                      required
+                      value={formData.uom}
+                      options={getUOMDropdownOptions()}
+                      onSelect={(option) => 
+                        handleInputChange({ 
+                          target: { 
+                            name: 'uom', 
+                            value: option?.id || '', 
+                            type: 'text' 
+                          } 
+                        } as any)
+                      }
+                      placeholder="Select unit of measure"
+                      searchPlaceholder="Search units..."
+                      displayValue={(option) => option ? getUOMById(option.id)?.label || option.label : ''}
+                      error={errors.uom}
+                      allowClear={false}
+                      closeOnSelect={true}
+                      noOptionsMessage="No units available"
+                    />
+                  </div>
 
                   {/* Brand */}
                   <InputTextField
@@ -755,7 +763,6 @@ const ProductEdit: React.FC = () => {
                     error={errors.list_price}
                     min={0}
                     step={0.01}
-                    currencySymbol={getCurrencySymbol()}
                   />
 
                   {/* Sale Price */}
@@ -766,7 +773,6 @@ const ProductEdit: React.FC = () => {
                     placeholder="0.00"
                     min={0}
                     step={0.01}
-                    currencySymbol={getCurrencySymbol()}
                   />
 
                   {/* Tare Value */}
@@ -777,16 +783,31 @@ const ProductEdit: React.FC = () => {
                     placeholder="0.00"
                     min={0}
                     step={0.01}
-                    currencySymbol={getCurrencySymbol()}
                   />
 
                   {/* Tare UOM */}
-                  <InputTextField
-                    label="Tare UOM"
-                    value={formData.pricing?.tare_uom}
-                    onChange={(value) => handleInputChange({ target: { name: 'pricing.tare_uom', value, type: 'text' } } as any)}
-                    placeholder="e.g., oz, g"
-                  />
+                  <div>
+                    <DropdownSearch
+                      label="Tare UOM"
+                      value={formData.pricing?.tare_uom || ''}
+                      options={getUOMDropdownOptions()}
+                      onSelect={(option) => 
+                        handleInputChange({ 
+                          target: { 
+                            name: 'pricing.tare_uom', 
+                            value: option?.id || '', 
+                            type: 'text' 
+                          } 
+                        } as any)
+                      }
+                      placeholder="Select tare unit"
+                      searchPlaceholder="Search units..."
+                      displayValue={(option) => option ? getUOMById(option.id)?.label || option.label : ''}
+                      allowClear={true}
+                      closeOnSelect={true}
+                      noOptionsMessage="No units available"
+                    />
+                  </div>
 
                   {/* Discount Type */}
                   <div>
@@ -812,7 +833,7 @@ const ProductEdit: React.FC = () => {
                     placeholder="0.00"
                     step={0.01}
                     min={0}
-                    currencySymbol={formData.pricing?.discount_type === 'percentage' ? '%' : getCurrencySymbol()}
+                    currencySymbol={formData.pricing?.discount_type === 'percentage' ? '%' : undefined}
                     currencyPosition="after"
                   />
 
@@ -824,7 +845,7 @@ const ProductEdit: React.FC = () => {
                     placeholder="0.00"
                     step={0.01}
                     min={0}
-                    currencySymbol={formData.pricing?.discount_type === 'percentage' ? '%' : getCurrencySymbol()}
+                    currencySymbol={formData.pricing?.discount_type === 'percentage' ? '%' : undefined}
                     currencyPosition="after"
                   />
 
@@ -836,7 +857,7 @@ const ProductEdit: React.FC = () => {
                     placeholder="0.00"
                     step={0.01}
                     min={0}
-                    currencySymbol={formData.pricing?.discount_type === 'percentage' ? '%' : getCurrencySymbol()}
+                    currencySymbol={formData.pricing?.discount_type === 'percentage' ? '%' : undefined}
                     currencyPosition="after"
                   />
                 </div>

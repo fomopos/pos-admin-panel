@@ -23,6 +23,7 @@ export { InputTextField } from './InputTextField';
 export { InputMoneyField } from './InputMoneyField';
 export { DropdownSearch } from './DropdownSearch';
 export { CompactToggle } from './CompactToggle';
+export { IconPicker } from './IconPicker';
 export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGuard } from './PermissionGuard';
 
 // Re-export types

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -17,7 +17,10 @@ import {
   SwatchIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch } from '../components/ui';
+import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, IconPicker } from '../components/ui';
+import { getIconComponent } from '../components/ui/IconPicker';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { generateRandomColor } from '../utils/colorUtils';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { EnhancedCategory, CategoryFormData } from '../types/category';
@@ -32,6 +35,7 @@ const CATEGORY_TEMPLATES = [
     name: 'Electronics',
     description: 'Electronic devices and accessories',
     color: '#3B82F6',
+    icon: 'computer-desktop',
     tags: ['electronics', 'technology', 'gadgets']
   },
   {
@@ -39,6 +43,7 @@ const CATEGORY_TEMPLATES = [
     name: 'Clothing',
     description: 'Apparel and fashion items',
     color: '#10B981',
+    icon: 'swatch',
     tags: ['clothing', 'fashion', 'apparel']
   },
   {
@@ -46,6 +51,7 @@ const CATEGORY_TEMPLATES = [
     name: 'Food & Beverages',
     description: 'Food items and drinks',
     color: '#F59E0B',
+    icon: 'cake',
     tags: ['food', 'beverages', 'drinks']
   },
   {
@@ -53,6 +59,7 @@ const CATEGORY_TEMPLATES = [
     name: 'Books',
     description: 'Books and educational materials',
     color: '#8B5CF6',
+    icon: 'book-open',
     tags: ['books', 'education', 'reading']
   },
   {
@@ -60,6 +67,7 @@ const CATEGORY_TEMPLATES = [
     name: 'Health & Beauty',
     description: 'Health and beauty products',
     color: '#EF4444',
+    icon: 'heart',
     tags: ['health', 'beauty', 'wellness']
   },
   {
@@ -67,6 +75,7 @@ const CATEGORY_TEMPLATES = [
     name: 'Sports & Outdoors',
     description: 'Sports equipment and outdoor gear',
     color: '#06B6D4',
+    icon: 'bolt',
     tags: ['sports', 'outdoors', 'fitness']
   }
 ];
@@ -80,6 +89,9 @@ const CategoryEditPage: React.FC = () => {
   const [originalCategory, setOriginalCategory] = useState<EnhancedCategory | null>(null);
   const [categories, setCategories] = useState<EnhancedCategory[]>([]);
   
+  // Generate a random color only for new categories
+  const defaultColor = useMemo(() => generateRandomColor(), []);
+
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     description: '',
@@ -91,7 +103,7 @@ const CategoryEditPage: React.FC = () => {
     image_url: undefined,
     tags: [],
     properties: {
-      color: '#3B82F6',
+      color: defaultColor, // Use generated random color for new categories
       tax_rate: 0,
       commission_rate: 0,
       featured: false,
@@ -221,6 +233,10 @@ const CategoryEditPage: React.FC = () => {
     }));
   };
 
+  const handleIconSelect = (iconId: string) => {
+    setFormData(prev => ({ ...prev, icon_url: iconId }));
+  };
+
   const addTag = () => {
     const tag = tagInput.trim();
     if (tag && !formData.tags.includes(tag)) {
@@ -245,6 +261,7 @@ const CategoryEditPage: React.FC = () => {
       name: template.name,
       description: template.description,
       tags: template.tags,
+      icon_url: template.icon,
       properties: {
         ...prev.properties,
         color: template.color
@@ -331,7 +348,7 @@ const CategoryEditPage: React.FC = () => {
           image_url: originalCategory.image_url || undefined,
           tags: originalCategory.tags || [],
           properties: {
-            color: originalCategory.properties?.color || '#3B82F6',
+            color: originalCategory.properties?.color || defaultColor, // Use default random color if existing category has no color
             tax_rate: originalCategory.properties?.tax_rate || 0,
             commission_rate: originalCategory.properties?.commission_rate || 0,
             featured: originalCategory.properties?.featured || false,
@@ -340,7 +357,7 @@ const CategoryEditPage: React.FC = () => {
           }
         });
       } else {
-        // Reset to empty form
+        // Reset to empty form with new random color
         setFormData({
           name: '',
           description: '',
@@ -352,7 +369,7 @@ const CategoryEditPage: React.FC = () => {
           image_url: undefined,
           tags: [],
           properties: {
-            color: '#3B82F6',
+            color: defaultColor, // Use the same default random color
             tax_rate: 0,
             commission_rate: 0,
             featured: false,
@@ -569,10 +586,17 @@ const CategoryEditPage: React.FC = () => {
               >
                 <div className="flex items-start space-x-3">
                   <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-semibold text-lg shadow-md"
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-md"
                     style={{ backgroundColor: template.color }}
                   >
-                    {template.name.charAt(0)}
+                    {(() => {
+                      const iconDefinition = getIconComponent(template.icon);
+                      return iconDefinition ? (
+                        <FontAwesomeIcon icon={iconDefinition} className="h-6 w-6" />
+                      ) : (
+                        <span className="font-semibold text-lg">{template.name.charAt(0)}</span>
+                      );
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -742,15 +766,18 @@ const CategoryEditPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Icon and Image Upload placeholders */}
+              {/* Icon and Image Upload */}
               <div className="grid grid-cols-1 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Category Icon
                   </label>
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-                    <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">Click to upload icon</p>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <IconPicker
+                      selectedIconId={formData.icon_url || undefined}
+                      onIconSelect={handleIconSelect}
+                      color={formData.properties?.color || '#3B82F6'}
+                    />
                   </div>
                 </div>
 
@@ -761,6 +788,7 @@ const CategoryEditPage: React.FC = () => {
                   <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
                     <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500">Click to upload image</p>
+                    <p className="text-xs text-gray-400 mt-1">Coming soon...</p>
                   </div>
                 </div>
               </div>

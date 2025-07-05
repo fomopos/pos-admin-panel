@@ -1,6 +1,8 @@
 import React from 'react';
 import { CurrencyDollarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Input from './Input';
+import { useTenantStore } from '../../tenants/tenantStore';
+import { storeServices } from '../../services/store';
 
 interface InputMoneyFieldProps {
   /** The label text for the input field */
@@ -44,6 +46,18 @@ interface InputMoneyFieldProps {
   /** Whether to show error icon alongside error text */
   showErrorIcon?: boolean;
 }
+
+/**
+ * Hook to get the store currency symbol
+ */
+const useStoreCurrencySymbol = (): string => {
+  const { currentStore } = useTenantStore();
+  
+  const storeCurrency = currentStore?.currency || 'USD';
+  const supportedCurrencies = storeServices.settings.getSupportedCurrencies();
+  const currency = supportedCurrencies.find(c => c.code === storeCurrency);
+  return currency?.symbol || '$';
+};
 
 /**
  * InputMoneyField - A specialized input field component for monetary values
@@ -90,11 +104,15 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
   max,
   step = 0.01,
   autoFocus = false,
-  currencySymbol = '$',
+  currencySymbol,
   currencyPosition = 'before',
   currencyIcon,
   showErrorIcon = true,
 }) => {
+  // Get store currency symbol as default if currencySymbol is not provided
+  const storeCurrencySymbol = useStoreCurrencySymbol();
+  const effectiveCurrencySymbol = currencySymbol || storeCurrencySymbol;
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
@@ -141,7 +159,7 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
             {currencyIcon ? (
               <CurrencyIconComponent className="h-4 w-4 text-slate-400" />
             ) : (
-              <span className="text-slate-400 font-medium text-sm">{currencySymbol}</span>
+              <span className="text-slate-400 font-medium text-sm">{effectiveCurrencySymbol}</span>
             )}
           </div>
         )}
@@ -151,7 +169,7 @@ export const InputMoneyField: React.FC<InputMoneyFieldProps> = ({
             {currencyIcon ? (
               <CurrencyIconComponent className="h-4 w-4 text-slate-400" />
             ) : (
-              <span className="text-slate-400 font-medium text-sm">{currencySymbol}</span>
+              <span className="text-slate-400 font-medium text-sm">{effectiveCurrencySymbol}</span>
             )}
           </div>
         )}

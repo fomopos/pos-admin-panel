@@ -5,7 +5,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon
 } from '@heroicons/react/24/outline';
-import { Button, InputTextField, DropdownSearch, CompactToggle } from '../ui';
+import { Button, InputTextField, DropdownSearch, CompactToggle, InputMoneyField } from '../ui';
 import type { ProductModifier, ProductModifierGroup } from '../../services/types/product.types';
 import type { DropdownSearchOption } from '../ui/DropdownSearch';
 
@@ -397,9 +397,8 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                     </div>
 
                     <div>
-                      <InputTextField
-                        type="number"
-                        label="Group Price Delta ($)"
+                      <InputMoneyField
+                        label="Group Price Delta"
                         value={group.price_delta?.toString() || '0'}
                         onChange={(value) => updateModifierGroup(groupIndex, { 
                           price_delta: parseFloat(value) || 0 
@@ -461,9 +460,8 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                                   helperText="Display name for this option"
                                 />
                                 
-                                <InputTextField
-                                  type="number"
-                                  label="Price Delta ($)"
+                                <InputMoneyField
+                                  label="Price Delta"
                                   value={modifier.price_delta.toString()}
                                   onChange={(value) => updateModifier(groupIndex, modifierIndex, { 
                                     price_delta: parseFloat(value) || 0 
