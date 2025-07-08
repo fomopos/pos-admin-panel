@@ -14,8 +14,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { tenderApiService } from '../services/tender/tenderApiService';
-import { PageHeader, Button, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch } from '../components/ui';
-import { TenderWidget } from '../components/tender/TenderWidget';
+import { PageHeader, Button, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, Widget } from '../components/ui';
 import type { 
   Tender, 
   TenderDenomination, 
@@ -583,10 +582,11 @@ const TenderEditPage: React.FC = () => {
 
       {/* Template Selection for New Tenders */}
       {showTemplates && !isEditing && (
-        <TenderWidget
+        <Widget
           title="Tender Templates"
           description="Choose a template to get started quickly, or skip to create from scratch"
           icon={SparklesIcon}
+          variant="primary"
           headerActions={
             <Button
               onClick={() => setShowTemplates(false)}
@@ -626,7 +626,7 @@ const TenderEditPage: React.FC = () => {
               );
             })}
           </div>
-        </TenderWidget>
+        </Widget>
       )}
 
       {/* Main Form */}
@@ -634,7 +634,7 @@ const TenderEditPage: React.FC = () => {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
           {/* Basic Information Widget */}
-          <TenderWidget
+          <Widget
             title="Basic Information"
             description="Essential tender details and identification"
             icon={CreditCardIcon}
@@ -701,11 +701,11 @@ const TenderEditPage: React.FC = () => {
                 min={1}
               />
             </div>
-          </TenderWidget>
+          </Widget>
 
           {/* Denominations Widget - Only show for currency type */}
           {formData.type_code === 'currency' && (
-            <TenderWidget
+            <Widget
               title="Denominations"
               description="Configure available denominations for this tender"
               icon={BanknotesIcon}
@@ -762,11 +762,11 @@ const TenderEditPage: React.FC = () => {
                   ))
                 )}
               </div>
-            </TenderWidget>
+            </Widget>
           )}
 
           {/* Configuration Widget */}
-          <TenderWidget
+          <Widget
             title="Configuration"
             description="Tender behavior and system configuration"
             icon={Cog6ToothIcon}
@@ -829,10 +829,10 @@ const TenderEditPage: React.FC = () => {
                 />
               </div>
             </div>
-          </TenderWidget>
+          </Widget>
 
           {/* Settings Widget */}
-          <TenderWidget
+          <Widget
             title="Settings"
             description="Tender status and behavioral settings"
             icon={Cog6ToothIcon}
@@ -853,7 +853,7 @@ const TenderEditPage: React.FC = () => {
                 onChange={(checked) => handleInputChange('over_tender_allowed', checked)}
               />
             </div>
-          </TenderWidget>
+          </Widget>
         </div>
 
         {/* Error Display */}
