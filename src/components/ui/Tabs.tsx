@@ -134,7 +134,7 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
 }) => {
   return (
     <div className={cn(
-      'w-full bg-white rounded-2xl shadow-sm', 
+      'w-full', 
       allowOverflow ? 'overflow-visible' : 'overflow-hidden', 
       className
     )}>
@@ -180,7 +180,7 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
         </nav>
       </div>
       
-      <div className="p-top-6">
+      <div className="bg-transparent pt-6">
         {children}
       </div>
     </div>
