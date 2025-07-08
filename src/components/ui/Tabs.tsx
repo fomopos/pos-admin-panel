@@ -180,7 +180,7 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
         </nav>
       </div>
       
-      <div className="p-6 bg-white">
+      <div className="p-top-6">
         {children}
       </div>
     </div>
