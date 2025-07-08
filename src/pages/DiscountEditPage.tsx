@@ -14,9 +14,8 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 import { discountApiService } from '../services/discount/discountApiService';
-import { PageHeader, Button, DropdownSearch, Alert, Loading, PropertyCheckbox, ConfirmDialog } from '../components/ui';
+import { PageHeader, Button, DropdownSearch, Alert, Loading, PropertyCheckbox, ConfirmDialog, Widget } from '../components/ui';
 import { InputTextField, InputMoneyField } from '../components/ui';
-import { CategoryWidget } from '../components/category/CategoryWidget';
 import type { Discount, CreateDiscountRequest } from '../types/discount';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import useTenantStore from '../tenants/tenantStore';
@@ -572,10 +571,11 @@ const DiscountEditPage: React.FC = () => {
 
       {/* Template Selection for New Discounts */}
       {showTemplates && !isEditing && (
-        <CategoryWidget
+        <Widget
           title="Discount Templates"
           description="Choose a template to get started quickly, or skip to create from scratch"
           icon={SparklesIcon}
+          variant="primary"
           headerActions={
             <Button
               onClick={() => setShowTemplates(false)}
@@ -626,14 +626,14 @@ const DiscountEditPage: React.FC = () => {
               </div>
             ))}
           </div>
-        </CategoryWidget>
+        </Widget>
       )}
 
       {/* Main Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
           {/* Basic Information Widget */}
-          <CategoryWidget
+          <Widget
             title="Basic Information"
             description="Essential discount details and configuration"
             icon={InformationCircleIcon}
@@ -723,10 +723,10 @@ const DiscountEditPage: React.FC = () => {
                 error={errors.prompt}
               />
             </div>
-          </CategoryWidget>
+          </Widget>
 
           {/* Schedule Widget */}
-          <CategoryWidget
+          <Widget
             title="Schedule"
             description="Set when this discount is active"
             icon={CalendarIcon}
@@ -768,10 +768,10 @@ const DiscountEditPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </CategoryWidget>
+          </Widget>
 
           {/* Advanced Settings Widget */}
-          <CategoryWidget
+          <Widget
             title="Advanced Settings"
             description="Configure limits, thresholds, and calculation methods"
             icon={CogIcon}
@@ -830,10 +830,10 @@ const DiscountEditPage: React.FC = () => {
                 />
               </div>
             </div>
-          </CategoryWidget>
+          </Widget>
 
           {/* Settings Widget */}
-          <CategoryWidget
+          <Widget
             title="Settings"
             description="Discount behavior and options"
             icon={SparklesIcon}
@@ -861,7 +861,7 @@ const DiscountEditPage: React.FC = () => {
                 onChange={(checked) => handleInputChange('disallow_change_flag', checked ? 1 : 0)}
               />
             </div>
-          </CategoryWidget>
+          </Widget>
         </div>
 
         {/* Error Display */}
