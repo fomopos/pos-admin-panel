@@ -1,548 +1,242 @@
 import React, { useState, useEffect } from 'react';
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
+import { useNavigate } from 'react-router-dom';
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  FunnelIcon, 
+  Squares2X2Icon, 
+  ListBulletIcon,
   CreditCardIcon,
   BanknotesIcon,
-  CurrencyDollarIcon,
-  CheckIcon,
-  XMarkIcon,
   EyeIcon,
-  EyeSlashIcon
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
+import { tenderApiService } from '../services/tender/tenderApiService';
+import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import type { Tender } from '../services/types/payment.types';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader, Alert, ConfirmDialog, Loading } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
-import { paymentServices } from '../services/payment';
-import type { Tender, CreateTenderRequest } from '../services/types/payment.types';
-import { TENDER_TYPES, PAYMENT_CURRENCIES } from '../constants/dropdownOptions';
-
-interface PaymentSettingsState {
-  tenders: Tender[];
-  isLoading: boolean;
-  showTenderForm: boolean;
-  editingTender: Tender | null;
-  formData: CreateTenderRequest;
-  errors: Record<string, string>;
-}
+import { useTranslation } from 'react-i18next';
 
 const PaymentSettings: React.FC = () => {
-  const { currentTenant } = useTenantStore();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   
-  const [state, setState] = useState<PaymentSettingsState>({
-    tenders: [],
-    isLoading: true,
-    showTenderForm: false,
-    editingTender: null,
-    formData: {
-      tender_id: '',
-      type_code: 'cash',
-      currency_id: 'aed',
-      description: '',
-      over_tender_allowed: false,
-      availability: ['sale']
-    },
-    errors: {}
-  });
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [loading, setLoading] = useState(true);
+  const { currentTenant, currentStore } = useTenantStore();
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
   useEffect(() => {
     loadTenders();
-  }, [currentTenant]);
+  }, []);
 
   const loadTenders = async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true }));
-      // In a real app, you would use the actual tenant ID
-      const tenders = await paymentServices.tender.getMockTenders();
-      setState(prev => ({ ...prev, tenders, isLoading: false }));
+      setLoading(true);
+      const result = await tenderApiService.getTenders({
+        tenant_id: currentTenant?.id,
+        store_id: currentStore?.store_id,
+      });
+      setTenders(result);
     } catch (error) {
       console.error('Failed to load tenders:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreateTender = () => {
-    setState(prev => ({
-      ...prev,
-      showTenderForm: true,
-      editingTender: null,
-      formData: {
-        tender_id: '',
-        type_code: 'cash',
-        currency_id: 'aed',
-        description: '',
-        over_tender_allowed: false,
-        availability: ['sale']
-      },
-      errors: {}
-    }));
+  const tenderTypes = Array.from(new Set(tenders.map(t => t.type_code)));
+  const currencies = Array.from(new Set(tenders.map(t => t.currency_id)));
+
+  const filteredTenders = tenders.filter(tender => {
+    const matchesSearch = tender.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         tender.tender_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = !selectedType || tender.type_code === selectedType;
+    const matchesCurrency = !selectedCurrency || tender.currency_id === selectedCurrency;
+    return matchesSearch && matchesType && matchesCurrency;
+  });
+
+  const handleEdit = (tender: Tender) => {
+    navigate(`/payment-settings/edit/${tender.tender_id}`);
   };
 
-  const handleEditTender = (tender: Tender) => {
-    setState(prev => ({
-      ...prev,
-      showTenderForm: true,
-      editingTender: tender,
-      formData: {
-        tender_id: tender.tender_id,
-        type_code: tender.type_code,
-        currency_id: tender.currency_id,
-        description: tender.description,
-        over_tender_allowed: tender.over_tender_allowed,
-        availability: tender.availability
-      },
-      errors: {}
-    }));
+  const handleView = (tender: Tender) => {
+    navigate(`/payment-settings/${tender.tender_id}`);
   };
 
-  const handleDeleteTender = async (tenderId: string) => {
-    const tender = state.tenders.find(t => t.tender_id === tenderId);
-    const tenderName = tender ? tender.description || tender.type_code : 'this tender';
-    
-    deleteDialog.openDeleteDialog(tenderName, async () => {
-      try {
-        await paymentServices.tender.deleteTender(tenderId);
-        setState(prev => ({
-          ...prev,
-          tenders: prev.tenders.filter(t => t.tender_id !== tenderId)
-        }));
-      } catch (error) {
-        console.error('Failed to delete tender:', error);
+  const handleDelete = async (tenderId: string) => {
+    const tender = tenders.find(t => t.tender_id === tenderId);
+    if (!tender) return;
+
+    deleteDialog.openDeleteDialog(
+      tender.description,
+      async () => {
+        await tenderApiService.deleteTender(tenderId, {
+          tenant_id: currentTenant?.id,
+          store_id: currentStore?.store_id,
+        });
+        await loadTenders(); // Reload the list
       }
-    });
-  };
-
-  const handleToggleStatus = async (tender: Tender) => {
-    try {
-      const updatedTender = await paymentServices.tender.toggleTenderStatus(
-        tender.tender_id, 
-        !tender.is_active
-      );
-      setState(prev => ({
-        ...prev,
-        tenders: prev.tenders.map(t => 
-          t.tender_id === tender.tender_id ? updatedTender : t
-        )
-      }));
-    } catch (error) {
-      console.error('Failed to toggle tender status:', error);
-    }
-  };
-
-  const handleSubmitForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      setState(prev => ({ ...prev, errors: {} }));
-      
-      if (state.editingTender) {
-        const updatedTender = await paymentServices.tender.updateTender(
-          state.editingTender.tender_id,
-          state.formData
-        );
-        setState(prev => ({
-          ...prev,
-          tenders: prev.tenders.map(t => 
-            t.tender_id === state.editingTender!.tender_id ? updatedTender : t
-          ),
-          showTenderForm: false,
-          editingTender: null
-        }));
-      } else {
-        const newTender = await paymentServices.tender.createTender(state.formData);
-        setState(prev => ({
-          ...prev,
-          tenders: [...prev.tenders, newTender],
-          showTenderForm: false
-        }));
-      }
-    } catch (error) {
-      console.error('Failed to save tender:', error);
-      setState(prev => ({
-        ...prev,
-        errors: { general: 'Failed to save tender. Please try again.' }
-      }));
-    }
-  };
-
-  const handleFormChange = (field: keyof CreateTenderRequest, value: any) => {
-    setState(prev => ({
-      ...prev,
-      formData: { ...prev.formData, [field]: value },
-      errors: { ...prev.errors, [field]: '' }
-    }));
-  };
-
-  const handleAvailabilityChange = (option: 'sale' | 'return', checked: boolean) => {
-    setState(prev => {
-      const availability = checked
-        ? [...prev.formData.availability, option]
-        : prev.formData.availability.filter(a => a !== option);
-      
-      return {
-        ...prev,
-        formData: { ...prev.formData, availability },
-        errors: { ...prev.errors, availability: '' }
-      };
-    });
-  };
-
-  const getTenderTypeIcon = (typeCode: string) => {
-    const tenderType = TENDER_TYPES.find(t => t.value === typeCode);
-    const IconComponent = tenderType?.icon || CreditCardIcon;
-    return <IconComponent className="h-6 w-6" />;
-  };
-
-  const getStatusBadge = (tender: Tender) => {
-    return (
-      <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-        tender.is_active !== false
-          ? 'bg-green-100 text-green-800' 
-          : 'bg-red-100 text-red-800'
-      }`}>
-        {tender.is_active !== false ? 'Active' : 'Inactive'}
-      </span>
     );
   };
-
-  const getCurrencyLabel = (currencyId: string) => {
-    const currency = PAYMENT_CURRENCIES.find(c => c.value === currencyId);
-    return currency?.label || currencyId.toUpperCase();
-  };
-
-  if (state.isLoading) {
-    return (
-      <Loading
-        title="Loading Payment Settings"
-        description="Please wait while we fetch your payment configuration..."
-        fullScreen={false}
-        size="md"
-      />
-    );
-  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-6">
       {/* Header */}
       <PageHeader
         title="Payment Settings"
-        description="Configure payment options available for your POS system"
+        description="Manage payment methods and tender configurations"
       >
-        <Button onClick={handleCreateTender} className="flex items-center space-x-2">
-          <PlusIcon className="h-5 w-5" />
+        <Button
+          onClick={() => navigate('/payment-settings/new')}
+          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <PlusIcon className="w-5 h-5" />
           <span>Add Tender</span>
         </Button>
       </PageHeader>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <div className="flex items-center">
-            <div className="p-3 rounded-xl bg-blue-50">
-              <CreditCardIcon className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600">Total Tenders</p>
-              <p className="text-2xl font-bold text-blue-900">{state.tenders.length}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-          <div className="flex items-center">
-            <div className="p-3 rounded-xl bg-green-50">
-              <CheckIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-green-600">Active Tenders</p>
-              <p className="text-2xl font-bold text-green-900">
-                {state.tenders.filter(t => t.is_active !== false).length}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
-          <div className="flex items-center">
-            <div className="p-3 rounded-xl bg-purple-50">
-              <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-purple-600">Currencies</p>
-              <p className="text-2xl font-bold text-purple-900">
-                {new Set(state.tenders.map(t => t.currency_id)).size}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
-          <div className="flex items-center">
-            <div className="p-3 rounded-xl bg-orange-50">
-              <BanknotesIcon className="h-6 w-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-orange-600">Over Tender Allowed</p>
-              <p className="text-2xl font-bold text-orange-900">
-                {state.tenders.filter(t => t.over_tender_allowed).length}
-              </p>
-            </div>
-          </div>
-        </Card>
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+        <div className="flex-1 relative">
+          <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search tenders..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <FunnelIcon className="w-5 h-5 text-gray-400" />
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Types</option>
+            {tenderTypes.map(type => (
+              <option key={type} value={type}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedCurrency}
+            onChange={(e) => setSelectedCurrency(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">All Currencies</option>
+            {currencies.map(currency => (
+              <option key={currency} value={currency}>
+                {currency.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex border border-gray-300 rounded-lg">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
+          >
+            <Squares2X2Icon className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
+          >
+            <ListBulletIcon className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {/* Tenders List */}
-      <Card>
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">Payment Tenders</h2>
+      {/* Loading State */}
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
-        
-        <div className="divide-y divide-slate-200">
-          {state.tenders.map((tender) => (
-            <div key={tender.tender_id} className="p-6 hover:bg-slate-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">
-                    {getTenderTypeIcon(tender.type_code)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-medium text-slate-900 truncate">
-                        {tender.description}
-                      </h3>
-                      {getStatusBadge(tender)}
-                    </div>
-                    <div className="mt-1 flex items-center space-x-4 text-sm text-slate-500">
-                      <span>ID: {tender.tender_id}</span>
-                      <span>Type: {tender.type_code}</span>
-                      <span>Currency: {getCurrencyLabel(tender.currency_id)}</span>
-                      <span>
-                        Over Tender: {tender.over_tender_allowed ? 'Yes' : 'No'}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center space-x-2">
-                      <span className="text-sm text-slate-500">Available for:</span>
-                      {tender.availability.map((avail) => (
-                        <span
-                          key={avail}
-                          className="inline-flex px-2 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800"
-                        >
-                          {avail}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleToggleStatus(tender)}
-                    className="flex items-center space-x-1"
-                  >
-                    {tender.is_active !== false ? (
-                      <EyeSlashIcon className="h-4 w-4" />
-                    ) : (
-                      <EyeIcon className="h-4 w-4" />
-                    )}
-                    <span>{tender.is_active !== false ? 'Deactivate' : 'Activate'}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditTender(tender)}
-                    className="flex items-center space-x-1"
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                    <span>Edit</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteTender(tender.tender_id)}
-                    className="flex items-center space-x-1 text-red-600 hover:text-red-700"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                    <span>Delete</span>
-                  </Button>
-                </div>
-              </div>
+      ) : filteredTenders.length === 0 ? (
+        <div className="text-center py-12">
+          <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No tenders found</h3>
+          <p className="text-gray-500 mb-6">
+            {searchTerm || selectedType || selectedCurrency
+              ? 'No tenders match your search criteria.'
+              : 'Get started by adding your first tender.'
+            }
+          </p>
+          <Button
+            onClick={() => navigate('/payment-settings/new')}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <PlusIcon className="w-4 h-4 mr-2" />
+            Add Tender
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* Tenders Display */}
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTenders.map(tender => (
+                <TenderCard
+                  key={tender.tender_id}
+                  tender={tender}
+                  onEdit={handleEdit}
+                  onView={handleView}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
-          ))}
-          
-          {state.tenders.length === 0 && (
-            <div className="p-12 text-center">
-              <CreditCardIcon className="mx-auto h-12 w-12 text-slate-400" />
-              <h3 className="mt-2 text-sm font-medium text-slate-900">No tenders configured</h3>
-              <p className="mt-1 text-sm text-slate-500">
-                Get started by adding your first payment tender.
-              </p>
-              <div className="mt-6">
-                <Button onClick={handleCreateTender}>
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Add Tender
-                </Button>
-              </div>
+          ) : (
+            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tender
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Currency
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Over Tender
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredTenders.map(tender => (
+                    <TenderListItem
+                      key={tender.tender_id}
+                      tender={tender}
+                      onEdit={handleEdit}
+                      onView={handleView}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </div>
-      </Card>
-
-      {/* Tender Form Modal */}
-      {state.showTenderForm && (
-        <div className="fixed inset-0 bg-slate-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <Card className="relative top-20 mx-auto p-6 w-11/12 md:w-3/4 lg:w-1/2">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">
-                {state.editingTender ? 'Edit Tender' : 'Add New Tender'}
-              </h3>
-              <button
-                onClick={() => setState(prev => ({ ...prev, showTenderForm: false }))}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmitForm} className="space-y-6">
-              {state.errors.general && (
-                <Alert variant="error">
-                  {state.errors.general}
-                </Alert>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Tender ID
-                  </label>
-                  <input
-                    type="text"
-                    value={state.formData.tender_id}
-                    onChange={(e) => handleFormChange('tender_id', e.target.value)}
-                    disabled={!!state.editingTender}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., cash, credit_card"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Type
-                  </label>
-                  <select
-                    value={state.formData.type_code}
-                    onChange={(e) => handleFormChange('type_code', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    {TENDER_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Currency
-                  </label>
-                  <select
-                    value={state.formData.currency_id}
-                    onChange={(e) => handleFormChange('currency_id', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    {PAYMENT_CURRENCIES.map((currency) => (
-                      <option key={currency.value} value={currency.value}>
-                        {currency.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Description
-                  </label>
-                  <input
-                    type="text"
-                    value={state.formData.description}
-                    onChange={(e) => handleFormChange('description', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., Cash payments"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Settings
-                </label>
-                <div className="space-y-3">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={state.formData.over_tender_allowed}
-                      onChange={(e) => handleFormChange('over_tender_allowed', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-slate-700">
-                      Allow over tender (customer can pay more than the total amount)
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Availability
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={state.formData.availability.includes('sale')}
-                      onChange={(e) => handleAvailabilityChange('sale', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-slate-700">Sales transactions</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={state.formData.availability.includes('return')}
-                      onChange={(e) => handleAvailabilityChange('return', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-slate-700">Return transactions</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setState(prev => ({ ...prev, showTenderForm: false }))}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  {state.editingTender ? 'Update Tender' : 'Create Tender'}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
+        </>
       )}
 
       {/* Confirm Dialog */}
@@ -558,6 +252,174 @@ const PaymentSettings: React.FC = () => {
         isLoading={deleteDialog.dialogState.isLoading}
       />
     </div>
+  );
+};
+
+// Tender Card Component for Grid View (matches CategoryCard style)
+const TenderCard: React.FC<{
+  tender: Tender;
+  onEdit: (tender: Tender) => void;
+  onView: (tender: Tender) => void;
+  onDelete: (tenderId: string) => void;
+}> = ({ tender, onEdit, onView, onDelete }) => {
+  const { t } = useTranslation();
+
+  const getTenderIcon = (typeCode: string) => {
+    switch (typeCode) {
+      case 'currency':
+      case 'cash':
+        return <BanknotesIcon className="w-6 h-6 text-green-400" />;
+      case 'card':
+        return <CreditCardIcon className="w-6 h-6 text-blue-400" />;
+      default:
+        return <CreditCardIcon className="w-6 h-6 text-gray-400" />;
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+              {getTenderIcon(tender.type_code)}
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">{tender.description}</h3>
+              <p className="text-sm text-gray-500">{tender.currency_id.toUpperCase()}</p>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onView(tender)}
+              className="text-gray-400 hover:text-gray-600 text-sm font-medium"
+            >
+              <EyeIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onEdit(tender)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              <PencilIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => onDelete(tender.tender_id)}
+              className="text-red-600 hover:text-red-800 text-sm font-medium"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="space-y-2 mb-4">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Type:</span>
+            <span className="font-medium capitalize">{tender.type_code}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Over Tender:</span>
+            <span className="font-medium">{tender.over_tender_allowed ? 'Allowed' : 'Not Allowed'}</span>
+          </div>
+          {tender.denomination && tender.denomination.length > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Denominations:</span>
+              <span className="font-medium">{tender.denomination.length} types</span>
+            </div>
+          )}
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+            {tender.display_order} Order
+          </span>
+          <span className={`px-2 py-1 text-xs rounded-full ${
+            tender.is_active
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {tender.is_active ? t('common.active') : t('common.inactive')}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Tender List Item Component for Table View (matches CategoryListItem style)
+const TenderListItem: React.FC<{
+  tender: Tender;
+  onEdit: (tender: Tender) => void;
+  onView: (tender: Tender) => void;
+  onDelete: (tenderId: string) => void;
+}> = ({ tender, onEdit, onView, onDelete }) => {
+  const { t } = useTranslation();
+
+  const getTenderIcon = (typeCode: string) => {
+    switch (typeCode) {
+      case 'currency':
+      case 'cash':
+        return <BanknotesIcon className="w-5 h-5 text-green-400" />;
+      case 'card':
+        return <CreditCardIcon className="w-5 h-5 text-blue-400" />;
+      default:
+        return <CreditCardIcon className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+  return (
+    <tr className="hover:bg-gray-50">
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mr-3">
+            {getTenderIcon(tender.type_code)}
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-900">{tender.description}</div>
+            <div className="text-sm text-gray-500">{tender.tender_id}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {tender.currency_id.toUpperCase()}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {tender.type_code.charAt(0).toUpperCase() + tender.type_code.slice(1)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        {tender.over_tender_allowed ? 'Yes' : 'No'}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          tender.is_active
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {tender.is_active ? t('common.active') : t('common.inactive')}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => onView(tender)}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <EyeIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onEdit(tender)}
+            className="text-blue-600 hover:text-blue-900"
+          >
+            <PencilIcon className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDelete(tender.tender_id)}
+            className="text-red-600 hover:text-red-900"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 };
 

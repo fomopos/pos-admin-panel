@@ -88,7 +88,7 @@ class CategoryApiService {
         return mockData.categories.map(this.mapToEnhancedCategory);
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/all`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category`;
 
       // Real API call - expecting response format: { categories: CategoryApiResponse[] }
       const response = await apiClient.get<{ categories: CategoryApiResponse[] }>(path, {});

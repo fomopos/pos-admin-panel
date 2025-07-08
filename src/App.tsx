@@ -27,6 +27,7 @@ import SalesDetail from './pages/SalesDetail';
 import Customers from './pages/Customers';
 import TaxSettings from './pages/TaxSettings';
 import PaymentSettings from './pages/PaymentSettings';
+import TenderEditPage from './pages/TenderEditPage';
 import PaymentAnalyticsDashboard from './pages/PaymentAnalyticsDashboard';
 import StoreSettings from './pages/StoreSettings';
 import CreateStore from './pages/CreateStore';
@@ -143,6 +144,8 @@ function App() {
               <Route path="settings/roles/:id" element={<RoleDetailPage />} />
               <Route path="tax-settings" element={<TaxSettings />} />
               <Route path="payment-settings" element={<PaymentSettings />} />
+              <Route path="payment-settings/new" element={<TenderEditPage />} />
+              <Route path="payment-settings/edit/:id" element={<TenderEditPage />} />
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
             </Route>
 

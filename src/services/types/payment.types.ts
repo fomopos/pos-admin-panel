@@ -1,26 +1,54 @@
 // Payment configuration type definitions
+
+// Denomination structure for currency tenders
+export interface TenderDenomination {
+  id: string;
+  value: number;
+  description: string;
+  display_order: number;
+}
+
+// User settings for tender permissions
+export interface TenderUserSettings {
+  group_id: string;
+  usage_code: string[];
+  over_tender_limit: number;
+  min_amount: number;
+  max_amount: number;
+  max_refund_with_receipt: number;
+  max_refund_without_receipt: number;
+}
+
+// Configuration options for tender
+export interface TenderConfiguration {
+  serial_nbr_req: boolean;
+  open_cash_drawer: boolean;
+  unit_count_code: string;
+  min_denomination: number;
+  effective_date: string;
+  expiry_date: string;
+  max_refund_days: number;
+  customer_required: boolean;
+  change_tender_id: string;
+  change_cash_limit: number;
+  split_tender_allowed: boolean;
+}
+
 export interface Tender {
   tender_id: string;
   type_code: string;
   currency_id: string;
   description: string;
+  display_order: number;
+  is_active: boolean;
   over_tender_allowed: boolean;
-  availability: ('sale' | 'return')[];
+  denomination: TenderDenomination[];
+  user_settings: TenderUserSettings[];
+  configuration: TenderConfiguration;
+  availability: string[];
   created_at?: string;
   updated_at?: string;
   created_by?: string;
-  updated_by?: string;
-  is_active?: boolean;
-}
-
-export interface PaymentConfiguration {
-  tenant_id: string;
-  store_id: string;
-  tenders: Tender[];
-  default_tender_id?: string;
-  created_at: string;
-  updated_at: string;
-  created_by: string;
   updated_by?: string;
 }
 
@@ -30,33 +58,20 @@ export interface CreateTenderRequest {
   type_code: string;
   currency_id: string;
   description: string;
+  display_order: number;
+  is_active: boolean;
   over_tender_allowed: boolean;
-  availability: ('sale' | 'return')[];
+  denomination: TenderDenomination[];
+  user_settings: TenderUserSettings[];
+  configuration: TenderConfiguration;
+  availability: string[];
 }
 
 export interface UpdateTenderRequest extends Partial<CreateTenderRequest> {
   tender_id: string;
 }
 
-export interface CreatePaymentConfigurationRequest {
-  tenant_id: string;
-  store_id: string;
-  tenders: CreateTenderRequest[];
-  default_tender_id?: string;
-}
-
-export interface UpdatePaymentConfigurationRequest extends Partial<CreatePaymentConfigurationRequest> {
-  tenant_id: string;
-  store_id: string;
-}
-
 // Query parameters
-export interface PaymentConfigurationQueryParams {
-  tenant_id?: string;
-  store_id?: string;
-  include_inactive?: boolean;
-}
-
 export interface TenderQueryParams {
   tenant_id?: string;
   store_id?: string;
@@ -66,10 +81,6 @@ export interface TenderQueryParams {
 }
 
 // Response types
-export interface PaymentConfigurationResponse {
-  configurations: PaymentConfiguration[];
-}
-
 export interface TenderListResponse {
   tenders: Tender[];
 }
