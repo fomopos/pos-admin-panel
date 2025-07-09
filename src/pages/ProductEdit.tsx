@@ -711,8 +711,8 @@ const ProductEdit: React.FC = () => {
       </PageHeader>
 
       {/* Main Content */}
-      <div className="space-y-6">
-        <form onSubmit={handleSubmit} className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div>
+        <form onSubmit={handleSubmit}>
           {/* Tab Navigation */}
           <EnhancedTabs
             tabs={tabs}
