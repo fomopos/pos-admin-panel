@@ -7,7 +7,6 @@ import {
   SparklesIcon,
   TrashIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon,
   CloudArrowUpIcon,
   InformationCircleIcon,
   PercentBadgeIcon,
@@ -20,6 +19,7 @@ import type { Discount, CreateDiscountRequest } from '../types/discount';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 
 // Discount templates for quick setup
 const DISCOUNT_TEMPLATES = [
@@ -131,10 +131,11 @@ const DiscountEditPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   
   const [showTemplates, setShowTemplates] = useState(!isEditing);
+
+  // Error handling hooks
+  const { showError, showSuccess, showApiError, showValidationError } = useError();
 
   // Dialog hooks
   const deleteDialog = useDeleteConfirmDialog();
@@ -225,11 +226,13 @@ const DiscountEditPage: React.FC = () => {
   }, [formData, originalDiscount, isEditing]);
 
   const loadDiscount = async () => {
-    if (!id || !currentTenant?.id || !currentStore?.store_id) return;
+    if (!id || !currentTenant?.id || !currentStore?.store_id) {
+      showError('Missing required information to load discount');
+      return;
+    }
 
     try {
       setIsLoading(true);
-      setFetchError(null);
       const discountData = await discountApiService.getDiscountById(
         currentTenant.id,
         currentStore.store_id,
@@ -261,7 +264,7 @@ const DiscountEditPage: React.FC = () => {
       });
     } catch (error) {
       console.error('Failed to load discount:', error);
-      setFetchError('Failed to load discount. Please try again.');
+      showApiError('Failed to load discount. Please try again.', undefined, '/v0/discount');
     } finally {
       setIsLoading(false);
     }
@@ -272,7 +275,6 @@ const DiscountEditPage: React.FC = () => {
       ...prev,
       [field]: value
     }));
-    setSuccessMessage(null);
     setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
@@ -307,22 +309,27 @@ const DiscountEditPage: React.FC = () => {
 
     if (!formData.discount_code.trim()) {
       newErrors.discount_code = 'Discount code is required';
+      showValidationError('Discount code is required', 'discount_code', formData.discount_code);
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
+      showValidationError('Description is required', 'description', formData.description);
     }
 
     if (formData.calculation_mthd_code === 'PERCENT' && (!formData.percentage || formData.percentage <= 0)) {
       newErrors.percentage = 'Percentage must be greater than 0';
+      showValidationError('Percentage must be greater than 0', 'percentage', formData.percentage);
     }
 
     if (formData.calculation_mthd_code === 'AMOUNT' && (!formData.discount || formData.discount <= 0)) {
       newErrors.discount = 'Discount amount must be greater than 0';
+      showValidationError('Discount amount must be greater than 0', 'discount', formData.discount);
     }
 
     if (new Date(formData.effective_datetime) >= new Date(formData.expr_datetime)) {
       newErrors.expr_datetime = 'End date must be after start date';
+      showValidationError('End date must be after start date', 'expr_datetime', formData.expr_datetime);
     }
 
     setErrors(newErrors);
@@ -352,7 +359,10 @@ const DiscountEditPage: React.FC = () => {
       return;
     }
     
-    if (!currentTenant?.id || !currentStore?.store_id) return;
+    if (!currentTenant?.id || !currentStore?.store_id) {
+      showError('Missing tenant or store information');
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -372,21 +382,21 @@ const DiscountEditPage: React.FC = () => {
           id,
           submitData
         );
-        setSuccessMessage('Discount updated successfully!');
+        showSuccess('Discount updated successfully!');
       } else {
         await discountApiService.createDiscount(
           currentTenant.id,
           currentStore.store_id,
           submitData
         );
-        setSuccessMessage('Discount created successfully!');
+        showSuccess('Discount created successfully!');
       }
 
       setHasChanges(false);
       setTimeout(() => navigate('/discounts'), 2000);
     } catch (error) {
       console.error('Failed to save discount:', error);
-      setErrors({ general: 'Failed to save discount. Please try again.' });
+      showApiError('Failed to save discount. Please try again.', undefined, '/v0/discount');
     } finally {
       setIsSaving(false);
     }
@@ -442,7 +452,6 @@ const DiscountEditPage: React.FC = () => {
           });
         }
         setErrors({});
-        setSuccessMessage(null);
       });
     } else {
       navigate('/discounts');
@@ -464,25 +473,6 @@ const DiscountEditPage: React.FC = () => {
         description="Please wait while we fetch the discount data..."
         variant="primary"
       />
-    );
-  }
-
-  // Error state
-  if (fetchError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center max-w-md mx-auto">
-          <ExclamationTriangleIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Discount</h3>
-          <p className="text-gray-500 mb-4">{fetchError}</p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Try Again
-          </Button>
-        </div>
-      </div>
     );
   }
 
@@ -560,14 +550,6 @@ const DiscountEditPage: React.FC = () => {
           </div>
         )}
       </PageHeader>
-
-      {/* Success Message */}
-      {successMessage && (
-        <Alert variant="success" className="mb-4">
-          <CheckCircleIcon className="h-5 w-5" />
-          {successMessage}
-        </Alert>
-      )}
 
       {/* Template Selection for New Discounts */}
       {showTemplates && !isEditing && (
@@ -686,7 +668,7 @@ const DiscountEditPage: React.FC = () => {
                 <InputMoneyField
                   label="Discount Amount"
                   value={formData.discount || 0}
-                  onChange={(value) => handleInputChange('discount', value)}
+                  onChange={(value) => handleInputChange('discount', value ? parseFloat(value) : null)}
                   placeholder="25.00"
                   error={errors.discount}
                 />
@@ -791,21 +773,21 @@ const DiscountEditPage: React.FC = () => {
                 <InputMoneyField
                   label="Minimum Eligible Price"
                   value={formData.min_eligible_price || 0}
-                  onChange={(value) => handleInputChange('min_eligible_price', value || null)}
+                  onChange={(value) => handleInputChange('min_eligible_price', value ? parseFloat(value) : null)}
                   placeholder="0.00"
                 />
 
                 <InputMoneyField
                   label="Maximum Discount Amount"
                   value={formData.max_discount || 0}
-                  onChange={(value) => handleInputChange('max_discount', value || null)}
+                  onChange={(value) => handleInputChange('max_discount', value ? parseFloat(value) : null)}
                   placeholder="0.00"
                 />
 
                 <InputMoneyField
                   label="Maximum Amount"
                   value={formData.max_amount || 0}
-                  onChange={(value) => handleInputChange('max_amount', value || null)}
+                  onChange={(value) => handleInputChange('max_amount', value ? parseFloat(value) : null)}
                   placeholder="0.00"
                 />
 

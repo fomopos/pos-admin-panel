@@ -638,7 +638,7 @@ const TenderEditPage: React.FC = () => {
             title="Basic Information"
             description="Essential tender details and identification"
             icon={CreditCardIcon}
-            className="lg:col-span-2"
+            className="lg:col-span-2 overflow-visible"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputTextField

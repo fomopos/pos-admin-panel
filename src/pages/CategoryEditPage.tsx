@@ -310,7 +310,10 @@ const CategoryEditPage: React.FC = () => {
       };
 
       if (isEditing && id) {
-        await categoryApiService.updateCategory(id, categoryData);
+        await categoryApiService.updateCategory(id, categoryData, {
+          tenant_id: currentTenant?.id,
+          store_id: currentStore?.store_id
+        });
         setSuccessMessage('Category updated successfully!');
       } else {
         await categoryApiService.createCategory(categoryData, {

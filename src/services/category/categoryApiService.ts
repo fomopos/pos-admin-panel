@@ -226,7 +226,7 @@ class CategoryApiService {
         };
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/addBatch`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/bulk`;
 
       // Real API call to addBatch endpoint
       const response = await apiClient.post<BatchOperationResponse>(path, data, {
@@ -266,8 +266,10 @@ class CategoryApiService {
         } as CategoryApiResponse;
       }
 
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+
       // Real API call
-      const response = await apiClient.put<CategoryApiResponse>(`${this.basePath}/${categoryId}`, data, {
+      const response = await apiClient.put<CategoryApiResponse>(path, data, {
         headers: params?.tenant_id ? { 'X-Tenant-Id': params.tenant_id } : undefined
       });
       

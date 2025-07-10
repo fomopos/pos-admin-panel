@@ -44,7 +44,7 @@ class TenderApiService {
     try {
       console.log('💳 Fetching tenders with params:', params);
       
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/tender`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/config/tender`;
 
       // Real API call - expecting response format: { tenders: Tender[] }
       const response = await apiClient.get<{ tenders: Tender[] }>(path, {});
@@ -71,7 +71,7 @@ class TenderApiService {
     try {
       console.log('💳 Fetching tender by ID:', tenderId);
       
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/tender/${tenderId}`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/config/tender/${tenderId}`;
 
       // Real API call
       const response = await apiClient.get<Tender>(path, {});
@@ -96,7 +96,7 @@ class TenderApiService {
     try {
       console.log('💳 Creating new tender:', data);
       
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/tender`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/config/tender`;
 
       // Real API call - single tender creation
       const response = await apiClient.post<Tender>(path, data, {
@@ -125,7 +125,7 @@ class TenderApiService {
     try {
       console.log('💳 Updating tender:', tenderId, data);
       
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/tender/${tenderId}`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/config/tender/${tenderId}`;
 
       // Real API call
       const response = await apiClient.put<Tender>(path, data, {
@@ -154,7 +154,7 @@ class TenderApiService {
     try {
       console.log('💳 Deleting tender:', tenderId);
       
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/tender/${tenderId}`;
+      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/config/tender/${tenderId}`;
 
       // Real API call
       await apiClient.delete(path);

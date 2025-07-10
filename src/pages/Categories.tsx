@@ -12,8 +12,10 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { categoryApiService } from '../services/category/categoryApiService';
 import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import { getIconComponent } from '../components/ui/IconPicker';
 import type { EnhancedCategory } from '../types/category';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
@@ -255,10 +257,25 @@ const CategoryCard: React.FC<{
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             {category.icon_url ? (
-              <img src={category.icon_url} alt="" className="w-10 h-10 rounded" />
+              <div 
+                className="w-10 h-10 rounded flex items-center justify-center text-white"
+                style={{ backgroundColor: category.color || '#3B82F6' }}
+              >
+                {(() => {
+                  const iconDefinition = getIconComponent(category.icon_url);
+                  return iconDefinition ? (
+                    <FontAwesomeIcon icon={iconDefinition} className="h-5 w-5" />
+                  ) : (
+                    <FolderIcon className="w-5 h-5" />
+                  );
+                })()}
+              </div>
             ) : (
-              <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
-                <FolderIcon className="w-6 h-6 text-gray-400" />
+              <div 
+                className="w-10 h-10 rounded flex items-center justify-center text-white"
+                style={{ backgroundColor: category.color || '#6B7280' }}
+              >
+                <FolderIcon className="w-5 h-5" />
               </div>
             )}
             <div>
@@ -332,10 +349,25 @@ const CategoryListItem: React.FC<{
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           {category.icon_url ? (
-            <img src={category.icon_url} alt="" className="w-8 h-8 rounded mr-3" />
+            <div 
+              className="w-8 h-8 rounded flex items-center justify-center text-white mr-3"
+              style={{ backgroundColor: category.color || '#3B82F6' }}
+            >
+              {(() => {
+                const iconDefinition = getIconComponent(category.icon_url);
+                return iconDefinition ? (
+                  <FontAwesomeIcon icon={iconDefinition} className="h-4 w-4" />
+                ) : (
+                  <FolderIcon className="w-4 h-4" />
+                );
+              })()}
+            </div>
           ) : (
-            <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mr-3">
-              <FolderIcon className="w-5 h-5 text-gray-400" />
+            <div 
+              className="w-8 h-8 rounded flex items-center justify-center text-white mr-3"
+              style={{ backgroundColor: category.color || '#6B7280' }}
+            >
+              <FolderIcon className="w-4 h-4" />
             </div>
           )}
           <div>

@@ -18,6 +18,7 @@ import { PageHeader, Button, ConfirmDialog } from '../components/ui';
 import type { Discount } from '../types/discount';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 
 const Discounts: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const Discounts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { currentTenant, currentStore } = useTenantStore();
 
+  // Error handling hooks
+  const { showError, showApiError, showSuccess } = useError();
+
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
@@ -41,7 +45,7 @@ const Discounts: React.FC = () => {
 
   const loadDiscounts = async () => {
     if (!currentTenant?.id || !currentStore?.store_id) {
-      console.log('Missing tenant or store information');
+      showError('Missing tenant or store information');
       return;
     }
 
@@ -54,6 +58,7 @@ const Discounts: React.FC = () => {
       setDiscounts(result.discounts || []);
     } catch (error) {
       console.error('Failed to load discounts:', error);
+      showApiError('Failed to load discounts. Please try again.', undefined, '/v0/discount');
       setDiscounts([]); // Set empty array on error
     } finally {
       setLoading(false);
@@ -62,13 +67,22 @@ const Discounts: React.FC = () => {
 
   const handleDelete = async (discountId: string) => {
     const discount = discounts.find(d => d.discount_id === discountId);
-    if (!discount) return;
+    if (!discount) {
+      showError('Discount not found');
+      return;
+    }
 
     deleteDialog.openDeleteDialog(
       discount.discount_code,
       async () => {
-        await discountApiService.deleteDiscount(discount.tenant_id, discount.store_id, discount.discount_id);
-        await loadDiscounts(); // Reload the list
+        try {
+          await discountApiService.deleteDiscount(discount.tenant_id, discount.store_id, discount.discount_id);
+          showSuccess('Discount deleted successfully!');
+          await loadDiscounts(); // Reload the list
+        } catch (error) {
+          console.error('Failed to delete discount:', error);
+          showApiError('Failed to delete discount. Please try again.', undefined, '/v0/discount');
+        }
       }
     );
   };
@@ -169,8 +183,8 @@ const Discounts: React.FC = () => {
                 <DiscountCard
                   key={discount.discount_id}
                   discount={discount}
-                  onEdit={(discount) => navigate(`/discounts/edit/${discount.discount_code}`)}
-                  onView={(discount) => navigate(`/discounts/${discount.discount_code}`)}
+                  onEdit={(discount) => navigate(`/discounts/edit/${discount.discount_id}`)}
+                  onView={(discount) => navigate(`/discounts/${discount.discount_id}`)}
                   onDelete={(id) => handleDelete(id)}
                 />
               ))}
