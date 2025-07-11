@@ -14,6 +14,7 @@ import {
 import { useTenantStore } from '../tenants/tenantStore';
 import { PageHeader, EnhancedTabs, Button, ConfirmDialog, Loading } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
+import type { MultipleDropdownSearchOption } from '../components/ui/MultipleDropdownSearch';
 import { 
   ProductBasicInfoTab,
   ProductPricingTab,
@@ -90,7 +91,7 @@ const ProductEdit: React.FC = () => {
     attributes: {
       manufacturer: '',
       model_number: '',
-      category_id: '',
+      category_ids: [],
       tags: [],
       custom_attributes: {},
       properties: {}
@@ -251,7 +252,7 @@ const ProductEdit: React.FC = () => {
             attributes: {
               manufacturer: '',
               model_number: '',
-              category_id: product.merch_level1 || '',
+              category_ids: product.merch_level1 ? [product.merch_level1] : [], // Convert single category to array
               tags: [],
               custom_attributes: product.custom_attribute || {},
               properties: product.properties || {}
@@ -290,8 +291,8 @@ const ProductEdit: React.FC = () => {
     loadProduct();
   }, [isEditing, id, currentTenant, currentStore]);
 
-  // Convert categories to DropdownSearchOption format
-  const getCategoryDropdownOptions = (): DropdownSearchOption[] => {
+  // Convert categories to MultipleDropdownSearchOption format
+  const getCategoryDropdownOptions = (): MultipleDropdownSearchOption[] => {
     return categories.map(category => {
       const level = CategoryUtils.getCategoryAncestors(category.category_id, categories).length;
       return {
@@ -304,25 +305,15 @@ const ProductEdit: React.FC = () => {
     }).sort((a, b) => a.label.localeCompare(b.label));
   };
 
-  // Handle category selection
-  const handleCategorySelect = (option: DropdownSearchOption | null) => {
-    handleInputChange({
-      target: { name: 'attributes.category_id', value: option?.id || '' }
-    } as React.ChangeEvent<HTMLInputElement>);
-  };
-
-  // Get display value for category dropdown
-  const getCategoryDisplayValue = (option: DropdownSearchOption | null) => {
-    if (!option && !formData.attributes?.category_id) {
-      return 'No Category Selected';
-    }
-    
-    if (formData.attributes?.category_id) {
-      const category = categories.find(c => c.category_id === formData.attributes?.category_id);
-      return category ? getCategoryDisplayName(category.category_id) : 'No Category Selected';
-    }
-    
-    return option ? getCategoryDisplayName(option.id) : 'No Category Selected';
+  // Handle category selection (multiple categories)
+  const handleCategorySelect = (selectedValues: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      attributes: {
+        ...prev.attributes,
+        category_ids: selectedValues
+      }
+    }));
   };
 
   // Apply global modifier template to product
@@ -338,19 +329,6 @@ const ProductEdit: React.FC = () => {
     }));
     
     setShowTemplatesBrowser(false);
-  };
-
-  // Helper function to get category display name with hierarchy path
-  const getCategoryDisplayName = (categoryId: string) => {
-    const category = categories.find(c => c.category_id === categoryId);
-    if (!category) return '';
-
-    const ancestors = CategoryUtils.getCategoryAncestors(categoryId, categories);
-    if (ancestors.length > 0) {
-      const path = ancestors.map(a => a.name).join(' > ');
-      return `${path} > ${category.name}`;
-    }
-    return category.name;
   };
 
   // Tax Group dropdown options
@@ -571,7 +549,11 @@ const ProductEdit: React.FC = () => {
           prompt_qty: formData.prompts?.prompt_qty,
           prompt_price: formData.prompts?.prompt_price,
           prompt_description: formData.prompts?.prompt_description,
-          custom_attribute: formData.attributes?.custom_attributes,
+          custom_attribute: {
+            ...formData.attributes?.custom_attributes,
+            // Store category_ids in custom attributes for now
+            category_ids: formData.attributes?.category_ids || []
+          },
           properties: formData.attributes?.properties,
           modifier_groups: formData.modifier_groups
         };
@@ -608,7 +590,11 @@ const ProductEdit: React.FC = () => {
           prompt_qty: formData.prompts?.prompt_qty,
           prompt_price: formData.prompts?.prompt_price,
           prompt_description: formData.prompts?.prompt_description,
-          custom_attribute: formData.attributes?.custom_attributes,
+          custom_attribute: {
+            ...formData.attributes?.custom_attributes,
+            // Store category_ids in custom attributes for now
+            category_ids: formData.attributes?.category_ids || []
+          },
           properties: formData.attributes?.properties,
           modifier_groups: formData.modifier_groups
         };
@@ -732,7 +718,6 @@ const ProductEdit: React.FC = () => {
                   onInputChange={handleInputChange}
                   getCategoryDropdownOptions={getCategoryDropdownOptions}
                   handleCategorySelect={handleCategorySelect}
-                  getCategoryDisplayValue={getCategoryDisplayValue}
                   handleStockStatusSelect={handleStockStatusSelect}
                   getStockStatusDropdownOptions={getStockStatusDropdownOptions}
                   getTaxGroupDropdownOptions={getTaxGroupDropdownOptions}

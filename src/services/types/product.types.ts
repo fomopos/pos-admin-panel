@@ -62,7 +62,8 @@ export interface ProductPrompts {
 export interface ProductAttributes {
   manufacturer?: string;
   model_number?: string;
-  category_id?: string;
+  category_id?: string | string[]; // Support both single and multiple categories for backward compatibility
+  category_ids?: string[]; // New field for multiple categories
   tags?: string[];
   custom_attributes?: Record<string, any>;
   properties?: Record<string, any>;

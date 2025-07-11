@@ -9,6 +9,7 @@ This styling guide provides comprehensive guidelines for maintaining consistent 
 3. [Typography](#typography)
 4. [Spacing & Layout](#spacing--layout)
 5. [Component Guidelines](#component-guidelines)
+   - [MultipleDropdownSearch Component](#multipledropdownsearch-component)
 6. [Page Structure](#page-structure)
 7. [Form Components](#form-components)
 8. [Interactive Elements](#interactive-elements)
@@ -246,9 +247,198 @@ The `Widget` component is the primary container for content sections.
 </PageHeader>
 ```
 
+### MultipleDropdownSearch Component
+The `MultipleDropdownSearch` component is a powerful multi-select dropdown with search functionality, designed for selecting multiple options from a list.
+
+**Core Features:**
+- Multi-select functionality with checkboxes
+- Real-time search and filtering
+- Select All / Clear All options
+- Badge display for selected items
+- Hierarchical option support with level indentation
+- Keyboard navigation
+- Custom option rendering
+- Responsive design
+
+**Basic Usage:**
+```tsx
+<MultipleDropdownSearch
+  label="Categories"
+  values={selectedCategories}
+  options={categoryOptions}
+  onSelect={handleCategorySelect}
+  placeholder="Select categories"
+  searchPlaceholder="Search categories..."
+/>
+```
+
+**Advanced Configuration:**
+```tsx
+<MultipleDropdownSearch
+  label="Product Categories"
+  values={formData.category_ids}
+  options={getCategoryOptions()}
+  onSelect={(selectedValues) => setFormData(prev => ({
+    ...prev,
+    category_ids: selectedValues
+  }))}
+  placeholder="No Categories Selected"
+  searchPlaceholder="Search categories..."
+  
+  // Selection controls
+  allowSelectAll={true}
+  selectAllLabel="Select All Categories"
+  clearAllLabel="Clear All Categories"
+  
+  // Display options
+  maxSelectedDisplay={3}
+  displayValue={(selectedOptions) => 
+    selectedOptions.length > 0 
+      ? `${selectedOptions.length} categories selected`
+      : "No categories selected"
+  }
+  
+  // Custom rendering
+  renderOption={(option, isSelected) => (
+    <div className="flex items-center justify-between w-full">
+      <span>{option.label}</span>
+      {option.level && (
+        <span className="text-xs text-gray-400">
+          Level {option.level + 1}
+        </span>
+      )}
+    </div>
+  )}
+  
+  // Validation and state
+  required={true}
+  error={errors.categories}
+  disabled={isLoading}
+  
+  // Styling
+  className="w-full"
+  buttonClassName="custom-button-styles"
+  dropdownClassName="custom-dropdown-styles"
+  
+  // Behavior
+  autoFocus={false}
+  maxHeight="min(400px, 60vh)"
+  
+  // Events
+  onSearch={(query) => console.log('Search:', query)}
+/>
+```
+
+**Option Structure:**
+```tsx
+interface MultipleDropdownSearchOption {
+  id: string;              // Unique identifier
+  label: string;           // Display text
+  description?: string;    // Optional description
+  level?: number;          // For hierarchical display (0-based)
+  icon?: ReactNode;        // Optional icon
+  data?: any;             // Additional data
+}
+
+// Example options array
+const categoryOptions: MultipleDropdownSearchOption[] = [
+  {
+    id: 'electronics',
+    label: 'Electronics',
+    description: 'Electronic devices and accessories',
+    level: 0
+  },
+  {
+    id: 'smartphones',
+    label: 'Smartphones',
+    description: 'Mobile phones and accessories',
+    level: 1
+  },
+  {
+    id: 'laptops',
+    label: 'Laptops',
+    description: 'Portable computers',
+    level: 1
+  }
+];
+```
+
+**Common Use Cases:**
+1. **Product Categories**: Multi-category product assignment
+2. **User Permissions**: Multiple role/permission selection
+3. **Tag Selection**: Multiple tag assignment
+4. **Location Selection**: Multiple store/location selection
+5. **Feature Flags**: Multiple feature enablement
+
+**Styling Variants:**
+```tsx
+// With custom badge styling
+<MultipleDropdownSearch
+  label="Tags"
+  values={selectedTags}
+  options={tagOptions}
+  onSelect={setSelectedTags}
+  className="tag-selector"
+  renderDisplayValue={(selectedOptions) => (
+    <div className="flex flex-wrap gap-1">
+      {selectedOptions.map(option => (
+        <span
+          key={option.id}
+          className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+        >
+          {option.label}
+          <button className="ml-1 hover:bg-green-200 rounded-full">
+            <XMarkIcon className="h-3 w-3" />
+          </button>
+        </span>
+      ))}
+    </div>
+  )}
+/>
+
+// With icon support
+<MultipleDropdownSearch
+  label="Features"
+  values={selectedFeatures}
+  options={featureOptions.map(feature => ({
+    ...feature,
+    icon: <CogIcon className="h-4 w-4 text-blue-500" />
+  }))}
+  onSelect={setSelectedFeatures}
+/>
+```
+
+**Accessibility Features:**
+- ARIA labels and roles for screen readers
+- Keyboard navigation (Arrow keys, Enter, Escape)
+- Focus management
+- Proper contrast ratios
+- Screen reader announcements for selection changes
+
+**Best Practices:**
+1. **Use descriptive labels** that clearly indicate what's being selected
+2. **Provide helpful placeholder text** to guide users
+3. **Set appropriate maxSelectedDisplay** to prevent UI overflow
+4. **Include search functionality** for lists with 10+ options
+5. **Use Select All/Clear All** for better UX with large option sets
+6. **Implement proper validation** with clear error messages
+7. **Consider performance** with large datasets using virtual scrolling
+8. **Test keyboard navigation** for accessibility compliance
+
 ---
 
 ## Form Components
+
+### Import Statement
+```tsx
+import { 
+  InputTextField, 
+  InputMoneyField, 
+  DropdownSearch, 
+  MultipleDropdownSearch,
+  PropertyCheckbox 
+} from '../components/ui';
+```
 
 ### Input Fields
 ```tsx
@@ -282,6 +472,23 @@ The `Widget` component is the primary container for content sections.
   onSelect={handleSelect}
   error={errors.dropdown}
   required={true}
+/>
+
+// Multiple Selection Dropdown
+<MultipleDropdownSearch
+  label="Categories"
+  values={selectedCategories}
+  placeholder="No Categories Selected"
+  searchPlaceholder="Search categories..."
+  options={categoryOptions}
+  onSelect={handleCategorySelect}
+  allowSelectAll={true}
+  selectAllLabel="Select All Categories"
+  clearAllLabel="Clear All Categories"
+  noOptionsMessage="No categories available"
+  maxSelectedDisplay={3}
+  required={true}
+  error={errors.categories}
 />
 ```
 
@@ -549,6 +756,24 @@ xl: 1280px
 4. **Use loading states** for async operations
 5. **Group related fields** in widgets or sections
 
+### Dropdown Selection Guidelines
+1. **Use DropdownSearch** for single selection with search capability
+2. **Use MultipleDropdownSearch** when users need to select multiple items:
+   - Product categories (products can belong to multiple categories)
+   - User permissions/roles
+   - Tags or labels
+   - Feature flags
+   - Multiple locations or stores
+3. **Consider user experience**:
+   - Use `maxSelectedDisplay` to prevent UI overflow
+   - Enable `allowSelectAll` for lists with many options
+   - Provide clear search functionality for 10+ options
+   - Use descriptive placeholders and labels
+4. **Performance considerations**:
+   - Limit option lists to reasonable sizes (< 1000 items)
+   - Consider pagination or lazy loading for very large datasets
+   - Use proper option filtering for better search performance
+
 ### Performance
 1. **Use proper imports** - import only what you need
 2. **Optimize images** and icons
@@ -661,6 +886,88 @@ const ExampleForm: React.FC = () => {
           </Button>
         </div>
       </form>
+    </div>
+  );
+};
+```
+
+### Product Form with MultipleDropdownSearch Example
+```tsx
+import React, { useState, useEffect } from 'react';
+import { 
+  Widget, 
+  MultipleDropdownSearch, 
+  InputTextField,
+  Button 
+} from '../components/ui';
+import { TagIcon } from '@heroicons/react/24/outline';
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  level: number;
+}
+
+const ProductForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    category_ids: [] as string[]
+  });
+  const [categories, setCategories] = useState<Category[]>([]);
+  
+  // Convert categories to dropdown options
+  const getCategoryOptions = () => {
+    return categories.map(category => ({
+      id: category.id,
+      label: category.name,
+      description: category.description,
+      level: category.level
+    }));
+  };
+
+  const handleCategorySelect = (selectedValues: string[]) => {
+    setFormData(prev => ({
+      ...prev,
+      category_ids: selectedValues
+    }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <Widget
+        title="Product Information"
+        description="Configure product details and categories"
+        icon={TagIcon}
+        variant="primary"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputTextField
+            label="Product Name"
+            required
+            value={formData.name}
+            onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+            placeholder="Enter product name"
+            colSpan="md:col-span-2"
+          />
+          
+          <MultipleDropdownSearch
+            label="Categories"
+            values={formData.category_ids}
+            options={getCategoryOptions()}
+            onSelect={handleCategorySelect}
+            placeholder="No Categories Selected"
+            searchPlaceholder="Search categories..."
+            allowSelectAll={true}
+            selectAllLabel="Select All Categories"
+            clearAllLabel="Clear All Categories"
+            noOptionsMessage="No categories available"
+            maxSelectedDisplay={3}
+            required={true}
+            className="md:col-span-2"
+          />
+        </div>
+      </Widget>
     </div>
   );
 };

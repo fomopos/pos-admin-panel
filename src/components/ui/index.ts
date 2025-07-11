@@ -22,6 +22,7 @@ export { PropertyCheckbox } from './PropertyCheckbox';
 export { InputTextField } from './InputTextField';
 export { InputMoneyField } from './InputMoneyField';
 export { DropdownSearch } from './DropdownSearch';
+export { MultipleDropdownSearch } from './MultipleDropdownSearch';
 export { CompactToggle } from './CompactToggle';
 export { IconPicker } from './IconPicker';
 export { Widget } from './Widget';

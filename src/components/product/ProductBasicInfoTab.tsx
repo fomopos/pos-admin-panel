@@ -1,8 +1,9 @@
 import React from 'react';
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
-import { InputTextField, DropdownSearch, Widget } from '../ui';
+import { InputTextField, DropdownSearch, MultipleDropdownSearch, Widget } from '../ui';
 import { getUOMDropdownOptions, getUOMById } from '../../constants/uom';
 import type { DropdownSearchOption } from '../ui/DropdownSearch';
+import type { MultipleDropdownSearchOption } from '../ui/MultipleDropdownSearch';
 import type { Product, ProductFormErrors } from '../../services/types/product.types';
 import type { EnhancedCategory } from '../../types/category';
 
@@ -12,9 +13,8 @@ interface ProductBasicInfoTabProps {
   categories: EnhancedCategory[];
   isEditing: boolean;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  getCategoryDropdownOptions: () => DropdownSearchOption[];
-  handleCategorySelect: (option: DropdownSearchOption | null) => void;
-  getCategoryDisplayValue: (option: DropdownSearchOption | null) => string;
+  getCategoryDropdownOptions: () => MultipleDropdownSearchOption[];
+  handleCategorySelect: (selectedValues: string[]) => void;
   handleStockStatusSelect: (option: DropdownSearchOption | null) => void;
   getStockStatusDropdownOptions: () => DropdownSearchOption[];
   getTaxGroupDropdownOptions: () => DropdownSearchOption[];
@@ -29,7 +29,6 @@ export const ProductBasicInfoTab: React.FC<ProductBasicInfoTabProps> = ({
   onInputChange,
   getCategoryDropdownOptions,
   handleCategorySelect,
-  getCategoryDisplayValue,
   handleStockStatusSelect,
   getStockStatusDropdownOptions,
   getTaxGroupDropdownOptions,
@@ -67,18 +66,18 @@ export const ProductBasicInfoTab: React.FC<ProductBasicInfoTabProps> = ({
 
         {/* Category */}
         <div>
-          <DropdownSearch
-            label="Category"
-            value={formData.attributes?.category_id}
-            placeholder="No Category Selected"
+          <MultipleDropdownSearch
+            label="Categories"
+            values={formData.attributes?.category_ids || []}
+            placeholder="No Categories Selected"
             searchPlaceholder="Search categories..."
             options={getCategoryDropdownOptions()}
             onSelect={handleCategorySelect}
-            displayValue={getCategoryDisplayValue}
-            clearLabel="No Category"
+            allowSelectAll={true}
+            selectAllLabel="Select All Categories"
+            clearAllLabel="Clear All Categories"
             noOptionsMessage="No categories available"
-            allowClear={true}
-            closeOnSelect={true}
+            maxSelectedDisplay={3}
           />
         </div>
 

@@ -45,18 +45,19 @@ const PaymentSettings: React.FC = () => {
         tenant_id: currentTenant?.id,
         store_id: currentStore?.store_id,
       });
-      setTenders(result);
+      setTenders(Array.isArray(result) ? result : []);
     } catch (error) {
       console.error('Failed to load tenders:', error);
+      setTenders([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
-  const tenderTypes = Array.from(new Set(tenders.map(t => t.type_code)));
-  const currencies = Array.from(new Set(tenders.map(t => t.currency_id)));
+  const tenderTypes = Array.from(new Set(tenders?.map(t => t.type_code) || []));
+  const currencies = Array.from(new Set(tenders?.map(t => t.currency_id) || []));
 
-  const filteredTenders = tenders.filter(tender => {
+  const filteredTenders = (tenders || []).filter(tender => {
     const matchesSearch = tender.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          tender.tender_id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = !selectedType || tender.type_code === selectedType;
@@ -73,7 +74,7 @@ const PaymentSettings: React.FC = () => {
   };
 
   const handleDelete = async (tenderId: string) => {
-    const tender = tenders.find(t => t.tender_id === tenderId);
+    const tender = (tenders || []).find(t => t.tender_id === tenderId);
     if (!tender) return;
 
     deleteDialog.openDeleteDialog(

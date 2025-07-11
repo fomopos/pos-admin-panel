@@ -14,7 +14,7 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline';
 import { tenderApiService } from '../services/tender/tenderApiService';
-import { PageHeader, Button, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, Widget } from '../components/ui';
+import { PageHeader, Button, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, MultipleDropdownSearch, Widget } from '../components/ui';
 import type { 
   Tender, 
   TenderDenomination, 
@@ -38,6 +38,25 @@ interface TenderFormData {
   configuration: TenderConfiguration;
   availability: string[];
 }
+
+// Availability options for tender usage
+const AVAILABILITY_OPTIONS = [
+  {
+    id: 'SALE',
+    label: 'Sale',
+    description: 'Can be used for regular sales transactions'
+  },
+  {
+    id: 'RETURN_WITH_RECEIPT',
+    label: 'Return with Receipt',
+    description: 'Can be used for returns with receipt'
+  },
+  {
+    id: 'RETURN_WITHOUT_RECEIPT',
+    label: 'Return without Receipt', 
+    description: 'Can be used for returns without receipt'
+  }
+];
 
 // Tender templates for quick setup
 const TENDER_TEMPLATES = [
@@ -354,6 +373,10 @@ const TenderEditPage: React.FC = () => {
       newErrors.tender_id = 'Tender ID must be less than 50 characters';
     }
     
+    if (!formData.availability || formData.availability.length === 0) {
+      newErrors.availability = 'At least one availability option is required';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -372,7 +395,10 @@ const TenderEditPage: React.FC = () => {
       };
 
       if (isEditing && id) {
-        await tenderApiService.updateTender(id, tenderData);
+        await tenderApiService.updateTender(id, tenderData, {
+          tenant_id: currentTenant?.id,
+          store_id: currentStore?.store_id
+        });
         setSuccessMessage('Tender updated successfully!');
       } else {
         await tenderApiService.createTender(tenderData, {
@@ -648,6 +674,8 @@ const TenderEditPage: React.FC = () => {
                 onChange={(value) => handleInputChange('tender_id', value)}
                 placeholder="Enter tender ID"
                 error={errors.tender_id}
+                disabled={isEditing}
+                helperText={isEditing ? "Tender ID cannot be changed when editing" : undefined}
               />
 
               <InputTextField
@@ -700,6 +728,25 @@ const TenderEditPage: React.FC = () => {
                 helperText="Lower numbers appear first in the tender list"
                 min={1}
               />
+
+              {/* Availability Selection */}
+              <div>
+                <MultipleDropdownSearch
+                  label="Availability"
+                  values={formData.availability}
+                  options={AVAILABILITY_OPTIONS}
+                  onSelect={(selectedValues) => handleInputChange('availability', selectedValues)}
+                  placeholder="Select tender availability options"
+                  searchPlaceholder="Search availability options..."
+                  allowSelectAll={true}
+                  selectAllLabel="Select All"
+                  clearAllLabel="Clear All"
+                  noOptionsMessage="No availability options found"
+                  required={true}
+                  error={errors.availability}
+                  className="w-full"
+                />
+              </div>
             </div>
           </Widget>
 
@@ -836,22 +883,24 @@ const TenderEditPage: React.FC = () => {
             title="Settings"
             description="Tender status and behavioral settings"
             icon={Cog6ToothIcon}
-            className="lg:col-span-2"
+            className="lg:col-span-2 overflow-visible"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <PropertyCheckbox
-                title="Active Status"
-                description="Whether this tender is active and available for use"
-                checked={formData.is_active}
-                onChange={(checked) => handleInputChange('is_active', checked)}
-              />
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <PropertyCheckbox
+                  title="Active Status"
+                  description="Whether this tender is active and available for use"
+                  checked={formData.is_active}
+                  onChange={(checked) => handleInputChange('is_active', checked)}
+                />
 
-              <PropertyCheckbox
-                title="Over Tender Allowed"
-                description="Allow customers to pay more than the required amount"
-                checked={formData.over_tender_allowed}
-                onChange={(checked) => handleInputChange('over_tender_allowed', checked)}
-              />
+                <PropertyCheckbox
+                  title="Over Tender Allowed"
+                  description="Allow customers to pay more than the required amount"
+                  checked={formData.over_tender_allowed}
+                  onChange={(checked) => handleInputChange('over_tender_allowed', checked)}
+                />
+              </div>
             </div>
           </Widget>
         </div>

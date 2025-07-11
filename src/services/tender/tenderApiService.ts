@@ -50,7 +50,9 @@ class TenderApiService {
       const response = await apiClient.get<{ tenders: Tender[] }>(path, {});
       
       console.log('✅ Successfully fetched tenders from API:', response.data);
-      return response.data.tenders;
+      
+      // Safely return tenders array, defaulting to empty array if not found
+      return Array.isArray(response.data?.tenders) ? response.data.tenders : [];
       
     } catch (error) {
       const appError = this.handleError(error, 'Failed to fetch tenders');
