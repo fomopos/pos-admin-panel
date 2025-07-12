@@ -24,6 +24,7 @@ import DiscountEditPage from './pages/DiscountEditPage';
 import DiscountDetailPage from './pages/DiscountDetailPage';
 import Sales from './pages/Sales';
 import SalesDetail from './pages/SalesDetail';
+import ReceiptDemo from './pages/ReceiptDemo';
 import Customers from './pages/Customers';
 import TaxSettings from './pages/TaxSettings';
 import PaymentSettings from './pages/PaymentSettings';
@@ -121,6 +122,7 @@ function App() {
               <Route path="discounts/:id" element={<DiscountDetailPage />} />
               <Route path="sales" element={<Sales />} />
               <Route path="sales/:transId" element={<SalesDetail />} />
+              <Route path="receipt-demo" element={<ReceiptDemo />} />
               <Route path="customers" element={<Customers />} />
               <Route path="tables" element={<Tables />} />
               <Route path="tables/new" element={<TableEditPage />} />
