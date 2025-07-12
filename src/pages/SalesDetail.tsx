@@ -452,6 +452,9 @@ const SalesDetail: React.FC = () => {
                     showBorders: true,
                     padding: 12
                   }}
+                  showCopyButton={false}
+                  printButtonText="Print All"
+                  transactionId={transaction.transaction_id}
                 />
               ) : (
                 <div className="text-center py-12">

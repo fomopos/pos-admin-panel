@@ -115,6 +115,10 @@ interface ReceiptViewerProps {
   }>;
   className?: string;
   renderOptions?: ReceiptRenderOptions;
+  showCopyButton?: boolean;
+  printButtonText?: string;
+  onPrintAll?: () => void;
+  transactionId?: string;
 }
 ```
 
@@ -199,6 +203,25 @@ interface TransactionDocument {
 - **JSON Parsing**: Graceful handling of malformed JSON
 - **Missing Images**: Fallback for broken image URLs
 - **Unknown Elements**: Safe rendering of unknown element types
+
+### 5. PDF Filename Customization
+
+When printing receipts, the PDF filename is automatically generated using the following format:
+- If `transactionId` is provided: `{transactionId}_{document_id}`
+- If `transactionId` is not provided: `Receipt_{document_id}`
+
+This ensures that saved PDF files have meaningful names that include both the transaction identifier and the specific receipt document ID, making it easier to organize and identify printed receipts.
+
+Example usage:
+```tsx
+<ReceiptViewer 
+  documents={transaction.documents}
+  transactionId={transaction.transaction_id}
+  // ... other props
+/>
+```
+
+This will generate PDF filenames like: `TXN-123456789_1`, `TXN-123456789_2`, etc.
 
 ## Demo Page
 

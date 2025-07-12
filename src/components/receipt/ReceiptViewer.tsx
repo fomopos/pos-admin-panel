@@ -19,12 +19,20 @@ interface ReceiptViewerProps {
   }>;
   className?: string;
   renderOptions?: ReceiptRenderOptions;
+  showCopyButton?: boolean;
+  printButtonText?: string;
+  onPrintAll?: () => void;
+  transactionId?: string;
 }
 
 const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
   documents,
   className = '',
-  renderOptions = {}
+  renderOptions = {},
+  showCopyButton = true,
+  printButtonText = 'Print',
+  onPrintAll,
+  transactionId
 }) => {
   const [expandedReceipts, setExpandedReceipts] = useState<Set<number>>(new Set());
   const [selectedReceipt, setSelectedReceipt] = useState<number | null>(null);
@@ -215,7 +223,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
             <!DOCTYPE html>
             <html>
             <head>
-              <title>Receipt ${documentId}</title>
+              <title>${transactionId ? `${transactionId}_${documentId}` : `Receipt_${documentId}`}</title>
               <style>
                 body {
                   font-family: ${defaultOptions.fontFamily || 'monospace'};
@@ -265,6 +273,25 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
     }
   };
 
+  const handlePrintAll = async () => {
+    if (onPrintAll) {
+      onPrintAll();
+      return;
+    }
+
+    // Default behavior: print all receipts sequentially
+    try {
+      for (const document of documents) {
+        await handlePrintReceipt(document.document_id);
+        // Add a small delay between prints
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    } catch (error) {
+      console.error('Error printing all receipts:', error);
+      alert('Error printing all receipts. Please try again.');
+    }
+  };
+
   const handleCopyReceipt = async (documentId: number) => {
     const receipt = documents.find(doc => doc.document_id === documentId);
     if (receipt) {
@@ -310,22 +337,24 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
         <h3 className="text-lg font-semibold text-gray-900">
           Receipt Documents ({documents.length})
         </h3>
-        {documents.length === 1 && (
+        {documents.length >= 1 && (
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => handlePrintReceipt(documents[0].document_id)}
+              onClick={() => documents.length === 1 && !onPrintAll ? handlePrintReceipt(documents[0].document_id) : handlePrintAll()}
               className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <PrinterIcon className="h-4 w-4 mr-2" />
-              Print
+              {documents.length === 1 && !onPrintAll ? printButtonText : `Print All (${documents.length})`}
             </button>
-            <button
-              onClick={() => handleCopyReceipt(documents[0].document_id)}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
-              Copy JSON
-            </button>
+            {showCopyButton && documents.length === 1 && (
+              <button
+                onClick={() => handleCopyReceipt(documents[0].document_id)}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
+                Copy JSON
+              </button>
+            )}
           </div>
         )}
       </div>

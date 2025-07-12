@@ -38,9 +38,10 @@ The Sales Detail page (`/sales/${transactionId}`) has been redesigned with a tab
 - **Features**:
   - Complete receipt rendering system
   - Multiple receipt support (customer copy, merchant copy, etc.)
-  - Print functionality for individual receipts
-  - Copy JSON data functionality
+  - Print All functionality for all receipts
   - Expandable receipt views
+  - Streamlined interface without JSON copy functionality
+  - PDF filename customization: saved PDFs are named using transaction ID + receipt ID format (e.g., `TXN-123456789_1`)
 
 ## Tab Implementation
 
