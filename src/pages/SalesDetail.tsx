@@ -11,11 +11,8 @@ import {
   CreditCardIcon,
   BanknotesIcon,
   BuildingLibraryIcon,
-  QrCodeIcon,
-  CalendarDaysIcon,
   UserIcon,
   ShoppingBagIcon,
-  InformationCircleIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { Button, Card, PageHeader, Loading } from '../components/ui';
@@ -32,7 +29,7 @@ const SalesDetail: React.FC = () => {
   const [transaction, setTransaction] = useState<TransactionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('items');
 
   useEffect(() => {
     if (transId) {
@@ -143,11 +140,6 @@ const SalesDetail: React.FC = () => {
   // Tab configuration
   const tabs = [
     {
-      id: 'overview',
-      name: 'Overview',
-      icon: InformationCircleIcon
-    },
-    {
       id: 'items',
       name: 'Items',
       icon: ShoppingBagIcon
@@ -236,7 +228,110 @@ const SalesDetail: React.FC = () => {
         </div>
       </PageHeader>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Transaction Details and Summary - Above Tabs */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Transaction Details */}
+          <div className="lg:col-span-2">
+            <Card className="p-6 bg-white/80 backdrop-blur-sm border-white/20">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-slate-900">Transaction Details</h3>
+                {getStatusBadge(transaction.status)}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Transaction ID</label>
+                    <p className="text-lg font-semibold text-slate-900">{transaction.trans_id}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Terminal</label>
+                    <p className="text-slate-900">{transaction.terminal_id}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Business Date</label>
+                    <p className="text-slate-900">{formatDateTime(transaction.business_date)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Duration</label>
+                    <p className="text-slate-900">
+                      {Math.round((new Date(transaction.end_datetime).getTime() - new Date(transaction.begin_datetime).getTime()) / 1000)} seconds
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Associates</label>
+                    <div className="flex items-center space-x-2">
+                      <UserIcon className="w-4 h-4 text-slate-400" />
+                      <p className="text-slate-900">{transaction.associates.join(', ')}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-slate-600">Locale</label>
+                    <p className="text-slate-900">{transaction.store_locale}</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Transaction Summary */}
+          <div>
+            <Card className="p-6 bg-white/80 backdrop-blur-sm border-white/20">
+              <h3 className="text-xl font-semibold text-slate-900 mb-6">Transaction Summary</h3>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Subtotal</span>
+                  <span className="font-medium">{formatCurrency(transaction.sub_total, transaction.store_currency)}</span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Tax Total</span>
+                  <span className="font-medium">{formatCurrency(transaction.tax_total, transaction.store_currency)}</span>
+                </div>
+                
+                {parseFloat(transaction.round_total) !== 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Rounding</span>
+                    <span className="font-medium">{formatCurrency(transaction.round_total, transaction.store_currency)}</span>
+                  </div>
+                )}
+                
+                <div className="border-t pt-4">
+                  <div className="flex justify-between text-lg font-semibold">
+                    <span>Total</span>
+                    <span>{formatCurrency(transaction.total, transaction.store_currency)}</span>
+                  </div>
+                </div>
+                
+                <div className="border-t pt-4">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Amount Tendered</span>
+                    <span className="font-medium">{formatCurrency(
+                      transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0).toString(),
+                      transaction.store_currency
+                    )}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Amount Due</span>
+                    <span className="font-medium">{formatCurrency(
+                      (parseFloat(transaction.total) - transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0)).toString(),
+                      transaction.store_currency
+                    )}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
         {/* Tabbed Content */}
         <Card className="bg-white/80 backdrop-blur-sm border-white/20 overflow-hidden">
           <EnhancedTabs
@@ -245,179 +340,6 @@ const SalesDetail: React.FC = () => {
             onTabChange={setActiveTab}
             className="bg-transparent"
           >
-            {/* Overview Tab */}
-            <TabsContent value="overview" activeTab={activeTab}>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Transaction Details */}
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Transaction Overview */}
-                  <div className="border border-slate-200 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-semibold text-slate-900">Transaction Details</h3>
-                      {getStatusBadge(transaction.status)}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-slate-600">Transaction ID</label>
-                          <p className="text-lg font-semibold text-slate-900">{transaction.trans_id}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-slate-600">Terminal</label>
-                          <p className="text-slate-900">{transaction.terminal_id}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-slate-600">Business Date</label>
-                          <p className="text-slate-900">{formatDateTime(transaction.business_date)}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-slate-600">Duration</label>
-                          <p className="text-slate-900">
-                            {Math.round((new Date(transaction.end_datetime).getTime() - new Date(transaction.begin_datetime).getTime()) / 1000)} seconds
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-slate-600">Associates</label>
-                          <div className="flex items-center space-x-2">
-                            <UserIcon className="w-4 h-4 text-slate-400" />
-                            <p className="text-slate-900">{transaction.associates.join(', ')}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-slate-600">Locale</label>
-                          <p className="text-slate-900">{transaction.store_locale}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Summary Cards */}
-                <div className="space-y-6">
-                  {/* Transaction Totals */}
-                  <div className="border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-xl font-semibold text-slate-900 mb-6">Transaction Summary</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Subtotal</span>
-                        <span className="font-medium">{formatCurrency(transaction.sub_total, transaction.store_currency)}</span>
-                      </div>
-                      
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Tax Total</span>
-                        <span className="font-medium">{formatCurrency(transaction.tax_total, transaction.store_currency)}</span>
-                      </div>
-                      
-                      {parseFloat(transaction.round_total) !== 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Rounding</span>
-                          <span className="font-medium">{formatCurrency(transaction.round_total, transaction.store_currency)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="border-t pt-4">
-                        <div className="flex justify-between text-lg font-semibold">
-                          <span>Total</span>
-                          <span>{formatCurrency(transaction.total, transaction.store_currency)}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="border-t pt-4">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Amount Tendered</span>
-                          <span className="font-medium">{formatCurrency(
-                            transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0).toString(),
-                            transaction.store_currency
-                          )}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600">Amount Due</span>
-                          <span className="font-medium">{formatCurrency(
-                            (parseFloat(transaction.total) - transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0)).toString(),
-                            transaction.store_currency
-                          )}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Store Information */}
-                  <div className="border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Store Information</h3>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <BuildingLibraryIcon className="w-5 h-5 text-slate-400" />
-                        <div>
-                          <p className="font-medium text-slate-900">Store {transaction.store_id}</p>
-                          <p className="text-sm text-slate-500">Terminal {transaction.terminal_id}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <CalendarDaysIcon className="w-5 h-5 text-slate-400" />
-                        <div>
-                          <p className="text-sm text-slate-500">Business Date</p>
-                          <p className="font-medium text-slate-900">{formatDateTime(transaction.business_date)}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <CurrencyDollarIcon className="w-5 h-5 text-slate-400" />
-                        <div>
-                          <p className="text-sm text-slate-500">Currency</p>
-                          <p className="font-medium text-slate-900">{transaction.store_currency}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div className="border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
-                    
-                    <div className="space-y-3">
-                      <Button
-                        variant="outline"
-                        onClick={handlePrintReceipt}
-                        className="w-full justify-start"
-                      >
-                        <PrinterIcon className="w-4 h-4 mr-2" />
-                        Print Receipt
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        onClick={handleDuplicateTransaction}
-                        className="w-full justify-start"
-                      >
-                        <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
-                        Duplicate Transaction
-                      </Button>
-                      
-                      {transaction.documents.length > 0 && (
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start"
-                        >
-                          <QrCodeIcon className="w-4 h-4 mr-2" />
-                          View QR Code
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
             {/* Items Tab */}
             <TabsContent value="items" activeTab={activeTab}>
               <div className="space-y-4">
