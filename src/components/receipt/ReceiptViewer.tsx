@@ -7,6 +7,8 @@ import {
   ChevronUpIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import QRCode from 'qrcode';
+import JsBarcode from 'jsbarcode';
 import { ReceiptElementRenderer } from './ReceiptElementRenderer';
 import type { ReceiptElement, ReceiptRenderOptions } from '../../types/receipt';
 
@@ -68,49 +70,197 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
     setExpandedReceipts(newExpanded);
   };
 
-  const handlePrintReceipt = (documentId: number) => {
+  const handlePrintReceipt = async (documentId: number) => {
     const receipt = documents.find(doc => doc.document_id === documentId);
     if (receipt) {
-      // Create a new window for printing
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {        
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Receipt ${documentId}</title>
-            <style>
-              body {
-                font-family: monospace;
-                font-size: 12px;
-                line-height: 1.2;
-                margin: 0;
-                padding: 16px;
-                width: ${defaultOptions.width}px;
-                background: white;
+      try {
+        const receiptElements = parseReceiptData(receipt.data);
+        
+        // Create a temporary container to render the receipt content
+        const tempContainer = document.createElement('div');
+        tempContainer.style.fontFamily = defaultOptions.fontFamily || 'monospace';
+        tempContainer.style.fontSize = `${defaultOptions.fontSize}px`;
+        tempContainer.style.lineHeight = '1.2';
+        tempContainer.style.width = `${defaultOptions.width}px`;
+        
+        // Render each element as HTML
+        const renderElementToHTML = async (element: any): Promise<string> => {
+          switch (element.type) {
+            case 'text':
+              const textAlign = element.align === 'center' ? 'center' : 
+                              element.align === 'right' ? 'right' : 
+                              element.align === 'justify' ? 'justify' : 'left';
+              return `<div style="text-align: ${textAlign}; ${element.flex ? `flex: ${element.flex};` : ''}">${element.text || ''}</div>`;
+            
+            case 'row':
+              const childrenHTML = await Promise.all(
+                (element.children || []).map(async (child: any) => 
+                  `<div style="${child.flex ? `flex: ${child.flex};` : ''}">${await renderElementToHTML(child)}</div>`
+                )
+              );
+              return `<div style="display: flex; gap: 4px;">${childrenHTML.join('')}</div>`;
+            
+            case 'horizontalline':
+              return '<div style="border-top: 1px dashed #666; margin: 8px 0; width: 100%;"></div>';
+            
+            case 'pagebreak':
+              return '<div style="page-break-after: always; margin: 16px 0; border-top: 2px solid #444;"></div>';
+            
+            case 'barcode':
+              if (element.barcode_type === 'qrcode') {
+                try {
+                  // Generate QR code as data URL
+                  const qrDataURL = await QRCode.toDataURL(element.code, {
+                    width: 120,
+                    margin: 1,
+                    color: {
+                      dark: '#000000',
+                      light: '#FFFFFF'
+                    }
+                  });
+                  return `<div style="text-align: center; margin: 8px 0;">
+                    <img src="${qrDataURL}" alt="QR Code" style="width: 120px; height: 120px;" />
+                  </div>`;
+                } catch (qrError) {
+                  console.error('Failed to generate QR code:', qrError);
+                  // Fallback to text representation
+                  return `<div style="text-align: center; margin: 8px 0; padding: 10px; border: 1px solid #ccc; background: #f9f9f9;">
+                    <div style="font-size: 10px; margin-bottom: 4px;">QR Code (Failed to Generate)</div>
+                    <div style="font-family: monospace; font-size: 8px;">${element.code}</div>
+                  </div>`;
+                }
+              } else {
+                try {
+                  // Generate other barcode types using jsbarcode
+                  const canvas = document.createElement('canvas');
+                  
+                  // Map barcode types to jsbarcode formats
+                  const formatMap: { [key: string]: string } = {
+                    'code128': 'CODE128',
+                    'code39': 'CODE39',
+                    'ean13': 'EAN13',
+                    'ean8': 'EAN8',
+                    'upc': 'UPC',
+                    'upca': 'UPC',
+                    'upce': 'UPCE',
+                    'itf': 'ITF',
+                    'itf14': 'ITF14',
+                    'msi': 'MSI',
+                    'pharmacode': 'pharmacode',
+                    'codabar': 'codabar'
+                  };
+
+                  const format = formatMap[element.barcode_type.toLowerCase()] || 'CODE128';
+
+                  JsBarcode(canvas, element.code, {
+                    format: format,
+                    width: 2,
+                    height: 50,
+                    displayValue: true,
+                    fontSize: 14,
+                    textAlign: 'center',
+                    textPosition: 'bottom',
+                    textMargin: 2,
+                    fontOptions: '',
+                    font: 'monospace',
+                    background: '#ffffff',
+                    lineColor: '#000000',
+                    margin: 5
+                  });
+
+                  const barcodeDataURL = canvas.toDataURL();
+                  return `<div style="text-align: center; margin: 8px 0;">
+                    <img src="${barcodeDataURL}" alt="${element.barcode_type} Barcode" style="max-width: 250px; height: auto;" />
+                  </div>`;
+                } catch (barcodeError) {
+                  console.error('Failed to generate barcode:', barcodeError);
+                  // Fallback to text representation
+                  return `<div style="text-align: center; margin: 8px 0; padding: 8px; border: 1px solid #ccc; background: #f9f9f9;">
+                    <div style="font-size: 10px; margin-bottom: 4px;">${element.barcode_type.toUpperCase()} (Failed to Generate)</div>
+                    <div style="font-family: monospace; background: white; padding: 4px; border: 1px solid #ddd;">${element.code}</div>
+                  </div>`;
+                }
               }
-              .receipt-container {
-                width: 100%;
-              }
-              @media print {
-                body { margin: 0; padding: 8px; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="receipt-container" id="receipt-content">
-              Loading receipt...
-            </div>
-            <script>
-              window.onload = function() {
-                window.print();
-                window.close();
-              };
-            </script>
-          </body>
-          </html>
-        `);
-        printWindow.document.close();
+            
+            case 'picture':
+              return `<div style="text-align: center; margin: 8px 0;">
+                <img src="${element.url}" alt="Receipt Image" style="max-width: 100%; max-height: 100px;" onerror="this.style.display='none'; this.nextSibling.style.display='block';" />
+                <div style="display: none; padding: 16px; background: #f3f4f6; border: 1px solid #d1d5db; text-align: center; color: #6b7280; font-size: 12px;">Image not available</div>
+              </div>`;
+            
+            case 'sectionref':
+              return `<div style="color: #6b7280; font-style: italic; font-size: 12px;">[Section: ${element.ref}]</div>`;
+            
+            case 'iterator':
+              const iteratorHTML = await Promise.all(
+                (element.rows || []).map(async (row: any) => await renderElementToHTML(row))
+              );
+              return `<div>${iteratorHTML.join('')}</div>`;
+            
+            default:
+              return `<div style="color: #ef4444; font-size: 12px;">Unknown element type: ${element.type}</div>`;
+          }
+        };
+        
+        // Process all elements with async support
+        const receiptHTMLElements = await Promise.all(
+          receiptElements.map(async (element) => await renderElementToHTML(element))
+        );
+        const receiptHTML = receiptHTMLElements.join('');
+        
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {        
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Receipt ${documentId}</title>
+              <style>
+                body {
+                  font-family: ${defaultOptions.fontFamily || 'monospace'};
+                  font-size: ${defaultOptions.fontSize}px;
+                  line-height: 1.2;
+                  margin: 0;
+                  padding: 16px;
+                  width: ${defaultOptions.width}px;
+                  background: white;
+                  word-break: break-word;
+                }
+                .receipt-container {
+                  width: 100%;
+                }
+                @media print {
+                  body { 
+                    margin: 0; 
+                    padding: 8px; 
+                  }
+                  @page {
+                    margin: 0.5in;
+                  }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="receipt-container">
+                ${receiptHTML}
+              </div>
+              <script>
+                window.onload = function() {
+                  setTimeout(function() {
+                    window.print();
+                    window.close();
+                  }, 500);
+                };
+              </script>
+            </body>
+            </html>
+          `);
+          printWindow.document.close();
+        }
+      } catch (error) {
+        console.error('Error generating receipt for printing:', error);
+        alert('Error generating receipt for printing. Please try again.');
       }
     }
   };
@@ -239,13 +389,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
             {/* Receipt Content - Expanded View */}
             {isExpanded && (
               <div className="p-4">
-                <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Receipt Elements:</h4>
-                  <p className="text-xs text-gray-500">
-                    {receiptElements.length} elements found
-                  </p>
-                </div>
-                
+              
                 {/* Receipt Preview */}
                 <div 
                   className="receipt-container border border-gray-300 bg-white p-4 rounded-lg"

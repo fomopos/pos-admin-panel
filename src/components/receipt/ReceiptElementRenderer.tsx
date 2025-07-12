@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { ReceiptElement, TextElement, RowElement, BarcodeElement, PictureElement } from '../../types/receipt';
 import { QRCodeSVG } from 'qrcode.react';
+import JsBarcode from 'jsbarcode';
 
 interface ReceiptElementRendererProps {
   element: ReceiptElement;
@@ -80,19 +81,76 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
       );
     }
 
-    // For other barcode types, we'll render a placeholder or use a barcode library
+    // For other barcode types, use jsbarcode
+    const BarcodeComponent = () => {
+      const canvasRef = useRef<HTMLCanvasElement>(null);
+
+      useEffect(() => {
+        if (canvasRef.current) {
+          try {
+            // Map barcode types to jsbarcode formats
+            const formatMap: { [key: string]: string } = {
+              'code128': 'CODE128',
+              'code39': 'CODE39',
+              'ean13': 'EAN13',
+              'ean8': 'EAN8',
+              'upc': 'UPC',
+              'upca': 'UPC',
+              'upce': 'UPCE',
+              'itf': 'ITF',
+              'itf14': 'ITF14',
+              'msi': 'MSI',
+              'pharmacode': 'pharmacode',
+              'codabar': 'codabar'
+            };
+
+            const format = formatMap[barcodeElement.barcode_type.toLowerCase()] || 'CODE128';
+
+            JsBarcode(canvasRef.current, barcodeElement.code, {
+              format: format,
+              width: 2,
+              height: 50,
+              displayValue: true,
+              fontSize: 14,
+              textAlign: 'center',
+              textPosition: 'bottom',
+              textMargin: 2,
+              fontOptions: '',
+              font: 'monospace',
+              background: '#ffffff',
+              lineColor: '#000000',
+              margin: 5
+            });
+          } catch (error) {
+            console.error('Error generating barcode:', error);
+            // Fallback to text display
+            const ctx = canvasRef.current?.getContext('2d');
+            if (ctx && canvasRef.current) {
+              ctx.fillStyle = '#f3f4f6';
+              ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+              ctx.fillStyle = '#000000';
+              ctx.font = '12px monospace';
+              ctx.textAlign = 'center';
+              ctx.fillText('Invalid Barcode', canvasRef.current.width / 2, 30);
+              ctx.fillText(barcodeElement.code, canvasRef.current.width / 2, 50);
+            }
+          }
+        }
+      }, [barcodeElement.code, barcodeElement.barcode_type]);
+
+      return (
+        <canvas
+          ref={canvasRef}
+          className="border border-gray-200"
+          width={250}
+          height={80}
+        />
+      );
+    };
+
     return (
-      <div
-        key={`barcode-${Math.random()}`}
-        className="flex justify-center my-2 p-2 border border-gray-300 bg-gray-50"
-        style={{ fontSize: '10px' }}
-      >
-        <div className="text-center">
-          <div className="font-mono text-xs mb-1">{barcodeElement.barcode_type.toUpperCase()}</div>
-          <div className="font-mono bg-white px-2 py-1 border">
-            {barcodeElement.code}
-          </div>
-        </div>
+      <div key={`barcode-${Math.random()}`} className="flex justify-center my-2">
+        <BarcodeComponent />
       </div>
     );
   };
