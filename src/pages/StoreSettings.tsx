@@ -35,6 +35,7 @@ import {
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
 import { detectUserCountryCode } from '../utils/locationUtils';
+import HardwareConfigurationTab from '../components/hardware/HardwareConfigurationTab';
 
 interface StoreSettingsState {
   settings: StoreSettings | null;
@@ -266,7 +267,7 @@ const StoreSettingsPage: React.FC = () => {
         )}
 
         {state.activeTab === 'hardware' && (
-          <HardwareConfigTab 
+          <HardwareConfigurationTab 
             settings={state.settings}
             onSave={(data) => handleSave('hardware', data)}
             onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
@@ -806,70 +807,6 @@ const ReceiptSettingsTab: React.FC<TabProps> = ({ settings, onSave, onFieldChang
         <Button onClick={handleSave} className="px-8 py-3">
           <CheckIcon className="h-5 w-5 mr-2" />
           Save Receipt Settings
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-const HardwareConfigTab: React.FC<TabProps> = ({ settings, onSave, onFieldChange }) => {
-  const [formData, setFormData] = useState((settings.hardware_config as any) || {});
-
-  const handleFieldChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
-    onFieldChange();
-  };
-
-  const handleSave = () => {
-    onSave({ hardware_config: formData });
-  };
-
-  return (
-    <div className="space-y-6">
-      <Widget
-        title="Hardware Configuration"
-        description="Configure connected hardware devices and settings"
-        icon={ComputerDesktopIcon}
-      >
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputTextField
-              label="Printer Name"
-              value={formData?.printer_name || ''}
-              onChange={(value) => handleFieldChange('printer_name', value)}
-              placeholder="Enter printer name"
-            />
-
-            <InputTextField
-              label="Cash Drawer"
-              value={formData?.cash_drawer_name || ''}
-              onChange={(value) => handleFieldChange('cash_drawer_name', value)}
-              placeholder="Enter cash drawer name"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PropertyCheckbox
-              title="Auto Print Receipt"
-              description="Automatically print receipts after transactions"
-              checked={formData?.auto_print || false}
-              onChange={(checked) => handleFieldChange('auto_print', checked)}
-            />
-
-            <PropertyCheckbox
-              title="Open Cash Drawer"
-              description="Automatically open cash drawer after sales"
-              checked={formData?.auto_open_drawer || false}
-              onChange={(checked) => handleFieldChange('auto_open_drawer', checked)}
-            />
-          </div>
-        </div>
-      </Widget>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSave} className="px-8 py-3">
-          <CheckIcon className="h-5 w-5 mr-2" />
-          Save Hardware Config
         </Button>
       </div>
     </div>
