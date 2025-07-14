@@ -16,6 +16,7 @@ This styling guide provides comprehensive guidelines for maintaining consistent 
 9. [States & Feedback](#states--feedback)
 10. [Responsive Design](#responsive-design)
 11. [Best Practices](#best-practices)
+    - [Semantic Code Dropdowns](#semantic-code-dropdowns)
 
 ---
 
@@ -484,7 +485,7 @@ import {
   value={selectedValue}
   placeholder="Choose an option"
   options={options}
-  onSelect={handleSelect}
+  onSelect={(option) => setSelectedValue(option?.id)}
   error={errors.dropdown}
   required={true}
 />
@@ -906,6 +907,38 @@ xl: 1280px
    - Limit option lists to reasonable sizes (< 1000 items)
    - Consider pagination or lazy loading for very large datasets
    - Use proper option filtering for better search performance
+
+### Semantic Code Dropdowns
+For dropdowns representing semantic codes (like tax types, status codes, etc.), use descriptive options:
+
+```tsx
+// Good: Semantic codes with descriptions
+<DropdownSearch
+  label="Tax Type Code"
+  value={selectedTaxType}
+  onSelect={(option) => setSelectedTaxType(option?.id)}
+  options={[
+    { 
+      id: 'VAT', 
+      label: 'VAT', 
+      description: 'Value Added Tax - Tax applied at each stage of production/distribution' 
+    },
+    { 
+      id: 'SALES', 
+      label: 'SALES', 
+      description: 'Sales Tax - Tax applied at the point of sale to the end consumer' 
+    }
+  ]}
+  placeholder="Select tax type"
+/>
+```
+
+**Best Practices:**
+- Use the actual code as both `id` and `label`
+- Provide clear descriptions explaining what each code means
+- Keep descriptions concise but informative
+- Use consistent description formatting across similar dropdowns
+- Extract the `id` from the option object in the onSelect handler
 
 ### Performance
 1. **Use proper imports** - import only what you need

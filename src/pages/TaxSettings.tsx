@@ -464,7 +464,7 @@ const TaxSettings: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen overflow-visible">
       {/* Header Section */}
       <PageHeader
         title="Tax Settings"
@@ -627,16 +627,16 @@ const TaxSettings: React.FC = () => {
               </Button>
             }
           >
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-visible">
               {taxConfig?.authority?.map((authority, index) => {
                 const isEditing = editingItems[`authority_${index}`];
                 return (
                   <div key={`auth-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow overflow-visible">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
+                    <div className="flex items-start justify-between mb-4 overflow-visible">
+                      <div className="flex-1 overflow-visible">
                         {isEditing ? (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-4 overflow-visible">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-visible">
                               <InputTextField
                                 label="Authority ID"
                                 value={authority.authority_id}
@@ -650,11 +650,11 @@ const TaxSettings: React.FC = () => {
                                 placeholder="e.g., Central GST"
                               />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-visible">
                               <DropdownSearch
                                 label="Rounding Code"
                                 value={authority.rounding_code}
-                                onSelect={(value) => handleFieldChange('authority', index, 'rounding_code', value)}
+                                onSelect={(option) => handleFieldChange('authority', index, 'rounding_code', option?.id)}
                                 options={[
                                   { id: 'HALF_UP', label: 'Half Up' },
                                   { id: 'HALF_DOWN', label: 'Half Down' },
@@ -662,6 +662,8 @@ const TaxSettings: React.FC = () => {
                                   { id: 'DOWN', label: 'Down' }
                                 ]}
                                 placeholder="Select rounding method"
+                                className="z-[60]"
+                                dropdownClassName="z-[60]"
                               />
                               <InputTextField
                                 label="Rounding Digits"
@@ -739,6 +741,7 @@ const TaxSettings: React.FC = () => {
               description="Organize tax rules into groups for easier management"
               icon={TableCellsIcon}
               variant="success"
+              className="overflow-visible"
               headerActions={
                 <Button
                   onClick={() => addNewItem('group')}
@@ -749,15 +752,15 @@ const TaxSettings: React.FC = () => {
                 </Button>
               }
             >
-              <div className="space-y-6">
+              <div className="space-y-6 overflow-visible">
                 {taxConfig?.tax_group?.map((group, index) => {
                   const isEditing = editingItems[`group_${index}`];
                   return (
-                    <div key={`group-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
+                    <div key={`group-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow overflow-visible">
+                      <div className="flex items-start justify-between mb-4 overflow-visible">
+                        <div className="flex-1 overflow-visible">
                           {/* Group content will be rendered here */}
-                          <div className="space-y-4">
+                          <div className="space-y-4 overflow-visible">
                             {isEditing ? (
                               <div className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -809,16 +812,16 @@ const TaxSettings: React.FC = () => {
                               </div>
                               
                               {group.group_rule.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-2 overflow-visible">
                                   {group.group_rule.map((rule) => {
                                     const ruleKey = `rule_${group.tax_group_id}_${rule.tax_rule_seq}`;
                                     const isRuleEditing = editingItems[ruleKey];
                                     
                                     return (
-                                      <div key={rule.tax_rule_seq} className="p-3 bg-gray-50 rounded-lg border">
+                                      <div key={rule.tax_rule_seq} className="p-3 bg-gray-50 rounded-lg border overflow-visible">
                                         {isRuleEditing ? (
-                                          <div className="space-y-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                          <div className="space-y-3 overflow-visible">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible">
                                               <InputTextField
                                                 label="Name"
                                                 value={rule.name}
@@ -828,12 +831,14 @@ const TaxSettings: React.FC = () => {
                                               <DropdownSearch
                                                 label="Tax Authority"
                                                 value={rule.tax_authority_id}
-                                                onSelect={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', value)}
+                                                onSelect={(option) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', option?.id)}
                                                 options={taxConfig?.authority?.map(auth => ({
                                                   id: auth.authority_id,
                                                   label: auth.name
                                                 })) || []}
                                                 placeholder="Select authority"
+                                                className="z-[60]"
+                                                dropdownClassName="z-[60]"
                                               />
                                               <InputTextField
                                                 label="Percentage (%)"
@@ -845,11 +850,25 @@ const TaxSettings: React.FC = () => {
                                                 min={0}
                                                 max={100}
                                               />
-                                              <InputTextField
+                                              <DropdownSearch
                                                 label="Tax Type Code"
                                                 value={rule.tax_type_code}
-                                                onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', value)}
-                                                placeholder="VAT"
+                                                onSelect={(option) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', option?.id)}
+                                                options={[
+                                                  { 
+                                                    id: 'VAT', 
+                                                    label: 'VAT', 
+                                                    description: 'Value Added Tax - Tax applied at each stage of production/distribution' 
+                                                  },
+                                                  { 
+                                                    id: 'SALES', 
+                                                    label: 'SALES', 
+                                                    description: 'Sales Tax - Tax applied at the point of sale to the end consumer' 
+                                                  }
+                                                ]}
+                                                placeholder="Select tax type"
+                                                className="z-[60]"
+                                                dropdownClassName="z-[60]"
                                               />
                                             </div>
                                             <InputTextArea
