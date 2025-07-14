@@ -9,10 +9,11 @@ import {
   Cog6ToothIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  CloudArrowUpIcon
+  CloudArrowUpIcon,
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Input, Card, PageHeader, Alert, EnhancedTabs, ConfirmDialog, Loading } from '../components/ui';
+import { Button, PageHeader, Alert, EnhancedTabs, ConfirmDialog, Loading, Widget, DropdownSearch, InputTextField, InputTextArea } from '../components/ui';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { taxServices } from '../services/tax';
 import type {
@@ -463,57 +464,57 @@ const TaxSettings: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <PageHeader
         title="Tax Settings"
-        description="Configure tax authorities, groups, and locations"
+        description="Configure tax authorities, groups, and locations for your store"
       >
         {/* Save/Discard Actions */}
         {hasChanges && (
-          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
-                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end space-x-3">
-              <Button
-                onClick={discardChanges}
-                variant="outline"
-                size="sm"
-                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
-              >
-                <span>Discard Changes</span>
-              </Button>
-              <Button
-                onClick={saveAllChanges}
-                disabled={isSaving}
-                size="sm"
-                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>Save All Changes</span>
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="flex items-center space-x-3">
+            <Button
+              onClick={discardChanges}
+              variant="outline"
+              size="sm"
+              className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
+            >
+              <span>Discard Changes</span>
+            </Button>
+            <Button
+              onClick={saveAllChanges}
+              disabled={isSaving}
+              size="sm"
+              className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <CloudArrowUpIcon className="h-4 w-4" />
+                  <span>Save All Changes</span>
+                </>
+              )}
+            </Button>
           </div>
         )}
       </PageHeader>
+
+      {/* Unsaved Changes Alert */}
+      {hasChanges && (
+        <Alert variant="warning" className="mb-4">
+          <ExclamationTriangleIcon className="h-5 w-5" />
+          <div>
+            <p className="font-medium">You have unsaved changes</p>
+            <p className="text-sm opacity-90 mt-1">
+              Don't forget to save your modifications before leaving this page.
+            </p>
+          </div>
+        </Alert>
+      )}
 
       {/* Success Message */}
       {successMessage && (
@@ -550,49 +551,57 @@ const TaxSettings: React.FC = () => {
       )}
 
       {/* Tax Configuration Stats */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-600">Total Authorities</p>
-              <p className="text-3xl font-bold text-blue-900">{taxConfig?.authority?.length || 0}</p>
-            </div>
-            <BuildingOfficeIcon className="h-12 w-12 text-blue-500" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Widget
+          title="Total Authorities"
+          icon={BuildingOfficeIcon}
+          variant="primary"
+          size="sm"
+        >
+          <div className="text-center">
+            <p className="text-3xl font-bold text-blue-900">{taxConfig?.authority?.length || 0}</p>
+            <p className="text-sm text-blue-600 mt-1">Tax authorities configured</p>
           </div>
-        </Card>
+        </Widget>
         
-        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-600">Tax Groups</p>
-              <p className="text-3xl font-bold text-green-900">{taxConfig?.tax_group?.length || 0}</p>
-            </div>
-            <TableCellsIcon className="h-12 w-12 text-green-500" />
+        <Widget
+          title="Tax Groups"
+          icon={TableCellsIcon}
+          variant="success"
+          size="sm"
+        >
+          <div className="text-center">
+            <p className="text-3xl font-bold text-green-900">{taxConfig?.tax_group?.length || 0}</p>
+            <p className="text-sm text-green-600 mt-1">Groups with rules</p>
           </div>
-        </Card>
+        </Widget>
         
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-purple-600">Tax Location</p>
-              <p className="text-lg font-bold text-purple-900">{taxConfig?.tax_location?.name || 'Not Set'}</p>
-            </div>
-            <ClipboardDocumentListIcon className="h-12 w-12 text-purple-500" />
+        <Widget
+          title="Tax Location"
+          icon={ClipboardDocumentListIcon}
+          variant="warning"
+          size="sm"
+        >
+          <div className="text-center">
+            <p className="text-lg font-bold text-amber-900">{taxConfig?.tax_location?.name || 'Not Set'}</p>
+            <p className="text-sm text-amber-600 mt-1">Current location</p>
           </div>
-        </Card>
+        </Widget>
         
-        <Card className="p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-orange-600">Total Rules</p>
-              <p className="text-3xl font-bold text-orange-900">
-                {taxConfig?.tax_group?.reduce((total, group) => total + (group?.group_rule?.length || 0), 0) || 0}
-              </p>
-            </div>
-            <CurrencyDollarIcon className="h-12 w-12 text-orange-500" />
+        <Widget
+          title="Total Rules"
+          icon={CurrencyDollarIcon}
+          variant="default"
+          size="sm"
+        >
+          <div className="text-center">
+            <p className="text-3xl font-bold text-gray-900">
+              {taxConfig?.tax_group?.reduce((total, group) => total + (group?.group_rule?.length || 0), 0) || 0}
+            </p>
+            <p className="text-sm text-gray-600 mt-1">Tax rules defined</p>
           </div>
-        </Card>
-      </div> */}
+        </Widget>
+      </div>
 
       {/* Tab Navigation */}
       <EnhancedTabs
@@ -602,432 +611,255 @@ const TaxSettings: React.FC = () => {
       >
         {/* Tab Content */}
         {activeTab === 'authorities' && (
+          <Widget
+            title="Tax Authorities"
+            description="Configure tax authorities that will apply taxes to your products"
+            icon={BuildingOfficeIcon}
+            variant="primary"
+            className="overflow-visible"
+            headerActions={
+              <Button
+                onClick={() => addNewItem('authority')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Add Authority
+              </Button>
+            }
+          >
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Tax Authorities</h2>
-                <Button
-                  onClick={() => addNewItem('authority')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Add Authority
-                </Button>
-              </div>
-              
-              <div className="space-y-4">
-                {taxConfig?.authority?.map((authority, index) => {
-                  const isEditing = editingItems[`authority_${index}`];
-                  return (
-                    <Card key={`auth-${index}`} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          {isEditing ? (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Input
-                                  label="Authority ID"
-                                  value={authority.authority_id}
-                                  onChange={(e) => handleFieldChange('authority', index, 'authority_id', e.target.value)}
-                                  placeholder="e.g., CGST001"
-                                />
-                                <Input
-                                  label="Authority Name"
-                                  value={authority.name}
-                                  onChange={(e) => handleFieldChange('authority', index, 'name', e.target.value)}
-                                  placeholder="e.g., Central GST"
-                                />
+              {taxConfig?.authority?.map((authority, index) => {
+                const isEditing = editingItems[`authority_${index}`];
+                return (
+                  <div key={`auth-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow overflow-visible">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        {isEditing ? (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <InputTextField
+                                label="Authority ID"
+                                value={authority.authority_id}
+                                onChange={(value) => handleFieldChange('authority', index, 'authority_id', value)}
+                                placeholder="e.g., CGST001"
+                              />
+                              <InputTextField
+                                label="Authority Name"
+                                value={authority.name}
+                                onChange={(value) => handleFieldChange('authority', index, 'name', value)}
+                                placeholder="e.g., Central GST"
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <DropdownSearch
+                                label="Rounding Code"
+                                value={authority.rounding_code}
+                                onSelect={(value) => handleFieldChange('authority', index, 'rounding_code', value)}
+                                options={[
+                                  { id: 'HALF_UP', label: 'Half Up' },
+                                  { id: 'HALF_DOWN', label: 'Half Down' },
+                                  { id: 'UP', label: 'Up' },
+                                  { id: 'DOWN', label: 'Down' }
+                                ]}
+                                placeholder="Select rounding method"
+                              />
+                              <InputTextField
+                                label="Rounding Digits"
+                                type="number"
+                                value={authority.rounding_digit.toString()}
+                                onChange={(value) => handleFieldChange('authority', index, 'rounding_digit', value)}
+                                placeholder="0-10"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{authority.name}</h3>
+                            <p className="text-sm text-gray-500 mb-2">ID: {authority.authority_id}</p>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Rounding:</span>
+                                <span className="font-medium">{authority.rounding_code}</span>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">Rounding Code</label>
-                                  <select
-                                    value={authority.rounding_code}
-                                    onChange={(e) => handleFieldChange('authority', index, 'rounding_code', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                  >
-                                    <option value="HALF_UP">Half Up</option>
-                                    <option value="HALF_DOWN">Half Down</option>
-                                    <option value="UP">Up</option>
-                                    <option value="DOWN">Down</option>
-                                  </select>
-                                </div>
-                                <Input
-                                  label="Rounding Digits"
-                                  type="number"
-                                  value={authority.rounding_digit.toString()}
-                                  onChange={(e) => handleFieldChange('authority', index, 'rounding_digit', e.target.value)}
-                                  min="0"
-                                  max="10"
-                                />
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Digits:</span>
+                                <span className="font-medium">{authority.rounding_digit}</span>
                               </div>
                             </div>
-                          ) : (
-                            <>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2">{authority.name}</h3>
-                              <p className="text-sm text-gray-500 mb-2">ID: {authority.authority_id}</p>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">Rounding:</span>
-                                  <span className="font-medium">{authority.rounding_code}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-500">Digits:</span>
-                                  <span className="font-medium">{authority.rounding_digit}</span>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <div className="flex space-x-2 ml-4">
-                          <button
-                            onClick={() => toggleEdit('authority', index.toString())}
-                            className={`p-2 rounded-lg transition-colors ${
-                              isEditing 
-                                ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            {isEditing ? (
-                              <CheckCircleIcon className="h-4 w-4" />
-                            ) : (
-                              <PencilIcon className="h-4 w-4" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => deleteItem('authority', authority.authority_id)}
-                            className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
+                          </>
+                        )}
                       </div>
-                    </Card>
-                  );
-                })}
-              </div>
+                      <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={() => toggleEdit('authority', index.toString())}
+                          className={`p-2 rounded-lg transition-colors ${
+                            isEditing 
+                              ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {isEditing ? (
+                            <CheckCircleIcon className="h-4 w-4" />
+                          ) : (
+                            <PencilIcon className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => deleteItem('authority', authority.authority_id)}
+                          className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {(!taxConfig?.authority || taxConfig.authority.length === 0) && (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <BuildingOfficeIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Tax Authorities</h3>
+                  <p className="text-gray-500 mb-4">Create your first tax authority to get started.</p>
+                  <Button
+                    onClick={() => addNewItem('authority')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Add Authority
+                  </Button>
+                </div>
+              )}
             </div>
-          )}
+          </Widget>
+        )}
 
           {activeTab === 'groups' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Tax Groups</h2>
+            <Widget
+              title="Tax Groups"
+              description="Organize tax rules into groups for easier management"
+              icon={TableCellsIcon}
+              variant="success"
+              headerActions={
                 <Button
                   onClick={() => addNewItem('group')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Add Group
                 </Button>
-              </div>
-              
-              <div className="space-y-4">
+              }
+            >
+              <div className="space-y-6">
                 {taxConfig?.tax_group?.map((group, index) => {
                   const isEditing = editingItems[`group_${index}`];
                   return (
-                    <Card key={`group-${index}`} className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
+                    <div key={`group-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          {isEditing ? (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Input
-                                  label="Tax Group ID"
-                                  value={group.tax_group_id}
-                                  onChange={(e) => handleFieldChange('group', index, 'tax_group_id', e.target.value)}
-                                  placeholder="e.g., TG001"
-                                />
-                                <Input
-                                  label="Group Name"
-                                  value={group.name}
-                                  onChange={(e) => handleFieldChange('group', index, 'name', e.target.value)}
-                                  placeholder="e.g., Standard GST"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                <textarea
+                          {/* Group content will be rendered here */}
+                          <div className="space-y-4">
+                            {isEditing ? (
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <InputTextField
+                                    label="Tax Group ID"
+                                    value={group.tax_group_id}
+                                    onChange={(value) => handleFieldChange('group', index, 'tax_group_id', value)}
+                                    placeholder="e.g., TG001"
+                                  />
+                                  <InputTextField
+                                    label="Group Name"
+                                    value={group.name}
+                                    onChange={(value) => handleFieldChange('group', index, 'name', value)}
+                                    placeholder="e.g., Standard GST"
+                                  />
+                                </div>
+                                <InputTextArea
+                                  label="Description"
                                   value={group.description}
-                                  onChange={(e) => handleFieldChange('group', index, 'description', e.target.value)}
-                                  rows={3}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  onChange={(value) => handleFieldChange('group', index, 'description', value)}
                                   placeholder="Enter group description"
+                                  rows={3}
                                 />
                               </div>
-                              
-                              {/* Tax Rules Management in Edit Mode */}
-                              <div className="mt-6 pt-4 border-t border-gray-200">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h4 className="text-sm font-semibold text-gray-900">Tax Rules ({group.group_rule.length})</h4>
-                                  <button
-                                    onClick={() => addNewRule(group.tax_group_id)}
-                                    className="px-3 py-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md text-sm font-medium transition-colors"
-                                  >
-                                    <PlusIcon className="h-4 w-4 inline mr-1" />
-                                    Add Rule
-                                  </button>
+                            ) : (
+                              <>
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
+                                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                    {getTotalTaxRate(group).toFixed(2)}% Total
+                                  </span>
                                 </div>
-                                
-                                {group.group_rule.length > 0 ? (
-                                  <div className="space-y-3">
-                                    {group.group_rule.map((rule) => {
-                                      const ruleKey = `rule_${group.tax_group_id}_${rule.tax_rule_seq}`;
-                                      const isRuleEditing = editingItems[ruleKey];
-                                      
-                                      return (
-                                        <div key={rule.tax_rule_seq} className="p-4 bg-white border border-gray-200 rounded-lg">
-                                          {isRuleEditing ? (
-                                            <div className="space-y-3">
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
-                                                  <Input
-                                                    value={rule.name}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'name', e.target.value)}
-                                                    placeholder="Rule name"
-                                                    className="text-sm"
-                                                  />
-                                                </div>
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Tax Authority</label>
-                                                  <select
-                                                    value={rule.tax_authority_id}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', e.target.value)}
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                  >
-                                                    {taxConfig?.authority?.map(auth => (
-                                                      <option key={auth.authority_id} value={auth.authority_id}>
-                                                        {auth.name}
-                                                      </option>
-                                                    ))}
-                                                  </select>
-                                                </div>
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Percentage (%)</label>
-                                                  <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    max="100"
-                                                    value={rule.percentage}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'percentage', e.target.value)}
-                                                    placeholder="0.00"
-                                                    className="text-sm"
-                                                  />
-                                                </div>
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Tax Type Code</label>
-                                                  <Input
-                                                    value={rule.tax_type_code}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', e.target.value)}
-                                                    placeholder="VAT"
-                                                    className="text-sm"
-                                                  />
-                                                </div>
-                                              </div>
-                                              <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                                <textarea
-                                                  value={rule.description}
-                                                  onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'description', e.target.value)}
-                                                  rows={2}
-                                                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                  placeholder="Rule description"
-                                                />
-                                              </div>
-                                              <div className="flex justify-end space-x-2">
-                                                <button
-                                                  onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
-                                                  className="px-3 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-sm font-medium transition-colors"
-                                                >
-                                                  <CheckCircleIcon className="h-3 w-3 inline mr-1" />
-                                                  Done
-                                                </button>
-                                                <button
-                                                  onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
-                                                  className="px-3 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-sm font-medium transition-colors"
-                                                >
-                                                  <TrashIcon className="h-3 w-3 inline mr-1" />
-                                                  Delete
-                                                </button>
-                                              </div>
-                                            </div>
-                                          ) : (
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex-1">
-                                                <div className="flex items-center space-x-2 mb-1">
-                                                  <span className="text-sm font-medium text-gray-900">{rule.name}</span>
-                                                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                                                    {rule.percentage}%
-                                                  </span>
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                  Authority: {rule.tax_authority_id} | Type: {rule.tax_type_code}
-                                                </div>
-                                                <div className="text-xs text-gray-600 mt-1">{rule.description}</div>
-                                              </div>
-                                              <div className="flex space-x-1 ml-3">
-                                                <button
-                                                  onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
-                                                  className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded transition-colors"
-                                                >
-                                                  <PencilIcon className="h-3 w-3" />
-                                                </button>
-                                                <button
-                                                  onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
-                                                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded transition-colors"
-                                                >
-                                                  <TrashIcon className="h-3 w-3" />
-                                                </button>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-6 text-gray-500 text-sm bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                                    No tax rules configured yet.<br />
-                                    <span className="text-blue-600 font-medium">Click "Add Rule" to create your first tax rule.</span>
-                                  </div>
-                                )}
-                                
-                                {group.group_rule.length > 0 && (
-                                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                                    <div className="flex items-center justify-between text-sm">
-                                      <span className="font-medium text-blue-900">Total Tax Rate:</span>
-                                      <span className="font-bold text-blue-900">{getTotalTaxRate(group).toFixed(2)}%</span>
-                                    </div>
-                                  </div>
-                                )}
+                                <p className="text-sm text-gray-500 mb-2">ID: {group.tax_group_id}</p>
+                                <p className="text-sm text-gray-600">{group.description}</p>
+                              </>
+                            )}
+
+                            {/* Tax Rules Section */}
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <div className="flex items-center justify-between mb-3">
+                                <p className="text-sm font-medium text-gray-700">Tax Rules ({group.group_rule.length})</p>
+                                <button
+                                  onClick={() => addNewRule(group.tax_group_id)}
+                                  className="px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md text-sm font-medium transition-colors"
+                                >
+                                  <PlusIcon className="h-3 w-3 inline mr-1" />
+                                  Add Rule
+                                </button>
                               </div>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex items-center space-x-3 mb-2">
-                                <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
-                                <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                                  {getTotalTaxRate(group).toFixed(2)}% Total
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-500 mb-2">ID: {group.tax_group_id}</p>
-                              <p className="text-sm text-gray-600">{group.description}</p>
                               
-                              {/* Tax Rules Section */}
-                              <div className="mt-4">
-                                <div className="flex items-center justify-between mb-3">
-                                  <p className="text-sm font-medium text-gray-700">Tax Rules ({group.group_rule.length})</p>
-                                  <button
-                                    onClick={() => addNewRule(group.tax_group_id)}
-                                    className="px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md text-sm font-medium transition-colors"
-                                  >
-                                    <PlusIcon className="h-3 w-3 inline mr-1" />
-                                    Add Rule
-                                  </button>
-                                </div>
-                                
-                                {group.group_rule.length > 0 ? (
-                                  <div className="space-y-2">
-                                    {group.group_rule.map((rule) => {
-                                      const ruleKey = `rule_${group.tax_group_id}_${rule.tax_rule_seq}`;
-                                      const isRuleEditing = editingItems[ruleKey];
-                                      
-                                      return (
-                                        <div key={rule.tax_rule_seq} className="p-3 bg-gray-50 rounded-lg border">
-                                          {isRuleEditing ? (
-                                            <div className="space-y-3">
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
-                                                  <Input
-                                                    value={rule.name}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'name', e.target.value)}
-                                                    placeholder="Rule name"
-                                                    className="text-sm"
-                                                  />
-                                                </div>
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Tax Authority</label>
-                                                  <select
-                                                    value={rule.tax_authority_id}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', e.target.value)}
-                                                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                  >
-                                                    {taxConfig?.authority?.map(auth => (
-                                                      <option key={auth.authority_id} value={auth.authority_id}>
-                                                        {auth.name}
-                                                      </option>
-                                                    ))}
-                                                  </select>
-                                                </div>
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Percentage (%)</label>
-                                                  <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    max="100"
-                                                    value={rule.percentage}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'percentage', e.target.value)}
-                                                    placeholder="0.00"
-                                                    className="text-sm"
-                                                  />
-                                                </div>
-                                                <div>
-                                                  <label className="block text-xs font-medium text-gray-700 mb-1">Tax Type Code</label>
-                                                  <Input
-                                                    value={rule.tax_type_code}
-                                                    onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', e.target.value)}
-                                                    placeholder="VAT"
-                                                    className="text-sm"
-                                                  />
-                                                </div>
-                                              </div>
-                                              <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                                                <textarea
-                                                  value={rule.description}
-                                                  onChange={(e) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'description', e.target.value)}
-                                                  rows={2}
-                                                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                  placeholder="Rule description"
-                                                />
-                                              </div>
+                              {group.group_rule.length > 0 ? (
+                                <div className="space-y-2">
+                                  {group.group_rule.map((rule) => {
+                                    const ruleKey = `rule_${group.tax_group_id}_${rule.tax_rule_seq}`;
+                                    const isRuleEditing = editingItems[ruleKey];
+                                    
+                                    return (
+                                      <div key={rule.tax_rule_seq} className="p-3 bg-gray-50 rounded-lg border">
+                                        {isRuleEditing ? (
+                                          <div className="space-y-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                              <InputTextField
+                                                label="Name"
+                                                value={rule.name}
+                                                onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'name', value)}
+                                                placeholder="Rule name"
+                                              />
+                                              <DropdownSearch
+                                                label="Tax Authority"
+                                                value={rule.tax_authority_id}
+                                                onSelect={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', value)}
+                                                options={taxConfig?.authority?.map(auth => ({
+                                                  id: auth.authority_id,
+                                                  label: auth.name
+                                                })) || []}
+                                                placeholder="Select authority"
+                                              />
+                                              <InputTextField
+                                                label="Percentage (%)"
+                                                type="number"
+                                                value={rule.percentage.toString()}
+                                                onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'percentage', value)}
+                                                placeholder="0.00"
+                                                step={0.01}
+                                                min={0}
+                                                max={100}
+                                              />
+                                              <InputTextField
+                                                label="Tax Type Code"
+                                                value={rule.tax_type_code}
+                                                onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', value)}
+                                                placeholder="VAT"
+                                              />
                                             </div>
-                                          ) : (
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex-1">
-                                                <div className="flex items-center space-x-2 mb-1">
-                                                  <span className="text-sm font-medium text-gray-900">{rule.name}</span>
-                                                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                                                    {rule.percentage}%
-                                                  </span>
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                  Authority: {rule.tax_authority_id} | Type: {rule.tax_type_code}
-                                                </div>
-                                                <div className="text-xs text-gray-600 mt-1">{rule.description}</div>
-                                              </div>
-                                              <div className="flex space-x-1 ml-3">
-                                                <button
-                                                  onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
-                                                  className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded transition-colors"
-                                                >
-                                                  <PencilIcon className="h-3 w-3" />
-                                                </button>
-                                                <button
-                                                  onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
-                                                  className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded transition-colors"
-                                                >
-                                                  <TrashIcon className="h-3 w-3" />
-                                                </button>
-                                              </div>
-                                            </div>
-                                          )}
-                                          
-                                          {isRuleEditing && (
-                                            <div className="mt-3 pt-3 border-t border-gray-200 flex justify-end space-x-2">
+                                            <InputTextArea
+                                              label="Description"
+                                              value={rule.description}
+                                              onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'description', value)}
+                                              placeholder="Rule description"
+                                              rows={2}
+                                            />
+                                            <div className="flex justify-end space-x-2">
                                               <button
                                                 onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
                                                 className="px-3 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-sm font-medium transition-colors"
@@ -1035,20 +867,65 @@ const TaxSettings: React.FC = () => {
                                                 <CheckCircleIcon className="h-3 w-3 inline mr-1" />
                                                 Done
                                               </button>
+                                              <button
+                                                onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
+                                                className="px-3 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-sm font-medium transition-colors"
+                                              >
+                                                <TrashIcon className="h-3 w-3 inline mr-1" />
+                                                Delete
+                                              </button>
                                             </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex-1">
+                                              <div className="flex items-center space-x-2 mb-1">
+                                                <span className="text-sm font-medium text-gray-900">{rule.name}</span>
+                                                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                                  {rule.percentage}%
+                                                </span>
+                                              </div>
+                                              <div className="text-xs text-gray-500">
+                                                Authority: {rule.tax_authority_id} | Type: {rule.tax_type_code}
+                                              </div>
+                                              <div className="text-xs text-gray-600 mt-1">{rule.description}</div>
+                                            </div>
+                                            <div className="flex space-x-1 ml-3">
+                                              <button
+                                                onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
+                                                className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                                              >
+                                                <PencilIcon className="h-3 w-3" />
+                                              </button>
+                                              <button
+                                                onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
+                                                className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded transition-colors"
+                                              >
+                                                <TrashIcon className="h-3 w-3" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="text-center py-4 text-gray-500 text-sm bg-white rounded-lg border-2 border-dashed border-gray-200">
+                                  No tax rules configured. Click "Add Rule" to get started.
+                                </div>
+                              )}
+
+                              {group.group_rule.length > 0 && (
+                                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="font-medium text-blue-900">Total Tax Rate:</span>
+                                    <span className="font-bold text-blue-900">{getTotalTaxRate(group).toFixed(2)}%</span>
                                   </div>
-                                ) : (
-                                  <div className="text-center py-4 text-gray-500 text-sm">
-                                    No tax rules configured. Click "Add Rule" to get started.
-                                  </div>
-                                )}
-                              </div>
-                            </>
-                          )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         <div className="flex space-x-2 ml-4">
                           <button
@@ -1073,48 +950,61 @@ const TaxSettings: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   );
                 })}
+                {(!taxConfig?.tax_group || taxConfig.tax_group.length === 0) && (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <TableCellsIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Tax Groups</h3>
+                    <p className="text-gray-500 mb-4">Create your first tax group to organize your tax rules.</p>
+                    <Button
+                      onClick={() => addNewItem('group')}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Add Group
+                    </Button>
+                  </div>
+                )}
               </div>
-            </div>
+            </Widget>
           )}
 
           {activeTab === 'location' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Tax Location</h2>
-              </div>
-              
-              <Card className="p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
+            <Widget
+              title="Tax Location"
+              description="Configure the primary tax location for your store"
+              icon={ClipboardDocumentListIcon}
+              variant="warning"
+            >
+              <div className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     {editingItems[`location_0`] ? (
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Input
+                          <InputTextField
                             label="Tax Location ID"
                             value={taxConfig?.tax_location?.tax_loc_id || ''}
+                            onChange={() => {}} // Read-only field
                             disabled
                             className="bg-gray-50"
                           />
-                          <Input
+                          <InputTextField
                             label="Location Name"
                             value={taxConfig?.tax_location?.name || ''}
-                            onChange={(e) => handleFieldChange('location', 0, 'name', e.target.value)}
+                            onChange={(value) => handleFieldChange('location', 0, 'name', value)}
                             placeholder="e.g., Main Store"
                           />
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                          <textarea
-                            value={taxConfig?.tax_location?.description || ''}
-                            onChange={(e) => handleFieldChange('location', 0, 'description', e.target.value)}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Enter location description"
-                          />
-                        </div>
+                        <InputTextArea
+                          label="Description"
+                          value={taxConfig?.tax_location?.description || ''}
+                          onChange={(value) => handleFieldChange('location', 0, 'description', value)}
+                          placeholder="Enter location description"
+                          rows={3}
+                        />
                       </div>
                     ) : (
                       <>
@@ -1141,24 +1031,23 @@ const TaxSettings: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              </Card>
-            </div>
+              </div>
+            </Widget>
           )}
 
           {activeTab === 'settings' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">General Settings</h2>
+            <Widget
+              title="General Settings"
+              description="Additional tax configuration settings and preferences"
+              icon={Cog6ToothIcon}
+              variant="default"
+            >
+              <div className="text-center py-12">
+                <Cog6ToothIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Settings Panel</h3>
+                <p className="text-gray-500">Additional tax configuration settings will be available here.</p>
               </div>
-              
-              <Card className="p-6 border border-gray-200 rounded-xl">
-                <div className="text-center py-12">
-                  <Cog6ToothIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Settings Panel</h3>
-                  <p className="text-gray-500">Additional tax configuration settings will be available here.</p>
-                </div>
-              </Card>
-            </div>
+            </Widget>
           )}
       </EnhancedTabs>
 

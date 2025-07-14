@@ -20,6 +20,7 @@ export { Modal } from './Modal';
 export { Loading } from './Loading';
 export { PropertyCheckbox } from './PropertyCheckbox';
 export { InputTextField } from './InputTextField';
+export { InputTextArea } from './InputTextArea';
 export { InputMoneyField } from './InputMoneyField';
 export { DropdownSearch } from './DropdownSearch';
 export { MultipleDropdownSearch } from './MultipleDropdownSearch';

@@ -433,6 +433,7 @@ const categoryOptions: MultipleDropdownSearchOption[] = [
 ```tsx
 import { 
   InputTextField, 
+  InputTextArea,
   InputMoneyField, 
   DropdownSearch, 
   MultipleDropdownSearch,
@@ -452,6 +453,20 @@ import {
   error={errors.field}
   helperText="Helper text"
   className="additional-classes"
+/>
+
+// Text area input
+<InputTextArea
+  label="Description"
+  required={true}
+  value={description}
+  onChange={handleDescriptionChange}
+  placeholder="Enter detailed description"
+  error={errors.description}
+  helperText="Provide a comprehensive description"
+  rows={4}
+  maxLength={500}
+  colSpan="md:col-span-2"
 />
 
 // Money input
@@ -491,6 +506,124 @@ import {
   error={errors.categories}
 />
 ```
+
+### InputTextArea Component
+The `InputTextArea` component provides a consistent multi-line text input with the same styling patterns as `InputTextField`.
+
+**Core Features:**
+- Multi-line text input with configurable rows
+- Consistent styling with other form components
+- Error handling with visual feedback
+- Helper text support
+- Configurable resize behavior
+- Label with optional required indicator
+- Full accessibility support
+
+**Basic Usage:**
+```tsx
+<InputTextArea
+  label="Description"
+  value={formData.description}
+  onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+  placeholder="Enter description"
+  rows={3}
+/>
+```
+
+**Advanced Configuration:**
+```tsx
+<InputTextArea
+  label="Product Description"
+  required={true}
+  value={formData.description}
+  onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+  placeholder="Provide a detailed product description..."
+  error={errors.description}
+  helperText="Maximum 500 characters recommended"
+  
+  // Layout and sizing
+  rows={5}
+  maxLength={1000}
+  colSpan="md:col-span-2"
+  
+  // Behavior
+  resize="vertical"
+  autoFocus={false}
+  
+  // Styling
+  className="custom-wrapper-classes"
+  textareaClassName="custom-textarea-classes"
+/>
+```
+
+**Props:**
+- `label` (required): The label text displayed above the textarea
+- `value` (required): Current value of the textarea
+- `onChange` (required): Callback function when value changes
+- `required`: Shows red asterisk next to label
+- `placeholder`: Placeholder text
+- `error`: Error message to display with red styling
+- `helperText`: Helper text shown below textarea
+- `disabled`: Whether the textarea is disabled
+- `rows`: Number of visible text lines (default: 3)
+- `maxLength`: Maximum character limit
+- `resize`: Resize behavior - 'none', 'vertical', 'horizontal', 'both' (default: 'vertical')
+- `colSpan`: Grid column span classes
+- `autoFocus`: Auto-focus on render
+- `className`: Additional wrapper classes
+- `textareaClassName`: Additional textarea element classes
+
+**Common Use Cases:**
+1. **Product Descriptions**: Multi-line product information
+2. **Comments/Notes**: User feedback or administrative notes
+3. **Instructions**: Step-by-step guides or help text
+4. **Addresses**: Multi-line address input
+5. **Configuration**: Settings or rule descriptions
+
+**Styling Variants:**
+```tsx
+// Compact version
+<InputTextArea
+  label="Notes"
+  value={notes}
+  onChange={setNotes}
+  rows={2}
+  resize="none"
+  placeholder="Add quick notes..."
+/>
+
+// Large content area
+<InputTextArea
+  label="Article Content"
+  value={content}
+  onChange={setContent}
+  rows={10}
+  maxLength={5000}
+  helperText="Write your article content here"
+  colSpan="md:col-span-2"
+/>
+
+// With validation
+<InputTextArea
+  label="Feedback"
+  required
+  value={feedback}
+  onChange={setFeedback}
+  error={errors.feedback}
+  placeholder="Please provide your feedback"
+  rows={4}
+  maxLength={500}
+/>
+```
+
+**Best Practices:**
+1. **Use appropriate row counts** - 2-3 for short text, 4-6 for medium, 8+ for long content
+2. **Set reasonable maxLength** to prevent excessive input
+3. **Configure resize behavior** - use 'vertical' for most cases, 'none' for compact forms
+4. **Provide helpful placeholder text** that guides users on expected content
+5. **Use helper text** to communicate character limits or formatting requirements
+6. **Handle validation properly** with clear error messages
+7. **Consider accessibility** - screen readers can navigate multi-line content
 
 ### Form Layout
 ```tsx
@@ -799,6 +932,7 @@ import {
   PageHeader, 
   Button, 
   InputTextField, 
+  InputTextArea,
   PropertyCheckbox, 
   Alert 
 } from '../components/ui';
@@ -808,6 +942,7 @@ const ExampleForm: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    description: '',
     enabled: false
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -859,6 +994,15 @@ const ExampleForm: React.FC = () => {
                 onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
                 error={errors.email}
                 placeholder="Enter your email"
+              />
+              <InputTextArea
+                label="Description"
+                value={formData.description}
+                onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                placeholder="Tell us about yourself..."
+                rows={4}
+                colSpan="md:col-span-2"
+                helperText="Optional: Provide any additional information"
               />
             </div>
           </Widget>
