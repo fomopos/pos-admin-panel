@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import { Button, PageHeader, Alert, EnhancedTabs, ConfirmDialog, Loading, Widget, DropdownSearch, InputTextField, InputTextArea } from '../components/ui';
+import { EditableCard } from '../components/tax';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { taxServices } from '../services/tax';
 import type {
@@ -464,7 +465,7 @@ const TaxSettings: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen overflow-visible">
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <PageHeader
         title="Tax Settings"
@@ -608,6 +609,7 @@ const TaxSettings: React.FC = () => {
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        allowOverflow={true}
       >
         {/* Tab Content */}
         {activeTab === 'authorities' && (
@@ -616,7 +618,7 @@ const TaxSettings: React.FC = () => {
             description="Configure tax authorities that will apply taxes to your products"
             icon={BuildingOfficeIcon}
             variant="primary"
-            className="overflow-visible"
+            className='overflow-visible'
             headerActions={
               <Button
                 onClick={() => addNewItem('authority')}
@@ -627,94 +629,71 @@ const TaxSettings: React.FC = () => {
               </Button>
             }
           >
-            <div className="space-y-4 overflow-visible">
+            <div className="space-y-4">
               {taxConfig?.authority?.map((authority, index) => {
                 const isEditing = editingItems[`authority_${index}`];
                 return (
-                  <div key={`auth-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow overflow-visible">
-                    <div className="flex items-start justify-between mb-4 overflow-visible">
-                      <div className="flex-1 overflow-visible">
-                        {isEditing ? (
-                          <div className="space-y-4 overflow-visible">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-visible">
-                              <InputTextField
-                                label="Authority ID"
-                                value={authority.authority_id}
-                                onChange={(value) => handleFieldChange('authority', index, 'authority_id', value)}
-                                placeholder="e.g., CGST001"
-                              />
-                              <InputTextField
-                                label="Authority Name"
-                                value={authority.name}
-                                onChange={(value) => handleFieldChange('authority', index, 'name', value)}
-                                placeholder="e.g., Central GST"
-                              />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-visible">
-                              <DropdownSearch
-                                label="Rounding Code"
-                                value={authority.rounding_code}
-                                onSelect={(option) => handleFieldChange('authority', index, 'rounding_code', option?.id)}
-                                options={[
-                                  { id: 'HALF_UP', label: 'Half Up' },
-                                  { id: 'HALF_DOWN', label: 'Half Down' },
-                                  { id: 'UP', label: 'Up' },
-                                  { id: 'DOWN', label: 'Down' }
-                                ]}
-                                placeholder="Select rounding method"
-                                className="z-[60]"
-                                dropdownClassName="z-[60]"
-                              />
-                              <InputTextField
-                                label="Rounding Digits"
-                                type="number"
-                                value={authority.rounding_digit.toString()}
-                                onChange={(value) => handleFieldChange('authority', index, 'rounding_digit', value)}
-                                placeholder="0-10"
-                              />
-                            </div>
+                  <EditableCard
+                    key={`auth-${index}`}
+                    isEditing={isEditing}
+                    onToggleEdit={() => toggleEdit('authority', index.toString())}
+                    onDelete={() => deleteItem('authority', authority.authority_id)}
+                  >
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <InputTextField
+                            label="Authority ID"
+                            value={authority.authority_id}
+                            onChange={(value) => handleFieldChange('authority', index, 'authority_id', value)}
+                            placeholder="e.g., CGST001"
+                          />
+                          <InputTextField
+                            label="Authority Name"
+                            value={authority.name}
+                            onChange={(value) => handleFieldChange('authority', index, 'name', value)}
+                            placeholder="e.g., Central GST"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <DropdownSearch
+                            label="Rounding Code"
+                            value={authority.rounding_code}
+                            onSelect={(option) => handleFieldChange('authority', index, 'rounding_code', option?.id)}
+                            options={[
+                              { id: 'HALF_UP', label: 'Half Up' },
+                              { id: 'HALF_DOWN', label: 'Half Down' },
+                              { id: 'UP', label: 'Up' },
+                              { id: 'DOWN', label: 'Down' }
+                            ]}
+                            placeholder="Select rounding method"
+                          />
+                          <InputTextField
+                            label="Rounding Digits"
+                            type="number"
+                            value={authority.rounding_digit.toString()}
+                            onChange={(value) => handleFieldChange('authority', index, 'rounding_digit', value)}
+                            placeholder="0-10"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{authority.name}</h3>
+                        <p className="text-sm text-gray-500 mb-2">ID: {authority.authority_id}</p>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Rounding:</span>
+                            <span className="font-medium">{authority.rounding_code}</span>
                           </div>
-                        ) : (
-                          <>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{authority.name}</h3>
-                            <p className="text-sm text-gray-500 mb-2">ID: {authority.authority_id}</p>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Rounding:</span>
-                                <span className="font-medium">{authority.rounding_code}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Digits:</span>
-                                <span className="font-medium">{authority.rounding_digit}</span>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      <div className="flex space-x-2 ml-4">
-                        <button
-                          onClick={() => toggleEdit('authority', index.toString())}
-                          className={`p-2 rounded-lg transition-colors ${
-                            isEditing 
-                              ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}
-                        >
-                          {isEditing ? (
-                            <CheckCircleIcon className="h-4 w-4" />
-                          ) : (
-                            <PencilIcon className="h-4 w-4" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => deleteItem('authority', authority.authority_id)}
-                          className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Digits:</span>
+                            <span className="font-medium">{authority.rounding_digit}</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </EditableCard>
                 );
               })}
               {(!taxConfig?.authority || taxConfig.authority.length === 0) && (
@@ -741,7 +720,6 @@ const TaxSettings: React.FC = () => {
               description="Organize tax rules into groups for easier management"
               icon={TableCellsIcon}
               variant="success"
-              className="overflow-visible"
               headerActions={
                 <Button
                   onClick={() => addNewItem('group')}
@@ -752,224 +730,198 @@ const TaxSettings: React.FC = () => {
                 </Button>
               }
             >
-              <div className="space-y-6 overflow-visible">
+              <div className="space-y-6">
                 {taxConfig?.tax_group?.map((group, index) => {
                   const isEditing = editingItems[`group_${index}`];
                   return (
-                    <div key={`group-${index}`} className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow overflow-visible">
-                      <div className="flex items-start justify-between mb-4 overflow-visible">
-                        <div className="flex-1 overflow-visible">
-                          {/* Group content will be rendered here */}
-                          <div className="space-y-4 overflow-visible">
-                            {isEditing ? (
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <InputTextField
-                                    label="Tax Group ID"
-                                    value={group.tax_group_id}
-                                    onChange={(value) => handleFieldChange('group', index, 'tax_group_id', value)}
-                                    placeholder="e.g., TG001"
-                                  />
-                                  <InputTextField
-                                    label="Group Name"
-                                    value={group.name}
-                                    onChange={(value) => handleFieldChange('group', index, 'name', value)}
-                                    placeholder="e.g., Standard GST"
-                                  />
-                                </div>
-                                <InputTextArea
-                                  label="Description"
-                                  value={group.description}
-                                  onChange={(value) => handleFieldChange('group', index, 'description', value)}
-                                  placeholder="Enter group description"
-                                  rows={3}
-                                />
-                              </div>
-                            ) : (
-                              <>
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
-                                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                                    {getTotalTaxRate(group).toFixed(2)}% Total
-                                  </span>
-                                </div>
-                                <p className="text-sm text-gray-500 mb-2">ID: {group.tax_group_id}</p>
-                                <p className="text-sm text-gray-600">{group.description}</p>
-                              </>
-                            )}
-
-                            {/* Tax Rules Section */}
-                            <div className="mt-4 pt-4 border-t border-gray-200">
-                              <div className="flex items-center justify-between mb-3">
-                                <p className="text-sm font-medium text-gray-700">Tax Rules ({group.group_rule.length})</p>
-                                <button
-                                  onClick={() => addNewRule(group.tax_group_id)}
-                                  className="px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md text-sm font-medium transition-colors"
-                                >
-                                  <PlusIcon className="h-3 w-3 inline mr-1" />
-                                  Add Rule
-                                </button>
-                              </div>
-                              
-                              {group.group_rule.length > 0 ? (
-                                <div className="space-y-2 overflow-visible">
-                                  {group.group_rule.map((rule) => {
-                                    const ruleKey = `rule_${group.tax_group_id}_${rule.tax_rule_seq}`;
-                                    const isRuleEditing = editingItems[ruleKey];
-                                    
-                                    return (
-                                      <div key={rule.tax_rule_seq} className="p-3 bg-gray-50 rounded-lg border overflow-visible">
-                                        {isRuleEditing ? (
-                                          <div className="space-y-3 overflow-visible">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 overflow-visible">
-                                              <InputTextField
-                                                label="Name"
-                                                value={rule.name}
-                                                onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'name', value)}
-                                                placeholder="Rule name"
-                                              />
-                                              <DropdownSearch
-                                                label="Tax Authority"
-                                                value={rule.tax_authority_id}
-                                                onSelect={(option) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', option?.id)}
-                                                options={taxConfig?.authority?.map(auth => ({
-                                                  id: auth.authority_id,
-                                                  label: auth.name
-                                                })) || []}
-                                                placeholder="Select authority"
-                                                className="z-[60]"
-                                                dropdownClassName="z-[60]"
-                                              />
-                                              <InputTextField
-                                                label="Percentage (%)"
-                                                type="number"
-                                                value={rule.percentage.toString()}
-                                                onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'percentage', value)}
-                                                placeholder="0.00"
-                                                step={0.01}
-                                                min={0}
-                                                max={100}
-                                              />
-                                              <DropdownSearch
-                                                label="Tax Type Code"
-                                                value={rule.tax_type_code}
-                                                onSelect={(option) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', option?.id)}
-                                                options={[
-                                                  { 
-                                                    id: 'VAT', 
-                                                    label: 'VAT', 
-                                                    description: 'Value Added Tax - Tax applied at each stage of production/distribution' 
-                                                  },
-                                                  { 
-                                                    id: 'SALES', 
-                                                    label: 'SALES', 
-                                                    description: 'Sales Tax - Tax applied at the point of sale to the end consumer' 
-                                                  }
-                                                ]}
-                                                placeholder="Select tax type"
-                                                className="z-[60]"
-                                                dropdownClassName="z-[60]"
-                                              />
-                                            </div>
-                                            <InputTextArea
-                                              label="Description"
-                                              value={rule.description}
-                                              onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'description', value)}
-                                              placeholder="Rule description"
-                                              rows={2}
-                                            />
-                                            <div className="flex justify-end space-x-2">
-                                              <button
-                                                onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
-                                                className="px-3 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-sm font-medium transition-colors"
-                                              >
-                                                <CheckCircleIcon className="h-3 w-3 inline mr-1" />
-                                                Done
-                                              </button>
-                                              <button
-                                                onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
-                                                className="px-3 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-sm font-medium transition-colors"
-                                              >
-                                                <TrashIcon className="h-3 w-3 inline mr-1" />
-                                                Delete
-                                              </button>
-                                            </div>
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-center justify-between">
-                                            <div className="flex-1">
-                                              <div className="flex items-center space-x-2 mb-1">
-                                                <span className="text-sm font-medium text-gray-900">{rule.name}</span>
-                                                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
-                                                  {rule.percentage}%
-                                                </span>
-                                              </div>
-                                              <div className="text-xs text-gray-500">
-                                                Authority: {rule.tax_authority_id} | Type: {rule.tax_type_code}
-                                              </div>
-                                              <div className="text-xs text-gray-600 mt-1">{rule.description}</div>
-                                            </div>
-                                            <div className="flex space-x-1 ml-3">
-                                              <button
-                                                onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
-                                                className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded transition-colors"
-                                              >
-                                                <PencilIcon className="h-3 w-3" />
-                                              </button>
-                                              <button
-                                                onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
-                                                className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded transition-colors"
-                                              >
-                                                <TrashIcon className="h-3 w-3" />
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <div className="text-center py-4 text-gray-500 text-sm bg-white rounded-lg border-2 border-dashed border-gray-200">
-                                  No tax rules configured. Click "Add Rule" to get started.
-                                </div>
-                              )}
-
-                              {group.group_rule.length > 0 && (
-                                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                                  <div className="flex items-center justify-between text-sm">
-                                    <span className="font-medium text-blue-900">Total Tax Rate:</span>
-                                    <span className="font-bold text-blue-900">{getTotalTaxRate(group).toFixed(2)}%</span>
-                                  </div>
-                                </div>
-                              )}
+                    <EditableCard
+                      key={`group-${index}`}
+                      isEditing={isEditing}
+                      onToggleEdit={() => toggleEdit('group', index.toString())}
+                      onDelete={() => deleteItem('group', group.tax_group_id)}
+                    >
+                      <div className="space-y-4">
+                        {isEditing ? (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <InputTextField
+                                label="Tax Group ID"
+                                value={group.tax_group_id}
+                                onChange={(value) => handleFieldChange('group', index, 'tax_group_id', value)}
+                                placeholder="e.g., TG001"
+                              />
+                              <InputTextField
+                                label="Group Name"
+                                value={group.name}
+                                onChange={(value) => handleFieldChange('group', index, 'name', value)}
+                                placeholder="e.g., Standard GST"
+                              />
                             </div>
+                            <InputTextArea
+                              label="Description"
+                              value={group.description}
+                              onChange={(value) => handleFieldChange('group', index, 'description', value)}
+                              placeholder="Enter group description"
+                              rows={3}
+                            />
                           </div>
-                        </div>
-                        <div className="flex space-x-2 ml-4">
-                          <button
-                            onClick={() => toggleEdit('group', index.toString())}
-                            className={`p-2 rounded-lg transition-colors ${
-                              isEditing 
-                                ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                          >
-                            {isEditing ? (
-                              <CheckCircleIcon className="h-4 w-4" />
-                            ) : (
-                              <PencilIcon className="h-4 w-4" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => deleteItem('group', group.tax_group_id)}
-                            className="p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
+                        ) : (
+                          <>
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
+                              <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                                {getTotalTaxRate(group).toFixed(2)}% Total
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-2">ID: {group.tax_group_id}</p>
+                            <p className="text-sm text-gray-600">{group.description}</p>
+                          </>
+                        )}
+
+                        {/* Tax Rules Section */}
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-medium text-gray-700">Tax Rules ({group.group_rule.length})</p>
+                            <button
+                              onClick={() => addNewRule(group.tax_group_id)}
+                              className="px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-md text-sm font-medium transition-colors"
+                            >
+                              <PlusIcon className="h-3 w-3 inline mr-1" />
+                              Add Rule
+                            </button>
+                          </div>
+                          
+                          {group.group_rule.length > 0 ? (
+                            <div className="space-y-2">
+                              {group.group_rule.map((rule) => {
+                                const ruleKey = `rule_${group.tax_group_id}_${rule.tax_rule_seq}`;
+                                const isRuleEditing = editingItems[ruleKey];
+                                
+                                return (
+                                  <div key={rule.tax_rule_seq} className="p-3 bg-gray-50 rounded-lg border">
+                                    {isRuleEditing ? (
+                                      <div className="space-y-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                          <InputTextField
+                                            label="Name"
+                                            value={rule.name}
+                                            onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'name', value)}
+                                            placeholder="Rule name"
+                                          />
+                                          <DropdownSearch
+                                            label="Tax Authority"
+                                            value={rule.tax_authority_id}
+                                            onSelect={(option) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_authority_id', option?.id)}
+                                            options={taxConfig?.authority?.map(auth => ({
+                                              id: auth.authority_id,
+                                              label: auth.name
+                                            })) || []}
+                                            placeholder="Select authority"
+                                          />
+                                          <InputTextField
+                                            label="Percentage (%)"
+                                            type="number"
+                                            value={rule.percentage.toString()}
+                                            onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'percentage', value)}
+                                            placeholder="0.00"
+                                            step={0.01}
+                                            min={0}
+                                            max={100}
+                                          />
+                                          <DropdownSearch
+                                            label="Tax Type Code"
+                                            value={rule.tax_type_code}
+                                            onSelect={(option) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'tax_type_code', option?.id)}
+                                            options={[
+                                              { 
+                                                id: 'VAT', 
+                                                label: 'VAT', 
+                                                description: 'Value Added Tax - Tax applied at each stage of production/distribution' 
+                                              },
+                                              { 
+                                                id: 'SALES', 
+                                                label: 'SALES', 
+                                                description: 'Sales Tax - Tax applied at the point of sale to the end consumer' 
+                                              }
+                                            ]}
+                                            placeholder="Select tax type"
+                                          />
+                                        </div>
+                                        <InputTextArea
+                                          label="Description"
+                                          value={rule.description}
+                                          onChange={(value) => handleRuleFieldChange(group.tax_group_id, rule.tax_rule_seq, 'description', value)}
+                                          placeholder="Rule description"
+                                          rows={2}
+                                        />
+                                        <div className="flex justify-end space-x-2">
+                                          <button
+                                            onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
+                                            className="px-3 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-sm font-medium transition-colors"
+                                          >
+                                            <CheckCircleIcon className="h-3 w-3 inline mr-1" />
+                                            Done
+                                          </button>
+                                          <button
+                                            onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
+                                            className="px-3 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded text-sm font-medium transition-colors"
+                                          >
+                                            <TrashIcon className="h-3 w-3 inline mr-1" />
+                                            Delete
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <div className="flex items-center space-x-2 mb-1">
+                                            <span className="text-sm font-medium text-gray-900">{rule.name}</span>
+                                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                              {rule.percentage}%
+                                            </span>
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            Authority: {rule.tax_authority_id} | Type: {rule.tax_type_code}
+                                          </div>
+                                          <div className="text-xs text-gray-600 mt-1">{rule.description}</div>
+                                        </div>
+                                        <div className="flex space-x-1 ml-3">
+                                          <button
+                                            onClick={() => toggleEdit('rule', `${group.tax_group_id}_${rule.tax_rule_seq}`)}
+                                            className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded transition-colors"
+                                          >
+                                            <PencilIcon className="h-3 w-3" />
+                                          </button>
+                                          <button
+                                            onClick={() => deleteRule(group.tax_group_id, rule.tax_rule_seq)}
+                                            className="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded transition-colors"
+                                          >
+                                            <TrashIcon className="h-3 w-3" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="text-center py-4 text-gray-500 text-sm bg-white rounded-lg border-2 border-dashed border-gray-200">
+                              No tax rules configured. Click "Add Rule" to get started.
+                            </div>
+                          )}
+
+                          {group.group_rule.length > 0 && (
+                            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-blue-900">Total Tax Rate:</span>
+                                <span className="font-bold text-blue-900">{getTotalTaxRate(group).toFixed(2)}%</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
+                    </EditableCard>
                   );
                 })}
                 {(!taxConfig?.tax_group || taxConfig.tax_group.length === 0) && (
@@ -997,60 +949,44 @@ const TaxSettings: React.FC = () => {
               icon={ClipboardDocumentListIcon}
               variant="warning"
             >
-              <div className="p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    {editingItems[`location_0`] ? (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <InputTextField
-                            label="Tax Location ID"
-                            value={taxConfig?.tax_location?.tax_loc_id || ''}
-                            onChange={() => {}} // Read-only field
-                            disabled
-                            className="bg-gray-50"
-                          />
-                          <InputTextField
-                            label="Location Name"
-                            value={taxConfig?.tax_location?.name || ''}
-                            onChange={(value) => handleFieldChange('location', 0, 'name', value)}
-                            placeholder="e.g., Main Store"
-                          />
-                        </div>
-                        <InputTextArea
-                          label="Description"
-                          value={taxConfig?.tax_location?.description || ''}
-                          onChange={(value) => handleFieldChange('location', 0, 'description', value)}
-                          placeholder="Enter location description"
-                          rows={3}
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{taxConfig?.tax_location?.name || 'Not Set'}</h3>
-                        <p className="text-sm text-gray-500 mb-2">ID: {taxConfig?.tax_location?.tax_loc_id || 'Not Set'}</p>
-                        <p className="text-sm text-gray-600">{taxConfig?.tax_location?.description || 'No description'}</p>
-                      </>
-                    )}
+              <EditableCard
+                isEditing={editingItems[`location_0`] || false}
+                onToggleEdit={() => toggleEdit('location', '0')}
+                showDeleteButton={false}
+              >
+                {editingItems[`location_0`] ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <InputTextField
+                        label="Tax Location ID"
+                        value={taxConfig?.tax_location?.tax_loc_id || ''}
+                        onChange={() => {}} // Read-only field
+                        disabled
+                        className="bg-gray-50"
+                      />
+                      <InputTextField
+                        label="Location Name"
+                        value={taxConfig?.tax_location?.name || ''}
+                        onChange={(value) => handleFieldChange('location', 0, 'name', value)}
+                        placeholder="e.g., Main Store"
+                      />
+                    </div>
+                    <InputTextArea
+                      label="Description"
+                      value={taxConfig?.tax_location?.description || ''}
+                      onChange={(value) => handleFieldChange('location', 0, 'description', value)}
+                      placeholder="Enter location description"
+                      rows={3}
+                    />
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                    <button
-                      onClick={() => toggleEdit('location', '0')}
-                      className={`p-2 rounded-lg transition-colors ${
-                        editingItems[`location_0`]
-                          ? 'bg-green-100 text-green-600 hover:bg-green-200' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
-                    >
-                      {editingItems[`location_0`] ? (
-                        <CheckCircleIcon className="h-4 w-4" />
-                      ) : (
-                        <PencilIcon className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{taxConfig?.tax_location?.name || 'Not Set'}</h3>
+                    <p className="text-sm text-gray-500 mb-2">ID: {taxConfig?.tax_location?.tax_loc_id || 'Not Set'}</p>
+                    <p className="text-sm text-gray-600">{taxConfig?.tax_location?.description || 'No description'}</p>
+                  </>
+                )}
+              </EditableCard>
             </Widget>
           )}
 

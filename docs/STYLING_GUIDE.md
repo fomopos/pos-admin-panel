@@ -17,6 +17,7 @@ This styling guide provides comprehensive guidelines for maintaining consistent 
 10. [Responsive Design](#responsive-design)
 11. [Best Practices](#best-practices)
     - [Semantic Code Dropdowns](#semantic-code-dropdowns)
+    - [EditableCard Component](#editablecard-component)
 
 ---
 
@@ -939,6 +940,50 @@ For dropdowns representing semantic codes (like tax types, status codes, etc.), 
 - Keep descriptions concise but informative
 - Use consistent description formatting across similar dropdowns
 - Extract the `id` from the option object in the onSelect handler
+
+### EditableCard Component
+For tax settings and similar editable list items, use the `EditableCard` component for consistent styling and behavior:
+
+```tsx
+import { EditableCard } from '../components/tax';
+
+<EditableCard
+  isEditing={isEditing}
+  onToggleEdit={() => toggleEdit('authority', index.toString())}
+  onDelete={() => deleteItem('authority', authority.authority_id)}
+  showDeleteButton={true} // Optional, defaults to true
+>
+  {isEditing ? (
+    <div className="space-y-4">
+      {/* Edit form content */}
+      <InputTextField
+        label="Name"
+        value={item.name}
+        onChange={(value) => handleChange('name', value)}
+      />
+    </div>
+  ) : (
+    <>
+      {/* Display content */}
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
+      <p className="text-sm text-gray-500">Details about the item</p>
+    </>
+  )}
+</EditableCard>
+```
+
+**Features:**
+- Consistent hover effects with shadow and color changes
+- Built-in edit/save button with appropriate icons
+- Optional delete button
+- Responsive design with proper spacing
+- Smooth transitions and animations
+
+**Best Practices:**
+- Use for all editable cards in tax settings (authorities, groups, locations)
+- Set `showDeleteButton={false}` for items that shouldn't be deleted
+- Provide clear visual distinction between edit and view modes
+- Keep form content organized with proper spacing
 
 ### Performance
 1. **Use proper imports** - import only what you need
