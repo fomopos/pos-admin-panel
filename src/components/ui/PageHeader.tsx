@@ -3,7 +3,7 @@ import { cn } from '../../utils/cn';
 
 interface PageHeaderProps {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
 }
@@ -19,7 +19,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div>
         <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
         {description && (
-          <p className="text-slate-500 mt-1">{description}</p>
+          <div className="text-slate-500 mt-1">{description}</div>
         )}
       </div>
       {children && (

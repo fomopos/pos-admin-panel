@@ -28,6 +28,7 @@ export { CompactToggle } from './CompactToggle';
 export { IconPicker } from './IconPicker';
 export { Widget } from './Widget';
 export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGuard } from './PermissionGuard';
+export { default as VersionDisplay } from './VersionDisplay';
 
 // Re-export types
 export type { ButtonProps } from './Button';

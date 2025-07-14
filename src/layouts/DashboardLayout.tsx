@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { authService } from '../auth/authService';
 import { PermissionManager, usePermissions } from '../utils/permissions';
+import { VersionDisplay } from '../components/ui';
 import {
   HomeIcon,
   CubeIcon,
@@ -399,6 +400,17 @@ const DashboardLayout: React.FC = () => {
               </div>
             ))}
           </nav>
+          
+          {/* Version Display */}
+          <div className="px-4 py-3 border-t border-gray-200">
+            <div className="flex items-center justify-center">
+              <VersionDisplay 
+                style="subtle" 
+                size="sm" 
+                className="select-none" 
+              />
+            </div>
+          </div>
         </div>
       </div>
 
