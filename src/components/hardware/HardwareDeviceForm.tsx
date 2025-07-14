@@ -17,6 +17,7 @@ import {
   Alert
 } from '../ui';
 import { hardwareConfigService } from '../../services/hardware/hardwareConfigService';
+import { useTenantStore } from '../../tenants/tenantStore';
 import type {
   HardwareDevice,
   ReceiptPrinterConfig,
@@ -28,7 +29,7 @@ import type {
 interface HardwareDeviceFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (device: HardwareDevice) => void;
+  onSave: (device: HardwareDevice, terminalId?: string) => void;
   device?: HardwareDevice | null;
   level: 'store' | 'terminal';
   mode: 'create' | 'edit';
@@ -42,17 +43,32 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
   level,
   mode
 }) => {
+  const { currentStore } = useTenantStore();
   const [formData, setFormData] = useState<Partial<HardwareDevice>>({
     name: '',
     type: 'receipt_printer',
     enabled: true,
     connection_type: 'network'
   });
+  const [selectedTerminalId, setSelectedTerminalId] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const hardwareOptions = hardwareConfigService.getHardwareOptions();
+
+  // Get terminal options for dropdown
+  const getTerminalOptions = (): HardwareOption[] => {
+    if (!currentStore?.terminals) return [];
+    
+    return Object.values(currentStore.terminals).map(terminal => ({
+      id: terminal.terminal_id,
+      label: `${terminal.name} (${terminal.terminal_id})`,
+      value: terminal.terminal_id,
+      description: `${terminal.platform} - ${terminal.model} - ${terminal.status}`,
+      icon: terminal.status === 'active' ? '🟢' : '🔴'
+    }));
+  };
 
   // Device type options
   const deviceTypeOptions: HardwareOption[] = [
@@ -90,9 +106,15 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
         connection_type: 'network'
       });
     }
+    
+    // Reset terminal selection for new devices or when switching levels
+    if (level === 'terminal' && mode === 'create') {
+      setSelectedTerminalId('');
+    }
+    
     setErrors({});
     setTestResult(null);
-  }, [device, mode, isOpen]);
+  }, [device, mode, isOpen, level]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -174,6 +196,11 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
       newErrors.connection_type = 'Connection type is required';
     }
 
+    // Terminal selection validation for terminal level
+    if (level === 'terminal' && !selectedTerminalId) {
+      newErrors.terminal = 'Please select a terminal for this device';
+    }
+
     // Network connection validation
     if (formData.connection_type === 'network') {
       if (formData.type === 'receipt_printer' || formData.type === 'kitchen_printer') {
@@ -212,7 +239,8 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
         ...formData
       } as HardwareDevice;
 
-      onSave(deviceData);
+      // Pass terminal ID for terminal level devices
+      onSave(deviceData, level === 'terminal' ? selectedTerminalId : undefined);
       onClose();
     } catch (error) {
       console.error('Failed to save device:', error);
@@ -531,6 +559,39 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
           className='overflow-visible'
         >
           <div className="space-y-6">
+            {/* Terminal Selection for Terminal Level */}
+            {level === 'terminal' && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-orange-900 mb-2">Terminal Assignment</h4>
+                <p className="text-sm text-orange-700 mb-3">
+                  Select which terminal this hardware device will be assigned to.
+                </p>
+                <DropdownSearch
+                  label="Select Terminal"
+                  options={getTerminalOptions()}
+                  value={selectedTerminalId}
+                  onSelect={(option) => {
+                    setSelectedTerminalId(option?.id || '');
+                    if (errors.terminal) {
+                      setErrors(prev => ({ ...prev, terminal: '' }));
+                    }
+                  }}
+                  placeholder="Choose a terminal"
+                  required
+                  error={errors.terminal}
+                  displayValue={(option) => option ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{option.icon}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{option.label}</span>
+                        <span className="text-xs text-gray-500">{option.description}</span>
+                      </div>
+                    </div>
+                  ) : 'Choose a terminal'}
+                />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputTextField
                 label="Device Name"

@@ -9,14 +9,16 @@ import {
   Widget,
   Button,
   Alert,
-  EnhancedTabs
+  EnhancedTabs,
+  DropdownSearch
 } from '../ui';
 import HardwareDeviceCard from './HardwareDeviceCard';
 import HardwareDeviceForm from './HardwareDeviceForm';
 import { hardwareConfigService } from '../../services/hardware/hardwareConfigService';
+import { useTenantStore } from '../../tenants/tenantStore';
 import type { 
   HardwareDevice, 
-  HardwareConfigResponse
+  HardwareOption
 } from '../../types/hardware';
 
 interface HardwareConfigurationTabProps {
@@ -35,9 +37,11 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
   onSave,
   onFieldChange
 }) => {
+  const { currentStore } = useTenantStore();
   const [hardwareConfig, setHardwareConfig] = useState<CombinedHardwareConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeLevel, setActiveLevel] = useState<'store' | 'terminal'>('store');
+  const [selectedTerminalId, setSelectedTerminalId] = useState<string>('');
   const [showDeviceForm, setShowDeviceForm] = useState(false);
   const [editingDevice, setEditingDevice] = useState<HardwareDevice | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
@@ -58,6 +62,19 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       description: 'Specific to individual registers'
     }
   ];
+
+  // Get terminal options for dropdown
+  const getTerminalOptions = (): HardwareOption[] => {
+    if (!currentStore?.terminals) return [];
+    
+    return Object.values(currentStore.terminals).map(terminal => ({
+      id: terminal.terminal_id,
+      label: `${terminal.name} (${terminal.terminal_id})`,
+      value: terminal.terminal_id,
+      description: `${terminal.platform} - ${terminal.model} - ${terminal.status}`,
+      icon: terminal.status === 'active' ? '🟢' : '🔴'
+    }));
+  };
 
   // Fetch hardware configuration
   useEffect(() => {
@@ -93,9 +110,26 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
   const handleLevelTabChange = (tabId: string) => {
     setActiveLevel(tabId as 'store' | 'terminal');
     setErrors({});
+    
+    // Auto-select first active terminal when switching to terminal level
+    if (tabId === 'terminal' && !selectedTerminalId) {
+      const terminalOptions = getTerminalOptions();
+      const activeTerminal = terminalOptions.find(t => t.icon === '🟢');
+      if (activeTerminal) {
+        setSelectedTerminalId(activeTerminal.id);
+      } else if (terminalOptions.length > 0) {
+        setSelectedTerminalId(terminalOptions[0].id);
+      }
+    }
   };
 
   const handleAddDevice = () => {
+    // Check if terminal is selected for terminal level
+    if (activeLevel === 'terminal' && !selectedTerminalId) {
+      setErrors({ general: 'Please select a terminal first' });
+      return;
+    }
+    
     setEditingDevice(null);
     setFormMode('create');
     setShowDeviceForm(true);
@@ -116,11 +150,15 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       if (activeLevel === 'store') {
         updatedConfig.store_level = updatedConfig.store_level.filter((d: HardwareDevice) => d.id !== deviceId);
       } else {
-        // For terminal level, we would need terminal_id context
-        // For now, assume we're working with the first terminal or default terminal
-        const terminalId = 'default';
-        if (updatedConfig.terminal_level[terminalId]) {
-          updatedConfig.terminal_level[terminalId] = updatedConfig.terminal_level[terminalId].filter((d: HardwareDevice) => d.id !== deviceId);
+        // For terminal level, we need to check if a terminal is selected
+        if (!selectedTerminalId) {
+          // No terminal selected, can't delete
+          setErrors({ general: 'Please select a terminal first' });
+          return;
+        }
+        
+        if (updatedConfig.terminal_level[selectedTerminalId]) {
+          updatedConfig.terminal_level[selectedTerminalId] = updatedConfig.terminal_level[selectedTerminalId].filter((d: HardwareDevice) => d.id !== deviceId);
         }
       }
 
@@ -132,7 +170,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
     }
   };
 
-  const handleSaveDevice = async (device: HardwareDevice) => {
+  const handleSaveDevice = async (device: HardwareDevice, terminalId?: string) => {
     try {
       if (!hardwareConfig) return;
 
@@ -148,18 +186,18 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
           }
         }
       } else {
-        // For terminal level, we would need terminal_id context
-        const terminalId = 'default';
-        if (!updatedConfig.terminal_level[terminalId]) {
-          updatedConfig.terminal_level[terminalId] = [];
+        // For terminal level, use the provided terminalId
+        const targetTerminalId = terminalId || 'default';
+        if (!updatedConfig.terminal_level[targetTerminalId]) {
+          updatedConfig.terminal_level[targetTerminalId] = [];
         }
         
         if (formMode === 'create') {
-          updatedConfig.terminal_level[terminalId].push(device);
+          updatedConfig.terminal_level[targetTerminalId].push(device);
         } else {
-          const index = updatedConfig.terminal_level[terminalId].findIndex((d: HardwareDevice) => d.id === device.id);
+          const index = updatedConfig.terminal_level[targetTerminalId].findIndex((d: HardwareDevice) => d.id === device.id);
           if (index !== -1) {
-            updatedConfig.terminal_level[terminalId][index] = device;
+            updatedConfig.terminal_level[targetTerminalId][index] = device;
           }
         }
       }
@@ -208,9 +246,8 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
     if (activeLevel === 'store') {
       return hardwareConfig.store_level;
     } else {
-      // For terminal level, we would need terminal_id context
-      const terminalId = 'default';
-      return hardwareConfig.terminal_level[terminalId] || [];
+      // Use the selected terminal ID for terminal level
+      return hardwareConfig.terminal_level[selectedTerminalId] || [];
     }
   };
 
@@ -277,6 +314,35 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
               </p>
             </div>
 
+            {/* Terminal Selection (for terminal level only) */}
+            {activeLevel === 'terminal' && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-amber-900 mb-3">
+                  Select Terminal
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DropdownSearch
+                    label="Terminal"
+                    options={getTerminalOptions()}
+                    value={selectedTerminalId}
+                    onSelect={(option) => setSelectedTerminalId(option ? option.id : '')}
+                    placeholder="Select a terminal to view/edit its devices"
+                    displayValue={(option) => option ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{option.icon}</span>
+                        <span>{option.label}</span>
+                      </div>
+                    ) : 'Select terminal'}
+                  />
+                  {selectedTerminalId && (
+                    <div className="flex items-center text-sm text-amber-700">
+                      <span>Viewing devices for: <strong>{getTerminalOptions().find(t => t.id === selectedTerminalId)?.label}</strong></span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Device List */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -287,13 +353,25 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
                   onClick={handleAddDevice}
                   variant="primary"
                   size="sm"
+                  disabled={activeLevel === 'terminal' && !selectedTerminalId}
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Add Device
                 </Button>
               </div>
 
-              {currentDevices.length === 0 ? (
+              {/* Show terminal selection prompt for terminal level */}
+              {activeLevel === 'terminal' && !selectedTerminalId ? (
+                <div className="text-center py-12 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg">
+                  <ComputerDesktopIcon className="mx-auto h-12 w-12 text-amber-400 mb-4" />
+                  <h3 className="text-lg font-medium text-amber-900 mb-2">
+                    Select a Terminal
+                  </h3>
+                  <p className="text-sm text-amber-700 mb-6">
+                    Please select a terminal from the dropdown above to view and manage its hardware devices.
+                  </p>
+                </div>
+              ) : currentDevices.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg">
                   <ComputerDesktopIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
