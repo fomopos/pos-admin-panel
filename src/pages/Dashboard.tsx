@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, PageHeader } from '../components/ui';
+import { Card, PageHeader, VersionDisplay } from '../components/ui';
 import KPICard from '../components/ui/KPICard';
 import { dashboardKPIService, type DashboardKPIFilters } from '../services/dashboard/dashboardKPIService';
 import type { DashboardKPIResponse } from '../types/dashboard-kpi';
@@ -83,7 +83,13 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <PageHeader
         title={t('dashboard.title')}
-        description="Comprehensive overview of your POS system performance and key metrics"
+        description={
+          <div className="flex items-center space-x-2">
+            <span>Comprehensive overview of your POS system performance and key metrics</span>
+            <span className="text-gray-400">•</span>
+            <VersionDisplay style="subtle" size="sm" />
+          </div>
+        }
       >
         <div className="flex items-center space-x-3">
           <button

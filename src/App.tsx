@@ -48,12 +48,52 @@ import ToastContainer from './components/ToastContainer';
 import { setupGlobalErrorHandlers } from './services/errorHandler';
 
 // Placeholder components for other pages
-const Settings: React.FC = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-    <p className="text-gray-600">Settings coming soon...</p>
-  </div>
-);
+const Settings: React.FC = () => {
+  const [VersionDisplay, setVersionDisplay] = React.useState<React.ComponentType<any> | null>(null);
+  
+  React.useEffect(() => {
+    import('./components/ui/VersionDisplay').then((module) => {
+      setVersionDisplay(() => module.default);
+    });
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-gray-600">Application configuration and system information</p>
+        </div>
+        {VersionDisplay && (
+          <VersionDisplay style="badge" size="md" />
+        )}
+      </div>
+      
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">System Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="font-medium text-gray-500">Application Version:</span>
+            <div className="mt-1">
+              {VersionDisplay && <VersionDisplay style="text" size="sm" />}
+            </div>
+          </div>
+          <div>
+            <span className="font-medium text-gray-500">Build Date:</span>
+            <div className="mt-1 text-gray-900">
+              {new Date().toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Application Settings</h2>
+        <p className="text-gray-600">More configuration options coming soon...</p>
+      </div>
+    </div>
+  );
+};
 
 function App() {
   useEffect(() => {
