@@ -8,10 +8,9 @@ import {
   ClockIcon,
   BuildingOfficeIcon,
   CheckIcon,
-  XMarkIcon,
-  GlobeAltIcon
+  XMarkIcon
 } from '@heroicons/react/24/outline';
-import { Button, PageHeader, EnhancedTabs, Input, InputTextField, DropdownSearch } from '../components/ui';
+import { Button, PageHeader, EnhancedTabs, InputTextField, InputTextArea, DropdownSearch, Widget } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { useTenantStore } from '../tenants/tenantStore';
 import { 
@@ -397,62 +396,32 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   };
 
   const renderBasicInformation = () => (
-    <div className="space-y-8">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-2xl p-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl">
-            <BuildingStorefrontIcon className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-              Store Details
-            </h3>
-            <p className="text-blue-600 mt-1">Configure your store's basic information and settings</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <div className="mb-3">
-            <label className="block text-sm font-semibold text-gray-700">
-              <div className="flex items-center space-x-2">
-                <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
-                <span>Store ID</span>
-              </div>
-            </label>
-          </div>
-          <Input
-            type="text"
+    <Widget
+      title="Store Details"
+      description="Configure your store's basic information and settings"
+      icon={BuildingStorefrontIcon}
+      variant="primary"
+      className='overflow-visible'
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <InputTextField
+            label="Store ID"
             value={formData.store_id || ''}
-            onChange={(e) => handleInputChange('store_id', e.target.value)}
+            onChange={(value) => handleInputChange('store_id', value)}
             placeholder="Enter store ID (optional)"
             error={errors.store_id}
-            className="rounded-xl"
           />
-        </div>
 
-        <div>
-          <div className="mb-3">
-            <label className="block text-sm font-semibold text-gray-700">
-              <div className="flex items-center space-x-2">
-                <BuildingStorefrontIcon className="w-4 h-4 text-blue-500" />
-                <span>Store Name *</span>
-              </div>
-            </label>
-          </div>
-          <Input
-            type="text"
+          <InputTextField
+            label="Store Name"
+            required
             value={formData.store_name}
-            onChange={(e) => handleInputChange('store_name', e.target.value)}
+            onChange={(value) => handleInputChange('store_name', value)}
             placeholder="Enter store name"
             error={errors.store_name}
-            className="rounded-xl"
           />
-        </div>
 
-        <div>
           <DropdownSearch
             label="Location Type"
             required
@@ -463,7 +432,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 handleInputChange('location_type', selectedOption.id);
               }
             }}
-            // Enhanced displayValue with icon and location type
             displayValue={(option) => {
               if (!option) return "Select location type";
               return (
@@ -483,9 +451,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             searchPlaceholder="Search location types..."
             error={errors.location_type}
           />
-        </div>
 
-        <div>
           <DropdownSearch
             label="Store Type"
             required
@@ -496,7 +462,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 handleInputChange('store_type', selectedOption.id);
               }
             }}
-            // Enhanced displayValue with icon and type name
             displayValue={(option) => {
               if (!option) return "Select store type";
               return (
@@ -516,12 +481,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             searchPlaceholder="Search store types..."
             error={errors.store_type}
           />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        <div>
           <DropdownSearch
             label="Locale"
             options={LOCALES}
@@ -531,7 +491,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 handleInputChange('locale', selectedOption.id);
               }
             }}
-            // Enhanced displayValue with flag and locale code
             displayValue={(option) => {
               if (!option) return "Select locale";
               return (
@@ -552,9 +511,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             placeholder="Select locale"
             searchPlaceholder="Search locales..."
           />
-        </div>
 
-        <div>
           <DropdownSearch
             label="Currency"
             options={CURRENCIES}
@@ -564,7 +521,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 handleInputChange('currency', selectedOption.id);
               }
             }}
-            // Enhanced displayValue that renders a component with currency symbol and code
             displayValue={(option) => {
               if (!option) return "Select currency";
               return (
@@ -586,131 +542,93 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             searchPlaceholder="Search currencies..."
           />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <DropdownSearch
-            label="Timezone"
-            options={TIMEZONES}
-            value={formData.timezone}
-            onSelect={(selectedOption) => {
-              if (selectedOption) {
-                handleInputChange('timezone', selectedOption.id);
-              }
-            }}
-            // Enhanced displayValue with timezone icon and name
-            displayValue={(option) => {
-              if (!option) return "Select timezone";
+        <DropdownSearch
+          label="Timezone"
+          options={TIMEZONES}
+          value={formData.timezone}
+          onSelect={(selectedOption) => {
+            if (selectedOption) {
+              handleInputChange('timezone', selectedOption.id);
+            }
+          }}
+          displayValue={(option) => {
+            if (!option) return "Select timezone";
+            return (
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{option.icon}</span>
+                <span className="font-medium">{option.label}</span>
+              </div>
+            );
+          }}
+          renderOption={(option) => {
+            if (option.id === 'separator') {
               return (
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{option.icon}</span>
-                  <span className="font-medium">{option.label}</span>
+                <div className="px-3 py-1 text-center text-gray-400 text-xs border-t border-gray-200 bg-gray-50">
+                  Regional Timezones
                 </div>
               );
-            }}
-            renderOption={(option) => {
-              // Handle separator
-              if (option.id === 'separator') {
-                return (
-                  <div className="px-3 py-1 text-center text-gray-400 text-xs border-t border-gray-200 bg-gray-50">
-                    Regional Timezones
-                  </div>
-                );
-              }
-              
-              return (
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">{option.icon}</span>
-                  <span>{option.label}</span>
-                </div>
-              );
-            }}
-            placeholder="Select timezone"
-            searchPlaceholder="Search timezones..."
-            noOptionsMessage="No timezones found"
-          />
-        </div>
-      </div>
+            }
+            
+            return (
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{option.icon}</span>
+                <span>{option.label}</span>
+              </div>
+            );
+          }}
+          placeholder="Select timezone"
+          searchPlaceholder="Search timezones..."
+          noOptionsMessage="No timezones found"
+        />
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
-          Description
-        </label>
-        <textarea
+        <InputTextArea
+          label="Description"
           value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
-          rows={4}
+          onChange={(value) => handleInputChange('description', value)}
           placeholder="Describe your store, its purpose, and unique features..."
+          rows={3}
+          helperText="Provide details about your store's purpose and unique features"
         />
       </div>
-    </div>
+    </Widget>
   );
 
   const renderAddressInformation = () => (
-    <div className="space-y-8">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 border border-emerald-200 rounded-2xl p-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-3 rounded-xl">
-            <MapPinIcon className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent">
-              Store Address
-            </h3>
-            <p className="text-emerald-600 mt-1">Enter your store's physical location details</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 gap-6">
-        <div>
-          <div className="mb-3">
-            <label className="block text-sm font-semibold text-gray-700">
-              <div className="flex items-center space-x-2">
-                <MapPinIcon className="w-4 h-4 text-emerald-500" />
-                <span>Street Address 1 *</span>
-              </div>
-            </label>
-          </div>
-          <Input
-            type="text"
-            value={formData.address.address1}
-            onChange={(e) => handleInputChange('address.address1', e.target.value)}
-            placeholder="Enter street address"
-            error={errors['address.address1']}
-            className="rounded-xl"
+    <Widget
+      title="Store Address"
+      description="Enter your store's physical location details"
+      icon={MapPinIcon}
+      variant="success"
+    >
+      <div className="space-y-4">
+        <InputTextField
+          label="Street Address 1"
+          required
+          value={formData.address.address1}
+          onChange={(value) => handleInputChange('address.address1', value)}
+          placeholder="Enter street address"
+          error={errors['address.address1']}
+        />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <InputTextField
+            label="Street Address 2"
+            value={formData.address.address2 || ''}
+            onChange={(value) => handleInputChange('address.address2', value)}
+            placeholder="Apartment, suite, etc."
+          />
+
+          <InputTextField
+            label="Street Address 3"
+            value={formData.address.address3 || ''}
+            onChange={(value) => handleInputChange('address.address3', value)}
+            placeholder="Additional address line"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <Input
-              label="Street Address 2"
-              type="text"
-              value={formData.address.address2 || ''}
-              onChange={(e) => handleInputChange('address.address2', e.target.value)}
-              placeholder="Apartment, suite, etc."
-              className="rounded-xl"
-            />
-          </div>
-
-          <div>
-            <Input
-              label="Street Address 3"
-              type="text"
-              value={formData.address.address3 || ''}
-              onChange={(e) => handleInputChange('address.address3', e.target.value)}
-              placeholder="Additional address line"
-              className="rounded-xl"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Dynamic City Field - shows dropdown if cities are available, otherwise text input */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Dynamic City Field */}
           {availableCities.length > 0 ? (
             <DropdownSearch
               label="City"
@@ -754,7 +672,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             />
           )}
 
-          {/* Dynamic State Field - shows dropdown if states are available, otherwise text input */}
+          {/* Dynamic State Field */}
           {availableStates.length > 0 ? (
             <DropdownSearch
               label="State/Province"
@@ -809,7 +727,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
           <DropdownSearch
             label="Country"
             required
@@ -818,9 +735,8 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             searchPlaceholder="Search countries..."
             options={COUNTRIES}
             onSelect={(option) => {
-              // Prevent selecting the separator
               if (option && option.id !== 'separator') {
-                handleCountryChange(option.id); // Store country code
+                handleCountryChange(option.id);
               } else if (!option) {
                 handleCountryChange('');
               }
@@ -834,7 +750,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                   </div>
                 );
               }
-              // If no option provided, try to find it by current value (which should be a country code)
               const currentCountry = COUNTRIES.find(
                 country => country.id === formData.address.country
               );
@@ -849,7 +764,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
               return formData.address.country || "Select a country";
             }}
             renderOption={(option) => {
-              // Handle separator
               if (option.id === 'separator') {
                 return (
                   <div className="px-3 py-1 text-center text-gray-400 text-xs border-t border-gray-200 bg-gray-50">
@@ -869,21 +783,18 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             allowClear
             clearLabel="Clear selection"
           />
-          </div>
 
-          <div>
-            <InputTextField
-              label="District"
-              value={formData.address.district}
-              onChange={(value) => handleInputChange('address.district', value)}
-              placeholder="Enter district"
-            />
-          </div>
+          <InputTextField
+            label="District"
+            value={formData.address.district}
+            onChange={(value) => handleInputChange('address.district', value)}
+            placeholder="Enter district"
+          />
         </div>
 
         {/* Geographic Selection Info */}
         {(availableStates.length > 0 || availableCities.length > 0) && (
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -939,6 +850,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             value={formData.latitude || ''}
             onChange={(value) => handleInputChange('latitude', value)}
             placeholder="e.g., 40.7128"
+            helperText="Optional: GPS coordinates for precise location"
           />
 
           <InputTextField
@@ -946,127 +858,82 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             value={formData.longitude || ''}
             onChange={(value) => handleInputChange('longitude', value)}
             placeholder="e.g., -74.0060"
+            helperText="Optional: GPS coordinates for precise location"
           />
         </div>
       </div>
-    </div>
+    </Widget>
   );
 
   const renderContactInformation = () => (
-    <div className="space-y-8">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-purple-50 to-purple-100/50 border border-purple-200 rounded-2xl p-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-3 rounded-xl">
-            <PhoneIcon className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
-              Contact Information
-            </h3>
-            <p className="text-purple-600 mt-1">Add contact details for customer communication</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <div className="mb-3">
-            <label className="block text-sm font-semibold text-gray-700">
-              <div className="flex items-center space-x-2">
-                <PhoneIcon className="w-4 h-4 text-purple-500" />
-                <span>Primary Phone</span>
-              </div>
-            </label>
-          </div>
-          <Input
+    <Widget
+      title="Contact Information"
+      description="Add contact details for customer communication"
+      icon={PhoneIcon}
+      variant="warning"
+    >
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <InputTextField
+            label="Primary Phone"
             type="tel"
             value={formData.telephone1 || ''}
-            onChange={(e) => handleInputChange('telephone1', e.target.value)}
+            onChange={(value) => handleInputChange('telephone1', value)}
             placeholder="Enter primary phone number"
-            className="rounded-xl"
           />
-        </div>
 
-        <div>
-          <div className="mb-3">
-            <label className="block text-sm font-semibold text-gray-700">
-              <div className="flex items-center space-x-2">
-                <PhoneIcon className="w-4 h-4 text-purple-500" />
-                <span>Secondary Phone</span>
-              </div>
-            </label>
-          </div>
-          <Input
+          <InputTextField
+            label="Secondary Phone"
             type="tel"
             value={formData.telephone2 || ''}
-            onChange={(e) => handleInputChange('telephone2', e.target.value)}
+            onChange={(value) => handleInputChange('telephone2', value)}
             placeholder="Enter secondary phone number"
-            className="rounded-xl"
+          />
+
+          <InputTextField
+            label="Alternate Phone 1"
+            type="tel"
+            value={formData.telephone3 || ''}
+            onChange={(value) => handleInputChange('telephone3', value)}
+            placeholder="Enter alternate phone number"
+          />
+
+          <InputTextField
+            label="Alternate Phone 2"
+            type="tel"
+            value={formData.telephone4 || ''}
+            onChange={(value) => handleInputChange('telephone4', value)}
+            placeholder="Enter alternate phone number"
           />
         </div>
 
         <InputTextField
-          label="Alternate Phone 1"
-          type="tel"
-          value={formData.telephone3 || ''}
-          onChange={(value) => handleInputChange('telephone3', value)}
-          placeholder="Enter alternate phone number"
-        />
-
-        <InputTextField
-          label="Alternate Phone 2"
-          type="tel"
-          value={formData.telephone4 || ''}
-          onChange={(value) => handleInputChange('telephone4', value)}
-          placeholder="Enter alternate phone number"
-        />
-      </div>
-
-      <div>
-        <div className="mb-3">
-          <label className="block text-sm font-semibold text-gray-700">
-            <div className="flex items-center space-x-2">
-              <GlobeAltIcon className="w-4 h-4 text-purple-500" />
-              <span>Email Address</span>
-            </div>
-          </label>
-        </div>
-        <Input
+          label="Email Address"
           type="email"
           value={formData.email || ''}
-          onChange={(e) => handleInputChange('email', e.target.value)}
+          onChange={(value) => handleInputChange('email', value)}
           placeholder="Enter email address"
           error={errors.email}
-          className="rounded-xl"
+          helperText="Used for order confirmations and customer communication"
         />
       </div>
-    </div>
+    </Widget>
   );
 
   const renderLegalEntityInformation = () => (
-    <div className="space-y-8">
-      {/* Section Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200 rounded-2xl p-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-3 rounded-xl">
-            <BuildingOfficeIcon className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
-              Legal Entity Information
-            </h3>
-            <p className="text-amber-600 mt-1">Configure legal entity details for compliance</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <Widget
+      title="Legal Entity Information"
+      description="Configure legal entity details for compliance"
+      icon={BuildingOfficeIcon}
+      variant="warning"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <InputTextField
           label="Legal Entity ID"
           value={formData.legal_entity_id || ''}
           onChange={(value) => handleInputChange('legal_entity_id', value)}
           placeholder="Enter legal entity ID"
+          helperText="Optional: Business registration or tax ID"
         />
 
         <InputTextField
@@ -1074,36 +941,27 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
           value={formData.legal_entity_name || ''}
           onChange={(value) => handleInputChange('legal_entity_name', value)}
           placeholder="Enter legal entity name"
+          helperText="Optional: Official business name"
         />
       </div>
-    </div>
+    </Widget>
   );
 
   const renderStoreTiming = () => {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Holidays'];
     
     return (
-      <div className="space-y-8">
-        {/* Section Header */}
-        <div className="bg-gradient-to-r from-green-50 to-green-100/50 border border-green-200 rounded-2xl p-6">
-          <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl">
-              <ClockIcon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
-                Store Operating Hours
-              </h3>
-              <p className="text-green-600 mt-1">Set your store's weekly operating schedule</p>
-            </div>
-          </div>
-        </div>
-        
+      <Widget
+        title="Store Operating Hours"
+        description="Set your store's weekly operating schedule"
+        icon={ClockIcon}
+        variant="success"
+      >
         <div className="space-y-4">
           {days.map((day) => (
-            <div key={day} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border border-gray-200 rounded-xl hover:border-green-300 transition-all duration-200">
+            <div key={day} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-200">
               <div className="flex items-center space-x-2">
-                <ClockIcon className="w-4 h-4 text-green-500" />
+                <ClockIcon className="w-4 h-4 text-gray-500" />
                 <span className="font-semibold text-gray-700">{day}</span>
               </div>
               <div className="md:col-span-2">
@@ -1112,30 +970,29 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                   value={formData.store_timing[day as keyof typeof formData.store_timing]}
                   onChange={(value) => handleTimingChange(day, value)}
                   placeholder={day === 'Holidays' ? 'Closed' : '09:00-18:00'}
-                  className="w-full"
                 />
               </div>
             </div>
           ))}
         </div>
         
-        <div className="bg-gradient-to-r from-green-50 to-green-100/50 border border-green-200 rounded-xl p-6">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-6">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckIcon className="w-4 h-4 text-green-600" />
+              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                <CheckIcon className="w-4 h-4 text-gray-600" />
               </div>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-green-800 mb-2">Format Guide</h4>
-              <p className="text-sm text-green-700">
+              <h4 className="text-sm font-semibold text-gray-800 mb-2">Format Guide</h4>
+              <p className="text-sm text-gray-600">
                 Use 24-hour format (e.g., "09:00-18:00") or "Closed" for non-operating days.
                 Separate multiple time slots with commas (e.g., "09:00-12:00,14:00-18:00").
               </p>
             </div>
           </div>
         </div>
-      </div>
+      </Widget>
     );
   };
 
@@ -1157,94 +1014,85 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="space-y-8">
+    <div className="bg-gray-50 min-h-screen py-4 sm:py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="space-y-6">
           {/* Page Header */}
           <PageHeader
             title="Create New Store"
             description={`Add a new store to ${currentTenant?.name}`}
-            className="bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl rounded-2xl p-8"
           >
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={handleBack}
-              className="flex items-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 px-4 py-2 rounded-xl"
+              className="flex items-center"
             >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
               Back to Stores
             </Button>
           </PageHeader>
 
-          {/* Modern Success/Error Messages */}
+          {/* Success/Error Messages */}
           {successMessage && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-lg rounded-2xl p-6 animate-slideIn">
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                  <CheckIcon className="w-6 h-6 text-white" />
+                <div className="flex-shrink-0">
+                  <CheckIcon className="h-6 w-6 text-green-600" />
                 </div>
-                <p className="text-lg font-semibold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent">{successMessage}</p>
+                <p className="ml-3 text-green-700 font-medium">{successMessage}</p>
               </div>
             </div>
           )}
 
           {errors.submit && (
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 shadow-lg rounded-2xl p-6 animate-slideIn">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                  <XMarkIcon className="w-6 h-6 text-white" />
+                <div className="flex-shrink-0">
+                  <XMarkIcon className="h-6 w-6 text-red-600" />
                 </div>
-                <div>
-                  <p className="text-lg font-semibold bg-gradient-to-r from-red-700 to-rose-700 bg-clip-text text-transparent">{errors.submit}</p>
+                <div className="ml-3">
+                  <p className="text-red-700 font-medium">{errors.submit}</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Enhanced Tab Navigation */}
-          <form onSubmit={handleSubmit}>
+          {/* Form Content */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             <EnhancedTabs
               tabs={tabs}
               activeTab={activeTab}
               onTabChange={setActiveTab}
-              className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl"
               allowOverflow={true}
             >
               {renderTabContent()}
             </EnhancedTabs>
 
-              {/* Modern Form Actions */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 border border-gray-200/50 rounded-2xl px-8 py-6 mt-6">
-                <div className="flex justify-end space-x-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleBack}
-                    disabled={isLoading}
-                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 rounded-xl font-semibold"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center min-w-[180px] px-8 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-200"
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                        Creating Store...
-                      </>
-                    ) : (
-                      <>
-                        <CheckIcon className="h-5 w-5 mr-3" />
-                        Create Store
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </form>
+            {/* Form Actions */}
+            <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isLoading}
+                isLoading={isLoading}
+              >
+                {isLoading ? 'Creating Store...' : (
+                  <>
+                    <CheckIcon className="h-4 w-4 mr-2" />
+                    Create Store
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
