@@ -1,0 +1,1000 @@
+{
+  "categories": {
+    "title": "Kategórie",
+    "edit": "Upraviť",
+    "subtitle": "Spravujte svoje kategórie produktov",
+    "subtitleWithCount": "Zobrazuje sa {{count}} kategórií",
+    "newCategory": "Nová kategória",
+    "editCategory": "Upraviť kategóriu",
+    "newDescription": "Vytvorte novú kategóriu na organizovanie vašich produktov",
+    "editDescription": "Upravte podrobnosti tejto kategórie",
+    "fields": {
+        "name": "Názov kategórie",
+        "description": "Popis",
+        "parentCategory": "Nadradená kategória",
+        "sortOrder": "Poradie triedenia",
+        "icon": "Ikona kategórie",
+        "image": "Obrázok kategórie",
+        "tags": "Značky",
+        "isActive": "Stav aktívnosti",
+        "displayOnMain": "Zobraziť na hlavnej obrazovke",
+        "quickIcons": "Rýchly výber ikon"
+      },
+    "create": {
+      "title": "Vytvoriť novú kategóriu",
+      "subtitle": "Pridajte novú kategóriu na organizovanie vašich produktov",
+      "button": "Pridať kategóriu",
+      "creating": "Vytvára sa...",
+      "create": "Vytvoriť kategóriu",
+      "newCategory": "Vytvoriť novú kategóriu",
+      "newCategoryDescription": "Organizujte svoje produkty pomocou vlastnej kategórie",
+      "features": {
+        "mobile": "Pripravené na mobil",
+        "tags": "Inteligentné značky",
+        "hierarchy": "Hierarchické"
+      },
+      "placeholders": {
+        "name": "Zadajte názov kategórie",
+        "description": "Popíšte, aké produkty patria do tejto kategórie",
+        "addTag": "Pridať značku"
+      },
+      "descriptions": {
+        "isActive": "Prepnite na povolenie alebo zakázanie tejto kategórie",
+        "displayOnMain": "Zobraziť túto kategóriu výrazne na hlavnej obrazovke"
+      },
+      "selectParent": "Vybrať nadradenú kategóriu",
+      "noParent": "Žiadna nadradená (najvyššia úroveň)",
+      "templates": {
+        "title": "Vyberte šablónu",
+        "skip": "Preskočiť šablóny",
+        "createCustom": "Preskočiť šablóny - Vytvoriť vlastnú kategóriu"
+      },
+      "form": {
+        "name": "Názov kategórie",
+        "description": "Popis",
+        "parentCategory": "Nadradená kategória",
+        "sortOrder": "Poradie triedenia",
+        "tags": "Značky",
+        "addTag": "Pridať značku",
+        "noParent": "Žiadna nadradená (najvyššia úroveň)",
+        "basicInfo": "Základné informácie",
+        "media": "Médiá a ikony",
+        "settings": "Nastavenia",
+        "color": "Farba"
+      },
+      "tabs": {
+        "basic": "Základné informácie",
+        "media": "Médiá a ikony",
+        "settings": "Nastavenia",
+        "preview": "Náhľad"
+      },
+      "edit": {
+        "title": "Upraviť kategóriu"
+      },
+      "errors": {
+        "nameRequired": "Názov kategórie je povinný",
+        "descriptionTooLong": "Popis je príliš dlhý",
+        "invalidSortOrder": "Poradie triedenia musí byť kladné číslo",
+        "saveFailed": "Nepodarilo sa uložiť kategóriu",
+        "deleteFailed": "Nepodarilo sa vymazať kategóriu"
+      },
+      "media": {
+        "dragIcon": "Pretiahnite a pustite obrázok ikony sem",
+        "dragImage": "Pretiahnite a pustite obrázok kategórie sem",
+        "changeIcon": "Kliknite na zmenu ikony",
+        "changeImage": "Kliknite na zmenu obrázka",
+        "iconFormat": "PNG, JPG do 2MB",
+        "imageFormat": "PNG, JPG do 5MB"
+      },
+      "preview": {
+        "title": "Náhľad kategórie",
+        "button": "Náhľad",
+        "sampleName": "Vzorová kategória",
+        "mainScreen": "Hlavná obrazovka",
+        "tags": "značky"
+      }
+    },
+    "search": {
+      "placeholder": "Hľadať kategórie..."
+    },
+    "filters": {
+      "all": "Všetky kategórie",
+      "active": "Aktívne",
+      "inactive": "Neaktívne",
+      "mainScreen": "Hlavná obrazovka",
+      "withSubcategories": "S podkategóriami",
+      "allCategories": "Všetky kategórie"
+    },
+    "card": {
+      "order": "Poradie",
+      "mainScreen": "Hlavná obrazovka",
+      "subcategories": "podkategórie",
+      "subcategoriesLabel": "Podkategórie"
+    },
+    "status": {
+      "active": "Aktívne",
+      "inactive": "Neaktívne"
+    },
+    "delete": {
+      "confirm": "Ste si istí, že chcete vymazať '{{name}}'?"
+    },
+    "empty": {
+      "title": "Zatiaľ žiadne kategórie",
+      "description": "Začnite organizovať svoje produkty vytvorením prvej kategórie",
+      "noResults": "Neboli nájdené žiadne kategórie",
+      "noResultsDescription": "Skúste upraviť svoje vyhľadávacie alebo filtračné kritériá"
+    },
+    "stats": {
+      "total": "Celkom kategórií",
+      "active": "Aktívne kategórie",
+      "inactive": "Neaktívne kategórie",
+      "withProducts": "Kategórie s produktmi"
+    },
+    "quickCreate": "Rýchle vytvorenie",
+    "actions": {
+      "import": "Importovať kategórie",
+      "export": "Exportovať kategórie"
+    },
+    "bulkImport": {
+      "title": "Hromadný import kategórií",
+      "description": "Importovať viac kategórií zo súboru CSV"
+    },
+    "results": {
+      "showing": "Zobrazuje sa {{count}} z {{total}} kategórií"
+    },
+    "errors": {
+      "loadFailed": "Nepodarilo sa načítať kategórie",
+      "deleteFailed": "Nepodarilo sa vymazať kategóriu",
+      "importFailed": "Nepodarilo sa importovať kategórie",
+      "exportFailed": "Nepodarilo sa exportovať kategórie",
+      "noTenantStore": "Nie je vybratý žiadny obchod",
+      "noTenantStoreDescription": "Prosím vyberte obchod na správu kategórií"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "Základné informácie",
+      "media": "Médiá a ikony",
+      "settings": "Nastavenia"
+    }
+  },
+  "common": {
+    "cancel": "Zrušiť",
+    "save": "Uložiť",
+    "delete": "Vymazať",
+    "edit": "Upraviť",
+    "create": "Vytvoriť",
+    "refresh": "Obnoviť",
+    "filters": "Filtre",
+    "search": "Hľadať",
+    "loading": "Načítava sa...",
+    "goToDashboard": "Ísť na dashboard",
+    "active": "Aktívne",
+    "inactive": "Neaktívne",
+    "categories": "Kategórie",
+    "saving": "Ukladá sa...",
+    "confirm": "Potvrdiť",
+    "confirmAction": "Potvrdiť akciu",
+    "areYouSure": "Ste si istí, že chcete pokračovať?",
+    "deleteConfirmation": "Potvrdenie vymazania",
+    "discardChanges": "Zahodiť zmeny",
+    "discardChangesMessage": "Ste si istí, že chcete zahodiť všetky neuložené zmeny? Túto akciu nie je možné vrátiť späť.",
+    "discardChangesButton": "Zahodiť zmeny",
+    "keepEditing": "Pokračovať v úprave",
+    "searchPlaceholder": "Hľadať...",
+    "selectOption": "Vybrať možnosť",
+    "noOptionsAvailable": "Žiadne možnosti nie sú dostupné",
+    "clearSearch": "Vymazať vyhľadávanie",
+    "none": "Žiadne",
+    "selectAll": "Vybrať všetko",
+    "clearAll": "Vymazať všetko",
+    "loadingData": "Načítavajú sa údaje",
+    "loadingDataDescription": "Počkajte, prosím, kým načítame vaše údaje...",
+    "noDataFound": "Nenašli sa žiadne údaje",
+    "tryAdjustingSearch": "Skúste upraviť vyhľadávacie pojmy",
+    "noItemsToDisplay": "Žiadne položky na zobrazenie",
+    "selectOrganization": "Vybrať organizáciu",
+    "selectStore": "Vybrať obchod",
+    "createNewStore": "Vytvoriť nový obchod",
+    "addAnotherStore": "Pridať ďalšie miesto obchodu",
+    "noStoresAvailable": "Žiadne obchody nie sú dostupné",
+    "yourProfile": "Váš profil",
+    "settings": "Nastavenia",
+    "signOut": "Odhlásiť sa",
+    "clearSearch": "Vymazať vyhľadávanie",
+    "gridView": "Mriežkové zobrazenie",
+    "listView": "Zoznamové zobrazenie",
+    "all": "Všetko",
+    "status": "Stav"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Produkty",
+    "orders": "Objednávky",
+    "customers": "Zákazníci",
+    "reports": "Správy",
+    "settings": "Nastavenia",
+    "categories": "Kategórie",
+    "sales": "Predaje",
+    "discounts": "Zľavy",
+    "tableManagement": "Správa stolov",
+    "employeeShifts": "Zmeny zamestnancov",
+    "salesReports": "Správy o predajoch",
+    "inventoryReports": "Správy o skladových zásobách",
+    "customerAnalytics": "Analýza zákazníkov",
+    "paymentAnalytics": "Analýza platieb",
+    "financialReports": "Finančné správy",
+    "storeSettings": "Nastavenia obchodu",
+    "terminalSettings": "Nastavenia terminálu",
+    "translationManagement": "Správa prekladov",
+    "userManagement": "Správa používateľov",
+    "roleManagement": "Správa rolí",
+    "paymentSettings": "Nastavenia platieb",
+    "taxSettings": "Nastavenia daní",
+    "systemSettings": "Systémové nastavenia"
+  },
+  "customers": {
+    "title": "Zákazníci",
+    "description": "Spravujte svoju zákaznícku databázu",
+    "addCustomer": "Pridať zákazníka",
+    "export": "Exportovať",
+    "loading": {
+      "title": "Načítavanie zákazníkov",
+      "description": "Prosím počkajte, kým načítame vaše zákaznícke dáta..."
+    },
+    "stats": {
+      "totalCustomers": "Celkový počet zákazníkov",
+      "active": "Aktívni",
+      "totalRevenue": "Celkové tržby",
+      "avgSpent": "Priemerné útrata"
+    },
+    "search": {
+      "placeholder": "Hľadať zákazníkov..."
+    },
+    "filters": {
+      "allStatus": "Všetky stavy",
+      "active": "Aktívny",
+      "inactive": "Neaktívny"
+    },
+    "table": {
+      "title": "Zákaznícka databáza",
+      "customersFound": "zákazníkov nájdených",
+      "customer": "Zákazník",
+      "contact": "Kontakt",
+      "location": "Poloha",
+      "purchases": "Nákupy",
+      "totalSpent": "Celkové útrata",
+      "status": "Stav",
+      "actions": "Akcie"
+    },
+    "status": {
+      "active": "Aktívny",
+      "inactive": "Neaktívny"
+    },
+    "empty": {
+      "title": "Neboli nájdení žiadni zákazníci",
+      "tryAdjusting": "Skúste upraviť svoje filtre pre zobrazenie ďalších výsledkov.",
+      "getStarted": "Začnite pridaním svojho prvého zákazníka."
+    }
+  },
+  "products": {
+    "title": "Produkty",
+    "description": "Spravujte svoj inventár produktov",
+    "addModifier": "Pridať modifikátor",
+    "addProduct": "Pridať produkt",
+    "loading": {
+      "title": "Načítavanie produktov",
+      "description": "Prosím počkajte, kým načítame vaše produktové dáta..."
+    },
+    "search": {
+      "placeholder": "Hľadať produkty podľa názvu alebo SKU..."
+    },
+    "filters": {
+      "allCategories": "Všetky kategórie",
+      "advancedFilters": "Pokročilé filtre",
+      "clearAll": "Vymazať všetko",
+      "activeFilters": "Aktívne filtre:",
+      "clearAllFilters": "Vymazať všetky",
+      "priceRange": "Cenové rozpätie",
+      "minPrice": "Min (€)",
+      "maxPrice": "Max (€)",
+      "to": "do",
+      "stockLevel": "Úroveň zásob",
+      "allStockLevels": "Všetky úrovne zásob",
+      "inStock": "Na sklade (Nad minimálnou úrovňou)",
+      "lowStock": "Nízke zásoby (Na/Pod minimálnou úrovňou)",
+      "outOfStock": "Vypredané (0 položiek)",
+      "productStatus": "Stav produktu",
+      "allStatus": "Všetky stavy",
+      "activeProducts": "Aktívne produkty",
+      "inactiveProducts": "Neaktívne produkty",
+      "suppliers": "Dodávatelia",
+      "selected": "vybraných",
+      "tags": "Značky",
+      "dateRange": "Dátumové rozpätie",
+      "startDate": "Začiatočný dátum",
+      "endDate": "Koncový dátum"
+    },
+    "table": {
+      "product": "Produkt",
+      "category": "Kategória",
+      "price": "Cena",
+      "cost": "Náklady",
+      "stock": "Zásoby",
+      "status": "Stav",
+      "actions": "Akcie",
+      "min": "Min"
+    },
+    "status": {
+      "active": "Aktívny",
+      "inactive": "Neaktívny",
+      "outOfStock": "Vypredané",
+      "lowStock": "Nízke zásoby"
+    },
+    "results": {
+      "productsFound": "produktov nájdených",
+      "filteredFrom": "filtrovaných z",
+      "total": "celkom",
+      "sortBy": "Zoradiť podľa:",
+      "name": "Názov",
+      "price": "Cena",
+      "stock": "Zásoby",
+      "created": "Dátum vytvorenia"
+    },
+    "grid": {
+      "tags": "značky"
+    },
+    "empty": {
+      "title": "Neboli nájdené žiadne produkty",
+      "description": "Skúste upraviť vaše vyhľadávacie alebo filtrovacie kritériá",
+      "createFirst": "Začnite pridaním svojho prvého produktu do inventára"
+    }
+  },
+  "dashboard": {
+    "totalSales": "Celkové predaje",
+    "totalOrders": "Celkové objednávky",
+    "title": "Dashboard",
+    "description": "Komplexný prehľad výkonnosti vášho POS systému a kľúčových metrík",
+    "refresh": "Obnoviť",
+    "periods": {
+      "today": "Dnes",
+      "thisWeek": "Tento týždeň",
+      "thisMonth": "Tento mesiac",
+      "thisQuarter": "Tento štvrťrok",
+      "thisYear": "Tento rok"
+    },
+    "alerts": {
+      "active": "Aktívne upozornenia"
+    },
+    "kpi": {
+      "totalSales": "Celkové predaje",
+      "totalOrders": "Celkové objednávky",
+      "averageOrderValue": "Priemerná hodnota objednávky",
+      "customerSatisfaction": "Spokojnosť zákazníkov",
+      "reviews": "recenzie"
+    },
+    "sections": {
+      "salesRevenue": "Predaje a príjmy",
+      "operationalPerformance": "Prevádzkový výkon",
+      "inventoryStock": "Inventár a zásoby",
+      "financialPerformance": "Finančný výkon"
+    }
+  },
+  "discounts": {
+    "title": "Zľavy",
+    "description": "Spravujte zľavové kódy a akcie pre váš obchod",
+    "add": "Pridať zľavu",
+    "empty": {
+      "title": "Zatiaľ žiadne zľavy",
+      "description": "Vytvorte svoju prvú zľavu na zvýšenie predaja"
+    },
+    "search": {
+      "placeholder": "Hľadať zľavy..."
+    },
+    "table": {
+      "code": "Kód",
+      "description": "Popis",
+      "type": "Typ",
+      "value": "Hodnota",
+      "dates": "Časové rozpätie",
+      "status": "Stav"
+    },
+    "noResults": "Neboli nájdené žiadne zľavy",
+    "noResults.description": "Skúste upraviť svoje vyhľadávacie výrazy"
+  },
+  "auth": {
+    "fields": {
+      "email": "E-mail",
+      "password": "Heslo",
+      "confirmPassword": "Potvrdiť heslo",
+      "name": "Celé meno"
+    },
+    "placeholders": {
+      "email": "Zadajte svoju e-mailovú adresu",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "Zadajte svoje celé meno"
+    },
+    "validation": {
+      "emailRequired": "E-mail je povinný",
+      "emailInvalid": "Prosím zadajte platnú e-mailovú adresu",
+      "passwordRequired": "Heslo je povinné",
+      "passwordMinLength": "Heslo musí mať aspoň 6 znakov",
+      "nameRequired": "Celé meno je povinné",
+      "nameMinLength": "Meno musí mať aspoň 2 znaky",
+      "passwordsNoMatch": "Heslá sa nezhodujú",
+      "confirmPasswordRequired": "Prosím potvrďte svoje heslo"
+    },
+    "errors": {
+      "signInFailed": "Prihlásenie zlyhalo. Prosím skontrolujte svoje údaje a skúste znovu.",
+      "userNotConfirmed": "Prosím overte svoju e-mailovú adresu. Skontrolujte doručenú poštu pre overovací odkaz.",
+      "invalidCredentials": "Neplatný e-mail alebo heslo. Prosím skúste znovu.",
+      "userNotFound": "Nebol nájdený účet s touto e-mailovou adresou.",
+      "tooManyRequests": "Príliš veľa neúspešných pokusov. Prosím počkajte pred ďalším pokusom.",
+      "passwordResetRequired": "Vyžaduje sa obnovenie hesla. Prosím obnovte svoje heslo.",
+      "accountNotVerified": "Účet nie je overený. Skontrolujte svoj e-mail pre inštrukcie overenia.",
+      "socialNotImplemented": "Prihlásenie cez {{provider}} zatiaľ nie je implementované. Prosím použite e-mail a heslo.",
+      "socialFailed": "Prihlásenie cez {{provider}} zlyhalo. Prosím skúste znovu.",
+      "resetEmailFailed": "Nepodarilo sa odoslať email na obnovenie. Prosím skúste znovu."
+    },
+    "signIn": {
+      "welcome": "Vitajte späť!",
+      "subtitle": "Prosím zadajte svoje prihlasovacie údaje!",
+      "button": "Prihlásiť sa",
+      "signingIn": "Prihlasovanie...",
+      "noAccount": "Nemáte účet?"
+    },
+    "signUp": {
+      "link": "Zaregistrovať sa"
+    },
+    "forgotPassword": {
+      "title": "Zabudli ste heslo?",
+      "subtitle": "Žiadny problém, pošleme vám inštrukcie na obnovenie.",
+      "button": "Poslať email na obnovenie",
+      "sending": "Posiela sa email na obnovenie...",
+      "backToSignIn": "← Späť na prihlásenie",
+      "rememberPassword": "Pamätáte si svoje heslo?",
+      "checkEmail": "Skontrolujte svoj email",
+      "sentCode": "Poslali sme overovací kód na {{email}}",
+      "redirecting": "Presmerovanie na stránku overenia..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "Aspoň 8 znakov",
+        "uppercase": "Jedno veľké písmeno",
+        "lowercase": "Jedno malé písmeno",
+        "number": "Jedno číslo",
+        "special": "Jeden špeciálny znak"
+      },
+      "doesNotMeetRequirements": "Heslo nespĺňa požiadavky"
+    },
+    "forgotPassword": "Zabudli ste heslo",
+    "orContinueWith": "alebo pokračovať s",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
+  },
+  "tables": {
+    "title": "Správa stolov",
+    "description": "Spravujte stoly, zóny a rezervácie pre vašu reštauráciu",
+    "loading": "Načítava sa správa stolov...",
+    "addZone": "Pridať zónu",
+    "mergeTables": "Spojiť stoly",
+    "addTable": "Pridať stôl",
+    "newReservation": "Nová rezervácia",
+    "noZone": "Žiadna zóna",
+    "assignServer": "Priradiť server",
+    "searchPlaceholder": "Hľadať stoly...",
+    "columns": {
+      "tableName": "Názov stola",
+      "zone": "Zóna",
+      "capacity": "Kapacita",
+      "status": "Stav"
+    },
+    "status": {
+      "available": "Dostupný",
+      "occupied": "Obsadený",
+      "reserved": "Rezervovaný",
+      "outOfOrder": "Mimo prevádzky",
+      "cleaning": "Čistenie"
+    },
+    "stats": {
+      "totalTables": "Celkovo stolov",
+      "activeZones": "Aktívne zóny",
+      "todayReservations": "Dnešné rezervácie",
+      "availableTables": "Dostupné stoly"
+    },
+    "tabs": {
+      "tables": "Stoly",
+      "zones": "Zóny",
+      "reservations": "Rezervácie"
+    },
+    "zones": {
+      "searchPlaceholder": "Hľadať zóny...",
+      "noColor": "Žiadna farba",
+      "tableCount": "{{count}} stolov ({{available}} dostupných, {{occupied}} obsadených)",
+      "columns": {
+        "zoneName": "Názov zóny",
+        "tables": "Stoly",
+        "color": "Farba"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "Hľadať rezervácie...",
+      "columns": {
+        "customer": "Zákazník",
+        "table": "Stôl",
+        "dateTime": "Dátum a čas",
+        "guests": "Hostia"
+      }
+    }
+  },
+  "payment": {
+    "title": "Nastavenia platieb",
+    "description": "Spravujte spôsoby platby a konfigurácie tenderov",
+    "addTender": "Pridať tender",
+    "searchPlaceholder": "Hľadať tendery...",
+    "allTypes": "Všetky typy",
+    "allCurrencies": "Všetky meny",
+    "noTendersFound": "Neboli nájdené žiadne tendery",
+    "noMatchingTenders": "Žiadne tendery nezodpovedajú vašim kritériám vyhľadávania.",
+    "getStartedMessage": "Začnite pridaním svojho prvého tendera.",
+    "table": {
+      "tender": "Tender",
+      "currency": "Mena",
+      "type": "Typ",
+      "overTender": "Nad tender"
+    }
+  },
+  "sales": {
+    "description": "Pokročilá správa predaja a analytika",
+    "export": "Exportovať",
+    "newSale": "Nový predaj",
+    "searchPlaceholder": "Hľadať predaje, zákazníkov, pokladníkov...",
+    "stats": {
+      "totalSales": "Celkové predaje",
+      "completed": "Dokončené",
+      "pending": "Čakajúce",
+      "revenue": "Príjmy"
+    },
+    "filters": {
+      "allStatus": "Všetky stavy",
+      "completed": "Dokončené",
+      "new": "Nové",
+      "suspended": "Pozastavené",
+      "cancelled": "Zrušené",
+      "cancelOrphaned": "Zrušiť osirelé"
+    }
+  },
+  "terminalSettings": {
+    "title": "Správa terminálov",
+    "description": "Spravujte a konfigurujte POS terminály pre váš obchod",
+    "descriptionWithStore": "Spravovať POS terminály pre {{storeName}}",
+    "loading": {
+      "title": "Načítavajú sa nastavenia terminálu",
+      "description": "Prosím čakajte, kým získame konfiguráciu vášho terminálu..."
+    },
+    "noStore": {
+      "title": "Nie je vybratý žiadny obchod",
+      "description": "Prosím vyberte obchod na správu jeho terminálov."
+    },
+    "refresh": "Obnoviť",
+    "addTerminal": "Pridať terminál",
+    "editTerminal": "Upraviť terminál",
+    "addFirstTerminal": "Pridajte svoj prvý terminál",
+    "stats": {
+      "totalTerminals": "Celkové terminály",
+      "activeTerminals": "Aktívne terminály", 
+      "inactiveTerminals": "Neaktívne terminály"
+    },
+    "search": {
+      "placeholder": "Hľadať terminály...",
+      "showing": "Zobrazuje sa {{count}} z {{total}} terminálov"
+    },
+    "filters": {
+      "allStatus": "Všetky stavy",
+      "activeOnly": "Len aktívne",
+      "inactiveOnly": "Len neaktívne"
+    },
+    "form": {
+      "terminalId": "ID terminálu",
+      "deviceId": "ID zariadenia", 
+      "terminalName": "Názov terminálu",
+      "platform": "Platforma",
+      "model": "Model",
+      "architecture": "Architektúra",
+      "status": "Stav",
+      "selectPlatform": "Vybrať platformu",
+      "selectArchitecture": "Vybrať architektúru",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "Hlavný pultový terminál",
+        "model": "iPad Pro, Galaxy Tab, atď."
+      },
+      "errors": {
+        "terminalIdRequired": "ID terminálu je povinné",
+        "deviceIdRequired": "ID zariadenia je povinné", 
+        "nameRequired": "Názov terminálu je povinný",
+        "platformRequired": "Platforma je povinná",
+        "modelRequired": "Model je povinný",
+        "archRequired": "Architektúra je povinná",
+        "saveFailed": "Nepodarilo sa uložiť terminál. Prosím skúste znovu."
+      },
+      "helperText": {
+        "terminalIdReadonly": "ID terminálu nemožno zmeniť pri úprave"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "Webový prehliadač"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "Aktívny",
+      "inactive": "Neaktívny",
+      "activate": "Aktivovať",
+      "deactivate": "Deaktivovať"
+    },
+    "actions": {
+      "saving": "Ukladá sa...",
+      "addTerminal": "Pridať terminál",
+      "updateTerminal": "Aktualizovať terminál",
+      "cancel": "Zrušiť"
+    },
+    "empty": {
+      "noTerminals": "Žiadne terminály nie sú nakonfigurované",
+      "noMatching": "Žiadne terminály nezodpovedajú vášmu vyhľadávaniu",
+      "getStarted": "Začnite pridaním svojho prvého POS terminálu.",
+      "adjustFilters": "Skúste upraviť vaše vyhľadávacie výrazy alebo filtre."
+    },
+    "details": {
+      "deviceId": "ID zariadenia:",
+      "platform": "Platforma:",
+      "model": "Model:",
+      "architecture": "Architektúra:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "Upraviť tender",
+      "create": "Vytvoriť nový tender"
+    },
+    "backToPayments": "Späť na nastavenia platieb",
+    "delete": "Odstrániť",
+    "unsavedChanges": {
+      "title": "Máte neuložené zmeny",
+      "description": "Nezabudnite uložiť svoje úpravy pred opustením tejto stránky.",
+      "discard": "Zahodiť zmeny",
+      "save": "Uložiť zmeny"
+    },
+    "saving": "Ukladá sa...",
+    "templates": {
+      "title": "Šablóny tenderov",
+      "description": "Vyberte šablónu pre rýchly štart alebo preskočte na vytvorenie od začiatku",
+      "skip": "Preskočiť šablóny",
+      "cash": {
+        "name": "Hotovosť (AED)",
+        "description": "Hotovostné platby v AED"
+      },
+      "visa": {
+        "name": "Visa karta", 
+        "description": "Visa kreditná/debetná karta"
+      },
+      "mastercard": {
+        "name": "Mastercard",
+        "description": "Mastercard kreditná/debetná karta"
+      },
+      "giftCard": {
+        "name": "Darčeková karta",
+        "description": "Darčekové karty obchodu"
+      },
+      "loyaltyPoints": {
+        "name": "Body vernosti",
+        "description": "Body vernosti zákazníkov"
+      },
+      "voucher": {
+        "name": "Poukážka",
+        "description": "Poukážky a kupóny obchodu"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Základné informácie",
+        "description": "Základné detaily tendra a identifikácia"
+      },
+      "denominations": {
+        "title": "Nominálne hodnoty",
+        "description": "Konfigurovať dostupné nominálne hodnoty pre tento tender",
+        "addDenomination": "Pridať nominálnu hodnotu",
+        "noDenominations": "Žiadne nominálne hodnoty nie sú nakonfigurované",
+        "getStarted": "Kliknite na \"Pridať nominálnu hodnotu\" pre začiatok",
+        "value": "Hodnota",
+        "description": "Popis"
+      },
+      "configuration": {
+        "title": "Konfigurácia", 
+        "description": "Správanie tendra a konfigurácia systému"
+      },
+      "settings": {
+        "title": "Nastavenia",
+        "description": "Stav tendra a behaviorálne nastavenia"
+      }
+    },
+    "form": {
+      "tenderId": "ID tendra",
+      "description": "Popis",
+      "tenderType": "Typ tendra", 
+      "currency": "Mena",
+      "displayOrder": "Poradie zobrazenia",
+      "availability": "Dostupnosť",
+      "maxRefundDays": "Maximálne dni na vrátenie",
+      "changeCashLimit": "Limit výdavku hotovosti",
+      "placeholders": {
+        "tenderId": "Zadajte ID tendra",
+        "description": "Zadajte popis tendra",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "Nižšie čísla sa zobrazia ako prvé v zozname tenderov",
+        "tenderIdReadonly": "ID tendra nemožno zmeniť pri úprave"
+      },
+      "errors": {
+        "tenderIdRequired": "ID tendra je povinné",
+        "descriptionRequired": "Popis je povinný", 
+        "tenderIdTooLong": "ID tendra musí mať menej ako 50 znakov",
+        "availabilityRequired": "Vyžaduje sa aspoň jedna možnosť dostupnosti",
+        "saveFailed": "Nepodarilo sa uložiť tender. Prosím skúste znovu."
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "Mena",
+        "description": "Hotovostné platby a tendery založené na mene"
+      },
+      "card": {
+        "label": "Karta", 
+        "description": "Platby kreditnými a debetn��mi kartami"
+      },
+      "giftcard": {
+        "label": "Darčeková karta",
+        "description": "Darčekové karty a poukážky obchodu"
+      },
+      "loyalty": {
+        "label": "Body vernosti",
+        "description": "Uplatnenie bodov vernosti zákazníkov"
+      },
+      "voucher": {
+        "label": "Poukážka",
+        "description": "Poukážky a kupóny obchodu"
+      }
+    },
+    "currencies": {
+      "aed": "SAE dirham",
+      "usd": "Americký dolár",
+      "eur": "Euro", 
+      "gbp": "Britská libra"
+    },
+    "availability": {
+      "sale": {
+        "label": "Predaj",
+        "description": "Môže sa použiť pre bežné predajné transakcie"
+      },
+      "returnWithReceipt": {
+        "label": "Vrátenie s účtenkou",
+        "description": "Môže sa použiť pre vrátenia s účtenkou"
+      },
+      "returnWithoutReceipt": {
+        "label": "Vrátenie bez účtenky",
+        "description": "Môže sa použiť pre vrátenia bez účtenky"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "Sériové číslo vyžadované",
+        "description": "Vyžadovať zadanie sériového čísla pre tento tender"
+      },
+      "openCashDrawer": {
+        "title": "Otvoriť pokladničnú zásuvku",
+        "description": "Automaticky otvoriť pokladničnú zásuvku pri použití tohto tendra"
+      },
+      "customerRequired": {
+        "title": "Zákazník vyžadovaný", 
+        "description": "Vyžadovať informácie o zákazníkovi pre tento tender"
+      },
+      "splitTenderAllowed": {
+        "title": "Rozdelený tender povolený",
+        "description": "Povoliť použitie tohto tendra v rozdelených platbách"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "Aktívny stav",
+        "description": "Či je tento tender aktívny a dostupný na použitie"
+      },
+      "overTenderAllowed": {
+        "title": "Preplatenie povolené", 
+        "description": "Povoliť zákazníkom zaplatiť viac ako požadovanú sumu"
+      }
+    },
+    "actions": {
+      "cancel": "Zrušiť",
+      "createTender": "Vytvoriť tender",
+      "updateTender": "Aktualizovať tender"
+    },
+    "success": {
+      "created": "Tender úspešne vytvorený!",
+      "updated": "Tender úspešne aktualizovaný!"
+    }
+  },
+  "taxSettings": {
+    "title": "Nastavenia daní",
+    "description": "Konfigurovať daňové úrady, skupiny a miesta pre váš obchod",
+    "loading": {
+      "title": "Načítava sa konfigurácia daní",
+      "description": "Prosím čakajte, kým získame vaše daňové nastavenia..."
+    },
+    "unsavedChanges": "Máte neuložené zmeny",
+    "unsavedDescription": "Nezabudnite uložiť svoje úpravy pred opustením tejto stránky.",
+    "discardChanges": "Zahodiť zmeny", 
+    "saveAllChanges": "Uložiť všetky zmeny",
+    "saving": "Ukladá sa...",
+    "welcome": {
+      "title": "Vitajte! Nastavuje sa vaša konfigurácia daní",
+      "description": "Načítali sme šablónovú konfiguráciu na váš začiatok. Skontrolujte a upravte nastavenia nižšie, potom uložte pre vytvorenie vašej daňovej konfigurácie."
+    },
+    "noConfiguration": {
+      "title": "Nemožno načítať konfiguráciu daní",
+      "description": "Nepodarilo sa načítať konfiguráciu daní. Prosím skúste znovu.",
+      "tryAgain": "Skúsiť znovu"
+    },
+    "noTenant": {
+      "title": "Nenašla sa konfigurácia daní", 
+      "tenantDescription": "Pre tohto nájomcu neexistuje konfigurácia daní. Prosím kontaktujte svojho administrátora na nastavenie daňovej konfigurácie.",
+      "selectDescription": "Prosím vyberte nájomcu na konfiguráciu daňových nastavení.",
+      "goBack": "Ísť späť"
+    },
+    "stats": {
+      "totalAuthorities": "Celkové úrady",
+      "authoritiesConfigured": "Daňové úrady nakonfigurované",
+      "taxGroups": "Daňové skupiny",
+      "groupsWithRules": "Skupiny s pravidlami",
+      "taxLocation": "Daňové miesto",
+      "currentLocation": "Súčasné miesto",
+      "totalRules": "Celkové pravidlá",
+      "rulesDefined": "Daňové pravidlá definované",
+      "notSet": "Nenastavené"
+    },
+    "tabs": {
+      "authorities": "Daňové úrady",
+      "groups": "Daňové skupiny", 
+      "location": "Daňové miesto",
+      "settings": "Nastavenia"
+    },
+    "authorities": {
+      "title": "Daňové úrady",
+      "description": "Konfigurovať daňové úrady, ktoré budú uplatňovať dane na vaše produkty",
+      "addAuthority": "Pridať úrad",
+      "noAuthorities": "Žiadne daňové úrady",
+      "getStarted": "Vytvorte svoj prvý daňový úrad na začiatok.",
+      "form": {
+        "authorityId": "ID úradu",
+        "authorityName": "Názov úradu",
+        "roundingCode": "Kód zaokrúhľovania",
+        "roundingDigits": "Cifry zaokrúhľovania",
+        "placeholders": {
+          "authorityId": "napr. CGST001",
+          "authorityName": "napr. Centrálne GST",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "Pol nahor",
+        "halfDown": "Pol nadol", 
+        "up": "Nahor",
+        "down": "Nadol"
+      },
+      "details": {
+        "id": "ID:",
+        "rounding": "Zaokrúhľovanie:",
+        "digits": "Cifry:"
+      }
+    },
+    "groups": {
+      "title": "Daňové skupiny",
+      "description": "Organizovať daňové pravidlá do skupín pre jednoduchšiu správu", 
+      "addGroup": "Pridať skupinu",
+      "noGroups": "Žiadne daňové skupiny",
+      "getStarted": "Vytvorte svoju prvú daňovú skupinu na organizáciu vašich daňových pravidiel.",
+      "totalRate": "Celkom",
+      "form": {
+        "taxGroupId": "ID daňovej skupiny", 
+        "groupName": "Názov skupiny",
+        "description": "Popis",
+        "placeholders": {
+          "taxGroupId": "napr. TG001",
+          "groupName": "napr. Štandardné GST",
+          "description": "Zadajte popis skupiny"
+        }
+      },
+      "rules": {
+        "title": "Daňové pravidlá",
+        "addRule": "Pridať pravidlo",
+        "noRules": "Žiadne daňové pravidlá nie sú nakonfigurované. Kliknite na \"Pridať pravidlo\" pre začiatok.",
+        "totalTaxRate": "Celková daňová sadzba:",
+        "form": {
+          "name": "Názov",
+          "taxAuthority": "Daňový úrad",
+          "percentage": "Percento (%)",
+          "taxTypeCode": "Kód typu dane",
+          "description": "Popis",
+          "placeholders": {
+            "name": "Názov pravidla",
+            "percentage": "0.00",
+            "description": "Popis pravidla"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "DPH",
+            "description": "Daň z pridanej hodnoty - Daň uplatňovaná v každej fáze výroby/distribúcie"
+          },
+          "sales": {
+            "label": "PREDAJ",
+            "description": "Predajná daň - Daň uplatňovaná v mieste predaja pre konečného spotrebiteľa"  
+          }
+        },
+        "details": {
+          "authority": "Úrad:",
+          "type": "Typ:"
+        },
+        "actions": {
+          "done": "Hotovo",
+          "delete": "Odstrániť"
+        }
+      }
+    },
+    "location": {
+      "title": "Daňové miesto",
+      "description": "Konfigurovať primárne daňové miesto pre váš obchod",
+      "form": {
+        "taxLocationId": "ID daňového miesta",
+        "locationName": "Názov miesta", 
+        "description": "Popis",
+        "placeholders": {
+          "locationName": "napr. Hlavný obchod",
+          "description": "Zadajte popis miesta"
+        }
+      },
+      "details": {
+        "id": "ID:",
+        "noDescription": "Žiadny popis"
+      }
+    },
+    "generalSettings": {
+      "title": "Všeobecné nastavenia",
+      "description": "Dodatočné nastavenia a preferencie daňovej konfigurácie",
+      "settingsPanel": "Panel nastavení",
+      "additionalSettings": "Dodatočné nastavenia daňovej konfigurácie budú dostupné tu."
+    },
+    "success": {
+      "created": "Konfigurácia daní úspešne vytvorená",
+      "updated": "Konfigurácia daní úspešne aktualizovaná"
+    },
+    "errors": {
+      "saveFailed": "Nepodarilo sa uložiť zmeny:"
+    }
+  }
+}

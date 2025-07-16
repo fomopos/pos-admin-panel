@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { EyeIcon, EyeSlashIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Button from '../../components/ui/Button';
 import { cn } from '../../utils/cn';
 import { authService } from '../../auth/authService';
 
 const SignUp: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -19,11 +21,11 @@ const SignUp: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const passwordRequirements = [
-    { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
-    { label: 'One uppercase letter', test: (pwd: string) => /[A-Z]/.test(pwd) },
-    { label: 'One lowercase letter', test: (pwd: string) => /[a-z]/.test(pwd) },
-    { label: 'One number', test: (pwd: string) => /\d/.test(pwd) },
-    { label: 'One special character', test: (pwd: string) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) },
+    { label: t('auth.password.requirements.minLength'), test: (pwd: string) => pwd.length >= 8 },
+    { label: t('auth.password.requirements.uppercase'), test: (pwd: string) => /[A-Z]/.test(pwd) },
+    { label: t('auth.password.requirements.lowercase'), test: (pwd: string) => /[a-z]/.test(pwd) },
+    { label: t('auth.password.requirements.number'), test: (pwd: string) => /\d/.test(pwd) },
+    { label: t('auth.password.requirements.special'), test: (pwd: string) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) },
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,30 +40,30 @@ const SignUp: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required';
+      newErrors.name = t('auth.validation.nameRequired');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = t('auth.validation.nameMinLength');
     }
     
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('auth.validation.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('auth.validation.emailInvalid');
     }
     
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('auth.validation.passwordRequired');
     } else {
       const failedRequirements = passwordRequirements.filter(req => !req.test(formData.password));
       if (failedRequirements.length > 0) {
-        newErrors.password = 'Password does not meet requirements';
+        newErrors.password = t('auth.password.doesNotMeetRequirements');
       }
     }
     
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = t('auth.validation.confirmPasswordRequired');
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('auth.validation.passwordsNoMatch');
     }
     
     setErrors(newErrors);

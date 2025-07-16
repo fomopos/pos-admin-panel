@@ -84,33 +84,33 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.sales'), href: '/sales', icon: ShoppingCartIcon },
         { name: t('nav.products'), href: '/products', icon: CubeIcon },
         { name: t('nav.categories'), href: '/categories', icon: TagIcon },
-        { name: 'Discounts', href: '/discounts', icon: PercentBadgeIcon },
+        { name: t('nav.discounts'), href: '/discounts', icon: PercentBadgeIcon },
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
-        { name: 'Table Management', href: '/tables', icon: TableCellsIcon },
-        { name: 'Employee Shifts', href: '/employee-shifts', icon: UserGroupIcon },
+        { name: t('nav.tableManagement'), href: '/tables', icon: TableCellsIcon },
+        { name: t('nav.employeeShifts'), href: '/employee-shifts', icon: UserGroupIcon },
       ]
     },
     {
       category: 'REPORTS & ANALYTICS',
       items: [
-        { name: 'Sales Reports', href: '/reports/sales', icon: ChartBarIcon },
-        { name: 'Inventory Reports', href: '/reports/inventory', icon: RectangleStackIcon },
-        { name: 'Customer Analytics', href: '/reports/customers', icon: UsersIcon },
-        { name: 'Payment Analytics', href: '/payment-analytics', icon: CreditCardIcon },
-        { name: 'Financial Reports', href: '/reports/financial', icon: DocumentTextIcon },
+        { name: t('nav.salesReports'), href: '/reports/sales', icon: ChartBarIcon },
+        { name: t('nav.inventoryReports'), href: '/reports/inventory', icon: RectangleStackIcon },
+        { name: t('nav.customerAnalytics'), href: '/reports/customers', icon: UsersIcon },
+        { name: t('nav.paymentAnalytics'), href: '/payment-analytics', icon: CreditCardIcon },
+        { name: t('nav.financialReports'), href: '/reports/financial', icon: DocumentTextIcon },
       ]
     },
     {
       category: t('nav.settings'),
       items: [
-        { name: 'Store Settings', href: '/settings/store', icon: BuildingStorefrontIcon },
-        { name: 'Terminal Settings', href: '/settings/terminals', icon: ComputerDesktopIcon },
-        { name: 'Translation Management', href: '/settings/translations', icon: LanguageIcon },
-        ...(permissionsInitialized && canManageUsers() ? [{ name: 'User Management', href: '/settings/users', icon: UserIcon }] : []),
-        ...(permissionsInitialized && canManageRoles() ? [{ name: 'Role Management', href: '/settings/roles', icon: UserGroupIcon }] : []),
-        { name: 'Payment Settings', href: '/payment-settings', icon: CreditCardIcon },
-        { name: 'Tax Settings', href: '/tax-settings', icon: TableCellsIcon },
-        { name: 'System Settings', href: '/settings/system', icon: Cog6ToothIcon },
+        { name: t('nav.storeSettings'), href: '/settings/store', icon: BuildingStorefrontIcon },
+        { name: t('nav.terminalSettings'), href: '/settings/terminals', icon: ComputerDesktopIcon },
+        { name: t('nav.translationManagement'), href: '/settings/translations', icon: LanguageIcon },
+        ...(permissionsInitialized && canManageUsers() ? [{ name: t('nav.userManagement'), href: '/settings/users', icon: UserIcon }] : []),
+        ...(permissionsInitialized && canManageRoles() ? [{ name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon }] : []),
+        { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
+        { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },
+        { name: t('nav.systemSettings'), href: '/settings/system', icon: Cog6ToothIcon },
       ]
     }
   ], [permissionsInitialized, canManageUsers, canManageRoles, t]);
@@ -118,6 +118,10 @@ const DashboardLayout: React.FC = () => {
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'sk', name: 'Slovenčina', flag: '🇸🇰' },
   ];
 
   const handleSignOut = async () => {
@@ -242,7 +246,7 @@ const DashboardLayout: React.FC = () => {
                   <div className="flex items-center">
                     <BuildingOfficeIcon className="h-4 w-4 text-gray-500 mr-2" />
                     <span className="text-gray-900 font-medium">
-                      {currentTenant?.name || 'Select Organization'}
+                      {currentTenant?.name || t('common.selectOrganization')}
                     </span>
                   </div>
                   <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
@@ -277,7 +281,7 @@ const DashboardLayout: React.FC = () => {
                     <div className="flex items-center">
                       <BuildingStorefrontIcon className="h-4 w-4 text-gray-500 mr-2" />
                       <span className="text-gray-900 font-medium">
-                        {currentStore?.store_name || 'Select Store'}
+                        {currentStore?.store_name || t('common.selectStore')}
                       </span>
                     </div>
                     <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
@@ -320,15 +324,15 @@ const DashboardLayout: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
                           <div>
-                            <div className="font-medium">Create New Store</div>
-                            <div className="text-xs text-gray-500">Add another store location</div>
+                            <div className="font-medium">{t('common.createNewStore')}</div>
+                            <div className="text-xs text-gray-500">{t('common.addAnotherStore')}</div>
                           </div>
                         </div>
                       </button>
                       
                       {getCurrentTenantStores().length === 0 && (
                         <div className="px-3 py-2 text-sm text-gray-500">
-                          No stores available
+                          {t('common.noStoresAvailable')}
                         </div>
                       )}
                     </div>
@@ -436,7 +440,7 @@ const DashboardLayout: React.FC = () => {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder={t('common.searchPlaceholder')}
                     className="block w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   />
                 </div>
@@ -501,20 +505,20 @@ const DashboardLayout: React.FC = () => {
                       onClick={() => navigate('/profile')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Your Profile
+                      {t('common.yourProfile')}
                     </button>
                     <button
                       onClick={() => navigate('/settings')}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Settings
+                      {t('common.settings')}
                     </button>
                     <hr className="my-1 border-gray-200" />
                     <button
                       onClick={handleSignOut}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Sign out
+                      {t('common.signOut')}
                     </button>
                   </div>
                 )}

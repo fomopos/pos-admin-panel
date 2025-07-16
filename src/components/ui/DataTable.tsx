@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../utils/cn';
 import {
   Table,
@@ -49,7 +50,7 @@ function DataTable<T extends Record<string, any>>({
   columns,
   loading = false,
   searchable = true,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder,
   filterable = false,
   filters,
   pagination = true,
@@ -62,6 +63,7 @@ function DataTable<T extends Record<string, any>>({
   searchFields,
   defaultSort,
 }: DataTableProps<T>) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(pageSize);
@@ -174,8 +176,8 @@ function DataTable<T extends Record<string, any>>({
   if (loading) {
     return (
       <Loading
-        title="Loading Data"
-        description="Please wait while we fetch your data..."
+        title={t('common.loadingData')}
+        description={t('common.loadingDataDescription')}
         fullScreen={false}
         size="md"
       />
@@ -193,7 +195,7 @@ function DataTable<T extends Record<string, any>>({
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   type="text"
-                  placeholder={searchPlaceholder}
+                  placeholder={searchPlaceholder || t('common.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -238,11 +240,11 @@ function DataTable<T extends Record<string, any>>({
                 <TableCell colSpan={columns.length} className="text-center py-12">
                   {emptyState || (
                     <div className="text-slate-500">
-                      <div className="text-lg font-medium mb-1">No data found</div>
+                      <div className="text-lg font-medium mb-1">{t('common.noDataFound')}</div>
                       <div className="text-sm">
                         {searchTerm
-                          ? 'Try adjusting your search terms'
-                          : 'No items to display'}
+                          ? t('common.tryAdjustingSearch')
+                          : t('common.noItemsToDisplay')}
                       </div>
                     </div>
                   )}

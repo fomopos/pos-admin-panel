@@ -2,30 +2,83 @@ import React from 'react';
 import { CubeIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Widget, Button, Modal } from '../ui';
 import ProductModifierManager from './ProductModifierManager';
-import type { Product } from '../../services/types/product.types';
+import type { Product, ProductFormErrors } from '../../services/types/product.types';
 import type { GlobalModifierTemplate } from '../../services/modifier/globalModifier.service';
 
 interface ProductModifiersTabProps {
   formData: Partial<Product>;
   setFormData: React.Dispatch<React.SetStateAction<Partial<Product>>>;
+  errors?: ProductFormErrors;
   isLoading: boolean;
   globalTemplates: GlobalModifierTemplate[];
   showTemplatesBrowser: boolean;
   setShowTemplatesBrowser: React.Dispatch<React.SetStateAction<boolean>>;
   applyGlobalTemplate: (template: GlobalModifierTemplate) => void;
+  onValidateField?: (fieldName: string, value: any) => void;
 }
 
 export const ProductModifiersTab: React.FC<ProductModifiersTabProps> = ({
   formData,
   setFormData,
+  errors,
   isLoading,
   globalTemplates,
   showTemplatesBrowser,
   setShowTemplatesBrowser,
-  applyGlobalTemplate
+  applyGlobalTemplate,
+  onValidateField
 }) => {
+  // Check if there are any modifier-related errors
+  const hasModifierErrors = errors && Object.keys(errors).some(key => 
+    key === 'modifier_groups' || key.startsWith('modifier_groups.')
+  );
+
+  // Get modifier error details for better display
+  const getModifierErrorDetails = () => {
+    if (!errors) return [];
+    
+    return Object.entries(errors)
+      .filter(([field]) => field === 'modifier_groups' || field.startsWith('modifier_groups.'))
+      .map(([field, error]) => {
+        let displayField = field;
+        
+        // Parse field path for better display
+        if (field.startsWith('modifier_groups.')) {
+          const parts = field.split('.');
+          if (parts.length >= 3) {
+            const groupIndex = parseInt(parts[1]) + 1;
+            const groupField = parts[2];
+            
+            if (parts.length >= 5) {
+              // Modifier-specific field
+              const modifierIndex = parseInt(parts[3]) + 1;
+              const modifierField = parts[4];
+              displayField = `Group ${groupIndex}, Modifier ${modifierIndex} - ${modifierField}`;
+            } else {
+              // Group-specific field
+              displayField = `Group ${groupIndex} - ${groupField}`;
+            }
+          }
+        }
+        
+        return { field: displayField, error };
+      });
+  };
+
   return (
     <div className="space-y-6">
+      {/* Display modifier validation errors */}
+      {hasModifierErrors && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-red-900 mb-2">Modifier Validation Errors</h4>
+          <ul className="text-sm text-red-800 space-y-1">
+            {getModifierErrorDetails().map(({ field, error }, index) => (
+              <li key={index}>• <strong>{field}:</strong> {error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Modifiers Header Widget */}
       <Widget
         title="Product Modifiers"
@@ -72,7 +125,13 @@ export const ProductModifiersTab: React.FC<ProductModifiersTabProps> = ({
                 ...prev,
                 modifier_groups: modifierGroups
               }));
+              // Validate the entire modifier_groups when changed
+              if (onValidateField) {
+                onValidateField('modifier_groups', modifierGroups);
+              }
             }}
+            errors={errors}
+            onValidateField={onValidateField}
             disabled={isLoading}
           />
         </div>
@@ -85,6 +144,18 @@ export const ProductModifiersTab: React.FC<ProductModifiersTabProps> = ({
         variant="default"
       >
         <div className="space-y-4">
+          <div>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">Validation Rules</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
+              <li>• Group names are required and must be 2-100 characters</li>
+              <li>• Each group must have at least one modifier</li>
+              <li>• Modifier names are required and must be 2-100 characters</li>
+              <li>• Price deltas must be valid numbers (can be negative)</li>
+              <li>• Sort order must be positive integers</li>
+              <li>• Selection constraints must be logical (min ≤ max)</li>
+            </ul>
+          </div>
+          
           <div>
             <h4 className="text-sm font-medium text-gray-900 mb-2">Best Practices</h4>
             <ul className="text-sm text-gray-600 space-y-1">

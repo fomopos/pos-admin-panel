@@ -455,7 +455,7 @@ const Sales: React.FC = () => {
         <div className="p-8">
           <PageHeader
             title={t('nav.sales')}
-            description={`${currentStore ? `${currentStore.store_name} - ` : ''}Advanced sales management and analytics`}
+            description={`${currentStore ? `${currentStore.store_name} - ` : ''}${t('sales.description')}`}
           >
             <div className="flex items-center space-x-3">
               <Button
@@ -463,12 +463,12 @@ const Sales: React.FC = () => {
                 className="inline-flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
               >
                 <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                Export
+                {t('sales.export')}
                 <ChevronDownIcon className="ml-2 h-4 w-4" />
               </Button>
               <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
                 <PlusIcon className="h-4 w-4 mr-2" />
-                New Sale
+                {t('sales.newSale')}
               </Button>
             </div>
           </PageHeader>
@@ -478,7 +478,7 @@ const Sales: React.FC = () => {
             <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-6 border border-blue-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Total Sales</p>
+                  <p className="text-sm font-medium text-blue-600">{t('sales.stats.totalSales')}</p>
                   <p className="text-2xl font-bold text-blue-900">{salesStats.total}</p>
                 </div>
                 <ChartBarIcon className="h-8 w-8 text-blue-500" />
@@ -488,7 +488,7 @@ const Sales: React.FC = () => {
             <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl p-6 border border-green-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600">Completed</p>
+                  <p className="text-sm font-medium text-green-600">{t('sales.stats.completed')}</p>
                   <p className="text-2xl font-bold text-green-900">{salesStats.completed}</p>
                 </div>
                 <CheckCircleIcon className="h-8 w-8 text-green-500" />
@@ -498,7 +498,7 @@ const Sales: React.FC = () => {
             <div className="bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-6 border border-yellow-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-yellow-600">Pending</p>
+                  <p className="text-sm font-medium text-yellow-600">{t('sales.stats.pending')}</p>
                   <p className="text-2xl font-bold text-yellow-900">{salesStats.pending}</p>
                 </div>
                 <ClockIcon className="h-8 w-8 text-yellow-500" />
@@ -508,7 +508,7 @@ const Sales: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl p-6 border border-purple-200/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">Revenue</p>
+                  <p className="text-sm font-medium text-purple-600">{t('sales.stats.revenue')}</p>
                   <p className="text-2xl font-bold text-purple-900">{formatCurrency(salesStats.totalRevenue)}</p>
                 </div>
                 <CurrencyDollarIcon className="h-8 w-8 text-purple-500" />
@@ -528,7 +528,7 @@ const Sales: React.FC = () => {
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search sales, customers, cashiers..."
+                placeholder={t('sales.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/70 backdrop-blur-sm text-slate-900 placeholder:text-slate-500 transition-all"
@@ -541,12 +541,12 @@ const Sales: React.FC = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="h-12 w-full rounded-2xl border border-slate-200 bg-white/70 backdrop-blur-sm px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             >
-              <option value="all">All Status</option>
-              <option value="completed">Completed</option>
-              <option value="new">New</option>
-              <option value="suspended">Suspended</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="cancel_orphaned">Cancel Orphaned</option>
+              <option value="all">{t('sales.filters.allStatus')}</option>
+              <option value="completed">{t('sales.filters.completed')}</option>
+              <option value="new">{t('sales.filters.new')}</option>
+              <option value="suspended">{t('sales.filters.suspended')}</option>
+              <option value="cancelled">{t('sales.filters.cancelled')}</option>
+              <option value="cancel_orphaned">{t('sales.filters.cancelOrphaned')}</option>
             </select>
             
             {/* Date Filter */}

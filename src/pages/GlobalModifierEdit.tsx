@@ -9,6 +9,7 @@ import { useTenantStore } from '../tenants/tenantStore';
 import { PageHeader, Button, ConfirmDialog, Loading, InputTextField } from '../components/ui';
 import { GlobalModifierManager } from '../components/modifier';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 import { globalModifierService, type GlobalModifierTemplate } from '../services/modifier/globalModifier.service';
 
 const GlobalModifierEdit: React.FC = () => {
@@ -16,6 +17,7 @@ const GlobalModifierEdit: React.FC = () => {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const { currentStore, currentTenant } = useTenantStore();
+  const { showError, showSuccess, showValidationError } = useError();
   
   const [formData, setFormData] = useState<Partial<GlobalModifierTemplate>>({
     name: '',
@@ -77,17 +79,38 @@ const GlobalModifierEdit: React.FC = () => {
       newErrors.description = 'Description must be less than 500 characters';
     }
 
-    // Validate modifier data
+    // Validate modifier data - only validate non-empty modifiers
     if (formData.modifiers && formData.modifiers.length > 0) {
-      // Basic validation for modifiers
+      // Filter out completely empty modifiers before validation
+      const nonEmptyModifiers = formData.modifiers.filter(modifier => {
+        // A modifier is considered "empty" if it has no name, no price change, and no settings
+        return modifier.name?.trim() || 
+               (modifier.price_delta && modifier.price_delta !== 0) || 
+               modifier.default_selected;
+      });
+      
+      // Validate each non-empty modifier
       for (let i = 0; i < formData.modifiers.length; i++) {
         const modifier = formData.modifiers[i];
-        if (!modifier.name?.trim()) {
-          newErrors[`modifier_${i}_name`] = `Modifier ${i + 1} name is required`;
+        
+        // Check if this modifier should be validated (not completely empty)
+        const shouldValidate = modifier.name?.trim() || 
+                              (modifier.price_delta && modifier.price_delta !== 0) || 
+                              modifier.default_selected;
+        
+        if (shouldValidate) {
+          if (!modifier.name?.trim()) {
+            newErrors[`modifiers.${i}.name`] = `Modifier ${i + 1} name is required`;
+          }
+          if (typeof modifier.price_delta !== 'number') {
+            newErrors[`modifiers.${i}.price_delta`] = `Modifier ${i + 1} price must be a number`;
+          }
         }
-        if (typeof modifier.price_delta !== 'number') {
-          newErrors[`modifier_${i}_price`] = `Modifier ${i + 1} price must be a number`;
-        }
+      }
+      
+      // Require at least one modifier if modifiers array exists and has items
+      if (nonEmptyModifiers.length === 0 && formData.modifiers.length > 0) {
+        newErrors.modifiers = 'At least one modifier is required, or remove all empty modifiers';
       }
     }
 
@@ -115,6 +138,40 @@ const GlobalModifierEdit: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      // Show validation error feedback to user
+      const errorMessages = Object.entries(errors).map(([field, error]) => {
+        // Convert field names to user-friendly names
+        const fieldNames: Record<string, string> = {
+          'name': 'Template Name',
+          'description': 'Description',
+          'modifiers': 'Modifiers'
+        };
+        
+        // Handle modifier field names
+        let friendlyFieldName = fieldNames[field];
+        if (!friendlyFieldName && field.startsWith('modifiers.')) {
+          const parts = field.split('.');
+          if (parts.length >= 3) {
+            const modifierIndex = parseInt(parts[1]) + 1;
+            const modifierField = parts[2];
+            if (modifierField === 'name') {
+              friendlyFieldName = `Modifier ${modifierIndex} Name`;
+            } else if (modifierField === 'price_delta') {
+              friendlyFieldName = `Modifier ${modifierIndex} Price`;
+            }
+          }
+        }
+        
+        friendlyFieldName = friendlyFieldName || field;
+        return `${friendlyFieldName}: ${error}`;
+      });
+      
+      showValidationError(
+        `Please fix the following errors: ${errorMessages.join('; ')}`,
+        'global_modifier_form_validation',
+        null,
+        'required'
+      );
       return;
     }
 
@@ -156,6 +213,7 @@ const GlobalModifierEdit: React.FC = () => {
           }
         );
         
+        showSuccess(`Template "${formData.name}" updated successfully`);
         console.log('Template updated successfully');
       } else {
         // Create new template
@@ -170,13 +228,14 @@ const GlobalModifierEdit: React.FC = () => {
           createRequest
         );
         
+        showSuccess(`Template "${formData.name}" created successfully`);
         console.log('Template created successfully');
       }
       
       navigate('/global-modifiers');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving template:', error);
-      // Handle error - maybe show a toast notification
+      showError(error?.message || `Failed to ${isEditing ? 'update' : 'create'} template`);
     } finally {
       setIsLoading(false);
     }
@@ -254,12 +313,68 @@ const GlobalModifierEdit: React.FC = () => {
                 <span>Delete</span>
               </Button>
             )}
+            
+            <Button
+              type="submit"
+              form="modifier-template-form"
+              disabled={isLoading}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <CheckIcon className="h-4 w-4" />
+                  <span>{isEditing ? 'Update Template' : 'Create Template'}</span>
+                </>
+              )}
+            </Button>
           </div>
         </PageHeader>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <form id="modifier-template-form" onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-3 sm:px-6 py-4 sm:py-8">
+            {/* Validation Error Display */}
+            {Object.keys(errors).length > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <h4 className="text-sm font-medium text-red-900 mb-2">Please fix the following errors:</h4>
+                <ul className="text-sm text-red-800 space-y-1">
+                  {Object.entries(errors).map(([field, error]) => {
+                    // Convert field names to user-friendly names
+                    const fieldNames: Record<string, string> = {
+                      'name': 'Template Name',
+                      'description': 'Description',
+                      'modifiers': 'Modifiers'
+                    };
+                    
+                    // Handle modifier field names
+                    let friendlyFieldName = fieldNames[field];
+                    if (!friendlyFieldName && field.startsWith('modifiers.')) {
+                      const parts = field.split('.');
+                      if (parts.length >= 3) {
+                        const modifierIndex = parseInt(parts[1]) + 1;
+                        const modifierField = parts[2];
+                        if (modifierField === 'name') {
+                          friendlyFieldName = `Modifier ${modifierIndex} Name`;
+                        } else if (modifierField === 'price_delta') {
+                          friendlyFieldName = `Modifier ${modifierIndex} Price`;
+                        }
+                      }
+                    }
+                    
+                    friendlyFieldName = friendlyFieldName || field;
+                    return (
+                      <li key={field}>• <strong>{friendlyFieldName}:</strong> {error}</li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+            
             {/* Basic Information */}
             <div className="space-y-4 sm:space-y-6 mb-8">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900">Template Information</h2>
@@ -341,8 +456,21 @@ const GlobalModifierEdit: React.FC = () => {
                     price_delta: template.price_delta,
                     modifiers: template.modifiers
                   }));
+                  // Clear any existing errors when modifiers change
+                  // This prevents validation errors from showing when adding/removing modifiers
+                  setErrors(prev => {
+                    const newErrors = { ...prev };
+                    // Remove any modifier-related errors
+                    Object.keys(newErrors).forEach(key => {
+                      if (key.startsWith('modifiers.') || key === 'modifiers') {
+                        delete newErrors[key];
+                      }
+                    });
+                    return newErrors;
+                  });
                 }}
                 disabled={isLoading}
+                errors={errors}
               />
 
               {/* Template Guidelines */}
@@ -357,35 +485,6 @@ const GlobalModifierEdit: React.FC = () => {
                 </ul>
               </div>
             </div>
-          </div>
-
-          {/* Footer Actions */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBack}
-            >
-              Cancel
-            </Button>
-            
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="h-4 w-4" />
-                  <span>{isEditing ? 'Update Template' : 'Create Template'}</span>
-                </>
-              )}
-            </Button>
           </div>
         </form>
       </div>

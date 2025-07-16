@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -62,8 +63,8 @@ const AVAILABILITY_OPTIONS = [
 const TENDER_TEMPLATES = [
   {
     id: 'cash_aed',
-    name: 'Cash (AED)',
-    description: 'Cash payments in AED',
+    name: 'tenderEdit.templates.cash.name',
+    description: 'tenderEdit.templates.cash.description',
     type_code: 'currency',
     currency_id: 'aed',
     icon: BanknotesIcon,
@@ -86,8 +87,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'card_visa',
-    name: 'Visa Card',
-    description: 'Visa credit/debit card',
+    name: 'tenderEdit.templates.visa.name',
+    description: 'tenderEdit.templates.visa.description',
     type_code: 'card',
     currency_id: 'aed',
     icon: CreditCardIcon,
@@ -96,8 +97,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'card_mastercard',
-    name: 'Mastercard',
-    description: 'Mastercard credit/debit card',
+    name: 'tenderEdit.templates.mastercard.name',
+    description: 'tenderEdit.templates.mastercard.description',
     type_code: 'card',
     currency_id: 'aed',
     icon: CreditCardIcon,
@@ -106,8 +107,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'gift_card',
-    name: 'Gift Card',
-    description: 'Store gift cards',
+    name: 'tenderEdit.templates.giftCard.name',
+    description: 'tenderEdit.templates.giftCard.description',
     type_code: 'giftcard',
     currency_id: 'aed',
     icon: TagIcon,
@@ -116,8 +117,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'loyalty_points',
-    name: 'Loyalty Points',
-    description: 'Customer loyalty points',
+    name: 'tenderEdit.templates.loyaltyPoints.name',
+    description: 'tenderEdit.templates.loyaltyPoints.description',
     type_code: 'loyalty',
     currency_id: 'aed',
     icon: SparklesIcon,
@@ -126,8 +127,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'voucher',
-    name: 'Voucher',
-    description: 'Store vouchers and coupons',
+    name: 'tenderEdit.templates.voucher.name',
+    description: 'tenderEdit.templates.voucher.description',
     type_code: 'voucher',
     currency_id: 'aed',
     icon: TagIcon,
@@ -138,21 +139,22 @@ const TENDER_TEMPLATES = [
 
 // Dropdown options for select fields
 const TENDER_TYPE_OPTIONS = [
-  { id: 'currency', label: 'Currency', description: 'Cash payments and currency-based tenders' },
-  { id: 'card', label: 'Card', description: 'Credit and debit card payments' },
-  { id: 'giftcard', label: 'Gift Card', description: 'Store gift cards and vouchers' },
-  { id: 'loyalty', label: 'Loyalty Points', description: 'Customer loyalty point redemption' },
-  { id: 'voucher', label: 'Voucher', description: 'Store vouchers and coupons' }
+  { id: 'currency', label: 'tenderEdit.tenderTypes.currency.label', description: 'tenderEdit.tenderTypes.currency.description' },
+  { id: 'card', label: 'tenderEdit.tenderTypes.card.label', description: 'tenderEdit.tenderTypes.card.description' },
+  { id: 'giftcard', label: 'tenderEdit.tenderTypes.giftcard.label', description: 'tenderEdit.tenderTypes.giftcard.description' },
+  { id: 'loyalty', label: 'tenderEdit.tenderTypes.loyalty.label', description: 'tenderEdit.tenderTypes.loyalty.description' },
+  { id: 'voucher', label: 'tenderEdit.tenderTypes.voucher.label', description: 'tenderEdit.tenderTypes.voucher.description' }
 ];
 
 const CURRENCY_OPTIONS = [
-  { id: 'aed', label: 'AED', description: 'UAE Dirham' },
-  { id: 'usd', label: 'USD', description: 'US Dollar' },
-  { id: 'eur', label: 'EUR', description: 'Euro' },
-  { id: 'gbp', label: 'GBP', description: 'British Pound' }
+  { id: 'aed', label: 'AED', description: 'tenderEdit.currencies.aed' },
+  { id: 'usd', label: 'USD', description: 'tenderEdit.currencies.usd' },
+  { id: 'eur', label: 'EUR', description: 'tenderEdit.currencies.eur' },
+  { id: 'gbp', label: 'GBP', description: 'tenderEdit.currencies.gbp' }
 ];
 
 const TenderEditPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
@@ -362,19 +364,19 @@ const TenderEditPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.tender_id.trim()) {
-      newErrors.tender_id = 'Tender ID is required';
+      newErrors.tender_id = t('tenderEdit.form.errors.tenderIdRequired');
     }
     
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = t('tenderEdit.form.errors.descriptionRequired');
     }
     
     if (formData.tender_id.length > 50) {
-      newErrors.tender_id = 'Tender ID must be less than 50 characters';
+      newErrors.tender_id = t('tenderEdit.form.errors.tenderIdTooLong');
     }
     
     if (!formData.availability || formData.availability.length === 0) {
-      newErrors.availability = 'At least one availability option is required';
+      newErrors.availability = t('tenderEdit.form.errors.availabilityRequired');
     }
     
     setErrors(newErrors);
@@ -399,20 +401,20 @@ const TenderEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
-        setSuccessMessage('Tender updated successfully!');
+        setSuccessMessage(t('tenderEdit.success.updated'));
       } else {
         await tenderApiService.createTender(tenderData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         }); 
-        setSuccessMessage('Tender created successfully!');
+        setSuccessMessage(t('tenderEdit.success.created'));
         setTimeout(() => navigate('/payment-settings'), 1500);
       }
       
       setHasChanges(false);
     } catch (error: any) {
       console.error('Failed to save tender:', error);
-      setErrors({ submit: error.message || 'Failed to save tender. Please try again.' });
+      setErrors({ submit: error.message || t('tenderEdit.form.errors.saveFailed') });
     } finally {
       setIsSaving(false);
     }
@@ -520,7 +522,7 @@ const TenderEditPage: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <PageHeader
-        title={isEditing ? 'Edit Tender' : 'Create New Tender'}
+        title={isEditing ? t('tenderEdit.title.edit') : t('tenderEdit.title.create')}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -529,7 +531,7 @@ const TenderEditPage: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <ArrowLeftIcon className="h-4 w-4" />
-            <span>Back to Payment Settings</span>
+            <span>{t('tenderEdit.backToPayments')}</span>
           </Button>
           
           {isEditing && (
@@ -539,7 +541,7 @@ const TenderEditPage: React.FC = () => {
               className="text-red-600 border-red-300 hover:bg-red-50"
             >
               <TrashIcon className="h-4 w-4 mr-2" />
-              Delete
+              {t('tenderEdit.delete')}
             </Button>
           )}
         </div>
@@ -554,8 +556,8 @@ const TenderEditPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
-                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
+                <h3 className="text-sm font-semibold text-amber-900">{t('tenderEdit.unsavedChanges.title')}</h3>
+                <p className="text-xs text-amber-700 mt-1">{t('tenderEdit.unsavedChanges.description')}</p>
               </div>
             </div>
             <div className="flex items-center justify-end space-x-3">
@@ -565,7 +567,7 @@ const TenderEditPage: React.FC = () => {
                 size="sm"
                 className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
               >
-                <span>Discard Changes</span>
+                <span>{t('tenderEdit.unsavedChanges.discard')}</span>
               </Button>
               <Button
                 onClick={saveAllChanges}
@@ -576,12 +578,12 @@ const TenderEditPage: React.FC = () => {
                 {isSaving ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Saving...</span>
+                    <span>{t('tenderEdit.saving')}</span>
                   </>
                 ) : (
                   <>
                     <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>Save Changes</span>
+                    <span>{t('tenderEdit.unsavedChanges.save')}</span>
                   </>
                 )}
               </Button>

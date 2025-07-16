@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
         title={t('dashboard.title')}
         description={
           <div className="flex items-center space-x-2">
-            <span>Comprehensive overview of your POS system performance and key metrics</span>
+            <span>{t('dashboard.description')}</span>
             <span className="text-gray-400">•</span>
             <VersionDisplay style="subtle" size="sm" />
           </div>
@@ -98,18 +98,18 @@ const Dashboard: React.FC = () => {
             className="inline-flex items-center px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
           >
             <ArrowPathIcon className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('dashboard.refresh')}
           </button>
           <select
             value={selectedPeriod}
             onChange={(e) => handlePeriodChange(e.target.value as typeof selectedPeriod)}
             className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
           >
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="year">This Year</option>
+            <option value="today">{t('dashboard.periods.today')}</option>
+            <option value="week">{t('dashboard.periods.thisWeek')}</option>
+            <option value="month">{t('dashboard.periods.thisMonth')}</option>
+            <option value="quarter">{t('dashboard.periods.thisQuarter')}</option>
+            <option value="year">{t('dashboard.periods.thisYear')}</option>
           </select>
         </div>
       </PageHeader>
@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
         <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
           <div className="flex items-center mb-3">
             <BellIcon className="w-5 h-5 text-amber-600 mr-2" />
-            <h3 className="text-sm font-semibold text-amber-800">Active Alerts</h3>
+            <h3 className="text-sm font-semibold text-amber-800">{t('dashboard.alerts.active')}</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {kpiData.alerts.slice(0, 2).map((alert) => (
@@ -140,7 +140,7 @@ const Dashboard: React.FC = () => {
       {/* Primary KPIs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
-          title="Total Sales"
+          title={t('dashboard.kpi.totalSales')}
           value={kpiData?.sales_revenue.total_sales.gross_sales || 0}
           format="currency"
           change={getRevenueGrowth().value}
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
           loading={loading}
         />
         <KPICard
-          title="Total Orders"
+          title={t('dashboard.kpi.totalOrders')}
           value={kpiData?.operational_stats.orders_per_day[0]?.order_count || 0}
           change={getOrderGrowth().value}
           trend={getOrderGrowth().trend}
@@ -161,7 +161,7 @@ const Dashboard: React.FC = () => {
           loading={loading}
         />
         <KPICard
-          title="Average Order Value"
+          title={t('dashboard.kpi.averageOrderValue')}
           value={kpiData?.sales_revenue.average_order_value.current_period || 0}
           format="currency"
           change={kpiData?.sales_revenue.average_order_value.growth_percentage || 0}
@@ -172,10 +172,10 @@ const Dashboard: React.FC = () => {
           loading={loading}
         />
         <KPICard
-          title="Customer Satisfaction"
+          title={t('dashboard.kpi.customerSatisfaction')}
           value={kpiData?.customer_loyalty.customer_feedback.average_rating || 0}
           format="rating"
-          subtitle={`${kpiData?.customer_loyalty.customer_feedback.total_reviews || 0} reviews`}
+          subtitle={`${kpiData?.customer_loyalty.customer_feedback.total_reviews || 0} ${t('dashboard.kpi.reviews')}`}
           icon={StarIcon}
           iconBg="bg-yellow-100"
           iconColor="text-yellow-600"
@@ -185,7 +185,7 @@ const Dashboard: React.FC = () => {
 
       {/* Sales & Revenue Section */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">📊 Sales & Revenue</h2>
+        <h2 className="text-2xl font-bold text-slate-900">📊 {t('dashboard.sections.salesRevenue')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <KPICard
             title="Net Sales"
@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
 
       {/* Operational Stats Section */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">⏱️ Operational Performance</h2>
+        <h2 className="text-2xl font-bold text-slate-900">⏱️ {t('dashboard.sections.operationalPerformance')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
             title="Avg Preparation Time"
@@ -881,7 +881,7 @@ const Dashboard: React.FC = () => {
 
       {/* Inventory & Stock Section */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">🍽️ Inventory & Stock</h2>
+        <h2 className="text-2xl font-bold text-slate-900">🍽️ {t('dashboard.sections.inventoryStock')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
             title="Low Stock Items"
@@ -980,7 +980,7 @@ const Dashboard: React.FC = () => {
 
       {/* Financial Performance Section */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">📈 Financial Performance</h2>
+        <h2 className="text-2xl font-bold text-slate-900">📈 {t('dashboard.sections.financialPerformance')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <KPICard
             title="Gross Profit Margin"

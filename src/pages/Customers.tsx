@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -42,6 +43,7 @@ interface Customer {
 }
 
 const Customers: React.FC = () => {
+  const { t } = useTranslation();
   const { currentTenant, currentStore } = useTenantStore();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -363,7 +365,7 @@ const Customers: React.FC = () => {
           ? 'bg-green-100 text-green-800' 
           : 'bg-red-100 text-red-800'
       }`}>
-        {status === 'active' ? 'Active' : 'Inactive'}
+        {status === 'active' ? t('customers.status.active') : t('customers.status.inactive')}
       </span>
     );
   };
@@ -394,8 +396,8 @@ const Customers: React.FC = () => {
   if (isLoading) {
     return (
       <Loading
-        title="Loading Customers"
-        description="Please wait while we fetch your customer data..."
+        title={t('customers.loading.title')}
+        description={t('customers.loading.description')}
         fullScreen={false}
         size="md"
       />
@@ -406,20 +408,20 @@ const Customers: React.FC = () => {
     <div className="space-y-8">
       {/* Header */}
       <PageHeader
-        title="Customers"
-        description={`${currentStore ? `${currentStore.store_name} - ` : ''}Manage your customer database`}
+        title={t('customers.title')}
+        description={`${currentStore ? `${currentStore.store_name} - ` : ''}${t('customers.description')}`}
       >
         <div className="flex items-center space-x-3">
           <Button
             variant="outline"
             className="inline-flex items-center"
           >
-            Export
+            {t('customers.export')}
             <ChevronDownIcon className="ml-2 h-4 w-4" />
           </Button>
           <Button onClick={() => setShowForm(true)}>
             <PlusIcon className="h-4 w-4 mr-2" />
-            Add Customer
+            {t('customers.addCustomer')}
           </Button>
         </div>
       </PageHeader>
@@ -432,7 +434,7 @@ const Customers: React.FC = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-2xl mb-4">
                 <UserIcon className="w-6 h-6 text-blue-600" />
               </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Total Customers</p>
+              <p className="text-sm font-medium text-slate-500 mb-1">{t('customers.stats.totalCustomers')}</p>
               <p className="text-3xl font-bold text-slate-900">{customers.length}</p>
             </div>
           </div>
@@ -444,7 +446,7 @@ const Customers: React.FC = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-2xl mb-4">
                 <span className="text-green-600 font-semibold text-lg">✓</span>
               </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Active</p>
+              <p className="text-sm font-medium text-slate-500 mb-1">{t('customers.stats.active')}</p>
               <p className="text-3xl font-bold text-slate-900">{activeCustomers.length}</p>
             </div>
           </div>
@@ -456,7 +458,7 @@ const Customers: React.FC = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-2xl mb-4">
                 <CurrencyDollarIcon className="w-6 h-6 text-green-600" />
               </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Total Revenue</p>
+              <p className="text-sm font-medium text-slate-500 mb-1">{t('customers.stats.totalRevenue')}</p>
               <p className="text-3xl font-bold text-slate-900">
                 {formatCurrency(totalRevenue)}
               </p>
@@ -470,7 +472,7 @@ const Customers: React.FC = () => {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-2xl mb-4">
                 <span className="text-purple-600 font-semibold text-lg">Ø</span>
               </div>
-              <p className="text-sm font-medium text-slate-500 mb-1">Avg. Spent</p>
+              <p className="text-sm font-medium text-slate-500 mb-1">{t('customers.stats.avgSpent')}</p>
               <p className="text-3xl font-bold text-slate-900">
                 {formatCurrency(averageSpent)}
               </p>
@@ -486,7 +488,7 @@ const Customers: React.FC = () => {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search customers..."
+              placeholder={t('customers.search.placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900 placeholder:text-slate-500"
@@ -498,14 +500,14 @@ const Customers: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="all">{t('customers.filters.allStatus')}</option>
+            <option value="active">{t('customers.filters.active')}</option>
+            <option value="inactive">{t('customers.filters.inactive')}</option>
           </select>
           
           <button className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
             <CalendarDaysIcon className="h-4 w-4 mr-2" />
-            Export
+            {t('customers.export')}
           </button>
         </div>
       </Card>
@@ -513,9 +515,9 @@ const Customers: React.FC = () => {
       {/* Customers Table */}
       <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
         <div className="mb-6">
-          <h3 className="text-xl font-semibold text-slate-900 mb-1">Customer Database</h3>
+          <h3 className="text-xl font-semibold text-slate-900 mb-1">{t('customers.table.title')}</h3>
           <p className="text-sm text-slate-500">
-            {filteredCustomers.length} customers found
+            {filteredCustomers.length} {t('customers.table.customersFound')}
           </p>
         </div>
         <div className="overflow-hidden">
@@ -523,25 +525,25 @@ const Customers: React.FC = () => {
             <thead>
               <tr className="border-b border-slate-200">
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Customer
+                  {t('customers.table.customer')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Contact
+                  {t('customers.table.contact')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Location
+                  {t('customers.table.location')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Purchases
+                  {t('customers.table.purchases')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Total Spent
+                  {t('customers.table.totalSpent')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Status
+                  {t('customers.table.status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Actions
+                  {t('customers.table.actions')}
                 </th>
               </tr>
             </thead>
@@ -627,17 +629,17 @@ const Customers: React.FC = () => {
       {filteredCustomers.length === 0 && (
         <Card className="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-sm">
           <UserIcon className="mx-auto h-12 w-12 text-slate-400" />
-          <h3 className="mt-4 text-lg font-medium text-slate-900">No customers found</h3>
+          <h3 className="mt-4 text-lg font-medium text-slate-900">{t('customers.empty.title')}</h3>
           <p className="mt-2 text-sm text-slate-500">
             {searchTerm || statusFilter !== 'all' 
-              ? 'Try adjusting your filters to see more results.'
-              : 'Get started by adding your first customer.'
+              ? t('customers.empty.tryAdjusting')
+              : t('customers.empty.getStarted')
             }
           </p>
           {!searchTerm && statusFilter === 'all' && (
             <Button className="mt-4" onClick={() => setShowForm(true)}>
               <PlusIcon className="h-4 w-4 mr-2" />
-              Add Customer
+              {t('customers.addCustomer')}
             </Button>
           )}
         </Card>

@@ -1,0 +1,987 @@
+{
+  "categories": {
+    "title": "Categorías",
+    "edit": "Editar",
+    "subtitle": "Gestiona las categorías de tus productos",
+    "subtitleWithCount": "Mostrando {{count}} categorías",
+    "newCategory": "Nueva Categoría",
+    "editCategory": "Editar Categoría",
+    "newDescription": "Crea una nueva categoría para organizar tus productos",
+    "editDescription": "Edita los detalles de esta categoría",
+    "fields": {
+        "name": "Nombre de Categoría",
+        "description": "Descripción",
+        "parentCategory": "Categoría Padre",
+        "sortOrder": "Orden de Clasificación",
+        "icon": "Icono de Categoría",
+        "image": "Imagen de Categoría",
+        "tags": "Etiquetas",
+        "isActive": "Estado Activo",
+        "displayOnMain": "Mostrar en Pantalla Principal",
+        "quickIcons": "Selección Rápida de Iconos"
+      },
+    "create": {
+      "title": "Crear Nueva Categoría",
+      "subtitle": "Agrega una nueva categoría para organizar tus productos",
+      "button": "Agregar Categoría",
+      "creating": "Creando...",
+      "create": "Crear Categoría",
+      "newCategory": "Crear Nueva Categoría",
+      "newCategoryDescription": "Organiza tus productos con una categoría personalizada",
+      "features": {
+        "mobile": "Listo para Móvil",
+        "tags": "Etiquetas Inteligentes",
+        "hierarchy": "Jerárquico"
+      },
+      "tabs": {
+        "basic": "Información Básica",
+        "media": "Medios e Iconos",
+        "settings": "Configuración",
+        "preview": "Vista Previa"
+      },
+      "fields": {
+        "name": "Nombre de Categoría",
+        "description": "Descripción",
+        "parentCategory": "Categoría Padre",
+        "sortOrder": "Orden de Clasificación",
+        "icon": "Icono de Categoría",
+        "image": "Imagen de Categoría",
+        "tags": "Etiquetas",
+        "isActive": "Estado Activo",
+        "displayOnMain": "Mostrar en Pantalla Principal",
+        "quickIcons": "Selección Rápida de Iconos"
+      },
+      "placeholders": {
+        "name": "Ingresa el nombre de la categoría",
+        "description": "Describe qué productos pertenecen a esta categoría",
+        "addTag": "Agregar una etiqueta"
+      },
+      "descriptions": {
+        "isActive": "Alternar para habilitar o deshabilitar esta categoría",
+        "displayOnMain": "Mostrar esta categoría de manera prominente en la pantalla principal"
+      },
+      "selectParent": "Seleccionar Categoría Padre",
+      "noParent": "Sin Padre (Nivel Superior)",
+      "templates": {
+        "title": "Elige una Plantilla",
+        "skip": "Omitir Plantillas"
+      },
+      "media": {
+        "dragIcon": "Arrastra y suelta una imagen de icono aquí",
+        "dragImage": "Arrastra y suelta una imagen de categoría aquí",
+        "changeIcon": "Haz clic para cambiar el icono",
+        "changeImage": "Haz clic para cambiar la imagen",
+        "iconFormat": "PNG, JPG hasta 2MB",
+        "imageFormat": "PNG, JPG hasta 5MB"
+      },
+      "preview": {
+        "title": "Vista Previa de Categoría",
+        "button": "Vista Previa",
+        "sampleName": "Categoría de Muestra",
+        "mainScreen": "Pantalla Principal",
+        "tags": "etiquetas"
+      }
+    },
+    "search": {
+      "placeholder": "Buscar categorías..."
+    },
+    "filters": {
+      "all": "Todas las Categorías",
+      "active": "Activas",
+      "inactive": "Inactivas",
+      "mainScreen": "Pantalla Principal",
+      "withSubcategories": "Con Subcategorías"
+    },
+    "card": {
+      "order": "Orden",
+      "mainScreen": "Pantalla Principal",
+      "subcategories": "subcategorías",
+      "subcategoriesLabel": "Subcategorías"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "delete": {
+      "confirm": "¿Estás seguro de que quieres eliminar '{{name}}'?"
+    },
+    "empty": {
+      "noCategories": "Aún no hay categorías",
+      "noCategoriesDescription": "Comienza a organizar tus productos creando tu primera categoría",
+      "noResults": "No se encontraron categorías",
+      "noResultsDescription": "Intenta ajustar tus criterios de búsqueda o filtro"
+    },
+    "stats": {
+      "total": "Total de Categorías",
+      "active": "Categorías Activas",
+      "inactive": "Categorías Inactivas",
+      "withProducts": "Categorías con Productos"
+    },
+    "quickCreate": "Creación Rápida",
+    "actions": {
+      "import": "Importar Categorías",
+      "export": "Exportar Categorías"
+    },
+    "bulkImport": {
+      "title": "Importación Masiva de Categorías",
+      "description": "Importa múltiples categorías desde un archivo CSV"
+    },
+    "results": {
+      "showing": "Mostrando {{count}} de {{total}} categorías"
+    },
+    "errors": {
+      "loadFailed": "Error al cargar categorías",
+      "deleteFailed": "Error al eliminar categoría",
+      "importFailed": "Error al importar categorías",
+      "exportFailed": "Error al exportar categorías",
+      "noTenantStore": "Ninguna Tienda Seleccionada",
+      "noTenantStoreDescription": "Por favor selecciona una tienda para gestionar categorías"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "Información Básica",
+      "media": "Medios e Iconos",
+      "settings": "Configuración"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "refresh": "Actualizar",
+    "filters": "Filtros",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "goToDashboard": "Ir al Panel",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "categories": "Categorías",
+    "saving": "Guardando...",
+    "confirm": "Confirmar",
+    "confirmAction": "Confirmar Acción",
+    "areYouSure": "¿Estás seguro de que quieres continuar?",
+    "deleteConfirmation": "Confirmación de Eliminación",
+    "discardChanges": "Descartar Cambios",
+    "discardChangesMessage": "¿Estás seguro de que quieres descartar todos los cambios no guardados? Esta acción no se puede deshacer.",
+    "discardChangesButton": "Descartar Cambios",
+    "keepEditing": "Continuar Editando",
+    "searchPlaceholder": "Buscar...",
+    "selectOption": "Seleccionar una opción",
+    "noOptionsAvailable": "No hay opciones disponibles",
+    "clearSearch": "Limpiar búsqueda",
+    "none": "Ninguno",
+    "selectAll": "Seleccionar Todo",
+    "clearAll": "Limpiar Todo",
+    "loadingData": "Cargando Datos",
+    "loadingDataDescription": "Por favor espera mientras obtenemos tus datos...",
+    "noDataFound": "No se encontraron datos",
+    "tryAdjustingSearch": "Intenta ajustar tus términos de búsqueda",
+    "noItemsToDisplay": "No hay elementos para mostrar",
+    "selectOrganization": "Seleccionar Organización",
+    "selectStore": "Seleccionar Tienda",
+    "createNewStore": "Crear Nueva Tienda",
+    "addAnotherStore": "Agregar otra ubicación de tienda",
+    "noStoresAvailable": "No hay tiendas disponibles",
+    "yourProfile": "Tu Perfil",
+    "settings": "Configuración",
+    "signOut": "Cerrar Sesión",
+    "clearSearch": "Limpiar búsqueda",
+    "gridView": "Vista de Cuadrícula",
+    "listView": "Vista de Lista",
+    "all": "Todos",
+    "status": "Estado"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "products": "Productos",
+    "orders": "Pedidos",
+    "customers": "Clientes",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "categories": "Categorías",
+    "sales": "Ventas",
+    "discounts": "Descuentos",
+    "tableManagement": "Gestión de Mesas",
+    "employeeShifts": "Turnos de Empleados",
+    "salesReports": "Reportes de Ventas",
+    "inventoryReports": "Reportes de Inventario",
+    "customerAnalytics": "Análisis de Clientes",
+    "paymentAnalytics": "Análisis de Pagos",
+    "financialReports": "Reportes Financieros",
+    "storeSettings": "Configuración de Tienda",
+    "terminalSettings": "Configuración de Terminal",
+    "translationManagement": "Gestión de Traducciones",
+    "userManagement": "Gestión de Usuarios",
+    "roleManagement": "Gestión de Roles",
+    "paymentSettings": "Configuración de Pagos",
+    "taxSettings": "Configuración de Impuestos",
+    "systemSettings": "Configuración del Sistema"
+  },
+  "customers": {
+    "title": "Clientes",
+    "description": "Gestiona tu base de datos de clientes",
+    "addCustomer": "Agregar Cliente",
+    "export": "Exportar",
+    "loading": {
+      "title": "Cargando Clientes",
+      "description": "Por favor espera mientras obtenemos tus datos de clientes..."
+    },
+    "stats": {
+      "totalCustomers": "Total de Clientes",
+      "active": "Activos",
+      "totalRevenue": "Ingresos Totales",
+      "avgSpent": "Promedio Gastado"
+    },
+    "search": {
+      "placeholder": "Buscar clientes..."
+    },
+    "filters": {
+      "allStatus": "Todos los Estados",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "table": {
+      "title": "Base de Datos de Clientes",
+      "customersFound": "clientes encontrados",
+      "customer": "Cliente",
+      "contact": "Contacto",
+      "location": "Ubicación",
+      "purchases": "Compras",
+      "totalSpent": "Total Gastado",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "empty": {
+      "title": "No se encontraron clientes",
+      "tryAdjusting": "Intenta ajustar tus filtros para ver más resultados.",
+      "getStarted": "Comienza agregando tu primer cliente."
+    }
+  },
+  "products": {
+    "title": "Productos",
+    "description": "Gestiona tu inventario de productos",
+    "addModifier": "Agregar Modificador",
+    "addProduct": "Agregar Producto",
+    "loading": {
+      "title": "Cargando Productos",
+      "description": "Por favor espera mientras obtenemos tus datos de productos..."
+    },
+    "search": {
+      "placeholder": "Buscar productos por nombre o SKU..."
+    },
+    "filters": {
+      "allCategories": "Todas las Categorías",
+      "advancedFilters": "Filtros Avanzados",
+      "clearAll": "Limpiar Todo",
+      "activeFilters": "Filtros activos:",
+      "clearAllFilters": "Limpiar todos",
+      "priceRange": "Rango de Precios",
+      "minPrice": "Mín ($)",
+      "maxPrice": "Máx ($)",
+      "to": "a",
+      "stockLevel": "Nivel de Stock",
+      "allStockLevels": "Todos los Niveles de Stock",
+      "inStock": "En Stock (Por Encima del Nivel Mín)",
+      "lowStock": "Stock Bajo (En/Debajo del Nivel Mín)",
+      "outOfStock": "Sin Stock (0 artículos)",
+      "productStatus": "Estado del Producto",
+      "allStatus": "Todos los Estados",
+      "activeProducts": "Productos Activos",
+      "inactiveProducts": "Productos Inactivos",
+      "suppliers": "Proveedores",
+      "selected": "seleccionados",
+      "tags": "Etiquetas",
+      "dateRange": "Rango de Fechas",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin"
+    },
+    "table": {
+      "product": "Producto",
+      "category": "Categoría",
+      "price": "Precio",
+      "cost": "Costo",
+      "stock": "Stock",
+      "status": "Estado",
+      "actions": "Acciones",
+      "min": "Mín"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "outOfStock": "Sin Stock",
+      "lowStock": "Stock Bajo"
+    },
+    "results": {
+      "productsFound": "productos encontrados",
+      "filteredFrom": "filtrados de",
+      "total": "total",
+      "sortBy": "Ordenar por:",
+      "name": "Nombre",
+      "price": "Precio",
+      "stock": "Stock",
+      "created": "Fecha de Creación"
+    },
+    "grid": {
+      "tags": "etiquetas"
+    },
+    "empty": {
+      "title": "No se encontraron productos",
+      "description": "Intenta ajustar tu búsqueda o criterios de filtro",
+      "createFirst": "Comienza agregando tu primer producto al inventario"
+    }
+  },
+  "dashboard": {
+    "totalSales": "Ventas Totales",
+    "totalOrders": "Pedidos Totales",
+    "title": "Panel",
+    "description": "Visión integral del rendimiento de su sistema POS y métricas clave",
+    "refresh": "Actualizar",
+    "periods": {
+      "today": "Hoy",
+      "thisWeek": "Esta Semana",
+      "thisMonth": "Este Mes",
+      "thisQuarter": "Este Trimestre",
+      "thisYear": "Este Año"
+    },
+    "alerts": {
+      "active": "Alertas Activas"
+    },
+    "kpi": {
+      "totalSales": "Ventas Totales",
+      "totalOrders": "Pedidos Totales",
+      "averageOrderValue": "Valor Promedio de Pedido",
+      "customerSatisfaction": "Satisfacción del Cliente",
+      "reviews": "reseñas"
+    },
+    "sections": {
+      "salesRevenue": "Ventas e Ingresos",
+      "operationalPerformance": "Rendimiento Operacional",
+      "inventoryStock": "Inventario y Stock",
+      "financialPerformance": "Rendimiento Financiero"
+    }
+  },
+  "discounts": {
+    "title": "Descuentos",
+    "description": "Gestiona códigos de descuento y promociones para tu tienda",
+    "add": "Agregar Descuento",
+    "empty": {
+      "title": "No hay descuentos aún",
+      "description": "Crea tu primer descuento para impulsar las ventas"
+    },
+    "search": {
+      "placeholder": "Buscar descuentos..."
+    },
+    "table": {
+      "code": "Código",
+      "description": "Descripción",
+      "type": "Tipo",
+      "value": "Valor",
+      "dates": "Rango de Fechas",
+      "status": "Estado"
+    },
+    "noResults": "No se encontraron descuentos",
+    "noResults.description": "Intenta ajustar tus términos de búsqueda"
+  },
+  "auth": {
+    "fields": {
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "name": "Nombre Completo"
+    },
+    "placeholders": {
+      "email": "Ingresa tu dirección de correo",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "Ingresa tu nombre completo"
+    },
+    "validation": {
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Por favor ingresa una dirección de correo válida",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+      "nameRequired": "El nombre completo es requerido",
+      "nameMinLength": "El nombre debe tener al menos 2 caracteres",
+      "passwordsNoMatch": "Las contraseñas no coinciden",
+      "confirmPasswordRequired": "Por favor confirma tu contraseña"
+    },
+    "errors": {
+      "signInFailed": "Error al iniciar sesión. Verifica tus credenciales e intenta de nuevo.",
+      "userNotConfirmed": "Por favor verifica tu dirección de correo. Revisa tu bandeja de entrada para un enlace de verificación.",
+      "invalidCredentials": "Correo o contraseña incorrectos. Intenta de nuevo.",
+      "userNotFound": "No se encontró una cuenta con esta dirección de correo.",
+      "tooManyRequests": "Demasiados intentos fallidos. Espera antes de intentar de nuevo.",
+      "passwordResetRequired": "Se requiere restablecer contraseña. Por favor restablece tu contraseña.",
+      "accountNotVerified": "Cuenta no verificada. Revisa tu correo para instrucciones de verificación.",
+      "socialNotImplemented": "El inicio de sesión con {{provider}} aún no está implementado. Usa correo y contraseña.",
+      "socialFailed": "Error al iniciar sesión con {{provider}}. Intenta de nuevo.",
+      "resetEmailFailed": "Error al enviar el correo de restablecimiento. Intenta de nuevo."
+    },
+    "signIn": {
+      "welcome": "¡Bienvenido de nuevo!",
+      "subtitle": "¡Por favor ingresa tus credenciales para iniciar sesión!",
+      "button": "Iniciar Sesión",
+      "signingIn": "Iniciando sesión...",
+      "noAccount": "¿No tienes una cuenta?"
+    },
+    "signUp": {
+      "link": "Registrarse"
+    },
+    "forgotPassword": {
+      "title": "¿Olvidaste tu contraseña?",
+      "subtitle": "No te preocupes, te enviaremos instrucciones para restablecerla.",
+      "button": "Enviar correo de restablecimiento",
+      "sending": "Enviando correo de restablecimiento...",
+      "backToSignIn": "← Volver al inicio de sesión",
+      "rememberPassword": "¿Recuerdas tu contraseña?",
+      "checkEmail": "Revisa tu correo",
+      "sentCode": "Hemos enviado un código de verificación a {{email}}",
+      "redirecting": "Redirigiendo a la página de verificación..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "Al menos 8 caracteres",
+        "uppercase": "Una letra mayúscula",
+        "lowercase": "Una letra minúscula",
+        "number": "Un número",
+        "special": "Un carácter especial"
+      },
+      "doesNotMeetRequirements": "La contraseña no cumple con los requisitos"
+    },
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "orContinueWith": "o continúa con",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
+  },
+  "tables": {
+    "title": "Gestión de Mesas",
+    "description": "Gestiona mesas, zonas y reservas para tu restaurante",
+    "loading": "Cargando gestión de mesas...",
+    "addZone": "Agregar Zona",
+    "mergeTables": "Unir Mesas",
+    "addTable": "Agregar Mesa",
+    "newReservation": "Nueva Reserva",
+    "noZone": "Sin Zona",
+    "assignServer": "Asignar Servidor",
+    "searchPlaceholder": "Buscar mesas...",
+    "columns": {
+      "tableName": "Nombre de Mesa",
+      "zone": "Zona",
+      "capacity": "Capacidad",
+      "status": "Estado"
+    },
+    "status": {
+      "available": "Disponible",
+      "occupied": "Ocupada",
+      "reserved": "Reservada",
+      "outOfOrder": "Fuera de Servicio",
+      "cleaning": "Limpieza"
+    },
+    "stats": {
+      "totalTables": "Total de Mesas",
+      "activeZones": "Zonas Activas",
+      "todayReservations": "Reservas de Hoy",
+      "availableTables": "Mesas Disponibles"
+    },
+    "tabs": {
+      "tables": "Mesas",
+      "zones": "Zonas",
+      "reservations": "Reservas"
+    },
+    "zones": {
+      "searchPlaceholder": "Buscar zonas...",
+      "noColor": "Sin color",
+      "tableCount": "{{count}} mesas ({{available}} disponibles, {{occupied}} ocupadas)",
+      "columns": {
+        "zoneName": "Nombre de Zona",
+        "tables": "Mesas",
+        "color": "Color"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "Buscar reservas...",
+      "columns": {
+        "customer": "Cliente",
+        "table": "Mesa",
+        "dateTime": "Fecha y Hora",
+        "guests": "Huéspedes"
+      }
+    }
+  },
+  "payment": {
+    "title": "Configuración de Pagos",
+    "description": "Gestiona métodos de pago y configuraciones de tender",
+    "addTender": "Agregar Tender",
+    "searchPlaceholder": "Buscar tenders...",
+    "allTypes": "Todos los Tipos",
+    "allCurrencies": "Todas las Monedas",
+    "noTendersFound": "No se encontraron tenders",
+    "noMatchingTenders": "Ningún tender coincide con sus criterios de búsqueda.",
+    "getStartedMessage": "Comienza agregando tu primer tender.",
+    "table": {
+      "tender": "Tender",
+      "currency": "Moneda",
+      "type": "Tipo",
+      "overTender": "Sobre Tender"
+    }
+  },
+  "sales": {
+    "description": "Gestión avanzada de ventas y análisis",
+    "export": "Exportar",
+    "newSale": "Nueva Venta",
+    "searchPlaceholder": "Buscar ventas, clientes, cajeros...",
+    "stats": {
+      "totalSales": "Total de Ventas",
+      "completed": "Completadas",
+      "pending": "Pendientes",
+      "revenue": "Ingresos"
+    },
+    "filters": {
+      "allStatus": "Todos los Estados",
+      "completed": "Completado",
+      "new": "Nuevo",
+      "suspended": "Suspendido",
+      "cancelled": "Cancelado",
+      "cancelOrphaned": "Cancelar Huérfano"
+    }
+  },
+  "terminalSettings": {
+    "title": "Gestión de Terminales",
+    "description": "Gestiona y configura terminales POS para tu tienda",
+    "descriptionWithStore": "Gestiona terminales POS para {{storeName}}",
+    "loading": {
+      "title": "Cargando Configuración de Terminal",
+      "description": "Por favor espera mientras obtenemos tu configuración de terminal..."
+    },
+    "noStore": {
+      "title": "Ninguna Tienda Seleccionada",
+      "description": "Por favor selecciona una tienda para gestionar sus terminales."
+    },
+    "refresh": "Actualizar",
+    "addTerminal": "Agregar Terminal",
+    "editTerminal": "Editar Terminal",
+    "addFirstTerminal": "Agregar Tu Primera Terminal",
+    "stats": {
+      "totalTerminals": "Total de Terminales",
+      "activeTerminals": "Terminales Activas", 
+      "inactiveTerminals": "Terminales Inactivas"
+    },
+    "search": {
+      "placeholder": "Buscar terminales...",
+      "showing": "Mostrando {{count}} de {{total}} terminales"
+    },
+    "filters": {
+      "allStatus": "Todos los Estados",
+      "activeOnly": "Solo Activas",
+      "inactiveOnly": "Solo Inactivas"
+    },
+    "form": {
+      "terminalId": "ID de Terminal",
+      "deviceId": "ID de Dispositivo", 
+      "terminalName": "Nombre de Terminal",
+      "platform": "Plataforma",
+      "model": "Modelo",
+      "architecture": "Arquitectura",
+      "status": "Estado",
+      "selectPlatform": "Seleccionar Plataforma",
+      "selectArchitecture": "Seleccionar Arquitectura",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "Terminal Principal de Mostrador",
+        "model": "iPad Pro, Galaxy Tab, etc."
+      },
+      "errors": {
+        "terminalIdRequired": "ID de terminal es requerido",
+        "deviceIdRequired": "ID de dispositivo es requerido", 
+        "nameRequired": "Nombre de terminal es requerido",
+        "platformRequired": "Plataforma es requerida",
+        "modelRequired": "Modelo es requerido",
+        "archRequired": "Arquitectura es requerida",
+        "saveFailed": "Error al guardar terminal. Por favor intenta de nuevo."
+      },
+      "helperText": {
+        "terminalIdReadonly": "El ID de terminal no se puede cambiar al editar"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "Navegador Web"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "activate": "Activar",
+      "deactivate": "Desactivar"
+    },
+    "actions": {
+      "saving": "Guardando...",
+      "addTerminal": "Agregar Terminal",
+      "updateTerminal": "Actualizar Terminal",
+      "cancel": "Cancelar"
+    },
+    "empty": {
+      "noTerminals": "No hay terminales configuradas",
+      "noMatching": "Ninguna terminal coincide con tu búsqueda",
+      "getStarted": "Comienza agregando tu primera terminal POS.",
+      "adjustFilters": "Intenta ajustar tus términos de búsqueda o filtros."
+    },
+    "details": {
+      "deviceId": "ID de Dispositivo:",
+      "platform": "Plataforma:",
+      "model": "Modelo:",
+      "architecture": "Arquitectura:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "Editar Tender",
+      "create": "Crear Nuevo Tender"
+    },
+    "backToPayments": "Volver a Configuración de Pagos",
+    "delete": "Eliminar",
+    "unsavedChanges": {
+      "title": "Tienes cambios sin guardar",
+      "description": "No olvides guardar tus modificaciones antes de salir de esta página.",
+      "discard": "Descartar Cambios",
+      "save": "Guardar Cambios"
+    },
+    "saving": "Guardando...",
+    "templates": {
+      "title": "Plantillas de Tender",
+      "description": "Elige una plantilla para comenzar rápidamente, o sáltala para crear desde cero",
+      "skip": "Saltar Plantillas",
+      "cash": {
+        "name": "Efectivo (AED)",
+        "description": "Pagos en efectivo en AED"
+      },
+      "visa": {
+        "name": "Tarjeta Visa", 
+        "description": "Tarjeta de crédito/débito Visa"
+      },
+      "mastercard": {
+        "name": "Mastercard",
+        "description": "Tarjeta de crédito/débito Mastercard"
+      },
+      "giftCard": {
+        "name": "Tarjeta de Regalo",
+        "description": "Tarjetas de regalo de la tienda"
+      },
+      "loyaltyPoints": {
+        "name": "Puntos de Lealtad",
+        "description": "Puntos de lealtad del cliente"
+      },
+      "voucher": {
+        "name": "Cupón",
+        "description": "Cupones y vales de la tienda"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Información Básica",
+        "description": "Detalles esenciales del tender e identificación"
+      },
+      "denominations": {
+        "title": "Denominaciones",
+        "description": "Configura las denominaciones disponibles para este tender",
+        "addDenomination": "Agregar Denominación",
+        "noDenominations": "No hay denominaciones configuradas",
+        "getStarted": "Haz clic en \"Agregar Denominación\" para comenzar",
+        "value": "Valor",
+        "description": "Descripción"
+      },
+      "configuration": {
+        "title": "Configuración", 
+        "description": "Comportamiento del tender y configuración del sistema"
+      },
+      "settings": {
+        "title": "Configuración",
+        "description": "Estado del tender y configuraciones de comportamiento"
+      }
+    },
+    "form": {
+      "tenderId": "ID de Tender",
+      "description": "Descripción",
+      "tenderType": "Tipo de Tender", 
+      "currency": "Moneda",
+      "displayOrder": "Orden de Visualización",
+      "availability": "Disponibilidad",
+      "maxRefundDays": "Días Máximos de Reembolso",
+      "changeCashLimit": "Límite de Cambio en Efectivo",
+      "placeholders": {
+        "tenderId": "Ingresa ID de tender",
+        "description": "Ingresa descripción del tender",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "Los números más bajos aparecen primero en la lista de tenders",
+        "tenderIdReadonly": "El ID de tender no se puede cambiar al editar"
+      },
+      "errors": {
+        "tenderIdRequired": "ID de tender es requerido",
+        "descriptionRequired": "Descripción es requerida", 
+        "tenderIdTooLong": "ID de tender debe tener menos de 50 caracteres",
+        "availabilityRequired": "Se requiere al menos una opción de disponibilidad",
+        "saveFailed": "Error al guardar tender. Por favor intenta de nuevo."
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "Moneda",
+        "description": "Pagos en efectivo y tenders basados en moneda"
+      },
+      "card": {
+        "label": "Tarjeta", 
+        "description": "Pagos con tarjeta de crédito y débito"
+      },
+      "giftcard": {
+        "label": "Tarjeta de Regalo",
+        "description": "Tarjetas de regalo y cupones de la tienda"
+      },
+      "loyalty": {
+        "label": "Puntos de Lealtad",
+        "description": "Redención de puntos de lealtad del cliente"
+      },
+      "voucher": {
+        "label": "Cupón",
+        "description": "Cupones y vales de la tienda"
+      }
+    },
+    "currencies": {
+      "aed": "Dirham de EAU",
+      "usd": "Dólar Estadounidense",
+      "eur": "Euro", 
+      "gbp": "Libra Esterlina"
+    },
+    "availability": {
+      "sale": {
+        "label": "Venta",
+        "description": "Se puede usar para transacciones de venta regulares"
+      },
+      "returnWithReceipt": {
+        "label": "Devolución con Recibo",
+        "description": "Se puede usar para devoluciones con recibo"
+      },
+      "returnWithoutReceipt": {
+        "label": "Devolución sin Recibo",
+        "description": "Se puede usar para devoluciones sin recibo"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "Número de Serie Requerido",
+        "description": "Requerir entrada de número de serie para este tender"
+      },
+      "openCashDrawer": {
+        "title": "Abrir Cajón de Efectivo",
+        "description": "Abrir automáticamente el cajón de efectivo al usar este tender"
+      },
+      "customerRequired": {
+        "title": "Cliente Requerido", 
+        "description": "Requerir información del cliente para este tender"
+      },
+      "splitTenderAllowed": {
+        "title": "Tender Dividido Permitido",
+        "description": "Permitir que este tender se use en pagos divididos"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "Estado Activo",
+        "description": "Si este tender está activo y disponible para uso"
+      },
+      "overTenderAllowed": {
+        "title": "Sobre Tender Permitido", 
+        "description": "Permitir a los clientes pagar más de la cantidad requerida"
+      }
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "createTender": "Crear Tender",
+      "updateTender": "Actualizar Tender"
+    },
+    "success": {
+      "created": "¡Tender creado exitosamente!",
+      "updated": "¡Tender actualizado exitosamente!"
+    }
+  },
+  "taxSettings": {
+    "title": "Configuración de Impuestos",
+    "description": "Configura autoridades fiscales, grupos y ubicaciones para tu tienda",
+    "loading": {
+      "title": "Cargando Configuración de Impuestos",
+      "description": "Por favor espera mientras obtenemos tu configuración fiscal..."
+    },
+    "unsavedChanges": "Tienes cambios sin guardar",
+    "unsavedDescription": "No olvides guardar tus modificaciones antes de salir de esta página.",
+    "discardChanges": "Descartar Cambios", 
+    "saveAllChanges": "Guardar Todos los Cambios",
+    "saving": "Guardando...",
+    "welcome": {
+      "title": "¡Bienvenido! Configurando tu configuración fiscal",
+      "description": "Hemos cargado una configuración de plantilla para comenzar. Revisa y modifica la configuración a continuación, luego guarda para crear tu configuración fiscal."
+    },
+    "noConfiguration": {
+      "title": "No se Puede Cargar la Configuración Fiscal",
+      "description": "Error al cargar la configuración fiscal. Por favor intenta de nuevo.",
+      "tryAgain": "Intentar de Nuevo"
+    },
+    "noTenant": {
+      "title": "No se Encontró Configuración Fiscal", 
+      "tenantDescription": "No existe configuración fiscal para este inquilino. Por favor contacta a tu administrador para configurar la configuración fiscal.",
+      "selectDescription": "Por favor selecciona un inquilino para configurar la configuración fiscal.",
+      "goBack": "Regresar"
+    },
+    "stats": {
+      "totalAuthorities": "Total de Autoridades",
+      "authoritiesConfigured": "Autoridades fiscales configuradas",
+      "taxGroups": "Grupos Fiscales",
+      "groupsWithRules": "Grupos con reglas",
+      "taxLocation": "Ubicación Fiscal",
+      "currentLocation": "Ubicación actual",
+      "totalRules": "Total de Reglas",
+      "rulesDefined": "Reglas fiscales definidas",
+      "notSet": "No Establecido"
+    },
+    "tabs": {
+      "authorities": "Autoridades Fiscales",
+      "groups": "Grupos Fiscales", 
+      "location": "Ubicación Fiscal",
+      "settings": "Configuración"
+    },
+    "authorities": {
+      "title": "Autoridades Fiscales",
+      "description": "Configura autoridades fiscales que aplicarán impuestos a tus productos",
+      "addAuthority": "Agregar Autoridad",
+      "noAuthorities": "No hay Autoridades Fiscales",
+      "getStarted": "Crea tu primera autoridad fiscal para comenzar.",
+      "form": {
+        "authorityId": "ID de Autoridad",
+        "authorityName": "Nombre de Autoridad",
+        "roundingCode": "Código de Redondeo",
+        "roundingDigits": "Dígitos de Redondeo",
+        "placeholders": {
+          "authorityId": "ej., CGST001",
+          "authorityName": "ej., GST Central",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "Medio Arriba",
+        "halfDown": "Medio Abajo", 
+        "up": "Arriba",
+        "down": "Abajo"
+      },
+      "details": {
+        "id": "ID:",
+        "rounding": "Redondeo:",
+        "digits": "Dígitos:"
+      }
+    },
+    "groups": {
+      "title": "Grupos Fiscales",
+      "description": "Organiza reglas fiscales en grupos para una gestión más fácil", 
+      "addGroup": "Agregar Grupo",
+      "noGroups": "No hay Grupos Fiscales",
+      "getStarted": "Crea tu primer grupo fiscal para organizar tus reglas fiscales.",
+      "totalRate": "Total",
+      "form": {
+        "taxGroupId": "ID de Grupo Fiscal", 
+        "groupName": "Nombre de Grupo",
+        "description": "Descripción",
+        "placeholders": {
+          "taxGroupId": "ej., TG001",
+          "groupName": "ej., GST Estándar",
+          "description": "Ingresa descripción del grupo"
+        }
+      },
+      "rules": {
+        "title": "Reglas Fiscales",
+        "addRule": "Agregar Regla",
+        "noRules": "No hay reglas fiscales configuradas. Haz clic en \"Agregar Regla\" para comenzar.",
+        "totalTaxRate": "Tasa Fiscal Total:",
+        "form": {
+          "name": "Nombre",
+          "taxAuthority": "Autoridad Fiscal",
+          "percentage": "Porcentaje (%)",
+          "taxTypeCode": "Código de Tipo Fiscal",
+          "description": "Descripción",
+          "placeholders": {
+            "name": "Nombre de regla",
+            "percentage": "0.00",
+            "description": "Descripción de regla"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "IVA",
+            "description": "Impuesto al Valor Agregado - Impuesto aplicado en cada etapa de producción/distribución"
+          },
+          "sales": {
+            "label": "VENTAS",
+            "description": "Impuesto a las Ventas - Impuesto aplicado en el punto de venta al consumidor final"  
+          }
+        },
+        "details": {
+          "authority": "Autoridad:",
+          "type": "Tipo:"
+        },
+        "actions": {
+          "done": "Listo",
+          "delete": "Eliminar"
+        }
+      }
+    },
+    "location": {
+      "title": "Ubicación Fiscal",
+      "description": "Configura la ubicación fiscal principal para tu tienda",
+      "form": {
+        "taxLocationId": "ID de Ubicación Fiscal",
+        "locationName": "Nombre de Ubicación", 
+        "description": "Descripción",
+        "placeholders": {
+          "locationName": "ej., Tienda Principal",
+          "description": "Ingresa descripción de ubicación"
+        }
+      },
+      "details": {
+        "id": "ID:",
+        "noDescription": "Sin descripción"
+      }
+    },
+    "generalSettings": {
+      "title": "Configuración General",
+      "description": "Configuraciones y preferencias adicionales de configuración fiscal",
+      "settingsPanel": "Panel de Configuración",
+      "additionalSettings": "Configuraciones adicionales de configuración fiscal estarán disponibles aquí."
+    },
+    "success": {
+      "created": "Configuración fiscal creada exitosamente",
+      "updated": "Configuración fiscal actualizada exitosamente"
+    },
+    "errors": {
+      "saveFailed": "Error al guardar cambios:"
+    }
+  }
+}

@@ -34,6 +34,7 @@ import StoreSettings from './pages/StoreSettings';
 import CreateStore from './pages/CreateStore';
 import TerminalSettings from './pages/TerminalSettings';
 import TranslationManagement from './pages/TranslationManagement';
+import I18nTestPage from './pages/I18nTestPage';
 import { UserManagement } from './pages/user';
 import RolesPage from './pages/roles/RolesPage';
 import CreateRolePage from './pages/roles/CreateRolePage';
@@ -114,6 +115,9 @@ function App() {
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
             <Route path="/auth/verify-email" element={<VerifyEmail />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
+            
+            {/* i18n Test Page - Public for testing translations */}
+            <Route path="/i18n-test" element={<I18nTestPage />} />
             
             {/* Tenant/Store Selection - Protected but outside dashboard layout */}
             <Route 

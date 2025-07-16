@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, MagnifyingGlassIcon, FolderIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 export interface MultipleDropdownSearchOption {
@@ -61,8 +62,8 @@ export interface MultipleDropdownSearchProps {
 export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
   label,
   values = [],
-  placeholder = "Select options",
-  searchPlaceholder = "Search options...",
+  placeholder,
+  searchPlaceholder,
   required = false,
   error,
   disabled = false,
@@ -71,11 +72,11 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
   onSelect,
   displayValue,
   renderOption,
-  noOptionsMessage = "No options available",
-  clearSearchText = "Clear search",
+  noOptionsMessage,
+  clearSearchText,
   allowSelectAll = true,
-  selectAllLabel = "Select All",
-  clearAllLabel = "Clear All",
+  selectAllLabel,
+  clearAllLabel,
   className = "",
   buttonClassName = "",
   dropdownClassName = "",
@@ -83,6 +84,7 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
   maxHeight = "min(400px, 60vh)",
   maxSelectedDisplay = 3
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -155,7 +157,7 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
     }
     
     if (selectedOptions.length === 0) {
-      return placeholder;
+      return placeholder || t('common.selectOption');
     }
     
     if (selectedOptions.length <= maxSelectedDisplay) {
@@ -303,7 +305,7 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={searchPlaceholder}
+                  placeholder={searchPlaceholder || t('common.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
@@ -320,7 +322,7 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
                     disabled={allFilteredSelected}
                     className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                   >
-                    {selectAllLabel}
+                    {selectAllLabel || t('common.selectAll')}
                   </button>
                   {selectedOptions.length > 0 && (
                     <>
@@ -330,7 +332,7 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
                         onClick={handleClearAll}
                         className="text-xs text-red-600 hover:text-red-800"
                       >
-                        {clearAllLabel}
+                        {clearAllLabel || t('common.clearAll')}
                       </button>
                     </>
                   )}
@@ -371,13 +373,13 @@ export const MultipleDropdownSearch: React.FC<MultipleDropdownSearchProps> = ({
                         onClick={() => handleSearchChange('')}
                         className="text-blue-500 hover:text-blue-600 text-sm mt-1"
                       >
-                        {clearSearchText}
+                        {clearSearchText || t('common.clearSearch')}
                       </button>
                     </>
                   ) : (
                     <>
                       <FolderIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                      <p>{noOptionsMessage}</p>
+                      <p>{noOptionsMessage || t('common.noOptionsAvailable')}</p>
                     </>
                   )}
                 </div>

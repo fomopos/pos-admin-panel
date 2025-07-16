@@ -6,21 +6,37 @@ import {
   ArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { Button, InputTextField, DropdownSearch, CompactToggle, InputMoneyField } from '../ui';
-import type { ProductModifier, ProductModifierGroup } from '../../services/types/product.types';
+import type { ProductModifier, ProductModifierGroup, ProductFormErrors } from '../../services/types/product.types';
 import type { DropdownSearchOption } from '../ui/DropdownSearch';
 
 interface ProductModifierManagerProps {
   modifierGroups: ProductModifierGroup[];
   onChange: (modifierGroups: ProductModifierGroup[]) => void;
   disabled?: boolean;
+  errors?: ProductFormErrors;
+  onValidateField?: (fieldName: string, value: any) => void;
 }
 
 const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
   modifierGroups,
   onChange,
-  disabled = false
+  disabled = false,
+  errors,
+  onValidateField
 }) => {
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+
+  // Helper function to get error for specific field
+  const getFieldError = (fieldName: string): string | undefined => {
+    return errors?.[fieldName];
+  };
+
+  // Helper function to trigger validation
+  const validateField = (fieldName: string, value: any): void => {
+    if (onValidateField) {
+      onValidateField(fieldName, value);
+    }
+  };
 
   // Selection type options for DropdownSearch
   const selectionTypeOptions: DropdownSearchOption[] = [
@@ -253,10 +269,15 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                       <InputTextField
                         label="Group Name"
                         value={group.name}
-                        onChange={(value) => updateModifierGroup(groupIndex, { name: value })}
+                        onChange={(value) => {
+                          updateModifierGroup(groupIndex, { name: value });
+                          // Validate the field
+                          validateField(`modifier_groups.${groupIndex}.name`, value);
+                        }}
                         placeholder="e.g., Toppings, Size, Spice Level"
                         disabled={disabled}
                         required
+                        error={getFieldError(`modifier_groups.${groupIndex}.name`)}
                         helperText="Category name for related options"
                       />
                     </div>
@@ -318,10 +339,13 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                           type="number"
                           label="Exact Selections"
                           value={group.exact_selections?.toString() || '2'}
-                          onChange={(value) => updateModifierGroup(groupIndex, { 
-                            exact_selections: parseInt(value) || 2 
-                          })}
+                          onChange={(value) => {
+                            const numValue = parseInt(value) || 2;
+                            updateModifierGroup(groupIndex, { exact_selections: numValue });
+                            validateField(`modifier_groups.${groupIndex}.exact_selections`, numValue);
+                          }}
                           disabled={disabled}
+                          error={getFieldError(`modifier_groups.${groupIndex}.exact_selections`)}
                           helperText="Exact number of choices required"
                           min={1}
                           required
@@ -336,10 +360,13 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                             type="number"
                             label="Min Selections"
                             value={group.min_selections?.toString() || '0'}
-                            onChange={(value) => updateModifierGroup(groupIndex, { 
-                              min_selections: parseInt(value) || 0 
-                            })}
+                            onChange={(value) => {
+                              const numValue = parseInt(value) || 0;
+                              updateModifierGroup(groupIndex, { min_selections: numValue });
+                              validateField(`modifier_groups.${groupIndex}.min_selections`, numValue);
+                            }}
                             disabled={disabled}
+                            error={getFieldError(`modifier_groups.${groupIndex}.min_selections`)}
                             helperText="Minimum choices required"
                             min={0}
                           />
@@ -350,10 +377,13 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                             type="number"
                             label="Max Selections"
                             value={group.max_selections?.toString() || ''}
-                            onChange={(value) => updateModifierGroup(groupIndex, { 
-                              max_selections: parseInt(value) || undefined 
-                            })}
+                            onChange={(value) => {
+                              const numValue = parseInt(value) || undefined;
+                              updateModifierGroup(groupIndex, { max_selections: numValue });
+                              validateField(`modifier_groups.${groupIndex}.max_selections`, numValue);
+                            }}
                             disabled={disabled}
+                            error={getFieldError(`modifier_groups.${groupIndex}.max_selections`)}
                             helperText="Maximum choices allowed"
                             min={1}
                             required
@@ -387,10 +417,13 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                         type="number"
                         label="Sort Order"
                         value={group.sort_order.toString()}
-                        onChange={(value) => updateModifierGroup(groupIndex, { 
-                          sort_order: parseInt(value) || 1 
-                        })}
+                        onChange={(value) => {
+                          const numValue = parseInt(value) || 1;
+                          updateModifierGroup(groupIndex, { sort_order: numValue });
+                          validateField(`modifier_groups.${groupIndex}.sort_order`, numValue);
+                        }}
                         disabled={disabled}
+                        error={getFieldError(`modifier_groups.${groupIndex}.sort_order`)}
                         helperText="Display order in the menu"
                         min={1}
                       />
@@ -400,10 +433,13 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                       <InputMoneyField
                         label="Group Price Delta"
                         value={group.price_delta?.toString() || '0'}
-                        onChange={(value) => updateModifierGroup(groupIndex, { 
-                          price_delta: parseFloat(value) || 0 
-                        })}
+                        onChange={(value) => {
+                          const numValue = parseFloat(value) || 0;
+                          updateModifierGroup(groupIndex, { price_delta: numValue });
+                          validateField(`modifier_groups.${groupIndex}.price_delta`, numValue);
+                        }}
                         disabled={disabled}
+                        error={getFieldError(`modifier_groups.${groupIndex}.price_delta`)}
                         helperText="Base price adjustment for this group"
                         step={0.01}
                         placeholder="0.00"
@@ -453,21 +489,28 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                                 <InputTextField
                                   label="Modifier Name"
                                   value={modifier.name}
-                                  onChange={(value) => updateModifier(groupIndex, modifierIndex, { name: value })}
+                                  onChange={(value) => {
+                                    updateModifier(groupIndex, modifierIndex, { name: value });
+                                    validateField(`modifier_groups.${groupIndex}.modifiers.${modifierIndex}.name`, value);
+                                  }}
                                   placeholder="e.g., Pepperoni, Large, Spicy"
                                   disabled={disabled}
                                   required
+                                  error={getFieldError(`modifier_groups.${groupIndex}.modifiers.${modifierIndex}.name`)}
                                   helperText="Display name for this option"
                                 />
                                 
                                 <InputMoneyField
                                   label="Price Delta"
                                   value={modifier.price_delta.toString()}
-                                  onChange={(value) => updateModifier(groupIndex, modifierIndex, { 
-                                    price_delta: parseFloat(value) || 0 
-                                  })}
+                                  onChange={(value) => {
+                                    const numValue = parseFloat(value) || 0;
+                                    updateModifier(groupIndex, modifierIndex, { price_delta: numValue });
+                                    validateField(`modifier_groups.${groupIndex}.modifiers.${modifierIndex}.price_delta`, numValue);
+                                  }}
                                   placeholder="0.00"
                                   disabled={disabled}
+                                  error={getFieldError(`modifier_groups.${groupIndex}.modifiers.${modifierIndex}.price_delta`)}
                                   step={0.01}
                                   helperText="Price adjustment (+/- allowed)"
                                 />
@@ -476,10 +519,13 @@ const ProductModifierManager: React.FC<ProductModifierManagerProps> = ({
                                   type="number"
                                   label="Sort Order"
                                   value={modifier.sort_order.toString()}
-                                  onChange={(value) => updateModifier(groupIndex, modifierIndex, { 
-                                    sort_order: parseInt(value) || 1 
-                                  })}
+                                  onChange={(value) => {
+                                    const numValue = parseInt(value) || 1;
+                                    updateModifier(groupIndex, modifierIndex, { sort_order: numValue });
+                                    validateField(`modifier_groups.${groupIndex}.modifiers.${modifierIndex}.sort_order`, numValue);
+                                  }}
                                   disabled={disabled}
+                                  error={getFieldError(`modifier_groups.${groupIndex}.modifiers.${modifierIndex}.sort_order`)}
                                   helperText="Display order (1, 2, 3...)"
                                   min={1}
                                 />

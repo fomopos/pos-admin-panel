@@ -26,14 +26,21 @@ interface GlobalModifierManagerProps {
   };
   onChange: (template: GlobalModifierManagerProps['template']) => void;
   disabled?: boolean;
+  errors?: Record<string, string>;
 }
 
 const GlobalModifierManager: React.FC<GlobalModifierManagerProps> = ({
   template,
   onChange,
-  disabled = false
+  disabled = false,
+  errors
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  // Helper function to get error for specific field
+  const getFieldError = (fieldName: string): string | undefined => {
+    return errors?.[fieldName];
+  };
 
   const selectionTypeOptions: DropdownSearchOption[] = [
     {
@@ -266,6 +273,7 @@ const GlobalModifierManager: React.FC<GlobalModifierManagerProps> = ({
               <div className="flex justify-between items-center mb-3">
                 <h4 className="text-md font-medium text-gray-800">Modifiers</h4>
                 <Button
+                  type="button"
                   onClick={addModifier}
                   disabled={disabled}
                   size="sm"
@@ -296,6 +304,7 @@ const GlobalModifierManager: React.FC<GlobalModifierManagerProps> = ({
                             disabled={disabled}
                             required
                             helperText="Display name for this option"
+                            error={getFieldError(`modifiers.${modifierIndex}.name`)}
                           />
                           
                           <InputTextField
@@ -309,6 +318,7 @@ const GlobalModifierManager: React.FC<GlobalModifierManagerProps> = ({
                             disabled={disabled}
                             step={0.01}
                             helperText="Price adjustment (+/- allowed)"
+                            error={getFieldError(`modifiers.${modifierIndex}.price_delta`)}
                           />
                           
                           <InputTextField

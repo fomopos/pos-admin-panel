@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UseConfirmDialogOptions {
   title?: string;
@@ -20,12 +21,13 @@ export interface ConfirmDialogState {
 }
 
 export const useConfirmDialog = () => {
+  const { t } = useTranslation();
   const [dialogState, setDialogState] = useState<ConfirmDialogState>({
     isOpen: false,
     title: '',
     message: '',
-    confirmText: 'Confirm',
-    cancelText: 'Cancel',
+    confirmText: t('common.confirm'),
+    cancelText: t('common.cancel'),
     variant: 'danger',
     isLoading: false,
     onConfirm: undefined
@@ -37,10 +39,10 @@ export const useConfirmDialog = () => {
   ) => {
     setDialogState({
       isOpen: true,
-      title: options.title || 'Confirm Action',
-      message: options.message || 'Are you sure you want to continue?',
-      confirmText: options.confirmText || 'Confirm',
-      cancelText: options.cancelText || 'Cancel',
+      title: options.title || t('common.confirmAction'),
+      message: options.message || t('common.areYouSure'),
+      confirmText: options.confirmText || t('common.confirm'),
+      cancelText: options.cancelText || t('common.cancel'),
       variant: options.variant || 'danger',
       isLoading: false,
       onConfirm
@@ -89,6 +91,7 @@ export const useConfirmDialog = () => {
 // Convenience functions for common dialog types
 export const useDeleteConfirmDialog = () => {
   const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog();
+  const { t } = useTranslation();
 
   const openDeleteDialog = useCallback((
     itemName: string,
@@ -96,13 +99,13 @@ export const useDeleteConfirmDialog = () => {
     customMessage?: string
   ) => {
     openDialog(onDelete, {
-      title: 'Delete Confirmation',
+      title: t('common.deleteConfirmation'),
       message: customMessage || `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     });
-  }, [openDialog]);
+  }, [openDialog, t]);
 
   return {
     dialogState,
@@ -114,18 +117,19 @@ export const useDeleteConfirmDialog = () => {
 
 export const useDiscardChangesDialog = () => {
   const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog();
+  const { t } = useTranslation();
 
   const openDiscardDialog = useCallback((
     onDiscard: () => void | Promise<void>
   ) => {
     openDialog(onDiscard, {
-      title: 'Discard Changes',
-      message: 'Are you sure you want to discard all unsaved changes? This action cannot be undone.',
-      confirmText: 'Discard Changes',
-      cancelText: 'Keep Editing',
+      title: t('common.discardChanges'),
+      message: t('common.discardChangesMessage'),
+      confirmText: t('common.discardChangesButton'),
+      cancelText: t('common.keepEditing'),
       variant: 'warning'
     });
-  }, [openDialog]);
+  }, [openDialog, t]);
 
   return {
     dialogState,

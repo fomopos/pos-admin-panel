@@ -1,0 +1,1000 @@
+{
+  "categories": {
+    "title": "الفئات",
+    "edit": "تحرير",
+    "subtitle": "إدارة فئات منتجاتك",
+    "subtitleWithCount": "عرض {{count}} فئة",
+    "newCategory": "فئة جديدة",
+    "editCategory": "تحرير الفئة",
+    "newDescription": "إنشاء فئة جديدة لتنظيم منتجاتك",
+    "editDescription": "تحرير تفاصيل هذه الفئة",
+    "fields": {
+        "name": "اسم الفئة",
+        "description": "الوصف",
+        "parentCategory": "الفئة الأساسية",
+        "sortOrder": "ترتيب العرض",
+        "icon": "أيقونة الفئة",
+        "image": "صورة الفئة",
+        "tags": "العلامات",
+        "isActive": "حالة النشاط",
+        "displayOnMain": "عرض في الشاشة الرئيسية",
+        "quickIcons": "اختيار أيقونة سريع"
+      },
+    "create": {
+      "title": "إنشاء فئة جديدة",
+      "subtitle": "إضافة فئة جديدة لتنظيم منتجاتك",
+      "button": "إضافة فئة",
+      "creating": "جاري الإنشاء...",
+      "create": "إنشاء فئة",
+      "newCategory": "إنشاء فئة جديدة",
+      "newCategoryDescription": "تنظيم منتجاتك باستخدام فئة مخصصة",
+      "features": {
+        "mobile": "جاهز للهاتف المحمول",
+        "tags": "علامات ذكية",
+        "hierarchy": "هرمي"
+      },
+      "placeholders": {
+        "name": "أدخل اسم الفئة",
+        "description": "صف المنتجات التي تنتمي لهذه الفئة",
+        "addTag": "إضافة علامة"
+      },
+      "descriptions": {
+        "isActive": "تبديل لتمكين أو تعطيل هذه الفئة",
+        "displayOnMain": "عرض هذه الفئة بشكل بارز في الشاشة الرئيسية"
+      },
+      "selectParent": "اختيار الفئة الأساسية",
+      "noParent": "بدون أساسي (المستوى الأعلى)",
+      "templates": {
+        "title": "اختيار قالب",
+        "skip": "تخطي القوالب",
+        "createCustom": "تخطي القوالب - إنشاء فئة مخصصة"
+      },
+      "form": {
+        "name": "اسم الفئة",
+        "description": "الوصف",
+        "parentCategory": "الفئة الأساسية",
+        "sortOrder": "ترتيب العرض",
+        "tags": "العلامات",
+        "addTag": "إضافة علامة",
+        "noParent": "بدون أساسي (المستوى الأعلى)",
+        "basicInfo": "المعلومات الأساسية",
+        "media": "الوسائط والأيقونات",
+        "settings": "الإعدادات",
+        "color": "اللون"
+      },
+      "tabs": {
+        "basic": "المعلومات الأساسية",
+        "media": "الوسائط والأيقونات",
+        "settings": "الإعدادات",
+        "preview": "معاينة"
+      },
+      "edit": {
+        "title": "تحرير الفئة"
+      },
+      "errors": {
+        "nameRequired": "اسم الفئة مطلوب",
+        "descriptionTooLong": "الوصف طويل جداً",
+        "invalidSortOrder": "ترتيب العرض يجب أن يكون رقماً موجباً",
+        "saveFailed": "فشل في حفظ الفئة",
+        "deleteFailed": "فشل في حذف الفئة"
+      },
+      "media": {
+        "dragIcon": "اسحب وأفلت صورة أيقونة هنا",
+        "dragImage": "اسحب وأفلت صورة فئة هنا",
+        "changeIcon": "انقر لتغيير الأيقونة",
+        "changeImage": "انقر لتغيير الصورة",
+        "iconFormat": "PNG، JPG حتى 2 ميجابايت",
+        "imageFormat": "PNG، JPG حتى 5 ميجابايت"
+      },
+      "preview": {
+        "title": "معاينة الفئة",
+        "button": "معاينة",
+        "sampleName": "فئة نموذجية",
+        "mainScreen": "الشاشة الرئيسية",
+        "tags": "علامات"
+      }
+    },
+    "search": {
+      "placeholder": "البحث في الفئات..."
+    },
+    "filters": {
+      "all": "جميع الفئات",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "mainScreen": "الشاشة الرئيسية",
+      "withSubcategories": "مع فئات فرعية",
+      "allCategories": "جميع الفئات"
+    },
+    "card": {
+      "order": "الترتيب",
+      "mainScreen": "الشاشة الرئيسية",
+      "subcategories": "فئات فرعية",
+      "subcategoriesLabel": "فئات فرعية"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "delete": {
+      "confirm": "هل أنت متأكد من حذف '{{name}}'؟"
+    },
+    "empty": {
+      "title": "لا توجد فئات بعد",
+      "description": "ابدأ بتنظيم منتجاتك عن طريق إنشاء فئتك الأولى",
+      "noResults": "لم يتم العثور على فئات",
+      "noResultsDescription": "حاول تعديل معايير البحث أو التصفية"
+    },
+    "stats": {
+      "total": "إجمالي الفئات",
+      "active": "الفئات النشطة",
+      "inactive": "الفئات غير النشطة",
+      "withProducts": "فئات مع منتجات"
+    },
+    "quickCreate": "إنشاء سريع",
+    "actions": {
+      "import": "استيراد فئات",
+      "export": "تصدير فئات"
+    },
+    "bulkImport": {
+      "title": "استيراد مجمع للفئات",
+      "description": "استيراد فئات متعددة من ملف CSV"
+    },
+    "results": {
+      "showing": "عرض {{count}} من {{total}} فئة"
+    },
+    "errors": {
+      "loadFailed": "فشل في تحميل الفئات",
+      "deleteFailed": "فشل في حذف الفئة",
+      "importFailed": "فشل في استيراد الفئات",
+      "exportFailed": "فشل في تصدير الفئات",
+      "noTenantStore": "لم يتم اختيار متجر",
+      "noTenantStoreDescription": "يرجى اختيار متجر لإدارة الفئات"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "المعلومات الأساسية",
+      "media": "الوسائط والأيقونات",
+      "settings": "الإعدادات"
+    }
+  },
+  "common": {
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "create": "إنشاء",
+    "refresh": "تحديث",
+    "filters": "المرشحات",
+    "search": "البحث",
+    "loading": "جاري التحميل...",
+    "goToDashboard": "الذهاب للوحة التحكم",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "categories": "الفئات",
+    "saving": "جاري الحفظ...",
+    "confirm": "تأكيد",
+    "confirmAction": "تأكيد الإجراء",
+    "areYouSure": "هل أنت متأكد من أنك تريد المتابعة؟",
+    "deleteConfirmation": "تأكيد الحذف",
+    "discardChanges": "تجاهل التغييرات",
+    "discardChangesMessage": "هل أنت متأكد من أنك تريد تجاهل جميع التغييرات غير المحفوظة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "discardChangesButton": "تجاهل التغييرات",
+    "keepEditing": "متابعة التحرير",
+    "searchPlaceholder": "البحث...",
+    "selectOption": "اختر خياراً",
+    "noOptionsAvailable": "لا توجد خيارات متاحة",
+    "clearSearch": "مسح البحث",
+    "none": "لا شيء",
+    "selectAll": "اختر الكل",
+    "clearAll": "مسح الكل",
+    "loadingData": "جاري تحميل البيانات",
+    "loadingDataDescription": "يرجى الانتظار بينما نحضر بياناتك...",
+    "noDataFound": "لم يتم العثور على بيانات",
+    "tryAdjustingSearch": "حاول تعديل مصطلحات البحث",
+    "noItemsToDisplay": "لا توجد عناصر للعرض",
+    "selectOrganization": "اختر المؤسسة",
+    "selectStore": "اختر المتجر",
+    "createNewStore": "إنشاء متجر جديد",
+    "addAnotherStore": "إضافة موقع متجر آخر",
+    "noStoresAvailable": "لا توجد متاجر متاحة",
+    "yourProfile": "ملفك الشخصي",
+    "settings": "الإعدادات",
+    "signOut": "تسجيل الخروج",
+    "clearSearch": "مسح البحث",
+    "gridView": "عرض الشبكة",
+    "listView": "عرض القائمة",
+    "all": "الكل",
+    "status": "الحالة"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "orders": "الطلبات",
+    "customers": "العملاء",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "categories": "الفئات",
+    "sales": "المبيعات",
+    "discounts": "الخصومات",
+    "tableManagement": "إدارة الطاولات",
+    "employeeShifts": "نوبات الموظفين",
+    "salesReports": "تقارير المبيعات",
+    "inventoryReports": "تقارير المخزون",
+    "customerAnalytics": "تحليلات العملاء",
+    "paymentAnalytics": "تحليلات الدفع",
+    "financialReports": "التقارير المالية",
+    "storeSettings": "إعدادات المتجر",
+    "terminalSettings": "إعدادات الطرفية",
+    "translationManagement": "إدارة الترجمة",
+    "userManagement": "إدارة المستخدمين",
+    "roleManagement": "إدارة الأدوار",
+    "paymentSettings": "إعدادات الدفع",
+    "taxSettings": "إعدادات الضرائب",
+    "systemSettings": "إعدادات النظام"
+  },
+  "customers": {
+    "title": "العملاء",
+    "description": "إدارة قاعدة بيانات العملاء",
+    "addCustomer": "إضافة عميل",
+    "export": "تصدير",
+    "loading": {
+      "title": "تحميل العملاء",
+      "description": "يرجى الانتظار بينما نجلب بيانات العملاء..."
+    },
+    "stats": {
+      "totalCustomers": "إجمالي العملاء",
+      "active": "نشط",
+      "totalRevenue": "إجمالي الإيرادات",
+      "avgSpent": "متوسط الإنفاق"
+    },
+    "search": {
+      "placeholder": "البحث في العملاء..."
+    },
+    "filters": {
+      "allStatus": "جميع الحالات",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "table": {
+      "title": "قاعدة بيانات العملاء",
+      "customersFound": "عميل موجود",
+      "customer": "العميل",
+      "contact": "الاتصال",
+      "location": "الموقع",
+      "purchases": "المشتريات",
+      "totalSpent": "إجمالي الإنفاق",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "empty": {
+      "title": "لم يتم العثور على عملاء",
+      "tryAdjusting": "حاول تعديل المرشحات لرؤية المزيد من النتائج.",
+      "getStarted": "ابدأ بإضافة عميلك الأول."
+    }
+  },
+  "products": {
+    "title": "المنتجات",
+    "description": "إدارة مخزون المنتجات",
+    "addModifier": "إضافة معدل",
+    "addProduct": "إضافة منتج",
+    "loading": {
+      "title": "تحميل المنتجات",
+      "description": "يرجى الانتظار بينما نجلب بيانات المنتجات..."
+    },
+    "search": {
+      "placeholder": "البحث في المنتجات بالاسم أو رقم المنتج..."
+    },
+    "filters": {
+      "allCategories": "جميع الفئات",
+      "advancedFilters": "المرشحات المتقدمة",
+      "clearAll": "مسح الكل",
+      "activeFilters": "المرشحات النشطة:",
+      "clearAllFilters": "مسح جميع المرشحات",
+      "priceRange": "نطاق السعر",
+      "minPrice": "الحد الأدنى (ريال)",
+      "maxPrice": "الحد الأقصى (ريال)",
+      "to": "إلى",
+      "stockLevel": "مستوى المخزون",
+      "allStockLevels": "جميع مستويات المخزون",
+      "inStock": "متوفر (فوق الحد الأدنى)",
+      "lowStock": "مخزون منخفض (عند/تحت الحد الأدنى)",
+      "outOfStock": "نفد المخزون (0 عنصر)",
+      "productStatus": "حالة المنتج",
+      "allStatus": "جميع الحالات",
+      "activeProducts": "المنتجات النشطة",
+      "inactiveProducts": "المنتجات غير النشطة",
+      "suppliers": "الموردون",
+      "selected": "محدد",
+      "tags": "العلامات",
+      "dateRange": "نطاق التاريخ",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية"
+    },
+    "table": {
+      "product": "المنتج",
+      "category": "الفئة",
+      "price": "السعر",
+      "cost": "التكلفة",
+      "stock": "المخزون",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "min": "الحد الأدنى"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "outOfStock": "نفد المخزون",
+      "lowStock": "مخزون منخفض"
+    },
+    "results": {
+      "productsFound": "منتج موجود",
+      "filteredFrom": "مرشح من",
+      "total": "المجموع",
+      "sortBy": "ترتيب حسب:",
+      "name": "الاسم",
+      "price": "السعر",
+      "stock": "المخزون",
+      "created": "تاريخ الإنشاء"
+    },
+    "grid": {
+      "tags": "علامات"
+    },
+    "empty": {
+      "title": "لم يتم العثور على منتجات",
+      "description": "حاول تعديل معايير البحث أو التصفية",
+      "createFirst": "ابدأ بإضافة منتجك الأول إلى المخزون"
+    }
+  },
+  "dashboard": {
+    "totalSales": "إجمالي المبيعات",
+    "totalOrders": "إجمالي الطلبات",
+    "title": "لوحة التحكم",
+    "description": "نظرة شاملة على أداء نظام نقطة البيع والمقاييس الرئيسية",
+    "refresh": "تحديث",
+    "periods": {
+      "today": "اليوم",
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "thisQuarter": "هذا الربع",
+      "thisYear": "هذا العام"
+    },
+    "alerts": {
+      "active": "التنبيهات النشطة"
+    },
+    "kpi": {
+      "totalSales": "إجمالي المبيعات",
+      "totalOrders": "إجمالي الطلبات",
+      "averageOrderValue": "متوسط قيمة الطلب",
+      "customerSatisfaction": "رضا العملاء",
+      "reviews": "مراجعات"
+    },
+    "sections": {
+      "salesRevenue": "المبيعات والإيرادات",
+      "operationalPerformance": "الأداء التشغيلي",
+      "inventoryStock": "المخزون والمواد",
+      "financialPerformance": "الأداء المالي"
+    }
+  },
+  "discounts": {
+    "title": "الخصومات",
+    "description": "إدارة رموز الخصم والعروض الترويجية لمتجرك",
+    "add": "إضافة خصم",
+    "empty": {
+      "title": "لا توجد خصومات بعد",
+      "description": "أنشئ خصمك الأول لزيادة المبيعات"
+    },
+    "search": {
+      "placeholder": "البحث في الخصومات..."
+    },
+    "table": {
+      "code": "الرمز",
+      "description": "الوصف",
+      "type": "النوع",
+      "value": "القيمة",
+      "dates": "نطاق التاريخ",
+      "status": "الحالة"
+    },
+    "noResults": "لم يتم العثور على خصومات",
+    "noResults.description": "حاول تعديل مصطلحات البحث"
+  },
+  "auth": {
+    "fields": {
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "name": "الاسم الكامل"
+    },
+    "placeholders": {
+      "email": "أدخل عنوان بريدك الإلكتروني",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "أدخل اسمك الكامل"
+    },
+    "validation": {
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "passwordMinLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "nameRequired": "الاسم الكامل مطلوب",
+      "nameMinLength": "يجب أن يكون الاسم حرفين على الأقل",
+      "passwordsNoMatch": "كلمات المرور غير متطابقة",
+      "confirmPasswordRequired": "يرجى تأكيد كلمة المرور"
+    },
+    "errors": {
+      "signInFailed": "فشل تسجيل الدخول. يرجى التحقق من بياناتك والمحاولة مرة أخرى.",
+      "userNotConfirmed": "يرجى التحقق من عنوان بريدك الإلكتروني. تحقق من صندوق الوارد للحصول على رابط التحقق.",
+      "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صحيحة. يرجى المحاولة مرة أخرى.",
+      "userNotFound": "لم يتم العثور على حساب بعنوان البريد الإلكتروني هذا.",
+      "tooManyRequests": "محاولات فاشلة كثيرة. يرجى الانتظار قبل المحاولة مرة أخرى.",
+      "passwordResetRequired": "مطلوب إعادة تعيين كلمة المرور. يرجى إعادة تعيين كلمة المرور.",
+      "accountNotVerified": "الحساب غير مُتحقق منه. تحقق من بريدك الإلكتروني للحصول على تعليمات التحقق.",
+      "socialNotImplemented": "تسجيل الدخول عبر {{provider}} غير مُطبق بعد. يرجى استخدام البريد الإلكتروني وكلمة المرور.",
+      "socialFailed": "فشل تسجيل الدخول عبر {{provider}}. يرجى المحاولة مرة أخرى.",
+      "resetEmailFailed": "فشل إرسال بريد إعادة التعيين. يرجى المحاولة مرة أخرى."
+    },
+    "signIn": {
+      "welcome": "مرحباً بعودتك!",
+      "subtitle": "يرجى إدخال بياناتك لتسجيل الدخول!",
+      "button": "تسجيل الدخول",
+      "signingIn": "جارٍ تسجيل الدخول...",
+      "noAccount": "ليس لديك حساب؟"
+    },
+    "signUp": {
+      "link": "إنشاء حساب"
+    },
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "لا تقلق، سنرسل لك تعليمات إعادة التعيين.",
+      "button": "إرسال بريد إعادة التعيين",
+      "sending": "جارٍ إرسال بريد إعادة التعيين...",
+      "backToSignIn": "← العودة لتسجيل الدخول",
+      "rememberPassword": "تتذكر كلمة المرور؟",
+      "checkEmail": "تحقق من بريدك الإلكتروني",
+      "sentCode": "لقد أرسلنا رمز تحقق إلى {{email}}",
+      "redirecting": "جارٍ التوجيه إلى صفحة التحقق..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "8 أحرف على الأقل",
+        "uppercase": "حرف كبير واحد",
+        "lowercase": "حرف صغير واحد",
+        "number": "رقم واحد",
+        "special": "رمز خاص واحد"
+      },
+      "doesNotMeetRequirements": "كلمة المرور لا تلبي المتطلبات"
+    },
+    "forgotPassword": "نسيت كلمة المرور",
+    "orContinueWith": "أو متابعة مع",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
+  },
+  "tables": {
+    "title": "إدارة الطاولات",
+    "description": "إدارة الطاولات والمناطق والحجوزات لمطعمك",
+    "loading": "جارٍ تحميل إدارة الطاولات...",
+    "addZone": "إضافة منطقة",
+    "mergeTables": "دمج الطاولات",
+    "addTable": "إضافة طاولة",
+    "newReservation": "حجز جديد",
+    "noZone": "لا توجد منطقة",
+    "assignServer": "تعيين خادم",
+    "searchPlaceholder": "البحث في الطاولات...",
+    "columns": {
+      "tableName": "اسم الطاولة",
+      "zone": "المنطقة",
+      "capacity": "السعة",
+      "status": "الحالة"
+    },
+    "status": {
+      "available": "متاحة",
+      "occupied": "مشغولة",
+      "reserved": "محجوزة",
+      "outOfOrder": "خارج الخدمة",
+      "cleaning": "تنظيف"
+    },
+    "stats": {
+      "totalTables": "إجمالي الطاولات",
+      "activeZones": "المناطق النشطة",
+      "todayReservations": "حجوزات اليوم",
+      "availableTables": "الطاولات المتاحة"
+    },
+    "tabs": {
+      "tables": "الطاولات",
+      "zones": "المناطق",
+      "reservations": "الحجوزات"
+    },
+    "zones": {
+      "searchPlaceholder": "البحث في المناطق...",
+      "noColor": "لا يوجد لون",
+      "tableCount": "{{count}} طاولات ({{available}} متاحة، {{occupied}} مشغولة)",
+      "columns": {
+        "zoneName": "اسم المنطقة",
+        "tables": "الطاولات",
+        "color": "اللون"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "البحث في الحجوزات...",
+      "columns": {
+        "customer": "العميل",
+        "table": "الطاولة",
+        "dateTime": "التاريخ والوقت",
+        "guests": "الضيوف"
+      }
+    }
+  },
+  "payment": {
+    "title": "إعدادات الدفع",
+    "description": "إدارة طرق الدفع وتكوينات العطاءات",
+    "addTender": "إضافة عطاء",
+    "searchPlaceholder": "البحث في العطاءات...",
+    "allTypes": "جميع الأنواع",
+    "allCurrencies": "جميع العملات",
+    "noTendersFound": "لم يتم العثور على عطاءات",
+    "noMatchingTenders": "لا توجد عطاءات تطابق معايير البحث الخاصة بك.",
+    "getStartedMessage": "ابدأ بإضافة عطاءك الأول.",
+    "table": {
+      "tender": "العطاء",
+      "currency": "العملة",
+      "type": "النوع",
+      "overTender": "العطاء الزائد"
+    }
+  },
+  "sales": {
+    "description": "إدارة المبيعات المتقدمة والتحليلات",
+    "export": "تصدير",
+    "newSale": "بيع جديد",
+    "searchPlaceholder": "البحث في المبيعات والعملاء والصرافين...",
+    "stats": {
+      "totalSales": "إجمالي المبيعات",
+      "completed": "مكتمل",
+      "pending": "معلق",
+      "revenue": "الإيرادات"
+    },
+    "filters": {
+      "allStatus": "جميع الحالات",
+      "completed": "مكتمل",
+      "new": "جديد",
+      "suspended": "معلق",
+      "cancelled": "ملغى",
+      "cancelOrphaned": "إلغاء اليتيم"
+    }
+  },
+  "terminalSettings": {
+    "title": "إدارة المحطات الطرفية",
+    "description": "إدارة وتكوين محطات نقاط البيع لمتجرك",
+    "descriptionWithStore": "إدارة محطات نقاط البيع لـ {{storeName}}",
+    "loading": {
+      "title": "تحميل إعدادات المحطة الطرفية",
+      "description": "يرجى الانتظار بينما نحصل على تكوين المحطة الطرفية الخاصة بك..."
+    },
+    "noStore": {
+      "title": "لم يتم اختيار متجر",
+      "description": "يرجى اختيار متجر لإدارة محطاته الطرفية."
+    },
+    "refresh": "تحديث",
+    "addTerminal": "إضافة محطة طرفية",
+    "editTerminal": "تحرير المحطة الطرفية",
+    "addFirstTerminal": "أضف محطتك الطرفية الأولى",
+    "stats": {
+      "totalTerminals": "إجمالي المحطات الطرفية",
+      "activeTerminals": "المحطات الطرفية النشطة", 
+      "inactiveTerminals": "المحطات الطرفية غير النشطة"
+    },
+    "search": {
+      "placeholder": "البحث في المحطات الطرفية...",
+      "showing": "عرض {{count}} من {{total}} محطة طرفية"
+    },
+    "filters": {
+      "allStatus": "جميع الحالات",
+      "activeOnly": "النشطة فقط",
+      "inactiveOnly": "غير النشطة فقط"
+    },
+    "form": {
+      "terminalId": "معرف المحطة الطرفية",
+      "deviceId": "معرف الجهاز", 
+      "terminalName": "اسم المحطة الطرفية",
+      "platform": "المنصة",
+      "model": "الطراز",
+      "architecture": "البنية",
+      "status": "الحالة",
+      "selectPlatform": "اختر المنصة",
+      "selectArchitecture": "اختر البنية",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "محطة العداد الرئيسية",
+        "model": "iPad Pro، Galaxy Tab، إلخ."
+      },
+      "errors": {
+        "terminalIdRequired": "معرف المحطة الطرفية مطلوب",
+        "deviceIdRequired": "معرف الجهاز مطلوب", 
+        "nameRequired": "اسم المحطة الطرفية مطلوب",
+        "platformRequired": "المنصة مطلوبة",
+        "modelRequired": "الطراز مطلوب",
+        "archRequired": "البنية مطلوبة",
+        "saveFailed": "فشل في حفظ المحطة الطرفية. يرجى المحاولة مرة أخرى."
+      },
+      "helperText": {
+        "terminalIdReadonly": "لا يمكن تغيير معرف المحطة الطرفية عند التحرير"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "متصفح الويب"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل"
+    },
+    "actions": {
+      "saving": "جاري الحفظ...",
+      "addTerminal": "إضافة محطة طرفية",
+      "updateTerminal": "تحديث المحطة الطرفية",
+      "cancel": "إلغاء"
+    },
+    "empty": {
+      "noTerminals": "لا توجد محطات طرفية مكونة",
+      "noMatching": "لا توجد محطات طرفية تطابق بحثك",
+      "getStarted": "ابدأ بإضافة محطة نقاط البيع الأولى.",
+      "adjustFilters": "حاول تعديل مصطلحات البحث أو المرشحات."
+    },
+    "details": {
+      "deviceId": "معرف الجهاز:",
+      "platform": "المنصة:",
+      "model": "الطراز:",
+      "architecture": "البنية:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "تحرير العطاء",
+      "create": "إنشاء عطاء جديد"
+    },
+    "backToPayments": "العودة إلى إعدادات الدفع",
+    "delete": "حذف",
+    "unsavedChanges": {
+      "title": "لديك تغييرات غير محفوظة",
+      "description": "لا تنس حفظ تعديلاتك قبل مغادرة هذه الصفحة.",
+      "discard": "تجاهل التغييرات",
+      "save": "حفظ التغييرات"
+    },
+    "saving": "جاري الحفظ...",
+    "templates": {
+      "title": "قوالب العطاء",
+      "description": "اختر قالبًا للبدء بسرعة، أو تخط لإنشاء من الصفر",
+      "skip": "تخطي القوالب",
+      "cash": {
+        "name": "نقدي (AED)",
+        "description": "المدفوعات النقدية بالدرهم الإماراتي"
+      },
+      "visa": {
+        "name": "بطاقة فيزا", 
+        "description": "بطاقة فيزا الائتمانية/الخصم"
+      },
+      "mastercard": {
+        "name": "ماستركارد",
+        "description": "بطاقة ماستركارد الائتمانية/الخصم"
+      },
+      "giftCard": {
+        "name": "بطاقة هدايا",
+        "description": "بطاقات هدايا المتجر"
+      },
+      "loyaltyPoints": {
+        "name": "نقاط الولاء",
+        "description": "نقاط ولاء العملاء"
+      },
+      "voucher": {
+        "name": "قسيمة",
+        "description": "قسائم وكوبونات المتجر"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "المعلومات الأساسية",
+        "description": "تفاصيل العطاء الأساسية والتعريف"
+      },
+      "denominations": {
+        "title": "الفئات",
+        "description": "تكوين الفئات المتاحة لهذا العطاء",
+        "addDenomination": "إضافة فئة",
+        "noDenominations": "لا توجد فئات مكونة",
+        "getStarted": "انقر على \"إضافة فئة\" للبدء",
+        "value": "القيمة",
+        "description": "الوصف"
+      },
+      "configuration": {
+        "title": "التكوين", 
+        "description": "سلوك العطاء وتكوين النظام"
+      },
+      "settings": {
+        "title": "الإعدادات",
+        "description": "حالة العطاء وإعدادات السلوك"
+      }
+    },
+    "form": {
+      "tenderId": "معرف العطاء",
+      "description": "الوصف",
+      "tenderType": "نوع العطاء", 
+      "currency": "العملة",
+      "displayOrder": "ترتيب العرض",
+      "availability": "التوفر",
+      "maxRefundDays": "أقصى أيام الاسترداد",
+      "changeCashLimit": "حد تغيير النقد",
+      "placeholders": {
+        "tenderId": "أدخل معرف العطاء",
+        "description": "أدخل وصف العطاء",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "الأرقام الأقل تظهر أولاً في قائمة العطاءات",
+        "tenderIdReadonly": "لا يمكن تغيير معرف العطاء عند التحرير"
+      },
+      "errors": {
+        "tenderIdRequired": "معرف العطاء مطلوب",
+        "descriptionRequired": "الوصف مطلوب", 
+        "tenderIdTooLong": "يجب أن يكون معرف العطاء أقل من 50 حرفًا",
+        "availabilityRequired": "مطلوب خيار توفر واحد على الأقل",
+        "saveFailed": "فشل في حفظ العطاء. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "عملة",
+        "description": "المدفوعات النقدية والعطاءات القائمة على العملة"
+      },
+      "card": {
+        "label": "بطاقة", 
+        "description": "مدفوعات بطاقات الائتمان والخصم"
+      },
+      "giftcard": {
+        "label": "بطاقة هدايا",
+        "description": "بطاقات هدايا وقسائم المتجر"
+      },
+      "loyalty": {
+        "label": "نقاط الولاء",
+        "description": "استرداد نقاط ولاء العملاء"
+      },
+      "voucher": {
+        "label": "قسيمة",
+        "description": "قسائم وكوبونات المتجر"
+      }
+    },
+    "currencies": {
+      "aed": "الدرهم الإماراتي",
+      "usd": "الدولار الأمريكي",
+      "eur": "اليورو", 
+      "gbp": "الجنيه الاسترليني"
+    },
+    "availability": {
+      "sale": {
+        "label": "بيع",
+        "description": "يمكن استخدامه لمعاملات البيع العادية"
+      },
+      "returnWithReceipt": {
+        "label": "إرجاع مع إيصال",
+        "description": "يمكن استخدامه للإرجاع مع إيصال"
+      },
+      "returnWithoutReceipt": {
+        "label": "إرجاع بدون إيصال",
+        "description": "يمكن استخدامه للإرجاع بدون إيصال"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "الرقم التسلسلي مطلوب",
+        "description": "تتطلب إدخال الرقم التسلسلي لهذا العطاء"
+      },
+      "openCashDrawer": {
+        "title": "فتح درج النقد",
+        "description": "فتح درج النقد تلقائيًا عند استخدام هذا العطاء"
+      },
+      "customerRequired": {
+        "title": "العميل مطلوب", 
+        "description": "تتطلب معلومات العميل لهذا العطاء"
+      },
+      "splitTenderAllowed": {
+        "title": "العطاء المقسم مسموح",
+        "description": "السماح باستخدام هذا العطاء في المدفوعات المقسمة"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "الحالة النشطة",
+        "description": "ما إذا كان هذا العطاء نشط ومتاح للاستخدام"
+      },
+      "overTenderAllowed": {
+        "title": "العطاء الزائد مسموح", 
+        "description": "السماح للعملاء بدفع أكثر من المبلغ المطلوب"
+      }
+    },
+    "actions": {
+      "cancel": "إلغاء",
+      "createTender": "إنشاء عطاء",
+      "updateTender": "تحديث العطاء"
+    },
+    "success": {
+      "created": "تم إنشاء العطاء بنجاح!",
+      "updated": "تم تحديث العطاء بنجاح!"
+    }
+  },
+  "taxSettings": {
+    "title": "إعدادات الضرائب",
+    "description": "تكوين سلطات الضرائب والمجموعات والمواقع لمتجرك",
+    "loading": {
+      "title": "تحميل تكوين الضرائب",
+      "description": "يرجى الانتظار بينما نحصل على إعدادات الضرائب الخاصة بك..."
+    },
+    "unsavedChanges": "لديك تغييرات غير محفوظة",
+    "unsavedDescription": "لا تنس حفظ تعديلاتك قبل مغادرة هذه الصفحة.",
+    "discardChanges": "تجاهل التغييرات", 
+    "saveAllChanges": "حفظ جميع التغييرات",
+    "saving": "جاري الحفظ...",
+    "welcome": {
+      "title": "مرحبًا! إعداد تكوين الضرائب الخاص بك",
+      "description": "لقد حملنا تكوين قالب لمساعدتك على البدء. راجع وعدّل الإعدادات أدناه، ثم احفظ لإنشاء تكوين الضرائب الخاص بك."
+    },
+    "noConfiguration": {
+      "title": "تعذر تحميل تكوين الضرائب",
+      "description": "فشل في تحميل تكوين الضرائب. يرجى المحاولة مرة أخرى.",
+      "tryAgain": "حاول مرة أخرى"
+    },
+    "noTenant": {
+      "title": "لم يتم العثور على تكوين ضرائب", 
+      "tenantDescription": "لا يوجد تكوين ضرائب لهذا المستأجر. يرجى الاتصال بالمشرف لإعداد تكوين الضرائب.",
+      "selectDescription": "يرجى اختيار مستأجر لتكوين إعدادات الضرائب.",
+      "goBack": "العودة"
+    },
+    "stats": {
+      "totalAuthorities": "إجمالي السلطات",
+      "authoritiesConfigured": "سلطات الضرائب المكونة",
+      "taxGroups": "مجموعات الضرائب",
+      "groupsWithRules": "مجموعات بقواعد",
+      "taxLocation": "موقع الضرائب",
+      "currentLocation": "الموقع الحالي",
+      "totalRules": "إجمالي القواعد",
+      "rulesDefined": "قواعد الضرائب المحددة",
+      "notSet": "غير محدد"
+    },
+    "tabs": {
+      "authorities": "سلطات الضرائب",
+      "groups": "مجموعات الضرائب", 
+      "location": "موقع الضرائب",
+      "settings": "الإعدادات"
+    },
+    "authorities": {
+      "title": "سلطات الضرائب",
+      "description": "تكوين سلطات الضرائب التي ستطبق الضرائب على منتجاتك",
+      "addAuthority": "إضافة سلطة",
+      "noAuthorities": "لا توجد سلطات ضرائب",
+      "getStarted": "أنشئ أول سلطة ضرائب للبدء.",
+      "form": {
+        "authorityId": "معرف السلطة",
+        "authorityName": "اسم السلطة",
+        "roundingCode": "رمز التقريب",
+        "roundingDigits": "أرقام التقريب",
+        "placeholders": {
+          "authorityId": "مثال، CGST001",
+          "authorityName": "مثال، ضريبة القيمة المضافة المركزية",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "نصف لأعلى",
+        "halfDown": "نصف لأسفل", 
+        "up": "لأعلى",
+        "down": "لأسفل"
+      },
+      "details": {
+        "id": "المعرف:",
+        "rounding": "التقريب:",
+        "digits": "الأرقام:"
+      }
+    },
+    "groups": {
+      "title": "مجموعات الضرائب",
+      "description": "تنظيم قواعد الضرائب في مجموعات لإدارة أسهل", 
+      "addGroup": "إضافة مجموعة",
+      "noGroups": "لا توجد مجموعات ضرائب",
+      "getStarted": "أنشئ أول مجموعة ضرائب لتنظيم قواعد الضرائب الخاصة بك.",
+      "totalRate": "الإجمالي",
+      "form": {
+        "taxGroupId": "معرف مجموعة الضرائب", 
+        "groupName": "اسم المجموعة",
+        "description": "الوصف",
+        "placeholders": {
+          "taxGroupId": "مثال، TG001",
+          "groupName": "مثال، ضريبة القيمة المضافة القياسية",
+          "description": "أدخل وصف المجموعة"
+        }
+      },
+      "rules": {
+        "title": "قواعد الضرائب",
+        "addRule": "إضافة قاعدة",
+        "noRules": "لا توجد قواعد ضرائب مكونة. انقر على \"إضافة قاعدة\" للبدء.",
+        "totalTaxRate": "معدل الضريبة الإجمالي:",
+        "form": {
+          "name": "الاسم",
+          "taxAuthority": "سلطة الضرائب",
+          "percentage": "النسبة المئوية (%)",
+          "taxTypeCode": "رمز نوع الضريبة",
+          "description": "الوصف",
+          "placeholders": {
+            "name": "اسم القاعدة",
+            "percentage": "0.00",
+            "description": "وصف القاعدة"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "ضريبة القيمة المضافة",
+            "description": "ضريبة القيمة المضافة - ضريبة تطبق في كل مرحلة من الإنتاج/التوزيع"
+          },
+          "sales": {
+            "label": "المبيعات",
+            "description": "ضريبة المبيعات - ضريبة تطبق في نقطة البيع للمستهلك النهائي"  
+          }
+        },
+        "details": {
+          "authority": "السلطة:",
+          "type": "النوع:"
+        },
+        "actions": {
+          "done": "تم",
+          "delete": "حذف"
+        }
+      }
+    },
+    "location": {
+      "title": "موقع الضرائب",
+      "description": "تكوين موقع الضرائب الأساسي لمتجرك",
+      "form": {
+        "taxLocationId": "معرف موقع الضرائب",
+        "locationName": "اسم الموقع", 
+        "description": "الوصف",
+        "placeholders": {
+          "locationName": "مثال، المتجر الرئيسي",
+          "description": "أدخل وصف الموقع"
+        }
+      },
+      "details": {
+        "id": "المعرف:",
+        "noDescription": "لا يوجد وصف"
+      }
+    },
+    "generalSettings": {
+      "title": "الإعدادات العامة",
+      "description": "إعدادات وتفضيلات تكوين الضرائب الإضافية",
+      "settingsPanel": "لوحة الإعدادات",
+      "additionalSettings": "ستكون إعدادات تكوين الضرائب الإضافية متاحة هنا."
+    },
+    "success": {
+      "created": "تم إنشاء تكوين الضرائب بنجاح",
+      "updated": "تم تحديث تكوين الضرائب بنجاح"
+    },
+    "errors": {
+      "saveFailed": "فشل في حفظ التغييرات:"
+    }
+  }
+}

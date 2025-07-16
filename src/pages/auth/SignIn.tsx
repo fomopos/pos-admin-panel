@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Button from '../../components/ui/Button';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { cn } from '../../utils/cn';
 import { authService } from '../../auth/authService';
 
 const SignIn: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState({
@@ -38,15 +40,15 @@ const SignIn: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('auth.validation.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('auth.validation.emailInvalid');
     }
     
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('auth.validation.passwordRequired');
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t('auth.validation.passwordMinLength');
     }
     
     setErrors(newErrors);
@@ -85,24 +87,21 @@ const SignIn: React.FC = () => {
     } catch (error: any) {
       console.error('Sign in error:', error);
       
-      let errorMessage = 'Sign in failed. Please check your credentials and try again.';
+      let errorMessage = t('auth.errors.signInFailed');
       
       // Handle specific Cognito error codes
       if (error.name === 'UserNotConfirmedException') {
-        errorMessage = 'Please verify your email address. Check your inbox for a verification link.';
-        // Optionally redirect to verification page
-        // navigate('/auth/verify-email', { state: { email: formData.email, fromSignUp: true } });
-        // return;
+        errorMessage = t('auth.errors.userNotConfirmed');
       } else if (error.name === 'NotAuthorizedException') {
-        errorMessage = 'Invalid email or password. Please try again.';
+        errorMessage = t('auth.errors.invalidCredentials');
       } else if (error.name === 'UserNotFoundException') {
-        errorMessage = 'No account found with this email address.';
+        errorMessage = t('auth.errors.userNotFound');
       } else if (error.name === 'TooManyRequestsException') {
-        errorMessage = 'Too many failed attempts. Please wait before trying again.';
+        errorMessage = t('auth.errors.tooManyRequests');
       } else if (error.name === 'PasswordResetRequiredException') {
-        errorMessage = 'Password reset required. Please reset your password.';
+        errorMessage = t('auth.errors.passwordResetRequired');
       } else if (error.name === 'UserNotConfirmedException') {
-        errorMessage = 'Account not verified. Please check your email for verification instructions.';
+        errorMessage = t('auth.errors.accountNotVerified');
       }
       
       setErrors({ general: errorMessage });
@@ -118,13 +117,13 @@ const SignIn: React.FC = () => {
       // Social login with AWS Cognito would require additional setup
       // For now, show a message that it's not implemented
       setErrors({ 
-        general: `${provider} login is not yet implemented. Please use email and password.` 
+        general: t('auth.errors.socialNotImplemented', { provider })
       });
       
     } catch (error) {
       console.error(`${provider} login error:`, error);
       setErrors({ 
-        general: `${provider} login failed. Please try again.` 
+        general: t('auth.errors.socialFailed', { provider })
       });
     } finally {
       setIsLoading(false);
@@ -148,10 +147,10 @@ const SignIn: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Welcome back!
+              {t('auth.signIn.welcome')}
             </h1>
             <p className="text-slate-500">
-              Please enter your credentials to sign in!
+              {t('auth.signIn.subtitle')}
             </p>
           </div>
 
@@ -173,7 +172,7 @@ const SignIn: React.FC = () => {
             {/* Email Field */}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-slate-700">
-                Email
+                {t('auth.fields.email')}
               </label>
               <input
                 id="email"
@@ -181,7 +180,7 @@ const SignIn: React.FC = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your email address"
+                placeholder={t('auth.placeholders.email')}
                 className={cn(
                   "flex h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
                   errors.email && "border-red-500 focus-visible:ring-red-500"
@@ -196,7 +195,7 @@ const SignIn: React.FC = () => {
             {/* Password Field */}
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium text-slate-700">
-                Password
+                {t('auth.fields.password')}
               </label>
               <div className="relative">
                 <input
@@ -205,7 +204,7 @@ const SignIn: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="••••••"
+                  placeholder={t('auth.placeholders.password')}
                   className={cn(
                     "flex h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
                     errors.password && "border-red-500 focus-visible:ring-red-500"
@@ -236,7 +235,7 @@ const SignIn: React.FC = () => {
                 onClick={() => navigate('/auth/forgot-password')}
                 className="text-sm text-slate-900 hover:text-slate-700 font-medium transition-colors underline"
               >
-                Forgot password
+                {t('auth.forgotPassword')}
               </button>
             </div>
 
@@ -249,10 +248,10 @@ const SignIn: React.FC = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
+                  {t('auth.signIn.signingIn')}
                 </div>
               ) : (
-                'Sign In'
+                t('auth.signIn.button')
               )}
             </Button>
 
@@ -262,7 +261,7 @@ const SignIn: React.FC = () => {
                 <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-slate-500">or continue with</span>
+                <span className="px-4 bg-white text-slate-500">{t('auth.orContinueWith')}</span>
               </div>
             </div>
 
@@ -280,7 +279,7 @@ const SignIn: React.FC = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                <span className="text-sm font-medium text-slate-700">Google</span>
+                <span className="text-sm font-medium text-slate-700">{t('auth.social.google')}</span>
               </button>
 
               <button
@@ -292,7 +291,7 @@ const SignIn: React.FC = () => {
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                 </svg>
-                <span className="text-sm font-medium text-slate-700">Github</span>
+                <span className="text-sm font-medium text-slate-700">{t('auth.social.github')}</span>
               </button>
             </div>
           </form>
@@ -301,12 +300,12 @@ const SignIn: React.FC = () => {
         {/* Sign Up Link */}
         <div className="text-center mt-6">
           <p className="text-sm text-slate-500">
-            Don't have an account?{' '}
+            {t('auth.signIn.noAccount')}{' '}
             <button
               onClick={() => navigate('/auth/signup')}
               className="text-slate-900 hover:text-slate-700 font-medium transition-colors underline"
             >
-              Sign up
+              {t('auth.signUp.link')}
             </button>
           </p>
         </div>

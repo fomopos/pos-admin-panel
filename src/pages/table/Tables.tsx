@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   BuildingOfficeIcon,
@@ -17,6 +18,7 @@ import useTenantStore from '../../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../../hooks/useConfirmDialog';
 
 const Tables: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   const [tables, setTables] = useState<EnhancedTable[]>([]);
@@ -132,7 +134,7 @@ const Tables: React.FC = () => {
   const tableColumns = [
     {
       key: 'name',
-      title: 'Table Name',
+      title: t('tables.columns.tableName'),
       sortable: true,
       render: (value: string, table: EnhancedTable) => (
         <div className="flex items-center">
@@ -146,15 +148,15 @@ const Tables: React.FC = () => {
     },
     {
       key: 'zone_name',
-      title: 'Zone',
+      title: t('tables.columns.zone'),
       sortable: true,
       render: (value: string) => (
-        <span className="text-sm text-gray-900">{value || 'No Zone'}</span>
+        <span className="text-sm text-gray-900">{value || t('tables.noZone')}</span>
       ),
     },
     {
       key: 'capacity',
-      title: 'Capacity',
+      title: t('tables.columns.capacity'),
       sortable: true,
       render: (value: number) => (
         <div className="flex items-center">
@@ -165,7 +167,7 @@ const Tables: React.FC = () => {
     },
     {
       key: 'status',
-      title: 'Status',
+      title: t('tables.columns.status'),
       sortable: true,
       render: (value: TableStatus, table: EnhancedTable) => (
         <select
@@ -173,17 +175,17 @@ const Tables: React.FC = () => {
           onChange={(e) => handleTableStatusChange(table.table_id, e.target.value as TableStatus)}
           className="text-xs rounded-full border-0 px-3 py-1 font-medium focus:ring-2 focus:ring-blue-500"
         >
-          <option value="available">Available</option>
-          <option value="occupied">Occupied</option>
-          <option value="reserved">Reserved</option>
-          <option value="out_of_order">Out of Order</option>
-          <option value="cleaning">Cleaning</option>
+          <option value="available">{t('tables.status.available')}</option>
+          <option value="occupied">{t('tables.status.occupied')}</option>
+          <option value="reserved">{t('tables.status.reserved')}</option>
+          <option value="out_of_order">{t('tables.status.outOfOrder')}</option>
+          <option value="cleaning">{t('tables.status.cleaning')}</option>
         </select>
       ),
     },
     {
       key: 'actions',
-      title: 'Actions',
+      title: t('common.actions'),
       render: (_value: any, table: EnhancedTable) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -204,7 +206,7 @@ const Tables: React.FC = () => {
             size="sm"
             variant="outline"
             onClick={() => navigate(`/tables/assign/${table.table_id}`)}
-            title="Assign Server"
+            title={t('tables.assignServer')}
           >
             <UserGroupIcon className="h-4 w-4" />
           </Button>
@@ -225,7 +227,7 @@ const Tables: React.FC = () => {
   const zoneColumns = [
     {
       key: 'name',
-      title: 'Zone Name',
+      title: t('tables.zones.columns.zoneName'),
       sortable: true,
       render: (value: string, zone: EnhancedZone) => (
         <div className="flex items-center">
@@ -239,42 +241,46 @@ const Tables: React.FC = () => {
     },
     {
       key: 'table_count',
-      title: 'Tables',
+      title: t('tables.zones.columns.tables'),
       sortable: true,
       render: (value: number, zone: EnhancedZone) => (
         <div className="text-sm text-gray-900">
-          {value} tables ({zone.available_tables} available, {zone.occupied_tables} occupied)
+          {t('tables.zones.tableCount', { 
+            count: value, 
+            available: zone.available_tables, 
+            occupied: zone.occupied_tables 
+          })}
         </div>
       ),
     },
     {
       key: 'color',
-      title: 'Color',
+      title: t('tables.zones.columns.color'),
       render: (value: string) => (
         <div className="flex items-center">
           <div
             className="w-4 h-4 rounded-full mr-2"
             style={{ backgroundColor: value || '#gray' }}
           ></div>
-          <span className="text-sm text-gray-900">{value || 'No color'}</span>
+          <span className="text-sm text-gray-900">{value || t('tables.zones.noColor')}</span>
         </div>
       ),
     },
     {
       key: 'active',
-      title: 'Status',
+      title: t('common.status'),
       sortable: true,
       render: (value: boolean) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
         }`}>
-          {value ? 'Active' : 'Inactive'}
+          {value ? t('common.active') : t('common.inactive')}
         </span>
       ),
     },
     {
       key: 'actions',
-      title: 'Actions',
+      title: t('common.actions'),
       render: (_value: any, zone: EnhancedZone) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -301,7 +307,7 @@ const Tables: React.FC = () => {
   const reservationColumns = [
     {
       key: 'customer_name',
-      title: 'Customer',
+      title: t('tables.reservations.columns.customer'),
       sortable: true,
       render: (value: string, reservation: EnhancedReservation) => (
         <div>
@@ -312,7 +318,7 @@ const Tables: React.FC = () => {
     },
     {
       key: 'table_name',
-      title: 'Table',
+      title: t('tables.reservations.columns.table'),
       sortable: true,
       render: (value: string) => (
         <span className="text-sm text-gray-900">{value}</span>
@@ -320,7 +326,7 @@ const Tables: React.FC = () => {
     },
     {
       key: 'reservation_time',
-      title: 'Date & Time',
+      title: t('tables.reservations.columns.dateTime'),
       sortable: true,
       render: (value: string) => {
         const date = new Date(value);
@@ -338,7 +344,7 @@ const Tables: React.FC = () => {
     },
     {
       key: 'number_of_guests',
-      title: 'Guests',
+      title: t('tables.reservations.columns.guests'),
       sortable: true,
       render: (value: number) => (
         <div className="flex items-center">
@@ -349,13 +355,13 @@ const Tables: React.FC = () => {
     },
     {
       key: 'status',
-      title: 'Status',
+      title: t('common.status'),
       sortable: true,
       render: (value: string) => getReservationStatusBadge(value),
     },
     {
       key: 'actions',
-      title: 'Actions',
+      title: t('common.actions'),
       render: (_value: any, reservation: EnhancedReservation) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -375,7 +381,7 @@ const Tables: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading table management...</p>
+          <p className="mt-4 text-gray-600">{t('tables.loading')}</p>
         </div>
       </div>
     );
@@ -385,8 +391,8 @@ const Tables: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <PageHeader
-        title="Table Management"
-        description="Manage tables, zones, and reservations for your restaurant"
+        title={t('tables.title')}
+        description={t('tables.description')}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -395,7 +401,7 @@ const Tables: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <BuildingOfficeIcon className="w-5 h-5" />
-            <span>Add Zone</span>
+            <span>{t('tables.addZone')}</span>
           </Button>
           <Button
             onClick={() => navigate('/tables/merge')}
@@ -403,14 +409,14 @@ const Tables: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <PlusIcon className="w-5 h-5" />
-            <span>Merge Tables</span>
+            <span>{t('tables.mergeTables')}</span>
           </Button>
           <Button
             onClick={() => navigate('/tables/new')}
             className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
           >
             <PlusIcon className="w-5 h-5" />
-            <span>Add Table</span>
+            <span>{t('tables.addTable')}</span>
           </Button>
           <Button
             onClick={() => navigate('/reservations/new')}
@@ -418,7 +424,7 @@ const Tables: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <CalendarDaysIcon className="w-5 h-5" />
-            <span>New Reservation</span>
+            <span>{t('tables.newReservation')}</span>
           </Button>
         </div>
       </PageHeader>
@@ -429,7 +435,7 @@ const Tables: React.FC = () => {
           <div className="flex items-center">
             <TableCellsIcon className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Tables</p>
+              <p className="text-sm font-medium text-gray-600">{t('tables.stats.totalTables')}</p>
               <p className="text-2xl font-bold text-gray-900">{tables.length}</p>
             </div>
           </div>
@@ -438,7 +444,7 @@ const Tables: React.FC = () => {
           <div className="flex items-center">
             <BuildingOfficeIcon className="h-8 w-8 text-green-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Zones</p>
+              <p className="text-sm font-medium text-gray-600">{t('tables.stats.activeZones')}</p>
               <p className="text-2xl font-bold text-gray-900">{zones.filter(z => z.active).length}</p>
             </div>
           </div>
@@ -447,7 +453,7 @@ const Tables: React.FC = () => {
           <div className="flex items-center">
             <CalendarDaysIcon className="h-8 w-8 text-yellow-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Today's Reservations</p>
+              <p className="text-sm font-medium text-gray-600">{t('tables.stats.todayReservations')}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {reservations.filter(r => r.is_today).length}
               </p>
@@ -458,7 +464,7 @@ const Tables: React.FC = () => {
           <div className="flex items-center">
             <UserGroupIcon className="h-8 w-8 text-purple-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Available Tables</p>
+              <p className="text-sm font-medium text-gray-600">{t('tables.stats.availableTables')}</p>
               <p className="text-2xl font-bold text-gray-900">
                 {tables.filter(t => t.status === 'available').length}
               </p>
@@ -479,7 +485,7 @@ const Tables: React.FC = () => {
             } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
             <TableCellsIcon className="h-4 w-4" />
-            <span>Tables</span>
+            <span>{t('tables.tabs.tables')}</span>
           </button>
           <button
             onClick={() => setActiveTab('zones')}
@@ -490,7 +496,7 @@ const Tables: React.FC = () => {
             } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
             <BuildingOfficeIcon className="h-4 w-4" />
-            <span>Zones</span>
+            <span>{t('tables.tabs.zones')}</span>
           </button>
           <button
             onClick={() => setActiveTab('reservations')}
@@ -501,7 +507,7 @@ const Tables: React.FC = () => {
             } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
           >
             <CalendarDaysIcon className="h-4 w-4" />
-            <span>Reservations</span>
+            <span>{t('tables.tabs.reservations')}</span>
           </button>
         </nav>
       </div>
@@ -512,7 +518,7 @@ const Tables: React.FC = () => {
           data={tables}
           columns={tableColumns}
           searchable={true}
-          searchPlaceholder="Search tables..."
+          searchPlaceholder={t('tables.searchPlaceholder')}
           searchFields={['name', 'table_id', 'zone_name']}
           pagination={true}
           pageSize={10}
@@ -526,7 +532,7 @@ const Tables: React.FC = () => {
           data={zones}
           columns={zoneColumns}
           searchable={true}
-          searchPlaceholder="Search zones..."
+          searchPlaceholder={t('tables.zones.searchPlaceholder')}
           searchFields={['name', 'description']}
           pagination={true}
           pageSize={10}
@@ -539,7 +545,7 @@ const Tables: React.FC = () => {
           data={reservations}
           columns={reservationColumns}
           searchable={true}
-          searchPlaceholder="Search reservations..."
+          searchPlaceholder={t('tables.reservations.searchPlaceholder')}
           searchFields={['customer_name', 'contact', 'table_name']}
           pagination={true}
           pageSize={10}
