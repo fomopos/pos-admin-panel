@@ -533,71 +533,65 @@ const CategoryEditPage: React.FC = () => {
         description={isEditing ? 'Modify category details and settings' : 'Create a new category for your products'}
       >
         <div className="flex items-center space-x-3">
-          <Button
-            onClick={() => navigate('/categories')}
-            variant="outline"
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Back to Categories</span>
-          </Button>
-          
-          {isEditing && (
-            <Button
-              onClick={handleDelete}
-              variant="outline"
-              className="text-red-600 border-red-300 hover:bg-red-50"
-            >
-              <TrashIcon className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          )}
-        </div>
-
-        {/* Save/Discard Actions */}
-        {hasChanges && (
-          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
-                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
-              </div>
+          {hasChanges && (
+            <div className="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+              <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+              Unsaved changes
             </div>
-            <div className="flex items-center justify-end space-x-3">
+          )}
+          
+          {hasChanges ? (
+            <>
               <Button
                 onClick={discardChanges}
                 variant="outline"
-                size="sm"
-                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
+                className="flex items-center space-x-2 border-amber-300 text-amber-700 hover:bg-amber-50"
               >
+                <XMarkIcon className="h-4 w-4" />
                 <span>Discard Changes</span>
               </Button>
+              
               <Button
                 onClick={saveAllChanges}
                 disabled={isSaving}
-                size="sm"
-                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
+                variant="primary"
+                className="flex items-center space-x-2"
               >
                 {isSaving ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Saving...</span>
+                    <span>{isEditing ? 'Updating...' : 'Creating...'}</span>
                   </>
                 ) : (
                   <>
                     <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>Save Changes</span>
+                    <span>{isEditing ? 'Update Category' : 'Create Category'}</span>
                   </>
                 )}
               </Button>
-            </div>
-          </div>
-        )}
+            </>
+          ) : (
+            <Button
+              onClick={() => navigate('/categories')}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              <span>Back to Categories</span>
+            </Button>
+          )}
+          
+          {isEditing && (
+            <Button
+              onClick={handleDelete}
+              variant="destructive"
+              className="flex items-center space-x-2"
+            >
+              <TrashIcon className="h-4 w-4" />
+              <span>Delete</span>
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
       {/* Success Message */}
@@ -927,36 +921,6 @@ const CategoryEditPage: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/categories')}
-            className="w-full sm:w-auto"
-          >
-            Cancel
-          </Button>
-          
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 w-full sm:w-auto"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <CloudArrowUpIcon className="h-4 w-4" />
-                <span>{isEditing ? 'Update Category' : 'Create Category'}</span>
-              </>
-            )}
-          </Button>
-        </div>
       </form>
 
       {/* Confirm Dialogs */}
