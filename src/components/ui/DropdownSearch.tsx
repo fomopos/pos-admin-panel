@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, MagnifyingGlassIcon, FolderIcon } from '@heroicons/react/24/outline';
 
 export interface DropdownSearchOption {
@@ -59,8 +60,8 @@ export interface DropdownSearchProps {
 export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   label,
   value,
-  placeholder = "Select an option",
-  searchPlaceholder = "Search options...",
+  placeholder,
+  searchPlaceholder,
   required = false,
   error,
   disabled = false,
@@ -69,10 +70,10 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   onSelect,
   displayValue,
   renderOption,
-  noOptionsMessage = "No options available",
-  clearSearchText = "Clear search",
+  noOptionsMessage,
+  clearSearchText,
   allowClear = true,
-  clearLabel = "None",
+  clearLabel,
   className = "",
   buttonClassName = "",
   dropdownClassName = "",
@@ -80,6 +81,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   autoFocus = true,
   maxHeight = "min(400px, 60vh)"
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -136,7 +138,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
     if (displayValue) {
       return displayValue(selectedOption);
     }
-    return selectedOption?.label || placeholder;
+    return selectedOption?.label || placeholder || t('common.selectOption');
   };
 
   const renderDisplayValue = () => {
@@ -231,7 +233,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={searchPlaceholder}
+                  placeholder={searchPlaceholder || t('common.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
@@ -250,7 +252,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-50 flex items-center"
                 >
                   <FolderIcon className="h-4 w-4 text-gray-400 mr-2" />
-                  <span className="text-gray-700 font-medium">{clearLabel}</span>
+                  <span className="text-gray-700 font-medium">{clearLabel || t('common.none')}</span>
                 </button>
               )}
               
@@ -280,13 +282,13 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
                         onClick={() => handleSearchChange('')}
                         className="text-blue-500 hover:text-blue-600 text-sm mt-1"
                       >
-                        {clearSearchText}
+                        {clearSearchText || t('common.clearSearch')}
                       </button>
                     </>
                   ) : (
                     <>
                       <FolderIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                      <p>{noOptionsMessage}</p>
+                      <p>{noOptionsMessage || t('common.noOptionsAvailable')}</p>
                     </>
                   )}
                 </div>
