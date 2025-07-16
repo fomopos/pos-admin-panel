@@ -475,5 +475,60 @@
       "google": "Google",
       "github": "Github"
     }
+  },
+  "tables": {
+    "title": "Table Management",
+    "description": "Manage tables, zones, and reservations for your restaurant",
+    "loading": "Loading table management...",
+    "addZone": "Add Zone",
+    "mergeTables": "Merge Tables",
+    "addTable": "Add Table",
+    "newReservation": "New Reservation",
+    "noZone": "No Zone",
+    "assignServer": "Assign Server",
+    "searchPlaceholder": "Search tables...",
+    "columns": {
+      "tableName": "Table Name",
+      "zone": "Zone",
+      "capacity": "Capacity",
+      "status": "Status"
+    },
+    "status": {
+      "available": "Available",
+      "occupied": "Occupied",
+      "reserved": "Reserved",
+      "outOfOrder": "Out of Order",
+      "cleaning": "Cleaning"
+    },
+    "stats": {
+      "totalTables": "Total Tables",
+      "activeZones": "Active Zones",
+      "todayReservations": "Today's Reservations",
+      "availableTables": "Available Tables"
+    },
+    "tabs": {
+      "tables": "Tables",
+      "zones": "Zones",
+      "reservations": "Reservations"
+    },
+    "zones": {
+      "searchPlaceholder": "Search zones...",
+      "noColor": "No color",
+      "tableCount": "{{count}} tables ({{available}} available, {{occupied}} occupied)",
+      "columns": {
+        "zoneName": "Zone Name",
+        "tables": "Tables",
+        "color": "Color"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "Search reservations...",
+      "columns": {
+        "customer": "Customer",
+        "table": "Table",
+        "dateTime": "Date & Time",
+        "guests": "Guests"
+      }
+    }
   }
 }

@@ -475,5 +475,60 @@
       "google": "Google",
       "github": "Github"
     }
+  },
+  "tables": {
+    "title": "إدارة الطاولات",
+    "description": "إدارة الطاولات والمناطق والحجوزات لمطعمك",
+    "loading": "جارٍ تحميل إدارة الطاولات...",
+    "addZone": "إضافة منطقة",
+    "mergeTables": "دمج الطاولات",
+    "addTable": "إضافة طاولة",
+    "newReservation": "حجز جديد",
+    "noZone": "لا توجد منطقة",
+    "assignServer": "تعيين خادم",
+    "searchPlaceholder": "البحث في الطاولات...",
+    "columns": {
+      "tableName": "اسم الطاولة",
+      "zone": "المنطقة",
+      "capacity": "السعة",
+      "status": "الحالة"
+    },
+    "status": {
+      "available": "متاحة",
+      "occupied": "مشغولة",
+      "reserved": "محجوزة",
+      "outOfOrder": "خارج الخدمة",
+      "cleaning": "تنظيف"
+    },
+    "stats": {
+      "totalTables": "إجمالي الطاولات",
+      "activeZones": "المناطق النشطة",
+      "todayReservations": "حجوزات اليوم",
+      "availableTables": "الطاولات المتاحة"
+    },
+    "tabs": {
+      "tables": "الطاولات",
+      "zones": "المناطق",
+      "reservations": "الحجوزات"
+    },
+    "zones": {
+      "searchPlaceholder": "البحث في المناطق...",
+      "noColor": "لا يوجد لون",
+      "tableCount": "{{count}} طاولات ({{available}} متاحة، {{occupied}} مشغولة)",
+      "columns": {
+        "zoneName": "اسم المنطقة",
+        "tables": "الطاولات",
+        "color": "اللون"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "البحث في الحجوزات...",
+      "columns": {
+        "customer": "العميل",
+        "table": "الطاولة",
+        "dateTime": "التاريخ والوقت",
+        "guests": "الضيوف"
+      }
+    }
   }
 }

@@ -475,5 +475,60 @@
       "google": "Google",
       "github": "Github"
     }
+  },
+  "tables": {
+    "title": "Tischverwaltung",
+    "description": "Verwalten Sie Tische, Zonen und Reservierungen für Ihr Restaurant",
+    "loading": "Tischverwaltung wird geladen...",
+    "addZone": "Zone hinzufügen",
+    "mergeTables": "Tische zusammenführen",
+    "addTable": "Tisch hinzufügen",
+    "newReservation": "Neue Reservierung",
+    "noZone": "Keine Zone",
+    "assignServer": "Server zuweisen",
+    "searchPlaceholder": "Tische suchen...",
+    "columns": {
+      "tableName": "Tischname",
+      "zone": "Zone",
+      "capacity": "Kapazität",
+      "status": "Status"
+    },
+    "status": {
+      "available": "Verfügbar",
+      "occupied": "Besetzt",
+      "reserved": "Reserviert",
+      "outOfOrder": "Außer Betrieb",
+      "cleaning": "Reinigung"
+    },
+    "stats": {
+      "totalTables": "Gesamte Tische",
+      "activeZones": "Aktive Zonen",
+      "todayReservations": "Heutige Reservierungen",
+      "availableTables": "Verfügbare Tische"
+    },
+    "tabs": {
+      "tables": "Tische",
+      "zones": "Zonen",
+      "reservations": "Reservierungen"
+    },
+    "zones": {
+      "searchPlaceholder": "Zonen suchen...",
+      "noColor": "Keine Farbe",
+      "tableCount": "{{count}} Tische ({{available}} verfügbar, {{occupied}} besetzt)",
+      "columns": {
+        "zoneName": "Zonenname",
+        "tables": "Tische",
+        "color": "Farbe"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "Reservierungen suchen...",
+      "columns": {
+        "customer": "Kunde",
+        "table": "Tisch",
+        "dateTime": "Datum & Zeit",
+        "guests": "Gäste"
+      }
+    }
   }
 }

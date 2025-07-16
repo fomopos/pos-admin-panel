@@ -462,5 +462,60 @@
       "google": "Google",
       "github": "Github"
     }
+  },
+  "tables": {
+    "title": "Gestión de Mesas",
+    "description": "Gestiona mesas, zonas y reservas para tu restaurante",
+    "loading": "Cargando gestión de mesas...",
+    "addZone": "Agregar Zona",
+    "mergeTables": "Unir Mesas",
+    "addTable": "Agregar Mesa",
+    "newReservation": "Nueva Reserva",
+    "noZone": "Sin Zona",
+    "assignServer": "Asignar Servidor",
+    "searchPlaceholder": "Buscar mesas...",
+    "columns": {
+      "tableName": "Nombre de Mesa",
+      "zone": "Zona",
+      "capacity": "Capacidad",
+      "status": "Estado"
+    },
+    "status": {
+      "available": "Disponible",
+      "occupied": "Ocupada",
+      "reserved": "Reservada",
+      "outOfOrder": "Fuera de Servicio",
+      "cleaning": "Limpieza"
+    },
+    "stats": {
+      "totalTables": "Total de Mesas",
+      "activeZones": "Zonas Activas",
+      "todayReservations": "Reservas de Hoy",
+      "availableTables": "Mesas Disponibles"
+    },
+    "tabs": {
+      "tables": "Mesas",
+      "zones": "Zonas",
+      "reservations": "Reservas"
+    },
+    "zones": {
+      "searchPlaceholder": "Buscar zonas...",
+      "noColor": "Sin color",
+      "tableCount": "{{count}} mesas ({{available}} disponibles, {{occupied}} ocupadas)",
+      "columns": {
+        "zoneName": "Nombre de Zona",
+        "tables": "Mesas",
+        "color": "Color"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "Buscar reservas...",
+      "columns": {
+        "customer": "Cliente",
+        "table": "Mesa",
+        "dateTime": "Fecha y Hora",
+        "guests": "Huéspedes"
+      }
+    }
   }
 }

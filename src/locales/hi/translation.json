@@ -475,5 +475,60 @@
       "google": "Google",
       "github": "Github"
     }
+  },
+  "tables": {
+    "title": "टेबल प्रबंधन",
+    "description": "अपने रेस्टोरेंट के लिए टेबल, जोन और आरक्षण का प्रबंधन करें",
+    "loading": "टेबल प्रबंधन लोड हो रहा है...",
+    "addZone": "जोन जोड़ें",
+    "mergeTables": "टेबल मर्ज करें",
+    "addTable": "टेबल जोड़ें",
+    "newReservation": "नया आरक्षण",
+    "noZone": "कोई जोन नहीं",
+    "assignServer": "सर्वर असाइन करें",
+    "searchPlaceholder": "टेबल खोजें...",
+    "columns": {
+      "tableName": "टेबल का नाम",
+      "zone": "जोन",
+      "capacity": "क्षमता",
+      "status": "स्थिति"
+    },
+    "status": {
+      "available": "उपलब्ध",
+      "occupied": "व्यस्त",
+      "reserved": "आरक्षित",
+      "outOfOrder": "सेवा से बाहर",
+      "cleaning": "सफाई"
+    },
+    "stats": {
+      "totalTables": "कुल टेबल",
+      "activeZones": "सक्रिय जोन",
+      "todayReservations": "आज के आरक्षण",
+      "availableTables": "उपलब्ध टेबल"
+    },
+    "tabs": {
+      "tables": "टेबल",
+      "zones": "जोन",
+      "reservations": "आरक्षण"
+    },
+    "zones": {
+      "searchPlaceholder": "जोन खोजें...",
+      "noColor": "कोई रंग नहीं",
+      "tableCount": "{{count}} टेबल ({{available}} उपलब्ध, {{occupied}} व्यस्त)",
+      "columns": {
+        "zoneName": "जोन का नाम",
+        "tables": "टेबल",
+        "color": "रंग"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "आरक्षण खोजें...",
+      "columns": {
+        "customer": "ग्राहक",
+        "table": "टेबल",
+        "dateTime": "दिनांक और समय",
+        "guests": "मेहमान"
+      }
+    }
   }
 }

@@ -475,5 +475,60 @@
       "google": "Google",
       "github": "Github"
     }
+  },
+  "tables": {
+    "title": "Správa stolov",
+    "description": "Spravujte stoly, zóny a rezervácie pre vašu reštauráciu",
+    "loading": "Načítava sa správa stolov...",
+    "addZone": "Pridať zónu",
+    "mergeTables": "Spojiť stoly",
+    "addTable": "Pridať stôl",
+    "newReservation": "Nová rezervácia",
+    "noZone": "Žiadna zóna",
+    "assignServer": "Priradiť server",
+    "searchPlaceholder": "Hľadať stoly...",
+    "columns": {
+      "tableName": "Názov stola",
+      "zone": "Zóna",
+      "capacity": "Kapacita",
+      "status": "Stav"
+    },
+    "status": {
+      "available": "Dostupný",
+      "occupied": "Obsadený",
+      "reserved": "Rezervovaný",
+      "outOfOrder": "Mimo prevádzky",
+      "cleaning": "Čistenie"
+    },
+    "stats": {
+      "totalTables": "Celkovo stolov",
+      "activeZones": "Aktívne zóny",
+      "todayReservations": "Dnešné rezervácie",
+      "availableTables": "Dostupné stoly"
+    },
+    "tabs": {
+      "tables": "Stoly",
+      "zones": "Zóny",
+      "reservations": "Rezervácie"
+    },
+    "zones": {
+      "searchPlaceholder": "Hľadať zóny...",
+      "noColor": "Žiadna farba",
+      "tableCount": "{{count}} stolov ({{available}} dostupných, {{occupied}} obsadených)",
+      "columns": {
+        "zoneName": "Názov zóny",
+        "tables": "Stoly",
+        "color": "Farba"
+      }
+    },
+    "reservations": {
+      "searchPlaceholder": "Hľadať rezervácie...",
+      "columns": {
+        "customer": "Zákazník",
+        "table": "Stôl",
+        "dateTime": "Dátum a čas",
+        "guests": "Hostia"
+      }
+    }
   }
 }
