@@ -1,0 +1,215 @@
+{
+  "categories": {
+    "title": "Kategorien",
+    "edit": "Bearbeiten",
+    "subtitle": "Verwalten Sie Ihre Produktkategorien",
+    "subtitleWithCount": "{{count}} Kategorien werden angezeigt",
+    "newCategory": "Neue Kategorie",
+    "editCategory": "Kategorie bearbeiten",
+    "newDescription": "Erstellen Sie eine neue Kategorie, um Ihre Produkte zu organisieren",
+    "editDescription": "Bearbeiten Sie die Details dieser Kategorie",
+    "fields": {
+        "name": "Kategoriename",
+        "description": "Beschreibung",
+        "parentCategory": "Übergeordnete Kategorie",
+        "sortOrder": "Sortierreihenfolge",
+        "icon": "Kategorie-Icon",
+        "image": "Kategorie-Bild",
+        "tags": "Tags",
+        "isActive": "Aktiv-Status",
+        "displayOnMain": "Auf Hauptbildschirm anzeigen",
+        "quickIcons": "Schnelle Icon-Auswahl"
+      },
+    "create": {
+      "title": "Neue Kategorie erstellen",
+      "subtitle": "Fügen Sie eine neue Kategorie hinzu, um Ihre Produkte zu organisieren",
+      "button": "Kategorie hinzufügen",
+      "creating": "Wird erstellt...",
+      "create": "Kategorie erstellen",
+      "newCategory": "Neue Kategorie erstellen",
+      "newCategoryDescription": "Organisieren Sie Ihre Produkte mit einer benutzerdefinierten Kategorie",
+      "features": {
+        "mobile": "Mobilgerät-bereit",
+        "tags": "Intelligente Tags",
+        "hierarchy": "Hierarchisch"
+      },
+      "placeholders": {
+        "name": "Kategorienamen eingeben",
+        "description": "Beschreiben Sie, welche Produkte zu dieser Kategorie gehören",
+        "addTag": "Tag hinzufügen"
+      },
+      "descriptions": {
+        "isActive": "Umschalten, um diese Kategorie zu aktivieren oder zu deaktivieren",
+        "displayOnMain": "Diese Kategorie prominent auf dem Hauptbildschirm anzeigen"
+      },
+      "selectParent": "Übergeordnete Kategorie auswählen",
+      "noParent": "Keine übergeordnete (oberste Ebene)",
+      "templates": {
+        "title": "Vorlage auswählen",
+        "skip": "Vorlagen überspringen",
+        "createCustom": "Vorlagen überspringen - Benutzerdefinierte Kategorie erstellen"
+      },
+      "form": {
+        "name": "Kategoriename",
+        "description": "Beschreibung",
+        "parentCategory": "Übergeordnete Kategorie",
+        "sortOrder": "Sortierreihenfolge",
+        "tags": "Tags",
+        "addTag": "Tag hinzufügen",
+        "noParent": "Keine übergeordnete (oberste Ebene)",
+        "basicInfo": "Grundlegende Informationen",
+        "media": "Medien & Icons",
+        "settings": "Einstellungen",
+        "color": "Farbe"
+      },
+      "tabs": {
+        "basic": "Grundlegende Informationen",
+        "media": "Medien & Icons",
+        "settings": "Einstellungen",
+        "preview": "Vorschau"
+      },
+      "edit": {
+        "title": "Kategorie bearbeiten"
+      },
+      "errors": {
+        "nameRequired": "Kategoriename ist erforderlich",
+        "descriptionTooLong": "Beschreibung ist zu lang",
+        "invalidSortOrder": "Sortierreihenfolge muss eine positive Zahl sein",
+        "saveFailed": "Kategorie konnte nicht gespeichert werden",
+        "deleteFailed": "Kategorie konnte nicht gelöscht werden"
+      },
+      "media": {
+        "dragIcon": "Icon-Bild hier hineinziehen und ablegen",
+        "dragImage": "Kategorie-Bild hier hineinziehen und ablegen",
+        "changeIcon": "Klicken, um Icon zu ändern",
+        "changeImage": "Klicken, um Bild zu ändern",
+        "iconFormat": "PNG, JPG bis zu 2MB",
+        "imageFormat": "PNG, JPG bis zu 5MB"
+      },
+      "preview": {
+        "title": "Kategorie-Vorschau",
+        "button": "Vorschau",
+        "sampleName": "Beispiel-Kategorie",
+        "mainScreen": "Hauptbildschirm",
+        "tags": "Tags"
+      }
+    },
+    "search": {
+      "placeholder": "Kategorien suchen..."
+    },
+    "filters": {
+      "all": "Alle Kategorien",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "mainScreen": "Hauptbildschirm",
+      "withSubcategories": "Mit Unterkategorien",
+      "allCategories": "Alle Kategorien"
+    },
+    "card": {
+      "order": "Reihenfolge",
+      "mainScreen": "Hauptbildschirm",
+      "subcategories": "Unterkategorien",
+      "subcategoriesLabel": "Unterkategorien"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "delete": {
+      "confirm": "Sind Sie sicher, dass Sie '{{name}}' löschen möchten?"
+    },
+    "empty": {
+      "title": "Noch keine Kategorien",
+      "description": "Beginnen Sie mit der Organisation Ihrer Produkte, indem Sie Ihre erste Kategorie erstellen",
+      "noResults": "Keine Kategorien gefunden",
+      "noResultsDescription": "Versuchen Sie, Ihre Such- oder Filterkriterien anzupassen"
+    },
+    "stats": {
+      "total": "Kategorien insgesamt",
+      "active": "Aktive Kategorien",
+      "inactive": "Inaktive Kategorien",
+      "withProducts": "Kategorien mit Produkten"
+    },
+    "quickCreate": "Schnell erstellen",
+    "actions": {
+      "import": "Kategorien importieren",
+      "export": "Kategorien exportieren"
+    },
+    "bulkImport": {
+      "title": "Massen-Import von Kategorien",
+      "description": "Mehrere Kategorien aus einer CSV-Datei importieren"
+    },
+    "results": {
+      "showing": "{{count}} von {{total}} Kategorien werden angezeigt"
+    },
+    "errors": {
+      "loadFailed": "Kategorien konnten nicht geladen werden",
+      "deleteFailed": "Kategorie konnte nicht gelöscht werden",
+      "importFailed": "Kategorien konnten nicht importiert werden",
+      "exportFailed": "Kategorien konnten nicht exportiert werden",
+      "noTenantStore": "Kein Shop ausgewählt",
+      "noTenantStoreDescription": "Bitte wählen Sie einen Shop aus, um Kategorien zu verwalten"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "Grundlegende Informationen",
+      "media": "Medien & Icons",
+      "settings": "Einstellungen"
+    }
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "refresh": "Aktualisieren",
+    "filters": "Filter",
+    "search": "Suchen",
+    "loading": "Lädt...",
+    "goToDashboard": "Zum Dashboard",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "categories": "Kategorien",
+    "saving": "Speichert..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Produkte",
+    "orders": "Bestellungen",
+    "customers": "Kunden",
+    "reports": "Berichte",
+    "settings": "Einstellungen",
+    "categories": "Kategorien",
+    "sales": "Verkäufe"
+  },
+  "dashboard": {
+    "totalSales": "Verkäufe insgesamt",
+    "totalOrders": "Bestellungen insgesamt",
+    "title": "Dashboard"
+  },
+  "discounts": {
+    "title": "Rabatte",
+    "description": "Verwalten Sie Rabattcodes und Werbeaktionen für Ihren Shop",
+    "add": "Rabatt hinzufügen",
+    "empty": {
+      "title": "Noch keine Rabatte",
+      "description": "Erstellen Sie Ihren ersten Rabatt, um den Verkauf anzukurbeln"
+    },
+    "search": {
+      "placeholder": "Rabatte suchen..."
+    },
+    "table": {
+      "code": "Code",
+      "description": "Beschreibung",
+      "type": "Typ",
+      "value": "Wert",
+      "dates": "Datumsbereich",
+      "status": "Status"
+    },
+    "noResults": "Keine Rabatte gefunden",
+    "noResults.description": "Versuchen Sie, Ihre Suchbegriffe anzupassen"
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "categories": {
+    "title": "Kategórie",
+    "edit": "Upraviť",
+    "subtitle": "Spravujte svoje kategórie produktov",
+    "subtitleWithCount": "Zobrazuje sa {{count}} kategórií",
+    "newCategory": "Nová kategória",
+    "editCategory": "Upraviť kategóriu",
+    "newDescription": "Vytvorte novú kategóriu na organizovanie vašich produktov",
+    "editDescription": "Upravte podrobnosti tejto kategórie",
+    "fields": {
+        "name": "Názov kategórie",
+        "description": "Popis",
+        "parentCategory": "Nadradená kategória",
+        "sortOrder": "Poradie triedenia",
+        "icon": "Ikona kategórie",
+        "image": "Obrázok kategórie",
+        "tags": "Značky",
+        "isActive": "Stav aktívnosti",
+        "displayOnMain": "Zobraziť na hlavnej obrazovke",
+        "quickIcons": "Rýchly výber ikon"
+      },
+    "create": {
+      "title": "Vytvoriť novú kategóriu",
+      "subtitle": "Pridajte novú kategóriu na organizovanie vašich produktov",
+      "button": "Pridať kategóriu",
+      "creating": "Vytvára sa...",
+      "create": "Vytvoriť kategóriu",
+      "newCategory": "Vytvoriť novú kategóriu",
+      "newCategoryDescription": "Organizujte svoje produkty pomocou vlastnej kategórie",
+      "features": {
+        "mobile": "Pripravené na mobil",
+        "tags": "Inteligentné značky",
+        "hierarchy": "Hierarchické"
+      },
+      "placeholders": {
+        "name": "Zadajte názov kategórie",
+        "description": "Popíšte, aké produkty patria do tejto kategórie",
+        "addTag": "Pridať značku"
+      },
+      "descriptions": {
+        "isActive": "Prepnite na povolenie alebo zakázanie tejto kategórie",
+        "displayOnMain": "Zobraziť túto kategóriu výrazne na hlavnej obrazovke"
+      },
+      "selectParent": "Vybrať nadradenú kategóriu",
+      "noParent": "Žiadna nadradená (najvyššia úroveň)",
+      "templates": {
+        "title": "Vyberte šablónu",
+        "skip": "Preskočiť šablóny",
+        "createCustom": "Preskočiť šablóny - Vytvoriť vlastnú kategóriu"
+      },
+      "form": {
+        "name": "Názov kategórie",
+        "description": "Popis",
+        "parentCategory": "Nadradená kategória",
+        "sortOrder": "Poradie triedenia",
+        "tags": "Značky",
+        "addTag": "Pridať značku",
+        "noParent": "Žiadna nadradená (najvyššia úroveň)",
+        "basicInfo": "Základné informácie",
+        "media": "Médiá a ikony",
+        "settings": "Nastavenia",
+        "color": "Farba"
+      },
+      "tabs": {
+        "basic": "Základné informácie",
+        "media": "Médiá a ikony",
+        "settings": "Nastavenia",
+        "preview": "Náhľad"
+      },
+      "edit": {
+        "title": "Upraviť kategóriu"
+      },
+      "errors": {
+        "nameRequired": "Názov kategórie je povinný",
+        "descriptionTooLong": "Popis je príliš dlhý",
+        "invalidSortOrder": "Poradie triedenia musí byť kladné číslo",
+        "saveFailed": "Nepodarilo sa uložiť kategóriu",
+        "deleteFailed": "Nepodarilo sa vymazať kategóriu"
+      },
+      "media": {
+        "dragIcon": "Pretiahnite a pustite obrázok ikony sem",
+        "dragImage": "Pretiahnite a pustite obrázok kategórie sem",
+        "changeIcon": "Kliknite na zmenu ikony",
+        "changeImage": "Kliknite na zmenu obrázka",
+        "iconFormat": "PNG, JPG do 2MB",
+        "imageFormat": "PNG, JPG do 5MB"
+      },
+      "preview": {
+        "title": "Náhľad kategórie",
+        "button": "Náhľad",
+        "sampleName": "Vzorová kategória",
+        "mainScreen": "Hlavná obrazovka",
+        "tags": "značky"
+      }
+    },
+    "search": {
+      "placeholder": "Hľadať kategórie..."
+    },
+    "filters": {
+      "all": "Všetky kategórie",
+      "active": "Aktívne",
+      "inactive": "Neaktívne",
+      "mainScreen": "Hlavná obrazovka",
+      "withSubcategories": "S podkategóriami",
+      "allCategories": "Všetky kategórie"
+    },
+    "card": {
+      "order": "Poradie",
+      "mainScreen": "Hlavná obrazovka",
+      "subcategories": "podkategórie",
+      "subcategoriesLabel": "Podkategórie"
+    },
+    "status": {
+      "active": "Aktívne",
+      "inactive": "Neaktívne"
+    },
+    "delete": {
+      "confirm": "Ste si istí, že chcete vymazať '{{name}}'?"
+    },
+    "empty": {
+      "title": "Zatiaľ žiadne kategórie",
+      "description": "Začnite organizovať svoje produkty vytvorením prvej kategórie",
+      "noResults": "Neboli nájdené žiadne kategórie",
+      "noResultsDescription": "Skúste upraviť svoje vyhľadávacie alebo filtračné kritériá"
+    },
+    "stats": {
+      "total": "Celkom kategórií",
+      "active": "Aktívne kategórie",
+      "inactive": "Neaktívne kategórie",
+      "withProducts": "Kategórie s produktmi"
+    },
+    "quickCreate": "Rýchle vytvorenie",
+    "actions": {
+      "import": "Importovať kategórie",
+      "export": "Exportovať kategórie"
+    },
+    "bulkImport": {
+      "title": "Hromadný import kategórií",
+      "description": "Importovať viac kategórií zo súboru CSV"
+    },
+    "results": {
+      "showing": "Zobrazuje sa {{count}} z {{total}} kategórií"
+    },
+    "errors": {
+      "loadFailed": "Nepodarilo sa načítať kategórie",
+      "deleteFailed": "Nepodarilo sa vymazať kategóriu",
+      "importFailed": "Nepodarilo sa importovať kategórie",
+      "exportFailed": "Nepodarilo sa exportovať kategórie",
+      "noTenantStore": "Nie je vybratý žiadny obchod",
+      "noTenantStoreDescription": "Prosím vyberte obchod na správu kategórií"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "Základné informácie",
+      "media": "Médiá a ikony",
+      "settings": "Nastavenia"
+    }
+  },
+  "common": {
+    "cancel": "Zrušiť",
+    "save": "Uložiť",
+    "delete": "Vymazať",
+    "edit": "Upraviť",
+    "create": "Vytvoriť",
+    "refresh": "Obnoviť",
+    "filters": "Filtre",
+    "search": "Hľadať",
+    "loading": "Načítava sa...",
+    "goToDashboard": "Ísť na dashboard",
+    "active": "Aktívne",
+    "inactive": "Neaktívne",
+    "categories": "Kategórie",
+    "saving": "Ukladá sa..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Produkty",
+    "orders": "Objednávky",
+    "customers": "Zákazníci",
+    "reports": "Správy",
+    "settings": "Nastavenia",
+    "categories": "Kategórie",
+    "sales": "Predaje"
+  },
+  "dashboard": {
+    "totalSales": "Celkové predaje",
+    "totalOrders": "Celkové objednávky",
+    "title": "Dashboard"
+  },
+  "discounts": {
+    "title": "Zľavy",
+    "description": "Spravujte zľavové kódy a akcie pre váš obchod",
+    "add": "Pridať zľavu",
+    "empty": {
+      "title": "Zatiaľ žiadne zľavy",
+      "description": "Vytvorte svoju prvú zľavu na zvýšenie predaja"
+    },
+    "search": {
+      "placeholder": "Hľadať zľavy..."
+    },
+    "table": {
+      "code": "Kód",
+      "description": "Popis",
+      "type": "Typ",
+      "value": "Hodnota",
+      "dates": "Časové rozpätie",
+      "status": "Stav"
+    },
+    "noResults": "Neboli nájdené žiadne zľavy",
+    "noResults.description": "Skúste upraviť svoje vyhľadávacie výrazy"
+  }
+}

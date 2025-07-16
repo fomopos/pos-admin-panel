@@ -1,0 +1,215 @@
+{
+  "categories": {
+    "title": "श्रेणियां",
+    "edit": "संपादित करें",
+    "subtitle": "अपनी उत्पाद श्रेणियों का प्रबंधन करें",
+    "subtitleWithCount": "{{count}} श्रेणियां दिखा रहे हैं",
+    "newCategory": "नई श्रेणी",
+    "editCategory": "श्रेणी संपादित करें",
+    "newDescription": "अपने उत्पादों को व्यवस्थित करने के लिए एक नई श्रेणी बनाएं",
+    "editDescription": "इस श्रेणी का विवरण संपादित करें",
+    "fields": {
+        "name": "श्रेणी का नाम",
+        "description": "विवरण",
+        "parentCategory": "मूल श्रेणी",
+        "sortOrder": "क्रम संख्या",
+        "icon": "श्रेणी आइकन",
+        "image": "श्रेणी छवि",
+        "tags": "टैग",
+        "isActive": "सक्रिय स्थिति",
+        "displayOnMain": "मुख्य स्क्रीन पर प्रदर्शित करें",
+        "quickIcons": "त्वरित आइकन चयन"
+      },
+    "create": {
+      "title": "नई श्रेणी बनाएं",
+      "subtitle": "अपने उत्पादों को व्यवस्थित करने के लिए एक नई श्रेणी जोड़ें",
+      "button": "श्रेणी जोड़ें",
+      "creating": "बना रहे हैं...",
+      "create": "श्रेणी बनाएं",
+      "newCategory": "नई श्रेणी बनाएं",
+      "newCategoryDescription": "एक कस्टम श्रेणी के साथ अपने उत्पादों को व्यवस्थित करें",
+      "features": {
+        "mobile": "मोबाइल तैयार",
+        "tags": "स्मार्ट टैग",
+        "hierarchy": "पदानुक्रमित"
+      },
+      "placeholders": {
+        "name": "श्रेणी का नाम दर्ज करें",
+        "description": "वर्णन करें कि इस श्रेणी में कौन से उत्पाद हैं",
+        "addTag": "एक टैग जोड़ें"
+      },
+      "descriptions": {
+        "isActive": "इस श्रेणी को सक्षम या अक्षम करने के लिए टॉगल करें",
+        "displayOnMain": "इस श्रेणी को मुख्य स्क्रीन पर प्रमुखता से दिखाएं"
+      },
+      "selectParent": "मूल श्रेणी चुनें",
+      "noParent": "कोई मूल नहीं (शीर्ष स्तर)",
+      "templates": {
+        "title": "एक टेम्प्लेट चुनें",
+        "skip": "टेम्प्लेट छोड़ें",
+        "createCustom": "टेम्प्लेट छोड़ें - कस्टम श्रेणी बनाएं"
+      },
+      "form": {
+        "name": "श्रेणी का नाम",
+        "description": "विवरण",
+        "parentCategory": "मूल श्रेणी",
+        "sortOrder": "क्रम संख्या",
+        "tags": "टैग",
+        "addTag": "एक टैग जोड़ें",
+        "noParent": "कोई मूल नहीं (शीर्ष स्तर)",
+        "basicInfo": "बुनियादी जानकारी",
+        "media": "मीडिया और आइकन",
+        "settings": "सेटिंग्स",
+        "color": "रंग"
+      },
+      "tabs": {
+        "basic": "बुनियादी जानकारी",
+        "media": "मीडिया और आइकन",
+        "settings": "सेटिंग्स",
+        "preview": "पूर्वावलोकन"
+      },
+      "edit": {
+        "title": "श्रेणी संपादित करें"
+      },
+      "errors": {
+        "nameRequired": "श्रेणी का नाम आवश्यक है",
+        "descriptionTooLong": "विवरण बहुत लंबा है",
+        "invalidSortOrder": "क्रम संख्या एक सकारात्मक संख्या होनी चाहिए",
+        "saveFailed": "श्रेणी सहेजने में विफल",
+        "deleteFailed": "श्रेणी हटाने में विफल"
+      },
+      "media": {
+        "dragIcon": "यहां एक आइकन छवि खींचें और छोड़ें",
+        "dragImage": "यहां एक श्रेणी छवि खींचें और छोड़ें",
+        "changeIcon": "आइकन बदलने के लिए क्लिक करें",
+        "changeImage": "छवि बदलने के लिए क्लिक करें",
+        "iconFormat": "PNG, JPG 2MB तक",
+        "imageFormat": "PNG, JPG 5MB तक"
+      },
+      "preview": {
+        "title": "श्रेणी पूर्वावलोकन",
+        "button": "पूर्वावलोकन",
+        "sampleName": "नमूना श्रेणी",
+        "mainScreen": "मुख्य स्क्रीन",
+        "tags": "टैग"
+      }
+    },
+    "search": {
+      "placeholder": "श्रेणियां खोजें..."
+    },
+    "filters": {
+      "all": "सभी श्रेणियां",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "mainScreen": "मुख्य स्क्रीन",
+      "withSubcategories": "उप-श्रेणियों के साथ",
+      "allCategories": "सभी श्रेणियां"
+    },
+    "card": {
+      "order": "क्रम",
+      "mainScreen": "मुख्य स्क्रीन",
+      "subcategories": "उप-श्रेणियां",
+      "subcategoriesLabel": "उप-श्रेणियां"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    },
+    "delete": {
+      "confirm": "क्या आप वाकई '{{name}}' को हटाना चाहते हैं?"
+    },
+    "empty": {
+      "title": "अभी तक कोई श्रेणी नहीं",
+      "description": "अपनी पहली श्रेणी बनाकर अपने उत्पादों को व्यवस्थित करना शुरू करें",
+      "noResults": "कोई श्रेणी नहीं मिली",
+      "noResultsDescription": "अपने खोज या फ़िल्टर मानदंड को समायोजित करने का प्रयास करें"
+    },
+    "stats": {
+      "total": "कुल श्रेणियां",
+      "active": "सक्रिय श्रेणियां",
+      "inactive": "निष्क्रिय श्रेणियां",
+      "withProducts": "उत्पादों के साथ श्रेणियां"
+    },
+    "quickCreate": "त्वरित निर्माण",
+    "actions": {
+      "import": "श्रेणियां आयात करें",
+      "export": "श्रेणियां निर्यात करें"
+    },
+    "bulkImport": {
+      "title": "श्रेणियों का बल्क आयात",
+      "description": "CSV फ़ाइल से कई श्रेणियां आयात करें"
+    },
+    "results": {
+      "showing": "{{total}} में से {{count}} श्रेणियां दिखा रहे हैं"
+    },
+    "errors": {
+      "loadFailed": "श्रेणियां लोड करने में विफल",
+      "deleteFailed": "श्रेणी हटाने में विफल",
+      "importFailed": "श्रेणियां आयात करने में विफल",
+      "exportFailed": "श्रेणियां निर्यात करने में विफल",
+      "noTenantStore": "कोई स्टोर चयनित नहीं",
+      "noTenantStoreDescription": "श्रेणियों का प्रबंधन करने के लिए कृपया एक स्टोर चुनें"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "बुनियादी जानकारी",
+      "media": "मीडिया और आइकन",
+      "settings": "सेटिंग्स"
+    }
+  },
+  "common": {
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "create": "बनाएं",
+    "refresh": "ताज़ा करें",
+    "filters": "फ़िल्टर",
+    "search": "खोजें",
+    "loading": "लोड हो रहा है...",
+    "goToDashboard": "डैशबोर्ड पर जाएं",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "categories": "श्रेणियां",
+    "saving": "सहेज रहे हैं..."
+  },
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "products": "उत्पाद",
+    "orders": "ऑर्डर",
+    "customers": "ग्राहक",
+    "reports": "रिपोर्ट",
+    "settings": "सेटिंग्स",
+    "categories": "श्रेणियां",
+    "sales": "बिक्री"
+  },
+  "dashboard": {
+    "totalSales": "कुल बिक्री",
+    "totalOrders": "कुल ऑर्डर",
+    "title": "डैशबोर्ड"
+  },
+  "discounts": {
+    "title": "छूट",
+    "description": "अपने स्टोर के लिए छूट कोड और प्रमोशन का प्रबंधन करें",
+    "add": "छूट जोड़ें",
+    "empty": {
+      "title": "अभी तक कोई छूट नहीं",
+      "description": "बिक्री बढ़ाने के लिए अपनी पहली छूट बनाएं"
+    },
+    "search": {
+      "placeholder": "छूट खोजें..."
+    },
+    "table": {
+      "code": "कोड",
+      "description": "विवरण",
+      "type": "प्रकार",
+      "value": "मूल्य",
+      "dates": "दिनांक सीमा",
+      "status": "स्थिति"
+    },
+    "noResults": "कोई छूट नहीं मिली",
+    "noResults.description": "अपने खोज शब्दों को समायोजित करने का प्रयास करें"
+  }
+}

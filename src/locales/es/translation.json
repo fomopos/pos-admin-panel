@@ -1,8 +1,25 @@
 {
   "categories": {
     "title": "Categorías",
+    "edit": "Editar",
     "subtitle": "Gestiona las categorías de tus productos",
     "subtitleWithCount": "Mostrando {{count}} categorías",
+    "newCategory": "Nueva Categoría",
+    "editCategory": "Editar Categoría",
+    "newDescription": "Crea una nueva categoría para organizar tus productos",
+    "editDescription": "Edita los detalles de esta categoría",
+    "fields": {
+        "name": "Nombre de Categoría",
+        "description": "Descripción",
+        "parentCategory": "Categoría Padre",
+        "sortOrder": "Orden de Clasificación",
+        "icon": "Icono de Categoría",
+        "image": "Imagen de Categoría",
+        "tags": "Etiquetas",
+        "isActive": "Estado Activo",
+        "displayOnMain": "Mostrar en Pantalla Principal",
+        "quickIcons": "Selección Rápida de Iconos"
+      },
     "create": {
       "title": "Crear Nueva Categoría",
       "subtitle": "Agrega una nueva categoría para organizar tus productos",
@@ -119,6 +136,14 @@
       "exportFailed": "Error al exportar categorías",
       "noTenantStore": "Ninguna Tienda Seleccionada",
       "noTenantStoreDescription": "Por favor selecciona una tienda para gestionar categorías"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "Información Básica",
+      "media": "Medios e Iconos",
+      "settings": "Configuración"
     }
   },
   "common": {
@@ -131,7 +156,26 @@
     "filters": "Filtros",
     "search": "Buscar",
     "loading": "Cargando...",
-    "goToDashboard": "Ir al Panel"
+    "goToDashboard": "Ir al Panel",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "categories": "Categorías",
+    "saving": "Guardando..."
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "products": "Productos",
+    "orders": "Pedidos",
+    "customers": "Clientes",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "categories": "Categorías",
+    "sales": "Ventas"
+  },
+  "dashboard": {
+    "totalSales": "Ventas Totales",
+    "totalOrders": "Pedidos Totales",
+    "title": "Panel"
   },
   "discounts": {
     "title": "Descuentos",

@@ -1,0 +1,215 @@
+{
+  "categories": {
+    "title": "الفئات",
+    "edit": "تحرير",
+    "subtitle": "إدارة فئات منتجاتك",
+    "subtitleWithCount": "عرض {{count}} فئة",
+    "newCategory": "فئة جديدة",
+    "editCategory": "تحرير الفئة",
+    "newDescription": "إنشاء فئة جديدة لتنظيم منتجاتك",
+    "editDescription": "تحرير تفاصيل هذه الفئة",
+    "fields": {
+        "name": "اسم الفئة",
+        "description": "الوصف",
+        "parentCategory": "الفئة الأساسية",
+        "sortOrder": "ترتيب العرض",
+        "icon": "أيقونة الفئة",
+        "image": "صورة الفئة",
+        "tags": "العلامات",
+        "isActive": "حالة النشاط",
+        "displayOnMain": "عرض في الشاشة الرئيسية",
+        "quickIcons": "اختيار أيقونة سريع"
+      },
+    "create": {
+      "title": "إنشاء فئة جديدة",
+      "subtitle": "إضافة فئة جديدة لتنظيم منتجاتك",
+      "button": "إضافة فئة",
+      "creating": "جاري الإنشاء...",
+      "create": "إنشاء فئة",
+      "newCategory": "إنشاء فئة جديدة",
+      "newCategoryDescription": "تنظيم منتجاتك باستخدام فئة مخصصة",
+      "features": {
+        "mobile": "جاهز للهاتف المحمول",
+        "tags": "علامات ذكية",
+        "hierarchy": "هرمي"
+      },
+      "placeholders": {
+        "name": "أدخل اسم الفئة",
+        "description": "صف المنتجات التي تنتمي لهذه الفئة",
+        "addTag": "إضافة علامة"
+      },
+      "descriptions": {
+        "isActive": "تبديل لتمكين أو تعطيل هذه الفئة",
+        "displayOnMain": "عرض هذه الفئة بشكل بارز في الشاشة الرئيسية"
+      },
+      "selectParent": "اختيار الفئة الأساسية",
+      "noParent": "بدون أساسي (المستوى الأعلى)",
+      "templates": {
+        "title": "اختيار قالب",
+        "skip": "تخطي القوالب",
+        "createCustom": "تخطي القوالب - إنشاء فئة مخصصة"
+      },
+      "form": {
+        "name": "اسم الفئة",
+        "description": "الوصف",
+        "parentCategory": "الفئة الأساسية",
+        "sortOrder": "ترتيب العرض",
+        "tags": "العلامات",
+        "addTag": "إضافة علامة",
+        "noParent": "بدون أساسي (المستوى الأعلى)",
+        "basicInfo": "المعلومات الأساسية",
+        "media": "الوسائط والأيقونات",
+        "settings": "الإعدادات",
+        "color": "اللون"
+      },
+      "tabs": {
+        "basic": "المعلومات الأساسية",
+        "media": "الوسائط والأيقونات",
+        "settings": "الإعدادات",
+        "preview": "معاينة"
+      },
+      "edit": {
+        "title": "تحرير الفئة"
+      },
+      "errors": {
+        "nameRequired": "اسم الفئة مطلوب",
+        "descriptionTooLong": "الوصف طويل جداً",
+        "invalidSortOrder": "ترتيب العرض يجب أن يكون رقماً موجباً",
+        "saveFailed": "فشل في حفظ الفئة",
+        "deleteFailed": "فشل في حذف الفئة"
+      },
+      "media": {
+        "dragIcon": "اسحب وأفلت صورة أيقونة هنا",
+        "dragImage": "اسحب وأفلت صورة فئة هنا",
+        "changeIcon": "انقر لتغيير الأيقونة",
+        "changeImage": "انقر لتغيير الصورة",
+        "iconFormat": "PNG، JPG حتى 2 ميجابايت",
+        "imageFormat": "PNG، JPG حتى 5 ميجابايت"
+      },
+      "preview": {
+        "title": "معاينة الفئة",
+        "button": "معاينة",
+        "sampleName": "فئة نموذجية",
+        "mainScreen": "الشاشة الرئيسية",
+        "tags": "علامات"
+      }
+    },
+    "search": {
+      "placeholder": "البحث في الفئات..."
+    },
+    "filters": {
+      "all": "جميع الفئات",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "mainScreen": "الشاشة الرئيسية",
+      "withSubcategories": "مع فئات فرعية",
+      "allCategories": "جميع الفئات"
+    },
+    "card": {
+      "order": "الترتيب",
+      "mainScreen": "الشاشة الرئيسية",
+      "subcategories": "فئات فرعية",
+      "subcategoriesLabel": "فئات فرعية"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "delete": {
+      "confirm": "هل أنت متأكد من حذف '{{name}}'؟"
+    },
+    "empty": {
+      "title": "لا توجد فئات بعد",
+      "description": "ابدأ بتنظيم منتجاتك عن طريق إنشاء فئتك الأولى",
+      "noResults": "لم يتم العثور على فئات",
+      "noResultsDescription": "حاول تعديل معايير البحث أو التصفية"
+    },
+    "stats": {
+      "total": "إجمالي الفئات",
+      "active": "الفئات النشطة",
+      "inactive": "الفئات غير النشطة",
+      "withProducts": "فئات مع منتجات"
+    },
+    "quickCreate": "إنشاء سريع",
+    "actions": {
+      "import": "استيراد فئات",
+      "export": "تصدير فئات"
+    },
+    "bulkImport": {
+      "title": "استيراد مجمع للفئات",
+      "description": "استيراد فئات متعددة من ملف CSV"
+    },
+    "results": {
+      "showing": "عرض {{count}} من {{total}} فئة"
+    },
+    "errors": {
+      "loadFailed": "فشل في تحميل الفئات",
+      "deleteFailed": "فشل في حذف الفئة",
+      "importFailed": "فشل في استيراد الفئات",
+      "exportFailed": "فشل في تصدير الفئات",
+      "noTenantStore": "لم يتم اختيار متجر",
+      "noTenantStoreDescription": "يرجى اختيار متجر لإدارة الفئات"
+    },
+    "new": {
+
+    },
+    "tabs": {
+      "basic": "المعلومات الأساسية",
+      "media": "الوسائط والأيقونات",
+      "settings": "الإعدادات"
+    }
+  },
+  "common": {
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "create": "إنشاء",
+    "refresh": "تحديث",
+    "filters": "المرشحات",
+    "search": "البحث",
+    "loading": "جاري التحميل...",
+    "goToDashboard": "الذهاب للوحة التحكم",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "categories": "الفئات",
+    "saving": "جاري الحفظ..."
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "orders": "الطلبات",
+    "customers": "العملاء",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "categories": "الفئات",
+    "sales": "المبيعات"
+  },
+  "dashboard": {
+    "totalSales": "إجمالي المبيعات",
+    "totalOrders": "إجمالي الطلبات",
+    "title": "لوحة التحكم"
+  },
+  "discounts": {
+    "title": "الخصومات",
+    "description": "إدارة رموز الخصم والعروض الترويجية لمتجرك",
+    "add": "إضافة خصم",
+    "empty": {
+      "title": "لا توجد خصومات بعد",
+      "description": "أنشئ خصمك الأول لزيادة المبيعات"
+    },
+    "search": {
+      "placeholder": "البحث في الخصومات..."
+    },
+    "table": {
+      "code": "الرمز",
+      "description": "الوصف",
+      "type": "النوع",
+      "value": "القيمة",
+      "dates": "نطاق التاريخ",
+      "status": "الحالة"
+    },
+    "noResults": "لم يتم العثور على خصومات",
+    "noResults.description": "حاول تعديل مصطلحات البحث"
+  }
+}

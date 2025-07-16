@@ -18,8 +18,8 @@ import {
 import { translationAPI, type TranslationData } from '../api/translations';
 
 // Import local translations as fallback
-import enTranslations from '../locales/en.json';
-import esTranslations from '../locales/es.json';
+import enTranslations from '../locales/en/translation.json';
+import esTranslations from '../locales/es/translation.json';
 
 interface TranslationItem {
   key: string;
