@@ -364,19 +364,19 @@ const TenderEditPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.tender_id.trim()) {
-      newErrors.tender_id = 'Tender ID is required';
+      newErrors.tender_id = t('tenderEdit.form.errors.tenderIdRequired');
     }
     
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = t('tenderEdit.form.errors.descriptionRequired');
     }
     
     if (formData.tender_id.length > 50) {
-      newErrors.tender_id = 'Tender ID must be less than 50 characters';
+      newErrors.tender_id = t('tenderEdit.form.errors.tenderIdTooLong');
     }
     
     if (!formData.availability || formData.availability.length === 0) {
-      newErrors.availability = 'At least one availability option is required';
+      newErrors.availability = t('tenderEdit.form.errors.availabilityRequired');
     }
     
     setErrors(newErrors);
@@ -401,20 +401,20 @@ const TenderEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
-        setSuccessMessage('Tender updated successfully!');
+        setSuccessMessage(t('tenderEdit.success.updated'));
       } else {
         await tenderApiService.createTender(tenderData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         }); 
-        setSuccessMessage('Tender created successfully!');
+        setSuccessMessage(t('tenderEdit.success.created'));
         setTimeout(() => navigate('/payment-settings'), 1500);
       }
       
       setHasChanges(false);
     } catch (error: any) {
       console.error('Failed to save tender:', error);
-      setErrors({ submit: error.message || 'Failed to save tender. Please try again.' });
+      setErrors({ submit: error.message || t('tenderEdit.form.errors.saveFailed') });
     } finally {
       setIsSaving(false);
     }
@@ -522,7 +522,7 @@ const TenderEditPage: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <PageHeader
-        title={isEditing ? 'Edit Tender' : 'Create New Tender'}
+        title={isEditing ? t('tenderEdit.title.edit') : t('tenderEdit.title.create')}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -531,7 +531,7 @@ const TenderEditPage: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <ArrowLeftIcon className="h-4 w-4" />
-            <span>Back to Payment Settings</span>
+            <span>{t('tenderEdit.backToPayments')}</span>
           </Button>
           
           {isEditing && (
@@ -541,7 +541,7 @@ const TenderEditPage: React.FC = () => {
               className="text-red-600 border-red-300 hover:bg-red-50"
             >
               <TrashIcon className="h-4 w-4 mr-2" />
-              Delete
+              {t('tenderEdit.delete')}
             </Button>
           )}
         </div>
@@ -556,8 +556,8 @@ const TenderEditPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
-                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
+                <h3 className="text-sm font-semibold text-amber-900">{t('tenderEdit.unsavedChanges.title')}</h3>
+                <p className="text-xs text-amber-700 mt-1">{t('tenderEdit.unsavedChanges.description')}</p>
               </div>
             </div>
             <div className="flex items-center justify-end space-x-3">
@@ -567,7 +567,7 @@ const TenderEditPage: React.FC = () => {
                 size="sm"
                 className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
               >
-                <span>Discard Changes</span>
+                <span>{t('tenderEdit.unsavedChanges.discard')}</span>
               </Button>
               <Button
                 onClick={saveAllChanges}
@@ -578,12 +578,12 @@ const TenderEditPage: React.FC = () => {
                 {isSaving ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Saving...</span>
+                    <span>{t('tenderEdit.saving')}</span>
                   </>
                 ) : (
                   <>
                     <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>Save Changes</span>
+                    <span>{t('tenderEdit.unsavedChanges.save')}</span>
                   </>
                 )}
               </Button>

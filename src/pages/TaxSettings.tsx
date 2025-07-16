@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -26,6 +27,7 @@ import type {
 } from '../services/tax';
 
 const TaxSettings: React.FC = () => {
+  const { t } = useTranslation();
   const { currentTenant, currentStore } = useTenantStore();
   const [taxConfig, setTaxConfig] = useState<TaxConfiguration | null>(null);
   const [originalTaxConfig, setOriginalTaxConfig] = useState<TaxConfiguration | null>(null);
@@ -111,10 +113,10 @@ const TaxSettings: React.FC = () => {
   }, [taxConfig, originalTaxConfig]);
 
   const tabs = [
-    { id: 'authorities', name: 'Tax Authorities', icon: BuildingOfficeIcon },
-    { id: 'groups', name: 'Tax Groups', icon: TableCellsIcon },
-    { id: 'location', name: 'Tax Location', icon: ClipboardDocumentListIcon },
-    { id: 'settings', name: 'Settings', icon: Cog6ToothIcon },
+    { id: 'authorities', name: t('taxSettings.tabs.authorities'), icon: BuildingOfficeIcon },
+    { id: 'groups', name: t('taxSettings.tabs.groups'), icon: TableCellsIcon },
+    { id: 'location', name: t('taxSettings.tabs.location'), icon: ClipboardDocumentListIcon },
+    { id: 'settings', name: t('taxSettings.tabs.settings'), icon: Cog6ToothIcon },
   ];
 
   const handleFieldChange = (type: 'authority' | 'group' | 'location', itemIndex: number, field: string, value: any) => {
@@ -414,8 +416,8 @@ const TaxSettings: React.FC = () => {
   if (isLoading) {
     return (
       <Loading
-        title="Loading Tax Configuration"
-        description="Please wait while we fetch your tax settings..."
+        title={t('taxSettings.loading.title')}
+        description={t('taxSettings.loading.description')}
         variant="primary"
       />
     );
@@ -426,13 +428,13 @@ const TaxSettings: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center max-w-md mx-auto">
           <ExclamationTriangleIcon className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to Load Tax Configuration</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('taxSettings.noConfiguration.title')}</h3>
           <p className="text-gray-500 mb-4">{fetchError}</p>
           <Button 
             onClick={() => window.location.reload()} 
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Try Again
+            {t('taxSettings.noConfiguration.tryAgain')}
           </Button>
         </div>
       </div>
@@ -444,11 +446,11 @@ const TaxSettings: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center max-w-md mx-auto">
           <ExclamationTriangleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Tax Configuration Found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('taxSettings.noTenant.title')}</h3>
           <p className="text-gray-500 mb-4">
             {currentTenant?.id 
-              ? 'No tax configuration exists for this tenant. Please contact your administrator to set up tax configuration.'
-              : 'Please select a tenant to configure tax settings.'
+              ? t('taxSettings.noTenant.tenantDescription')
+              : t('taxSettings.noTenant.selectDescription')
             }
           </p>
           {!currentTenant?.id && (
@@ -456,7 +458,7 @@ const TaxSettings: React.FC = () => {
               onClick={() => window.history.back()} 
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Go Back
+              {t('taxSettings.noTenant.goBack')}
             </Button>
           )}
         </div>
@@ -468,8 +470,8 @@ const TaxSettings: React.FC = () => {
     <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header Section */}
       <PageHeader
-        title="Tax Settings"
-        description="Configure tax authorities, groups, and locations for your store"
+        title={t('taxSettings.title')}
+        description={t('taxSettings.description')}
       >
         {/* Save/Discard Actions */}
         {hasChanges && (
@@ -480,7 +482,7 @@ const TaxSettings: React.FC = () => {
               size="sm"
               className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
             >
-              <span>Discard Changes</span>
+              <span>{t('taxSettings.discardChanges')}</span>
             </Button>
             <Button
               onClick={saveAllChanges}
@@ -491,12 +493,12 @@ const TaxSettings: React.FC = () => {
               {isSaving ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
+                  <span>{t('taxSettings.saving')}</span>
                 </>
               ) : (
                 <>
                   <CloudArrowUpIcon className="h-4 w-4" />
-                  <span>Save All Changes</span>
+                  <span>{t('taxSettings.saveAllChanges')}</span>
                 </>
               )}
             </Button>
@@ -509,9 +511,9 @@ const TaxSettings: React.FC = () => {
         <Alert variant="warning" className="mb-4">
           <ExclamationTriangleIcon className="h-5 w-5" />
           <div>
-            <p className="font-medium">You have unsaved changes</p>
+            <p className="font-medium">{t('taxSettings.unsavedChanges')}</p>
             <p className="text-sm opacity-90 mt-1">
-              Don't forget to save your modifications before leaving this page.
+              {t('taxSettings.unsavedDescription')}
             </p>
           </div>
         </Alert>
@@ -554,43 +556,43 @@ const TaxSettings: React.FC = () => {
       {/* Tax Configuration Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Widget
-          title="Total Authorities"
+          title={t('taxSettings.stats.totalAuthorities')}
           icon={BuildingOfficeIcon}
           variant="primary"
           size="sm"
         >
           <div className="text-center">
             <p className="text-3xl font-bold text-blue-900">{taxConfig?.authority?.length || 0}</p>
-            <p className="text-sm text-blue-600 mt-1">Tax authorities configured</p>
+            <p className="text-sm text-blue-600 mt-1">{t('taxSettings.stats.authoritiesConfigured')}</p>
           </div>
         </Widget>
         
         <Widget
-          title="Tax Groups"
+          title={t('taxSettings.stats.taxGroups')}
           icon={TableCellsIcon}
           variant="success"
           size="sm"
         >
           <div className="text-center">
             <p className="text-3xl font-bold text-green-900">{taxConfig?.tax_group?.length || 0}</p>
-            <p className="text-sm text-green-600 mt-1">Groups with rules</p>
+            <p className="text-sm text-green-600 mt-1">{t('taxSettings.stats.groupsWithRules')}</p>
           </div>
         </Widget>
         
         <Widget
-          title="Tax Location"
+          title={t('taxSettings.stats.taxLocation')}
           icon={ClipboardDocumentListIcon}
           variant="warning"
           size="sm"
         >
           <div className="text-center">
-            <p className="text-lg font-bold text-amber-900">{taxConfig?.tax_location?.name || 'Not Set'}</p>
-            <p className="text-sm text-amber-600 mt-1">Current location</p>
+            <p className="text-lg font-bold text-amber-900">{taxConfig?.tax_location?.name || t('taxSettings.stats.notSet')}</p>
+            <p className="text-sm text-amber-600 mt-1">{t('taxSettings.stats.currentLocation')}</p>
           </div>
         </Widget>
         
         <Widget
-          title="Total Rules"
+          title={t('taxSettings.stats.totalRules')}
           icon={CurrencyDollarIcon}
           variant="default"
           size="sm"
@@ -599,7 +601,7 @@ const TaxSettings: React.FC = () => {
             <p className="text-3xl font-bold text-gray-900">
               {taxConfig?.tax_group?.reduce((total, group) => total + (group?.group_rule?.length || 0), 0) || 0}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Tax rules defined</p>
+            <p className="text-sm text-gray-600 mt-1">{t('taxSettings.stats.rulesDefined')}</p>
           </div>
         </Widget>
       </div>
