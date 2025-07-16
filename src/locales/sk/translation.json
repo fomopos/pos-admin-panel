@@ -354,7 +354,32 @@
   "dashboard": {
     "totalSales": "Celkové predaje",
     "totalOrders": "Celkové objednávky",
-    "title": "Dashboard"
+    "title": "Dashboard",
+    "description": "Komplexný prehľad výkonnosti vášho POS systému a kľúčových metrík",
+    "refresh": "Obnoviť",
+    "periods": {
+      "today": "Dnes",
+      "thisWeek": "Tento týždeň",
+      "thisMonth": "Tento mesiac",
+      "thisQuarter": "Tento štvrťrok",
+      "thisYear": "Tento rok"
+    },
+    "alerts": {
+      "active": "Aktívne upozornenia"
+    },
+    "kpi": {
+      "totalSales": "Celkové predaje",
+      "totalOrders": "Celkové objednávky",
+      "averageOrderValue": "Priemerná hodnota objednávky",
+      "customerSatisfaction": "Spokojnosť zákazníkov",
+      "reviews": "recenzie"
+    },
+    "sections": {
+      "salesRevenue": "Predaje a príjmy",
+      "operationalPerformance": "Prevádzkový výkon",
+      "inventoryStock": "Inventár a zásoby",
+      "financialPerformance": "Finančný výkon"
+    }
   },
   "discounts": {
     "title": "Zľavy",

@@ -354,7 +354,32 @@
   "dashboard": {
     "totalSales": "إجمالي المبيعات",
     "totalOrders": "إجمالي الطلبات",
-    "title": "لوحة التحكم"
+    "title": "لوحة التحكم",
+    "description": "نظرة شاملة على أداء نظام نقطة البيع والمقاييس الرئيسية",
+    "refresh": "تحديث",
+    "periods": {
+      "today": "اليوم",
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "thisQuarter": "هذا الربع",
+      "thisYear": "هذا العام"
+    },
+    "alerts": {
+      "active": "التنبيهات النشطة"
+    },
+    "kpi": {
+      "totalSales": "إجمالي المبيعات",
+      "totalOrders": "إجمالي الطلبات",
+      "averageOrderValue": "متوسط قيمة الطلب",
+      "customerSatisfaction": "رضا العملاء",
+      "reviews": "مراجعات"
+    },
+    "sections": {
+      "salesRevenue": "المبيعات والإيرادات",
+      "operationalPerformance": "الأداء التشغيلي",
+      "inventoryStock": "المخزون والمواد",
+      "financialPerformance": "الأداء المالي"
+    }
   },
   "discounts": {
     "title": "الخصومات",

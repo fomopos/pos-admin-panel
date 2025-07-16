@@ -351,6 +351,36 @@
       "createFirst": "Create your first product to get started"
     }
   },
+  "dashboard": {
+    "totalSales": "Total Sales",
+    "totalOrders": "Total Orders",
+    "title": "Dashboard",
+    "description": "Comprehensive overview of your POS system performance and key metrics",
+    "refresh": "Refresh",
+    "periods": {
+      "today": "Today",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "thisQuarter": "This Quarter",
+      "thisYear": "This Year"
+    },
+    "alerts": {
+      "active": "Active Alerts"
+    },
+    "kpi": {
+      "totalSales": "Total Sales",
+      "totalOrders": "Total Orders",
+      "averageOrderValue": "Average Order Value",
+      "customerSatisfaction": "Customer Satisfaction",
+      "reviews": "reviews"
+    },
+    "sections": {
+      "salesRevenue": "Sales & Revenue",
+      "operationalPerformance": "Operational Performance",
+      "inventoryStock": "Inventory & Stock",
+      "financialPerformance": "Financial Performance"
+    }
+  },
   "discounts": {
     "title": "Discounts",
     "description": "Manage discount codes and promotions for your store",

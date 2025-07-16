@@ -354,7 +354,32 @@
   "dashboard": {
     "totalSales": "Verkäufe insgesamt",
     "totalOrders": "Bestellungen insgesamt",
-    "title": "Dashboard"
+    "title": "Dashboard",
+    "description": "Umfassender Überblick über die Leistung Ihres POS-Systems und Schlüsselkennzahlen",
+    "refresh": "Aktualisieren",
+    "periods": {
+      "today": "Heute",
+      "thisWeek": "Diese Woche",
+      "thisMonth": "Diesen Monat",
+      "thisQuarter": "Dieses Quartal",
+      "thisYear": "Dieses Jahr"
+    },
+    "alerts": {
+      "active": "Aktive Warnungen"
+    },
+    "kpi": {
+      "totalSales": "Verkäufe insgesamt",
+      "totalOrders": "Bestellungen insgesamt",
+      "averageOrderValue": "Durchschnittlicher Bestellwert",
+      "customerSatisfaction": "Kundenzufriedenheit",
+      "reviews": "Bewertungen"
+    },
+    "sections": {
+      "salesRevenue": "Verkäufe & Umsatz",
+      "operationalPerformance": "Betriebsleistung",
+      "inventoryStock": "Lager & Bestand",
+      "financialPerformance": "Finanzleistung"
+    }
   },
   "discounts": {
     "title": "Rabatte",

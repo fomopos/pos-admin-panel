@@ -354,7 +354,32 @@
   "dashboard": {
     "totalSales": "कुल बिक्री",
     "totalOrders": "कुल ऑर्डर",
-    "title": "डैशबोर्ड"
+    "title": "डैशबोर्ड",
+    "description": "आपके POS सिस्टम के प्रदर्शन और मुख्य मेट्रिक्स का व्यापक अवलोकन",
+    "refresh": "ताज़ा करें",
+    "periods": {
+      "today": "आज",
+      "thisWeek": "इस सप्ताह",
+      "thisMonth": "इस महीने",
+      "thisQuarter": "इस तिमाही",
+      "thisYear": "इस वर्ष"
+    },
+    "alerts": {
+      "active": "सक्रिय अलर्ट"
+    },
+    "kpi": {
+      "totalSales": "कुल बिक्री",
+      "totalOrders": "कुल ऑर्डर",
+      "averageOrderValue": "औसत ऑर्डर मूल्य",
+      "customerSatisfaction": "ग्राहक संतुष्टि",
+      "reviews": "समीक्षाएं"
+    },
+    "sections": {
+      "salesRevenue": "बिक्री और राजस्व",
+      "operationalPerformance": "परिचालन प्रदर्शन",
+      "inventoryStock": "इन्वेंटरी और स्टॉक",
+      "financialPerformance": "वित्तीय प्रदर्शन"
+    }
   },
   "discounts": {
     "title": "छूट",

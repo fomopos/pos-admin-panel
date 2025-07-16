@@ -341,7 +341,32 @@
   "dashboard": {
     "totalSales": "Ventas Totales",
     "totalOrders": "Pedidos Totales",
-    "title": "Panel"
+    "title": "Panel",
+    "description": "Visión integral del rendimiento de su sistema POS y métricas clave",
+    "refresh": "Actualizar",
+    "periods": {
+      "today": "Hoy",
+      "thisWeek": "Esta Semana",
+      "thisMonth": "Este Mes",
+      "thisQuarter": "Este Trimestre",
+      "thisYear": "Este Año"
+    },
+    "alerts": {
+      "active": "Alertas Activas"
+    },
+    "kpi": {
+      "totalSales": "Ventas Totales",
+      "totalOrders": "Pedidos Totales",
+      "averageOrderValue": "Valor Promedio de Pedido",
+      "customerSatisfaction": "Satisfacción del Cliente",
+      "reviews": "reseñas"
+    },
+    "sections": {
+      "salesRevenue": "Ventas e Ingresos",
+      "operationalPerformance": "Rendimiento Operacional",
+      "inventoryStock": "Inventario y Stock",
+      "financialPerformance": "Rendimiento Financiero"
+    }
   },
   "discounts": {
     "title": "Descuentos",
