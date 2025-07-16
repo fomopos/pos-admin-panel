@@ -205,7 +205,8 @@
     "clearSearch": "Clear search",
     "gridView": "Grid View",
     "listView": "List View",
-    "all": "All"
+    "all": "All",
+    "status": "Status"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -233,10 +234,78 @@
     "taxSettings": "Tax Settings",
     "systemSettings": "System Settings"
   },
-  "dashboard": {
-    "totalSales": "Total Sales",
-    "totalOrders": "Total Orders",
-    "title": "Dashboard"
+  "products": {
+    "title": "Products",
+    "description": "Manage your product inventory",
+    "addModifier": "Add Modifier",
+    "addProduct": "Add Product",
+    "loading": {
+      "title": "Loading Products",
+      "description": "Please wait while we fetch your product data..."
+    },
+    "search": {
+      "placeholder": "Search products by name or SKU..."
+    },
+    "filters": {
+      "allCategories": "All Categories",
+      "advancedFilters": "Advanced Filters",
+      "clearAll": "Clear All",
+      "activeFilters": "Active filters:",
+      "clearAllFilters": "Clear all",
+      "priceRange": "Price Range",
+      "minPrice": "Min ($)",
+      "maxPrice": "Max ($)",
+      "to": "to",
+      "stockLevel": "Stock Level",
+      "allStockLevels": "All Stock Levels",
+      "inStock": "In Stock (Above Min Level)",
+      "lowStock": "Low Stock (At/Below Min Level)",
+      "outOfStock": "Out of Stock (0 items)",
+      "productStatus": "Product Status",
+      "allStatus": "All Status",
+      "activeProducts": "Active Products",
+      "inactiveProducts": "Inactive Products",
+      "suppliers": "Suppliers",
+      "selected": "selected",
+      "tags": "Tags",
+      "dateRange": "Date Range",
+      "startDate": "Start Date",
+      "endDate": "End Date"
+    },
+    "table": {
+      "product": "Product",
+      "category": "Category",
+      "price": "Price",
+      "cost": "Cost",
+      "stock": "Stock",
+      "status": "Status",
+      "actions": "Actions",
+      "min": "Min"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "outOfStock": "Out",
+      "lowStock": "Low"
+    },
+    "results": {
+      "productsFound": "products found",
+      "filteredFrom": "filtered from",
+      "total": "total",
+      "sortBy": "Sort by:",
+      "name": "Name",
+      "price": "Price",
+      "stock": "Stock",
+      "created": "Created Date"
+    },
+    "grid": {
+      "tags": "tags"
+    },
+    "empty": {
+      "title": "No products found",
+      "description": "Try adjusting your search or filter criteria",
+      "createFirst": "Create your first product to get started"
+    }
   },
   "discounts": {
     "title": "Discounts",

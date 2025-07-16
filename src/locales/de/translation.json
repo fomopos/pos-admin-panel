@@ -205,7 +205,8 @@
     "clearSearch": "Suche löschen",
     "gridView": "Rasteransicht",
     "listView": "Listenansicht",
-    "all": "Alle"
+    "all": "Alle",
+    "status": "Status"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -232,6 +233,79 @@
     "paymentSettings": "Zahlungseinstellungen",
     "taxSettings": "Steuereinstellungen",
     "systemSettings": "Systemeinstellungen"
+  },
+  "products": {
+    "title": "Produkte",
+    "description": "Verwalten Sie Ihr Produktinventar",
+    "addModifier": "Modifikator hinzufügen",
+    "addProduct": "Produkt hinzufügen",
+    "loading": {
+      "title": "Lade Produkte",
+      "description": "Bitte warten Sie, während wir Ihre Produktdaten abrufen..."
+    },
+    "search": {
+      "placeholder": "Produkte nach Name oder SKU suchen..."
+    },
+    "filters": {
+      "allCategories": "Alle Kategorien",
+      "advancedFilters": "Erweiterte Filter",
+      "clearAll": "Alle löschen",
+      "activeFilters": "Aktive Filter:",
+      "clearAllFilters": "Alle löschen",
+      "priceRange": "Preisspanne",
+      "minPrice": "Min (€)",
+      "maxPrice": "Max (€)",
+      "to": "bis",
+      "stockLevel": "Lagerbestand",
+      "allStockLevels": "Alle Lagerbestände",
+      "inStock": "Auf Lager (Über Mindestbestand)",
+      "lowStock": "Niedriger Bestand (Bei/Unter Mindestbestand)",
+      "outOfStock": "Nicht vorrätig (0 Artikel)",
+      "productStatus": "Produktstatus",
+      "allStatus": "Alle Status",
+      "activeProducts": "Aktive Produkte",
+      "inactiveProducts": "Inaktive Produkte",
+      "suppliers": "Lieferanten",
+      "selected": "ausgewählt",
+      "tags": "Tags",
+      "dateRange": "Datumsbereich",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum"
+    },
+    "table": {
+      "product": "Produkt",
+      "category": "Kategorie",
+      "price": "Preis",
+      "cost": "Kosten",
+      "stock": "Lager",
+      "status": "Status",
+      "actions": "Aktionen",
+      "min": "Min"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "outOfStock": "Nicht vorrätig",
+      "lowStock": "Niedriger Bestand"
+    },
+    "results": {
+      "productsFound": "Produkte gefunden",
+      "filteredFrom": "gefiltert aus",
+      "total": "gesamt",
+      "sortBy": "Sortieren nach:",
+      "name": "Name",
+      "price": "Preis",
+      "stock": "Lager",
+      "created": "Erstellungsdatum"
+    },
+    "grid": {
+      "tags": "Tags"
+    },
+    "empty": {
+      "title": "Keine Produkte gefunden",
+      "description": "Versuchen Sie, Ihre Such- oder Filterkriterien anzupassen",
+      "createFirst": "Beginnen Sie damit, Ihr erstes Produkt zum Inventar hinzuzufügen"
+    }
   },
   "dashboard": {
     "totalSales": "Verkäufe insgesamt",

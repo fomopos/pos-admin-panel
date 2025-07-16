@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
@@ -60,6 +61,7 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
   onEdit,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   const stockStatus = product.stockQuantity <= product.minStockLevel ? 'low' : 'normal';
   const isOutOfStock = product.stockQuantity === 0;
   
@@ -80,7 +82,7 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
             onClick={() => onEdit(product)}
             className="text-primary-600 hover:text-primary-800 hover:bg-primary-50 opacity-0 group-hover:opacity-100 transition-all"
           >
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="ghost"  
@@ -88,7 +90,7 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
             onClick={() => onDelete(product.id)}
             className="text-red-600 hover:text-red-800 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
           >
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </div>
@@ -118,7 +120,7 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
           </span>
           {product.tags.length > 0 && (
             <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-              +{product.tags.length} tags
+              +{product.tags.length} {t('products.grid.tags')}
             </span>
           )}
         </div>
@@ -128,16 +130,16 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
               ? 'bg-green-100 text-green-800' 
               : 'bg-red-100 text-red-800'
           }`}>
-            {product.isActive ? 'Active' : 'Inactive'}
+            {product.isActive ? t('products.status.active') : t('products.status.inactive')}
           </span>
           {isOutOfStock && (
             <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-red-100 text-red-800 text-xs rounded-full font-medium">
-              Out of Stock
+              {t('products.status.outOfStock')}
             </span>
           )}
           {stockStatus === 'low' && !isOutOfStock && (
             <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
-              Low Stock
+              {t('products.status.lowStock')}
             </span>
           )}
         </div>
@@ -157,6 +159,7 @@ const ProductListItem: React.FC<{
   onDelete,
   isEven = false,
 }) => {
+  const { t } = useTranslation();
   const stockStatus = product.stockQuantity <= product.minStockLevel ? 'low' : 'normal';
   const isOutOfStock = product.stockQuantity === 0;
   
@@ -178,7 +181,7 @@ const ProductListItem: React.FC<{
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div className="text-xs sm:text-sm font-semibold text-green-600">${product.price}</div>
-        <div className="text-xs text-gray-500">Cost: ${product.cost}</div>
+        <div className="text-xs text-gray-500">{t('products.table.cost')}: ${product.cost}</div>
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div className="flex items-center space-x-2">
@@ -190,16 +193,16 @@ const ProductListItem: React.FC<{
           </span>
           {isOutOfStock && (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-              Out
+              {t('products.status.outOfStock')}
             </span>
           )}
           {stockStatus === 'low' && !isOutOfStock && (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-              Low
+              {t('products.status.lowStock')}
             </span>
           )}
         </div>
-        <div className="text-xs text-gray-500">Min: {product.minStockLevel}</div>
+        <div className="text-xs text-gray-500">{t('products.table.min')}: {product.minStockLevel}</div>
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div className="flex flex-col space-y-1">
@@ -208,11 +211,11 @@ const ProductListItem: React.FC<{
               ? 'bg-green-100 text-green-800' 
               : 'bg-red-100 text-red-800'
           }`}>
-            {product.isActive ? 'Active' : 'Inactive'}
+            {product.isActive ? t('products.status.active') : t('products.status.inactive')}
           </span>
           {product.tags.length > 0 && (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-              {product.tags.length} tags
+              {product.tags.length} {t('products.grid.tags')}
             </span>
           )}
         </div>
@@ -249,10 +252,12 @@ const AdvancedFilterPanel: React.FC<{
   suppliers: string[];
   allTags: string[];
 }> = ({ filters, onFiltersChange, onClearFilters, suppliers, allTags }) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Advanced Filters</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">{t('products.filters.advancedFilters')}</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -260,19 +265,19 @@ const AdvancedFilterPanel: React.FC<{
           className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
         >
           <XMarkIcon className="w-4 h-4" />
-          <span>Clear All</span>
+          <span>{t('products.filters.clearAll')}</span>
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {/* Price Range */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">Price Range</label>
+          <label className="block text-sm font-medium text-gray-700">{t('products.filters.priceRange')}</label>
           <div className="flex items-center space-x-3">
             <div className="flex-1">
               <input
                 type="number"
-                placeholder="Min ($)"
+                placeholder={t('products.filters.minPrice')}
                 value={filters.priceRange.min}
                 onChange={(e) => onFiltersChange({
                   ...filters,
@@ -281,11 +286,11 @@ const AdvancedFilterPanel: React.FC<{
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
               />
             </div>
-            <span className="text-gray-400 text-sm">to</span>
+            <span className="text-gray-400 text-sm">{t('products.filters.to')}</span>
             <div className="flex-1">
               <input
                 type="number"
-                placeholder="Max ($)"
+                placeholder={t('products.filters.maxPrice')}
                 value={filters.priceRange.max}
                 onChange={(e) => onFiltersChange({
                   ...filters,
@@ -299,7 +304,7 @@ const AdvancedFilterPanel: React.FC<{
 
         {/* Stock Level */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">Stock Level</label>
+          <label className="block text-sm font-medium text-gray-700">{t('products.filters.stockLevel')}</label>
           <select
             value={filters.stockLevel}
             onChange={(e) => onFiltersChange({
@@ -308,16 +313,16 @@ const AdvancedFilterPanel: React.FC<{
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
           >
-            <option value="all">All Stock Levels</option>
-            <option value="in-stock">In Stock (Above Min Level)</option>
-            <option value="low-stock">Low Stock (At/Below Min Level)</option>
-            <option value="out-of-stock">Out of Stock (0 items)</option>
+            <option value="all">{t('products.filters.allStockLevels')}</option>
+            <option value="in-stock">{t('products.filters.inStock')}</option>
+            <option value="low-stock">{t('products.filters.lowStock')}</option>
+            <option value="out-of-stock">{t('products.filters.outOfStock')}</option>
           </select>
         </div>
 
         {/* Status */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">Product Status</label>
+          <label className="block text-sm font-medium text-gray-700">{t('products.filters.productStatus')}</label>
           <select
             value={filters.status}
             onChange={(e) => onFiltersChange({
@@ -326,16 +331,16 @@ const AdvancedFilterPanel: React.FC<{
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
           >
-            <option value="all">All Status</option>
-            <option value="active">Active Products</option>
-            <option value="inactive">Inactive Products</option>
+            <option value="all">{t('products.filters.allStatus')}</option>
+            <option value="active">{t('products.filters.activeProducts')}</option>
+            <option value="inactive">{t('products.filters.inactiveProducts')}</option>
           </select>
         </div>
 
         {/* Suppliers */}
         <div className="space-y-3">
           <label className="block text-sm font-medium text-gray-700">
-            Suppliers ({filters.suppliers.length} selected)
+            {t('products.filters.suppliers')} ({filters.suppliers.length} {t('products.filters.selected')})
           </label>
           <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
             <div className="space-y-2">
@@ -425,6 +430,7 @@ const AdvancedFilterPanel: React.FC<{
 
 const Products: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { currentTenant, currentStore } = useTenantStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -621,8 +627,8 @@ const Products: React.FC = () => {
   if (isLoading) {
     return (
       <Loading
-        title="Loading Products"
-        description="Please wait while we fetch your product data..."
+        title={t('products.loading.title')}
+        description={t('products.loading.description')}
         fullScreen={false}
         size="lg"
       />
@@ -633,8 +639,8 @@ const Products: React.FC = () => {
     <div className="p-3 sm:p-6">
       {/* Header */}
       <PageHeader
-        title="Products"
-        description="Manage your product inventory"
+        title={t('products.title')}
+        description={t('products.description')}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -642,14 +648,14 @@ const Products: React.FC = () => {
             className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white"
           >
             <PlusIcon className="w-5 h-5" />
-            <span>Add Modifier</span>
+            <span>{t('products.addModifier')}</span>
           </Button>
           <Button
             onClick={() => navigate('/products/new')}
             className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
           >
             <PlusIcon className="w-5 h-5" />
-            <span>Add Product</span>
+            <span>{t('products.addProduct')}</span>
           </Button>
         </div>
       </PageHeader>
@@ -661,7 +667,7 @@ const Products: React.FC = () => {
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products by name or SKU..."
+              placeholder={t('products.search.placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -674,7 +680,7 @@ const Products: React.FC = () => {
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              <option value="">All Categories</option>
+              <option value="">{t('products.filters.allCategories')}</option>
               {categories.map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
@@ -686,7 +692,7 @@ const Products: React.FC = () => {
             className="flex items-center space-x-2"
           >
             <FunnelIcon className="w-4 h-4" />
-            <span>Advanced Filters</span>
+            <span>{t('products.filters.advancedFilters')}</span>
             {showAdvancedFilters ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
           </Button>
           <div className="flex border border-gray-300 rounded-lg">
@@ -718,11 +724,11 @@ const Products: React.FC = () => {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Active filters:</span>
+                <span className="text-sm text-gray-600">{t('products.filters.activeFilters')}</span>
                 <div className="flex flex-wrap gap-2">
                   {searchTerm && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      Search: {searchTerm}
+                      {t('common.search')}: {searchTerm}
                       <button
                         onClick={() => setSearchTerm('')}
                         className="ml-1 text-primary-600 hover:text-primary-800"
@@ -733,7 +739,7 @@ const Products: React.FC = () => {
                   )}
                   {selectedCategory && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      Category: {selectedCategory}
+                      {t('categories.title')}: {selectedCategory}
                       <button
                         onClick={() => setSelectedCategory('')}
                         className="ml-1 text-primary-600 hover:text-primary-800"
@@ -745,17 +751,17 @@ const Products: React.FC = () => {
                   {/* Show advanced filters summary */}
                   {advancedFilters.stockLevel !== 'all' && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      Stock: {advancedFilters.stockLevel.replace('-', ' ')}
+                      {t('products.filters.stockLevel')}: {advancedFilters.stockLevel.replace('-', ' ')}
                     </span>
                   )}
                   {advancedFilters.status !== 'all' && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      Status: {advancedFilters.status}
+                      {t('common.status')}: {advancedFilters.status}
                     </span>
                   )}
                   {(advancedFilters.priceRange.min !== '' || advancedFilters.priceRange.max !== '') && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      Price: ${advancedFilters.priceRange.min || '0'} - ${advancedFilters.priceRange.max || '∞'}
+                      {t('products.results.price')}: ${advancedFilters.priceRange.min || '0'} - ${advancedFilters.priceRange.max || '∞'}
                     </span>
                   )}
                 </div>
@@ -766,7 +772,7 @@ const Products: React.FC = () => {
                 onClick={handleClearFilters}
                 className="text-gray-600 hover:text-gray-800"
               >
-                Clear all
+                {t('products.filters.clearAllFilters')}
               </Button>
             </div>
           </div>
@@ -788,25 +794,25 @@ const Products: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
         <div className="flex items-center space-x-4 mb-4 sm:mb-0">
           <div className="text-sm text-gray-600">
-            <span className="font-semibold text-gray-900">{filteredProducts.length}</span> products found
+            <span className="font-semibold text-gray-900">{filteredProducts.length}</span> {t('products.results.productsFound')}
             {hasActiveFilters && (
-              <span className="text-gray-500"> (filtered from {products.length} total)</span>
+              <span className="text-gray-500"> ({t('products.results.filteredFrom')} {products.length} {t('products.results.total')})</span>
             )}
           </div>
         </div>
         
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-600">Sort by:</label>
+            <label className="text-sm text-gray-600">{t('products.results.sortBy')}</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-              <option value="stock">Stock</option>
-              <option value="created">Date Created</option>
+              <option value="name">{t('products.results.name')}</option>
+              <option value="price">{t('products.results.price')}</option>
+              <option value="stock">{t('products.results.stock')}</option>
+              <option value="created">{t('products.results.created')}</option>
             </select>
           </div>
           
@@ -907,22 +913,22 @@ const Products: React.FC = () => {
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Product
+                  {t('products.table.product')}
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Category
+                  {t('products.table.category')}
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Price
+                  {t('products.table.price')}
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Stock
+                  {t('products.table.stock')}
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Status
+                  {t('products.table.status')}
                 </th>
                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
+                  {t('products.table.actions')}
                 </th>
               </tr>
             </thead>
@@ -946,23 +952,23 @@ const Products: React.FC = () => {
           <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
             <Squares2X2Icon className="w-12 h-12 text-gray-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('products.empty.title')}</h3>
           {hasActiveFilters ? (
             <div className="space-y-4">
               <p className="text-gray-500 max-w-md mx-auto">
-                No products match your current search criteria. Try adjusting your filters or search terms.
+                {t('products.empty.description')}
               </p>
               <Button
                 onClick={handleClearFilters}
                 className="mx-auto"
               >
-                Clear all filters
+                {t('products.filters.clearAllFilters')}
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
               <p className="text-gray-500 max-w-md mx-auto">
-                Get started by adding your first product to the inventory.
+                {t('products.empty.createFirst')}
               </p>
               <Button
                 onClick={() => navigate('/products/new')}

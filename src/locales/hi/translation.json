@@ -205,7 +205,8 @@
     "clearSearch": "खोज साफ़ करें",
     "gridView": "ग्रिड दृश्य",
     "listView": "सूची दृश्य",
-    "all": "सभी"
+    "all": "सभी",
+    "status": "स्थिति"
   },
   "nav": {
     "dashboard": "डैशबोर्ड",
@@ -232,6 +233,79 @@
     "paymentSettings": "भुगतान सेटिंग्स",
     "taxSettings": "कर सेटिंग्स",
     "systemSettings": "सिस्टम सेटिंग्स"
+  },
+  "products": {
+    "title": "उत्पाद",
+    "description": "अपनी उत्पाद सूची का प्रबंधन करें",
+    "addModifier": "मॉडिफायर जोड़ें",
+    "addProduct": "उत्पाद जोड़ें",
+    "loading": {
+      "title": "उत्पाद लोड हो रहे हैं",
+      "description": "कृपया प्रतीक्षा करें जब तक हम आपका उत्पाद डेटा लाते हैं..."
+    },
+    "search": {
+      "placeholder": "नाम या SKU से उत्पाद खोजें..."
+    },
+    "filters": {
+      "allCategories": "सभी श्रेणियां",
+      "advancedFilters": "उन्नत फिल्टर",
+      "clearAll": "सब साफ़ करें",
+      "activeFilters": "सक्रिय फिल्टर:",
+      "clearAllFilters": "सभी साफ़ करें",
+      "priceRange": "मूल्य सीमा",
+      "minPrice": "न्यूनतम (₹)",
+      "maxPrice": "अधिकतम (₹)",
+      "to": "से",
+      "stockLevel": "स्टॉक स्तर",
+      "allStockLevels": "सभी स्टॉक स्तर",
+      "inStock": "स्टॉक में (न्यूनतम स्तर से ऊपर)",
+      "lowStock": "कम स्टॉक (न्यूनतम स्तर पर/नीचे)",
+      "outOfStock": "स्टॉक खत्म (0 आइटम)",
+      "productStatus": "उत्पाद स्थिति",
+      "allStatus": "सभी स्थितियां",
+      "activeProducts": "सक्रिय उत्पाद",
+      "inactiveProducts": "निष्क्रिय उत्पाद",
+      "suppliers": "आपूर्तिकर्ता",
+      "selected": "चयनित",
+      "tags": "टैग",
+      "dateRange": "दिनांक सीमा",
+      "startDate": "प्रारंभ दिनांक",
+      "endDate": "समाप्ति दिनांक"
+    },
+    "table": {
+      "product": "उत्पाद",
+      "category": "श्रेणी",
+      "price": "मूल्य",
+      "cost": "लागत",
+      "stock": "स्टॉक",
+      "status": "स्थिति",
+      "actions": "क्रियाएं",
+      "min": "न्यूनतम"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "outOfStock": "स्टॉक खत्म",
+      "lowStock": "कम स्टॉक"
+    },
+    "results": {
+      "productsFound": "उत्पाद मिले",
+      "filteredFrom": "से फ़िल्टर किए गए",
+      "total": "कुल",
+      "sortBy": "इसके अनुसार क्रमबद्ध करें:",
+      "name": "नाम",
+      "price": "मूल्य",
+      "stock": "स्टॉक",
+      "created": "निर्माण दिनांक"
+    },
+    "grid": {
+      "tags": "टैग"
+    },
+    "empty": {
+      "title": "कोई उत्पाद नहीं मिला",
+      "description": "अपनी खोज या फ़िल्टर मानदंड समायोजित करने का प्रयास करें",
+      "createFirst": "इन्वेंटरी में अपना पहला उत्पाद जोड़कर शुरुआत करें"
+    }
   },
   "dashboard": {
     "totalSales": "कुल बिक्री",

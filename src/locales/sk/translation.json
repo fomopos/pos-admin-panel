@@ -205,7 +205,8 @@
     "clearSearch": "Vymazať vyhľadávanie",
     "gridView": "Mriežkové zobrazenie",
     "listView": "Zoznamové zobrazenie",
-    "all": "Všetko"
+    "all": "Všetko",
+    "status": "Stav"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -232,6 +233,79 @@
     "paymentSettings": "Nastavenia platieb",
     "taxSettings": "Nastavenia daní",
     "systemSettings": "Systémové nastavenia"
+  },
+  "products": {
+    "title": "Produkty",
+    "description": "Spravujte svoj inventár produktov",
+    "addModifier": "Pridať modifikátor",
+    "addProduct": "Pridať produkt",
+    "loading": {
+      "title": "Načítavanie produktov",
+      "description": "Prosím počkajte, kým načítame vaše produktové dáta..."
+    },
+    "search": {
+      "placeholder": "Hľadať produkty podľa názvu alebo SKU..."
+    },
+    "filters": {
+      "allCategories": "Všetky kategórie",
+      "advancedFilters": "Pokročilé filtre",
+      "clearAll": "Vymazať všetko",
+      "activeFilters": "Aktívne filtre:",
+      "clearAllFilters": "Vymazať všetky",
+      "priceRange": "Cenové rozpätie",
+      "minPrice": "Min (€)",
+      "maxPrice": "Max (€)",
+      "to": "do",
+      "stockLevel": "Úroveň zásob",
+      "allStockLevels": "Všetky úrovne zásob",
+      "inStock": "Na sklade (Nad minimálnou úrovňou)",
+      "lowStock": "Nízke zásoby (Na/Pod minimálnou úrovňou)",
+      "outOfStock": "Vypredané (0 položiek)",
+      "productStatus": "Stav produktu",
+      "allStatus": "Všetky stavy",
+      "activeProducts": "Aktívne produkty",
+      "inactiveProducts": "Neaktívne produkty",
+      "suppliers": "Dodávatelia",
+      "selected": "vybraných",
+      "tags": "Značky",
+      "dateRange": "Dátumové rozpätie",
+      "startDate": "Začiatočný dátum",
+      "endDate": "Koncový dátum"
+    },
+    "table": {
+      "product": "Produkt",
+      "category": "Kategória",
+      "price": "Cena",
+      "cost": "Náklady",
+      "stock": "Zásoby",
+      "status": "Stav",
+      "actions": "Akcie",
+      "min": "Min"
+    },
+    "status": {
+      "active": "Aktívny",
+      "inactive": "Neaktívny",
+      "outOfStock": "Vypredané",
+      "lowStock": "Nízke zásoby"
+    },
+    "results": {
+      "productsFound": "produktov nájdených",
+      "filteredFrom": "filtrovaných z",
+      "total": "celkom",
+      "sortBy": "Zoradiť podľa:",
+      "name": "Názov",
+      "price": "Cena",
+      "stock": "Zásoby",
+      "created": "Dátum vytvorenia"
+    },
+    "grid": {
+      "tags": "značky"
+    },
+    "empty": {
+      "title": "Neboli nájdené žiadne produkty",
+      "description": "Skúste upraviť vaše vyhľadávacie alebo filtrovacie kritériá",
+      "createFirst": "Začnite pridaním svojho prvého produktu do inventára"
+    }
   },
   "dashboard": {
     "totalSales": "Celkové predaje",

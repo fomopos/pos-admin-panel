@@ -192,7 +192,8 @@
     "clearSearch": "Limpiar búsqueda",
     "gridView": "Vista de Cuadrícula",
     "listView": "Vista de Lista",
-    "all": "Todos"
+    "all": "Todos",
+    "status": "Estado"
   },
   "nav": {
     "dashboard": "Panel",
@@ -219,6 +220,79 @@
     "paymentSettings": "Configuración de Pagos",
     "taxSettings": "Configuración de Impuestos",
     "systemSettings": "Configuración del Sistema"
+  },
+  "products": {
+    "title": "Productos",
+    "description": "Gestiona tu inventario de productos",
+    "addModifier": "Agregar Modificador",
+    "addProduct": "Agregar Producto",
+    "loading": {
+      "title": "Cargando Productos",
+      "description": "Por favor espera mientras obtenemos tus datos de productos..."
+    },
+    "search": {
+      "placeholder": "Buscar productos por nombre o SKU..."
+    },
+    "filters": {
+      "allCategories": "Todas las Categorías",
+      "advancedFilters": "Filtros Avanzados",
+      "clearAll": "Limpiar Todo",
+      "activeFilters": "Filtros activos:",
+      "clearAllFilters": "Limpiar todos",
+      "priceRange": "Rango de Precios",
+      "minPrice": "Mín ($)",
+      "maxPrice": "Máx ($)",
+      "to": "a",
+      "stockLevel": "Nivel de Stock",
+      "allStockLevels": "Todos los Niveles de Stock",
+      "inStock": "En Stock (Por Encima del Nivel Mín)",
+      "lowStock": "Stock Bajo (En/Debajo del Nivel Mín)",
+      "outOfStock": "Sin Stock (0 artículos)",
+      "productStatus": "Estado del Producto",
+      "allStatus": "Todos los Estados",
+      "activeProducts": "Productos Activos",
+      "inactiveProducts": "Productos Inactivos",
+      "suppliers": "Proveedores",
+      "selected": "seleccionados",
+      "tags": "Etiquetas",
+      "dateRange": "Rango de Fechas",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin"
+    },
+    "table": {
+      "product": "Producto",
+      "category": "Categoría",
+      "price": "Precio",
+      "cost": "Costo",
+      "stock": "Stock",
+      "status": "Estado",
+      "actions": "Acciones",
+      "min": "Mín"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "outOfStock": "Sin Stock",
+      "lowStock": "Stock Bajo"
+    },
+    "results": {
+      "productsFound": "productos encontrados",
+      "filteredFrom": "filtrados de",
+      "total": "total",
+      "sortBy": "Ordenar por:",
+      "name": "Nombre",
+      "price": "Precio",
+      "stock": "Stock",
+      "created": "Fecha de Creación"
+    },
+    "grid": {
+      "tags": "etiquetas"
+    },
+    "empty": {
+      "title": "No se encontraron productos",
+      "description": "Intenta ajustar tu búsqueda o criterios de filtro",
+      "createFirst": "Comienza agregando tu primer producto al inventario"
+    }
   },
   "dashboard": {
     "totalSales": "Ventas Totales",

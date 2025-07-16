@@ -205,7 +205,8 @@
     "clearSearch": "مسح البحث",
     "gridView": "عرض الشبكة",
     "listView": "عرض القائمة",
-    "all": "الكل"
+    "all": "الكل",
+    "status": "الحالة"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -232,6 +233,79 @@
     "paymentSettings": "إعدادات الدفع",
     "taxSettings": "إعدادات الضرائب",
     "systemSettings": "إعدادات النظام"
+  },
+  "products": {
+    "title": "المنتجات",
+    "description": "إدارة مخزون المنتجات",
+    "addModifier": "إضافة معدل",
+    "addProduct": "إضافة منتج",
+    "loading": {
+      "title": "تحميل المنتجات",
+      "description": "يرجى الانتظار بينما نجلب بيانات المنتجات..."
+    },
+    "search": {
+      "placeholder": "البحث في المنتجات بالاسم أو رقم المنتج..."
+    },
+    "filters": {
+      "allCategories": "جميع الفئات",
+      "advancedFilters": "المرشحات المتقدمة",
+      "clearAll": "مسح الكل",
+      "activeFilters": "المرشحات النشطة:",
+      "clearAllFilters": "مسح جميع المرشحات",
+      "priceRange": "نطاق السعر",
+      "minPrice": "الحد الأدنى (ريال)",
+      "maxPrice": "الحد الأقصى (ريال)",
+      "to": "إلى",
+      "stockLevel": "مستوى المخزون",
+      "allStockLevels": "جميع مستويات المخزون",
+      "inStock": "متوفر (فوق الحد الأدنى)",
+      "lowStock": "مخزون منخفض (عند/تحت الحد الأدنى)",
+      "outOfStock": "نفد المخزون (0 عنصر)",
+      "productStatus": "حالة المنتج",
+      "allStatus": "جميع الحالات",
+      "activeProducts": "المنتجات النشطة",
+      "inactiveProducts": "المنتجات غير النشطة",
+      "suppliers": "الموردون",
+      "selected": "محدد",
+      "tags": "العلامات",
+      "dateRange": "نطاق التاريخ",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية"
+    },
+    "table": {
+      "product": "المنتج",
+      "category": "الفئة",
+      "price": "السعر",
+      "cost": "التكلفة",
+      "stock": "المخزون",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "min": "الحد الأدنى"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "outOfStock": "نفد المخزون",
+      "lowStock": "مخزون منخفض"
+    },
+    "results": {
+      "productsFound": "منتج موجود",
+      "filteredFrom": "مرشح من",
+      "total": "المجموع",
+      "sortBy": "ترتيب حسب:",
+      "name": "الاسم",
+      "price": "السعر",
+      "stock": "المخزون",
+      "created": "تاريخ الإنشاء"
+    },
+    "grid": {
+      "tags": "علامات"
+    },
+    "empty": {
+      "title": "لم يتم العثور على منتجات",
+      "description": "حاول تعديل معايير البحث أو التصفية",
+      "createFirst": "ابدأ بإضافة منتجك الأول إلى المخزون"
+    }
   },
   "dashboard": {
     "totalSales": "إجمالي المبيعات",
