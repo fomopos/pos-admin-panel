@@ -127,6 +127,15 @@ export class ProductValidationRules {
       case 'modifier_groups':
         return this.validateModifierGroups(value);
       default:
+        // Handle nested modifier group fields
+        if (fieldName.startsWith('modifier_groups.')) {
+          const fieldParts = fieldName.split('.');
+          if (fieldParts.length >= 3) {
+            const groupIndex = parseInt(fieldParts[1]);
+            const modifierIndex = fieldParts.length >= 5 ? parseInt(fieldParts[3]) : undefined;
+            return this.validateModifierGroupField(fieldName, value, groupIndex, modifierIndex);
+          }
+        }
         return { isValid: true };
     }
   }
@@ -584,7 +593,7 @@ export class ProductValidationRules {
   }
 
   /**
-   * Validate modifier groups
+   * Validate modifier groups with enhanced error handling
    */
   static validateModifierGroups(modifierGroups?: any[]): ValidationResult {
     if (!modifierGroups || modifierGroups.length === 0) {
@@ -623,10 +632,32 @@ export class ProductValidationRules {
         return { isValid: false, error: `Modifier group ${i + 1} with 'limited' selection type must have max_selections > 0` };
       }
 
+      // Validate min_selections and max_selections relationship
+      if (group.min_selections !== undefined && group.max_selections !== undefined) {
+        if (group.min_selections > group.max_selections) {
+          return { isValid: false, error: `Modifier group ${i + 1} minimum selections cannot be greater than maximum selections` };
+        }
+      }
+
+      // Validate sort order
+      if (group.sort_order !== undefined && (!Number.isInteger(group.sort_order) || group.sort_order < 1)) {
+        return { isValid: false, error: `Modifier group ${i + 1} sort order must be a positive integer` };
+      }
+
+      // Validate price delta
+      if (group.price_delta !== undefined && !Number.isFinite(group.price_delta)) {
+        return { isValid: false, error: `Modifier group ${i + 1} price delta must be a valid number` };
+      }
+
       if (!group.modifiers || !Array.isArray(group.modifiers) || group.modifiers.length === 0) {
         return { isValid: false, error: `Modifier group ${i + 1} must have at least one modifier` };
       }
 
+      if (group.modifiers.length > 50) {
+        return { isValid: false, error: `Modifier group ${i + 1} cannot have more than 50 modifiers` };
+      }
+
+      // Validate modifiers
       for (let j = 0; j < group.modifiers.length; j++) {
         const modifier = group.modifiers[j];
 
@@ -641,9 +672,139 @@ export class ProductValidationRules {
         if (modifier.price_delta !== undefined && !Number.isFinite(modifier.price_delta)) {
           return { isValid: false, error: `Modifier ${j + 1} in group ${i + 1} price delta must be a valid number` };
         }
+
+        // Validate sort order for modifier
+        if (modifier.sort_order !== undefined && (!Number.isInteger(modifier.sort_order) || modifier.sort_order < 1)) {
+          return { isValid: false, error: `Modifier ${j + 1} in group ${i + 1} sort order must be a positive integer` };
+        }
+
+        // Validate default_selected is boolean
+        if (modifier.default_selected !== undefined && typeof modifier.default_selected !== 'boolean') {
+          return { isValid: false, error: `Modifier ${j + 1} in group ${i + 1} default_selected must be true or false` };
+        }
+      }
+
+      // Additional validation for selection type constraints
+      if (group.selection_type === 'single') {
+        const defaultSelectedCount = group.modifiers.filter((m: any) => m.default_selected).length;
+        if (defaultSelectedCount > 1) {
+          return { isValid: false, error: `Modifier group ${i + 1} with 'single' selection type cannot have more than one default selected modifier` };
+        }
+      }
+
+      if (group.selection_type === 'exact' && group.exact_selections) {
+        const defaultSelectedCount = group.modifiers.filter((m: any) => m.default_selected).length;
+        if (defaultSelectedCount > group.exact_selections) {
+          return { isValid: false, error: `Modifier group ${i + 1} has more default selected modifiers (${defaultSelectedCount}) than exact selections allowed (${group.exact_selections})` };
+        }
+      }
+
+      if (group.selection_type === 'limited' && group.max_selections) {
+        const defaultSelectedCount = group.modifiers.filter((m: any) => m.default_selected).length;
+        if (defaultSelectedCount > group.max_selections) {
+          return { isValid: false, error: `Modifier group ${i + 1} has more default selected modifiers (${defaultSelectedCount}) than maximum selections allowed (${group.max_selections})` };
+        }
       }
     }
 
+    return { isValid: true };
+  }
+
+  /**
+   * Validate individual modifier group field
+   */
+  static validateModifierGroupField(fieldName: string, value: any, groupIndex: number, modifierIndex?: number): ValidationResult {
+    if (fieldName.startsWith('modifier_groups.')) {
+      const fieldPath = fieldName.split('.');
+      
+      if (fieldPath.length >= 3) {
+        const groupField = fieldPath[2];
+        
+        switch (groupField) {
+          case 'name':
+            if (!value || value.trim().length === 0) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} name is required` };
+            }
+            if (value.trim().length > 100) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} name must be less than 100 characters` };
+            }
+            return { isValid: true };
+            
+          case 'selection_type':
+            const validTypes = ['single', 'multiple', 'exact', 'limited'];
+            if (!validTypes.includes(value)) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} has invalid selection type` };
+            }
+            return { isValid: true };
+            
+          case 'exact_selections':
+            if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} exact selections must be a positive integer` };
+            }
+            return { isValid: true };
+            
+          case 'max_selections':
+            if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} max selections must be a positive integer` };
+            }
+            return { isValid: true };
+            
+          case 'min_selections':
+            if (value !== undefined && (!Number.isInteger(value) || value < 0)) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} min selections must be a non-negative integer` };
+            }
+            return { isValid: true };
+            
+          case 'sort_order':
+            if (value !== undefined && (!Number.isInteger(value) || value < 1)) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} sort order must be a positive integer` };
+            }
+            return { isValid: true };
+            
+          case 'price_delta':
+            if (value !== undefined && !Number.isFinite(value)) {
+              return { isValid: false, error: `Modifier group ${groupIndex + 1} price delta must be a valid number` };
+            }
+            return { isValid: true };
+            
+          case 'modifiers':
+            if (fieldPath.length >= 5 && modifierIndex !== undefined) {
+              const modifierField = fieldPath[4];
+              
+              switch (modifierField) {
+                case 'name':
+                  if (!value || value.trim().length === 0) {
+                    return { isValid: false, error: `Modifier ${modifierIndex + 1} in group ${groupIndex + 1} name is required` };
+                  }
+                  if (value.trim().length > 100) {
+                    return { isValid: false, error: `Modifier ${modifierIndex + 1} in group ${groupIndex + 1} name must be less than 100 characters` };
+                  }
+                  return { isValid: true };
+                  
+                case 'price_delta':
+                  if (value !== undefined && !Number.isFinite(value)) {
+                    return { isValid: false, error: `Modifier ${modifierIndex + 1} in group ${groupIndex + 1} price delta must be a valid number` };
+                  }
+                  return { isValid: true };
+                  
+                case 'sort_order':
+                  if (value !== undefined && (!Number.isInteger(value) || value < 1)) {
+                    return { isValid: false, error: `Modifier ${modifierIndex + 1} in group ${groupIndex + 1} sort order must be a positive integer` };
+                  }
+                  return { isValid: true };
+                  
+                case 'default_selected':
+                  if (value !== undefined && typeof value !== 'boolean') {
+                    return { isValid: false, error: `Modifier ${modifierIndex + 1} in group ${groupIndex + 1} default selected must be true or false` };
+                  }
+                  return { isValid: true };
+              }
+            }
+            break;
+        }
+      }
+    }
+    
     return { isValid: true };
   }
 

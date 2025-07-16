@@ -29,7 +29,6 @@ import { globalModifierService, type GlobalModifierTemplate } from '../services/
 import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { taxServices } from '../services/tax';
-import { validateAllModifierGroups } from '../utils/modifierValidation';
 import { ProductValidationRules, type ProductFormData } from '../utils/productValidation';
 import { DEFAULT_UOM } from '../constants/uom';
 import type { EnhancedCategory } from '../types/category';
@@ -479,7 +478,43 @@ const ProductEdit: React.FC = () => {
           'modifier_groups': 'Modifier Groups'
         };
         
-        const friendlyFieldName = fieldNames[field] || field;
+        // Handle modifier field names dynamically
+        let friendlyFieldName = fieldNames[field];
+        if (!friendlyFieldName && field.startsWith('modifier_groups.')) {
+          const fieldParts = field.split('.');
+          if (fieldParts.length >= 3) {
+            const groupIndex = parseInt(fieldParts[1]) + 1;
+            const groupField = fieldParts[2];
+            
+            if (fieldParts.length >= 5) {
+              // Modifier-specific field
+              const modifierIndex = parseInt(fieldParts[3]) + 1;
+              const modifierField = fieldParts[4];
+              const modifierFieldNames: Record<string, string> = {
+                'name': 'Name',
+                'price_delta': 'Price Delta',
+                'sort_order': 'Sort Order',
+                'default_selected': 'Default Selected'
+              };
+              friendlyFieldName = `Modifier ${modifierIndex} ${modifierFieldNames[modifierField] || modifierField} (Group ${groupIndex})`;
+            } else {
+              // Group-specific field
+              const groupFieldNames: Record<string, string> = {
+                'name': 'Name',
+                'selection_type': 'Selection Type',
+                'exact_selections': 'Exact Selections',
+                'max_selections': 'Max Selections',
+                'min_selections': 'Min Selections',
+                'sort_order': 'Sort Order',
+                'price_delta': 'Price Delta',
+                'required': 'Required'
+              };
+              friendlyFieldName = `Modifier Group ${groupIndex} ${groupFieldNames[groupField] || groupField}`;
+            }
+          }
+        }
+        
+        friendlyFieldName = friendlyFieldName || field;
         return `${friendlyFieldName}: ${error}`;
       });
       
@@ -766,13 +801,67 @@ const ProductEdit: React.FC = () => {
     navigate('/products');
   };
 
+  // Helper function to check if a tab has errors
+  const getTabErrorStatus = (tabId: string): boolean => {
+    const errorFields = Object.keys(errors);
+    
+    switch (tabId) {
+      case 'basic':
+        return ['name', 'description', 'uom', 'brand', 'tax_group', 'fiscal_id', 'stock_status'].some(field => errorFields.includes(field));
+      case 'pricing':
+        return ['pricing.list_price', 'pricing.sale_price', 'pricing.tare_value', 'pricing.tare_uom', 'pricing.discount_type', 'pricing.discount_value', 'pricing.min_discount_value', 'pricing.max_discount_value'].some(field => errorFields.includes(field));
+      case 'settings':
+        return ['settings.track_inventory', 'settings.allow_backorder', 'settings.require_serial', 'settings.taxable', 'settings.measure_required', 'settings.non_inventoried', 'settings.shippable', 'settings.serialized', 'settings.active', 'settings.disallow_discount', 'settings.online_only'].some(field => errorFields.includes(field));
+      case 'attributes':
+        return ['attributes.manufacturer', 'attributes.model_number', 'attributes.category_ids', 'attributes.tags'].some(field => errorFields.includes(field));
+      case 'media':
+        return ['media.images', 'media.image_url'].some(field => errorFields.includes(field));
+      case 'modifiers':
+        // Check for general modifier_groups errors and specific modifier field errors
+        return ['modifier_groups', 'global_modifier_groups'].some(field => errorFields.includes(field)) ||
+               errorFields.some(field => field.startsWith('modifier_groups.'));
+      default:
+        return false;
+    }
+  };
+
   const tabs = [
-    { id: 'basic', name: 'Basic Info', icon: ClipboardDocumentListIcon },
-    { id: 'pricing', name: 'Pricing', icon: CurrencyDollarIcon },
-    { id: 'settings', name: 'Settings', icon: CogIcon },
-    { id: 'attributes', name: 'Attributes', icon: TagIcon },
-    { id: 'media', name: 'Media', icon: PhotoIcon },
-    { id: 'modifiers', name: 'Modifiers', icon: CubeIcon }
+    { 
+      id: 'basic', 
+      name: 'Basic Info', 
+      icon: ClipboardDocumentListIcon,
+      hasError: getTabErrorStatus('basic')
+    },
+    { 
+      id: 'pricing', 
+      name: 'Pricing', 
+      icon: CurrencyDollarIcon,
+      hasError: getTabErrorStatus('pricing')
+    },
+    { 
+      id: 'settings', 
+      name: 'Settings', 
+      icon: CogIcon,
+      hasError: getTabErrorStatus('settings')
+    },
+    { 
+      id: 'attributes', 
+      name: 'Attributes', 
+      icon: TagIcon,
+      hasError: getTabErrorStatus('attributes')
+    },
+    { 
+      id: 'media', 
+      name: 'Media', 
+      icon: PhotoIcon,
+      hasError: getTabErrorStatus('media')
+    },
+    { 
+      id: 'modifiers', 
+      name: 'Modifiers', 
+      icon: CubeIcon,
+      hasError: getTabErrorStatus('modifiers')
+    }
   ];
 
   // Show loading screen while fetching data
@@ -815,12 +904,31 @@ const ProductEdit: React.FC = () => {
               <span>Delete</span>
             </Button>
           )}
+          
+          <Button
+            type="submit"
+            form="product-form"
+            disabled={isLoading}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <CheckIcon className="h-4 w-4" />
+                <span>{isEditing ? 'Update Product' : 'Create Product'}</span>
+              </>
+            )}
+          </Button>
         </div>
       </PageHeader>
 
       {/* Main Content */}
       <div>
-        <form onSubmit={handleSubmit}>
+        <form id="product-form" onSubmit={handleSubmit}>
           {/* Tab Navigation */}
           <EnhancedTabs
             tabs={tabs}
@@ -891,44 +999,17 @@ const ProductEdit: React.FC = () => {
                 <ProductModifiersTab
                   formData={formData}
                   setFormData={setFormData}
+                  errors={errors}
                   isLoading={isLoading}
                   globalTemplates={globalTemplates}
                   showTemplatesBrowser={showTemplatesBrowser}
                   setShowTemplatesBrowser={setShowTemplatesBrowser}
                   applyGlobalTemplate={applyGlobalTemplate}
+                  onValidateField={validateField}
                 />
               )}
             </div>
           </EnhancedTabs>
-
-          {/* Footer Actions */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBack}
-            >
-              Cancel
-            </Button>
-            
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="h-4 w-4" />
-                  <span>{isEditing ? 'Update Product' : 'Create Product'}</span>
-                </>
-              )}
-            </Button>
-          </div>
         </form>
       </div>
 
