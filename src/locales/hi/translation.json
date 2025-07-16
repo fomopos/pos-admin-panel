@@ -567,5 +567,434 @@
       "cancelled": "रद्द",
       "cancelOrphaned": "अनाथ रद्द करें"
     }
+  },
+  "terminalSettings": {
+    "title": "टर्मिनल प्रबंधन",
+    "description": "अपने स्टोर के लिए POS टर्मिनल प्रबंधित और कॉन्फ़िगर करें",
+    "descriptionWithStore": "{{storeName}} के लिए POS टर्मिनल प्रबंधित करें",
+    "loading": {
+      "title": "टर्मिनल सेटिंग्स लोड हो रहीं",
+      "description": "कृपया प्रतीक्षा करें जब तक हम आपकी टर्मिनल कॉन्फ़िगरेशन प्राप्त करते हैं..."
+    },
+    "noStore": {
+      "title": "कोई स्टोर चयनित नहीं",
+      "description": "कृपया अपने टर्मिनल प्रबंधित करने के लिए एक स्टोर चुनें।"
+    },
+    "refresh": "रीफ्रेश",
+    "addTerminal": "टर्मिनल जोड़ें",
+    "editTerminal": "टर्मिनल संपादित करें",
+    "addFirstTerminal": "अपना पहला टर्मिनल जोड़ें",
+    "stats": {
+      "totalTerminals": "कुल टर्मिनल",
+      "activeTerminals": "सक्रिय टर्मिनल", 
+      "inactiveTerminals": "निष्क्रिय टर्मिनल"
+    },
+    "search": {
+      "placeholder": "टर्मिनल खोजें...",
+      "showing": "{{total}} में से {{count}} टर्मिनल दिखाए जा रहे"
+    },
+    "filters": {
+      "allStatus": "सभी स्थिति",
+      "activeOnly": "केवल सक्रिय",
+      "inactiveOnly": "केवल निष्क्रिय"
+    },
+    "form": {
+      "terminalId": "टर्मिनल ID",
+      "deviceId": "डिवाइस ID", 
+      "terminalName": "टर्मिनल नाम",
+      "platform": "प्लेटफॉर्म",
+      "model": "मॉडल",
+      "architecture": "आर्किटेक्चर",
+      "status": "स्थिति",
+      "selectPlatform": "प्लेटफॉर्म चुनें",
+      "selectArchitecture": "आर्किटेक्चर चुनें",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "मुख्य काउंटर टर्मिनल",
+        "model": "iPad Pro, Galaxy Tab, इत्यादि।"
+      },
+      "errors": {
+        "terminalIdRequired": "टर्मिनल ID आवश्यक है",
+        "deviceIdRequired": "डिवाइस ID आवश्यक है", 
+        "nameRequired": "टर्मिनल नाम आवश्यक है",
+        "platformRequired": "प्लेटफॉर्म आवश्यक है",
+        "modelRequired": "मॉडल आवश्यक है",
+        "archRequired": "आर्किटेक्चर आवश्यक है",
+        "saveFailed": "टर्मिनल सहेजने में विफल। कृपया पुनः प्रयास करें।"
+      },
+      "helperText": {
+        "terminalIdReadonly": "संपादन करते समय टर्मिनल ID बदला नहीं जा सकता"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "वेब ब्राउज़र"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय",
+      "activate": "सक्रिय करें",
+      "deactivate": "निष्क्रिय करें"
+    },
+    "actions": {
+      "saving": "सहेजा जा रहा...",
+      "addTerminal": "टर्मिनल जोड़ें",
+      "updateTerminal": "टर्मिनल अपडेट करें",
+      "cancel": "रद्द"
+    },
+    "empty": {
+      "noTerminals": "कोई टर्मिनल कॉन्फ़िगर नहीं",
+      "noMatching": "कोई टर्मिनल आपकी खोज से मेल नहीं खाता",
+      "getStarted": "अपना पहला POS टर्मिनल जोड़कर शुरुआत करें।",
+      "adjustFilters": "अपने खोज शब्दों या फ़िल्टर को समायोजित करने का प्रयास करें।"
+    },
+    "details": {
+      "deviceId": "डिवाइस ID:",
+      "platform": "प्लेटफॉर्म:",
+      "model": "मॉडल:",
+      "architecture": "आर्किटेक्चर:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "टेंडर संपादित करें",
+      "create": "नया टेंडर बनाएं"
+    },
+    "backToPayments": "भुगतान सेटिंग्स पर वापस जाएं",
+    "delete": "हटाएं",
+    "unsavedChanges": {
+      "title": "आपके पास असहेजे गए परिवर्तन हैं",
+      "description": "इस पृष्ठ को छोड़ने से पहले अपने संशोधन सहेजना न भूलें।",
+      "discard": "परिवर्तन छोड़ें",
+      "save": "परिवर्तन सहेजें"
+    },
+    "saving": "सहेजा जा रहा...",
+    "templates": {
+      "title": "टेंडर टेम्प्लेट",
+      "description": "जल्दी शुरुआत करने के लिए एक टेम्प्लेट चुनें, या स्क्रैच से बनाने के लिए छोड़ें",
+      "skip": "टेम्प्लेट छोड़ें",
+      "cash": {
+        "name": "नकद (AED)",
+        "description": "AED में नकद भुगतान"
+      },
+      "visa": {
+        "name": "वीज़ा कार्ड", 
+        "description": "वीज़ा क्रेडिट/डेबिट कार्ड"
+      },
+      "mastercard": {
+        "name": "मास्टरकार्ड",
+        "description": "मास्टरकार्ड क्रेडिट/डेबिट कार्ड"
+      },
+      "giftCard": {
+        "name": "गिफ्ट कार्ड",
+        "description": "स्टोर गिफ्ट कार्ड"
+      },
+      "loyaltyPoints": {
+        "name": "लॉयल्टी पॉइंट्स",
+        "description": "ग्राहक लॉयल्टी पॉइंट्स"
+      },
+      "voucher": {
+        "name": "वाउचर",
+        "description": "स्टोर वाउचर और कूपन"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "मूलभूत जानकारी",
+        "description": "आवश्यक टेंडर विवरण और पहचान"
+      },
+      "denominations": {
+        "title": "मूल्यवर्ग",
+        "description": "इस टेंडर के लिए उपलब्ध मूल्यवर्ग कॉन्फ़िगर करें",
+        "addDenomination": "मूल्यवर्ग जोड़ें",
+        "noDenominations": "कोई मूल्यवर्ग कॉन्फ़िगर नहीं",
+        "getStarted": "शुरुआत करने के लिए \"मूल्यवर्ग जोड़ें\" पर क्लिक करें",
+        "value": "मूल्य",
+        "description": "विवरण"
+      },
+      "configuration": {
+        "title": "कॉन्फ़िगरेशन", 
+        "description": "टेंडर व्यवहार और सिस्टम कॉन्फ़िगरेशन"
+      },
+      "settings": {
+        "title": "सेटिंग्स",
+        "description": "टेंडर स्थिति और व्यवहारिक सेटिंग्स"
+      }
+    },
+    "form": {
+      "tenderId": "टेंडर ID",
+      "description": "विवरण",
+      "tenderType": "टेंडर प्रकार", 
+      "currency": "मुद्रा",
+      "displayOrder": "प्रदर्शन क्रम",
+      "availability": "उपलब्धता",
+      "maxRefundDays": "अधिकतम रिफंड दिन",
+      "changeCashLimit": "नकद परिवर्तन सीमा",
+      "placeholders": {
+        "tenderId": "टेंडर ID दर्ज करें",
+        "description": "टेंडर विवरण दर्ज करें",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "कम संख्याएं टेंडर सूची में पहले दिखाई देती हैं",
+        "tenderIdReadonly": "संपादन करते समय टेंडर ID बदला नहीं जा सकता"
+      },
+      "errors": {
+        "tenderIdRequired": "टेंडर ID आवश्यक है",
+        "descriptionRequired": "विवरण आवश्यक है", 
+        "tenderIdTooLong": "टेंडर ID 50 वर्णों से कम होना चाहिए",
+        "availabilityRequired": "कम से कम एक उपलब्धता विकल्प आवश्यक है",
+        "saveFailed": "टेंडर सहेजने में विफल। कृपया पुनः प्रयास करें।"
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "मुद्रा",
+        "description": "नकद भुगतान और मुद्रा-आधारित टेंडर"
+      },
+      "card": {
+        "label": "कार्ड", 
+        "description": "क्रेडिट और डेबिट कार्ड भुगतान"
+      },
+      "giftcard": {
+        "label": "गिफ्ट कार्ड",
+        "description": "स्टोर गिफ्ट कार्ड और वाउचर"
+      },
+      "loyalty": {
+        "label": "लॉयल्टी पॉइंट्स",
+        "description": "ग्राहक लॉयल्टी पॉइंट रिडेम्पशन"
+      },
+      "voucher": {
+        "label": "वाउचर",
+        "description": "स्टोर वाउचर और कूपन"
+      }
+    },
+    "currencies": {
+      "aed": "यूएई दिरहम",
+      "usd": "अमेरिकी डॉलर",
+      "eur": "यूरो", 
+      "gbp": "ब्रिटिश पाउंड"
+    },
+    "availability": {
+      "sale": {
+        "label": "बिक्री",
+        "description": "नियमित बिक्री लेनदेन के लिए उपयोग किया जा सकता है"
+      },
+      "returnWithReceipt": {
+        "label": "रसीद के साथ वापसी",
+        "description": "रसीद के साथ वापसी के लिए उपयोग किया जा सकता है"
+      },
+      "returnWithoutReceipt": {
+        "label": "बिना रसीद वापसी",
+        "description": "बिना रसीद वापसी के लिए उपयोग किया जा सकता है"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "सीरियल नंबर आवश्यक",
+        "description": "इस टेंडर के लिए सीरियल नंबर प्रविष्टि की आवश्यकता है"
+      },
+      "openCashDrawer": {
+        "title": "कैश ड्रॉअर खोलें",
+        "description": "इस टेंडर का उपयोग करते समय स्वचालित रूप से कैश ड्रॉअर खोलें"
+      },
+      "customerRequired": {
+        "title": "ग्राहक आवश्यक", 
+        "description": "इस टेंडर के लिए ग्राहक जानकारी की आवश्यकता है"
+      },
+      "splitTenderAllowed": {
+        "title": "स्प्लिट टेंडर अनुमतित",
+        "description": "इस टेंडर को स्प्लिट भुगतान में उपयोग करने की अनुमति दें"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "सक्रिय स्थिति",
+        "description": "क्या यह टेंडर सक्रिय है और उपयोग के लिए उपलब्ध है"
+      },
+      "overTenderAllowed": {
+        "title": "ओवर टेंडर अनुमतित", 
+        "description": "ग्राहकों को आवश्यक राशि से अधिक भुगतान करने की अनुमति दें"
+      }
+    },
+    "actions": {
+      "cancel": "रद्द",
+      "createTender": "टेंडर बनाएं",
+      "updateTender": "टेंडर अपडेट करें"
+    },
+    "success": {
+      "created": "टेंडर सफलतापूर्वक बनाया गया!",
+      "updated": "टेंडर सफलतापूर्वक अपडेट किया गया!"
+    }
+  },
+  "taxSettings": {
+    "title": "कर सेटिंग्स",
+    "description": "अपने स्टोर के लिए कर अधिकारी, समूह और स्थान कॉन्फ़िगर करें",
+    "loading": {
+      "title": "कर कॉन्फ़िगरेशन लोड हो रहा",
+      "description": "कृपया प्रतीक्षा करें जब तक हम आपकी कर सेटिंग्स प्राप्त करते हैं..."
+    },
+    "unsavedChanges": "आपके पास असहेजे गए परिवर्तन हैं",
+    "unsavedDescription": "इस पृष्ठ को छोड़ने से पहले अपने संशोधन सहेजना न भूलें।",
+    "discardChanges": "परिवर्तन छोड़ें", 
+    "saveAllChanges": "सभी परिवर्तन सहेजें",
+    "saving": "सहेजा जा रहा...",
+    "welcome": {
+      "title": "स्वागत! आपकी कर कॉन्फ़िगरेशन सेट अप करना",
+      "description": "हमने आपको शुरुआत करने के लिए एक टेम्प्लेट कॉन्फ़िगरेशन लोड किया है। नीचे दी गई सेटिंग्स की समीक्षा और संशोधन करें, फिर अपनी कर कॉन्फ़िगरेशन बनाने के लिए सहेजें।"
+    },
+    "noConfiguration": {
+      "title": "कर कॉन्फ़िगरेशन लोड नहीं हो सका",
+      "description": "कर कॉन्फ़िगरेशन लोड करने में विफल। कृपया पुनः प्रयास करें।",
+      "tryAgain": "पुनः प्रयास करें"
+    },
+    "noTenant": {
+      "title": "कोई कर कॉन्फ़िगरेशन नहीं मिली", 
+      "tenantDescription": "इस किरायेदार के लिए कोई कर कॉन्फ़िगरेशन मौजूद नहीं है। कृपया कर कॉन्फ़िगरेशन सेट अप करने के लिए अपने व्यवस्थापक से संपर्क करें।",
+      "selectDescription": "कृपया कर सेटिंग्स कॉन्फ़िगर करने के लिए एक किरायेदार चुनें।",
+      "goBack": "वापस जाएं"
+    },
+    "stats": {
+      "totalAuthorities": "कुल अधिकारी",
+      "authoritiesConfigured": "कर अधिकारी कॉन्फ़िगर किए गए",
+      "taxGroups": "कर समूह",
+      "groupsWithRules": "नियमों के साथ समूह",
+      "taxLocation": "कर स्थान",
+      "currentLocation": "वर्तमान स्थान",
+      "totalRules": "कुल नियम",
+      "rulesDefined": "कर नियम परिभाषित",
+      "notSet": "सेट नहीं"
+    },
+    "tabs": {
+      "authorities": "कर अधिकारी",
+      "groups": "कर समूह", 
+      "location": "कर स्थान",
+      "settings": "सेटिंग्स"
+    },
+    "authorities": {
+      "title": "कर अधिकारी",
+      "description": "कर अधिकारियों को कॉन्फ़िगर करें जो आपके उत्पादों पर कर लगाएंगे",
+      "addAuthority": "अधिकारी जोड़ें",
+      "noAuthorities": "कोई कर अधिकारी नहीं",
+      "getStarted": "शुरुआत करने के लिए अपना पहला कर अधिकारी बनाएं।",
+      "form": {
+        "authorityId": "अधिकारी ID",
+        "authorityName": "अधिकारी नाम",
+        "roundingCode": "राउंडिंग कोड",
+        "roundingDigits": "राउंडिंग अंक",
+        "placeholders": {
+          "authorityId": "उदा., CGST001",
+          "authorityName": "उदा., केंद्रीय GST",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "आधा ऊपर",
+        "halfDown": "आधा नीचे", 
+        "up": "ऊपर",
+        "down": "नीचे"
+      },
+      "details": {
+        "id": "ID:",
+        "rounding": "राउंडिंग:",
+        "digits": "अंक:"
+      }
+    },
+    "groups": {
+      "title": "कर समूह",
+      "description": "आसान प्रबंधन के लिए कर नियमों को समूहों में व्यवस्थित करें", 
+      "addGroup": "समूह जोड़ें",
+      "noGroups": "कोई कर समूह नहीं",
+      "getStarted": "अपने कर नियमों को व्यवस्थित करने के लिए अपना पहला कर समूह बनाएं।",
+      "totalRate": "कुल",
+      "form": {
+        "taxGroupId": "कर समूह ID", 
+        "groupName": "समूह नाम",
+        "description": "विवरण",
+        "placeholders": {
+          "taxGroupId": "उदा., TG001",
+          "groupName": "उदा., मानक GST",
+          "description": "समूह विवरण दर्ज करें"
+        }
+      },
+      "rules": {
+        "title": "कर नियम",
+        "addRule": "नियम जोड़ें",
+        "noRules": "कोई कर नियम कॉन्फ़िगर नहीं। शुरुआत करने के लिए \"नियम जोड़ें\" पर क्लिक करें।",
+        "totalTaxRate": "कुल कर दर:",
+        "form": {
+          "name": "नाम",
+          "taxAuthority": "कर अधिकारी",
+          "percentage": "प्रतिशत (%)",
+          "taxTypeCode": "कर प्रकार कोड",
+          "description": "विवरण",
+          "placeholders": {
+            "name": "नियम नाम",
+            "percentage": "0.00",
+            "description": "नियम विवरण"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "VAT",
+            "description": "मूल्य संवर्धित कर - उत्पादन/वितरण के प्रत्येक चरण में लगाया जाने वाला कर"
+          },
+          "sales": {
+            "label": "बिक्री",
+            "description": "बिक्री कर - अंतिम उपभोक्ता को बिक्री के बिंदु पर लगाया जाने वाला कर"  
+          }
+        },
+        "details": {
+          "authority": "अधिकारी:",
+          "type": "प्रकार:"
+        },
+        "actions": {
+          "done": "पूर्ण",
+          "delete": "हटाएं"
+        }
+      }
+    },
+    "location": {
+      "title": "कर स्थान",
+      "description": "अपने स्टोर के लिए प्राथमिक कर स्थान कॉन्फ़िगर करें",
+      "form": {
+        "taxLocationId": "कर स्थान ID",
+        "locationName": "स्थान नाम", 
+        "description": "विवरण",
+        "placeholders": {
+          "locationName": "उदा., मुख्य स्टोर",
+          "description": "स्थान विवरण दर्ज करें"
+        }
+      },
+      "details": {
+        "id": "ID:",
+        "noDescription": "कोई विवरण नहीं"
+      }
+    },
+    "generalSettings": {
+      "title": "सामान्य सेटिंग्स",
+      "description": "अतिरिक्त कर कॉन्फ़िगरेशन सेटिंग्स और प्राथमिकताएं",
+      "settingsPanel": "सेटिंग्स पैनल",
+      "additionalSettings": "अतिरिक्त कर कॉन्फ़िगरेशन सेटिंग्स यहां उपलब्ध होंगी।"
+    },
+    "success": {
+      "created": "कर कॉन्फ़िगरेशन सफलतापूर्वक बनाई गई",
+      "updated": "कर कॉन्फ़िगरेशन सफलतापूर्वक अपडेट की गई"
+    },
+    "errors": {
+      "saveFailed": "परिवर्तन सहेजने में विफल:"
+    }
   }
 }

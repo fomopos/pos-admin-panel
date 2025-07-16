@@ -567,5 +567,434 @@
       "cancelled": "Cancelled",
       "cancelOrphaned": "Cancel Orphaned"
     }
+  },
+  "terminalSettings": {
+    "title": "Terminal Management",
+    "description": "Manage and configure POS terminals for your store",
+    "descriptionWithStore": "Manage POS terminals for {{storeName}}",
+    "loading": {
+      "title": "Loading Terminal Settings",
+      "description": "Please wait while we fetch your terminal configuration..."
+    },
+    "noStore": {
+      "title": "No Store Selected",
+      "description": "Please select a store to manage its terminals."
+    },
+    "refresh": "Refresh",
+    "addTerminal": "Add Terminal",
+    "editTerminal": "Edit Terminal",
+    "addFirstTerminal": "Add Your First Terminal",
+    "stats": {
+      "totalTerminals": "Total Terminals",
+      "activeTerminals": "Active Terminals", 
+      "inactiveTerminals": "Inactive Terminals"
+    },
+    "search": {
+      "placeholder": "Search terminals...",
+      "showing": "Showing {{count}} of {{total}} terminals"
+    },
+    "filters": {
+      "allStatus": "All Status",
+      "activeOnly": "Active Only",
+      "inactiveOnly": "Inactive Only"
+    },
+    "form": {
+      "terminalId": "Terminal ID",
+      "deviceId": "Device ID", 
+      "terminalName": "Terminal Name",
+      "platform": "Platform",
+      "model": "Model",
+      "architecture": "Architecture",
+      "status": "Status",
+      "selectPlatform": "Select Platform",
+      "selectArchitecture": "Select Architecture",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "Main Counter Terminal",
+        "model": "iPad Pro, Galaxy Tab, etc."
+      },
+      "errors": {
+        "terminalIdRequired": "Terminal ID is required",
+        "deviceIdRequired": "Device ID is required", 
+        "nameRequired": "Terminal name is required",
+        "platformRequired": "Platform is required",
+        "modelRequired": "Model is required",
+        "archRequired": "Architecture is required",
+        "saveFailed": "Failed to save terminal. Please try again."
+      },
+      "helperText": {
+        "terminalIdReadonly": "Tender ID cannot be changed when editing"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "Web Browser"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "activate": "Activate",
+      "deactivate": "Deactivate"
+    },
+    "actions": {
+      "saving": "Saving...",
+      "addTerminal": "Add Terminal",
+      "updateTerminal": "Update Terminal",
+      "cancel": "Cancel"
+    },
+    "empty": {
+      "noTerminals": "No terminals configured",
+      "noMatching": "No terminals match your search",
+      "getStarted": "Get started by adding your first POS terminal.",
+      "adjustFilters": "Try adjusting your search terms or filters."
+    },
+    "details": {
+      "deviceId": "Device ID:",
+      "platform": "Platform:",
+      "model": "Model:",
+      "architecture": "Architecture:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "Edit Tender",
+      "create": "Create New Tender"
+    },
+    "backToPayments": "Back to Payment Settings",
+    "delete": "Delete",
+    "unsavedChanges": {
+      "title": "You have unsaved changes",
+      "description": "Don't forget to save your modifications before leaving this page.",
+      "discard": "Discard Changes",
+      "save": "Save Changes"
+    },
+    "saving": "Saving...",
+    "templates": {
+      "title": "Tender Templates",
+      "description": "Choose a template to get started quickly, or skip to create from scratch",
+      "skip": "Skip Templates",
+      "cash": {
+        "name": "Cash (AED)",
+        "description": "Cash payments in AED"
+      },
+      "visa": {
+        "name": "Visa Card", 
+        "description": "Visa credit/debit card"
+      },
+      "mastercard": {
+        "name": "Mastercard",
+        "description": "Mastercard credit/debit card"
+      },
+      "giftCard": {
+        "name": "Gift Card",
+        "description": "Store gift cards"
+      },
+      "loyaltyPoints": {
+        "name": "Loyalty Points",
+        "description": "Customer loyalty points"
+      },
+      "voucher": {
+        "name": "Voucher",
+        "description": "Store vouchers and coupons"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Basic Information",
+        "description": "Essential tender details and identification"
+      },
+      "denominations": {
+        "title": "Denominations",
+        "description": "Configure available denominations for this tender",
+        "addDenomination": "Add Denomination",
+        "noDenominations": "No denominations configured",
+        "getStarted": "Click \"Add Denomination\" to get started",
+        "value": "Value",
+        "description": "Description"
+      },
+      "configuration": {
+        "title": "Configuration", 
+        "description": "Tender behavior and system configuration"
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "Tender status and behavioral settings"
+      }
+    },
+    "form": {
+      "tenderId": "Tender ID",
+      "description": "Description",
+      "tenderType": "Tender Type", 
+      "currency": "Currency",
+      "displayOrder": "Display Order",
+      "availability": "Availability",
+      "maxRefundDays": "Maximum Refund Days",
+      "changeCashLimit": "Change Cash Limit",
+      "placeholders": {
+        "tenderId": "Enter tender ID",
+        "description": "Enter tender description",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "Lower numbers appear first in the tender list",
+        "tenderIdReadonly": "Tender ID cannot be changed when editing"
+      },
+      "errors": {
+        "tenderIdRequired": "Tender ID is required",
+        "descriptionRequired": "Description is required", 
+        "tenderIdTooLong": "Tender ID must be less than 50 characters",
+        "availabilityRequired": "At least one availability option is required",
+        "saveFailed": "Failed to save tender. Please try again."
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "Currency",
+        "description": "Cash payments and currency-based tenders"
+      },
+      "card": {
+        "label": "Card", 
+        "description": "Credit and debit card payments"
+      },
+      "giftcard": {
+        "label": "Gift Card",
+        "description": "Store gift cards and vouchers"
+      },
+      "loyalty": {
+        "label": "Loyalty Points",
+        "description": "Customer loyalty point redemption"
+      },
+      "voucher": {
+        "label": "Voucher",
+        "description": "Store vouchers and coupons"
+      }
+    },
+    "currencies": {
+      "aed": "UAE Dirham",
+      "usd": "US Dollar",
+      "eur": "Euro", 
+      "gbp": "British Pound"
+    },
+    "availability": {
+      "sale": {
+        "label": "Sale",
+        "description": "Can be used for regular sales transactions"
+      },
+      "returnWithReceipt": {
+        "label": "Return with Receipt",
+        "description": "Can be used for returns with receipt"
+      },
+      "returnWithoutReceipt": {
+        "label": "Return without Receipt",
+        "description": "Can be used for returns without receipt"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "Serial Number Required",
+        "description": "Require serial number entry for this tender"
+      },
+      "openCashDrawer": {
+        "title": "Open Cash Drawer",
+        "description": "Automatically open cash drawer when using this tender"
+      },
+      "customerRequired": {
+        "title": "Customer Required", 
+        "description": "Require customer information for this tender"
+      },
+      "splitTenderAllowed": {
+        "title": "Split Tender Allowed",
+        "description": "Allow this tender to be used in split payments"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "Active Status",
+        "description": "Whether this tender is active and available for use"
+      },
+      "overTenderAllowed": {
+        "title": "Over Tender Allowed", 
+        "description": "Allow customers to pay more than the required amount"
+      }
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "createTender": "Create Tender",
+      "updateTender": "Update Tender"
+    },
+    "success": {
+      "created": "Tender created successfully!",
+      "updated": "Tender updated successfully!"
+    }
+  },
+  "taxSettings": {
+    "title": "Tax Settings",
+    "description": "Configure tax authorities, groups, and locations for your store",
+    "loading": {
+      "title": "Loading Tax Configuration",
+      "description": "Please wait while we fetch your tax settings..."
+    },
+    "unsavedChanges": "You have unsaved changes",
+    "unsavedDescription": "Don't forget to save your modifications before leaving this page.",
+    "discardChanges": "Discard Changes", 
+    "saveAllChanges": "Save All Changes",
+    "saving": "Saving...",
+    "welcome": {
+      "title": "Welcome! Setting up your tax configuration",
+      "description": "We've loaded a template configuration to get you started. Review and modify the settings below, then save to create your tax configuration."
+    },
+    "noConfiguration": {
+      "title": "Unable to Load Tax Configuration",
+      "description": "Failed to load tax configuration. Please try again.",
+      "tryAgain": "Try Again"
+    },
+    "noTenant": {
+      "title": "No Tax Configuration Found", 
+      "tenantDescription": "No tax configuration exists for this tenant. Please contact your administrator to set up tax configuration.",
+      "selectDescription": "Please select a tenant to configure tax settings.",
+      "goBack": "Go Back"
+    },
+    "stats": {
+      "totalAuthorities": "Total Authorities",
+      "authoritiesConfigured": "Tax authorities configured",
+      "taxGroups": "Tax Groups",
+      "groupsWithRules": "Groups with rules",
+      "taxLocation": "Tax Location",
+      "currentLocation": "Current location",
+      "totalRules": "Total Rules",
+      "rulesDefined": "Tax rules defined",
+      "notSet": "Not Set"
+    },
+    "tabs": {
+      "authorities": "Tax Authorities",
+      "groups": "Tax Groups", 
+      "location": "Tax Location",
+      "settings": "Settings"
+    },
+    "authorities": {
+      "title": "Tax Authorities",
+      "description": "Configure tax authorities that will apply taxes to your products",
+      "addAuthority": "Add Authority",
+      "noAuthorities": "No Tax Authorities",
+      "getStarted": "Create your first tax authority to get started.",
+      "form": {
+        "authorityId": "Authority ID",
+        "authorityName": "Authority Name",
+        "roundingCode": "Rounding Code",
+        "roundingDigits": "Rounding Digits",
+        "placeholders": {
+          "authorityId": "e.g., CGST001",
+          "authorityName": "e.g., Central GST",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "Half Up",
+        "halfDown": "Half Down", 
+        "up": "Up",
+        "down": "Down"
+      },
+      "details": {
+        "id": "ID:",
+        "rounding": "Rounding:",
+        "digits": "Digits:"
+      }
+    },
+    "groups": {
+      "title": "Tax Groups",
+      "description": "Organize tax rules into groups for easier management", 
+      "addGroup": "Add Group",
+      "noGroups": "No Tax Groups",
+      "getStarted": "Create your first tax group to organize your tax rules.",
+      "totalRate": "Total",
+      "form": {
+        "taxGroupId": "Tax Group ID", 
+        "groupName": "Group Name",
+        "description": "Description",
+        "placeholders": {
+          "taxGroupId": "e.g., TG001",
+          "groupName": "e.g., Standard GST",
+          "description": "Enter group description"
+        }
+      },
+      "rules": {
+        "title": "Tax Rules",
+        "addRule": "Add Rule",
+        "noRules": "No tax rules configured. Click \"Add Rule\" to get started.",
+        "totalTaxRate": "Total Tax Rate:",
+        "form": {
+          "name": "Name",
+          "taxAuthority": "Tax Authority",
+          "percentage": "Percentage (%)",
+          "taxTypeCode": "Tax Type Code",
+          "description": "Description",
+          "placeholders": {
+            "name": "Rule name",
+            "percentage": "0.00",
+            "description": "Rule description"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "VAT",
+            "description": "Value Added Tax - Tax applied at each stage of production/distribution"
+          },
+          "sales": {
+            "label": "SALES",
+            "description": "Sales Tax - Tax applied at the point of sale to the end consumer"  
+          }
+        },
+        "details": {
+          "authority": "Authority:",
+          "type": "Type:"
+        },
+        "actions": {
+          "done": "Done",
+          "delete": "Delete"
+        }
+      }
+    },
+    "location": {
+      "title": "Tax Location",
+      "description": "Configure the primary tax location for your store",
+      "form": {
+        "taxLocationId": "Tax Location ID",
+        "locationName": "Location Name", 
+        "description": "Description",
+        "placeholders": {
+          "locationName": "e.g., Main Store",
+          "description": "Enter location description"
+        }
+      },
+      "details": {
+        "id": "ID:",
+        "noDescription": "No description"
+      }
+    },
+    "generalSettings": {
+      "title": "General Settings",
+      "description": "Additional tax configuration settings and preferences",
+      "settingsPanel": "Settings Panel",
+      "additionalSettings": "Additional tax configuration settings will be available here."
+    },
+    "success": {
+      "created": "Tax configuration created successfully",
+      "updated": "Tax configuration updated successfully"
+    },
+    "errors": {
+      "saveFailed": "Failed to save changes:"
+    }
   }
 }

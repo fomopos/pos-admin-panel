@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ComputerDesktopIcon,
   DevicePhoneMobileIcon,
@@ -49,6 +50,7 @@ interface TerminalSettingsState {
 }
 
 const TerminalSettings: React.FC = () => {
+  const { t } = useTranslation();
   const { currentStore, isLoading: storeLoading } = useTenantStore();
   const [state, setState] = useState<TerminalSettingsState>({
     terminals: {},
@@ -146,7 +148,7 @@ const TerminalSettings: React.FC = () => {
         ) : (
           <XCircleIcon className="w-3 h-3 mr-1" />
         )}
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {t(`terminalSettings.status.${status}`)}
       </span>
     );
   };
@@ -183,8 +185,8 @@ const TerminalSettings: React.FC = () => {
   if (storeLoading) {
     return (
       <Loading
-        title="Loading Terminal Settings"
-        description="Please wait while we fetch your terminal configuration..."
+        title={t('terminalSettings.loading.title')}
+        description={t('terminalSettings.loading.description')}
         fullScreen={false}
         size="lg"
       />
@@ -195,15 +197,15 @@ const TerminalSettings: React.FC = () => {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Terminal Management"
-          description="Manage and configure POS terminals for your store"
+          title={t('terminalSettings.title')}
+          description={t('terminalSettings.description')}
         />
         <Alert variant="warning" className="max-w-2xl">
           <ExclamationTriangleIcon className="h-5 w-5" />
           <div className="ml-3">
-            <h3 className="text-sm font-medium">No Store Selected</h3>
+            <h3 className="text-sm font-medium">{t('terminalSettings.noStore.title')}</h3>
             <div className="mt-1 text-sm">
-              Please select a store to manage its terminals.
+              {t('terminalSettings.noStore.description')}
             </div>
           </div>
         </Alert>
@@ -215,8 +217,8 @@ const TerminalSettings: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader
-        title="Terminal Management"
-        description={`Manage POS terminals for ${currentStore.store_name}`}
+        title={t('terminalSettings.title')}
+        description={t('terminalSettings.descriptionWithStore', { storeName: currentStore.store_name })}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -226,11 +228,11 @@ const TerminalSettings: React.FC = () => {
             disabled={state.refreshing}
           >
             <ArrowPathIcon className={`w-4 h-4 mr-2 ${state.refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('terminalSettings.refresh')}
           </Button>
           <Button onClick={handleAddTerminal} size="sm">
             <PlusIcon className="w-4 h-4 mr-2" />
-            Add Terminal
+            {t('terminalSettings.addTerminal')}
           </Button>
         </div>
       </PageHeader>
@@ -243,7 +245,7 @@ const TerminalSettings: React.FC = () => {
               <ComputerDesktopIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-blue-600">Total Terminals</p>
+              <p className="text-sm font-medium text-blue-600">{t('terminalSettings.stats.totalTerminals')}</p>
               <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
             </div>
           </div>
@@ -255,7 +257,7 @@ const TerminalSettings: React.FC = () => {
               <CheckCircleIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-green-600">Active Terminals</p>
+              <p className="text-sm font-medium text-green-600">{t('terminalSettings.stats.activeTerminals')}</p>
               <p className="text-2xl font-bold text-green-900">{stats.active}</p>
             </div>
           </div>
@@ -267,7 +269,7 @@ const TerminalSettings: React.FC = () => {
               <XCircleIcon className="h-6 w-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-red-600">Inactive Terminals</p>
+              <p className="text-sm font-medium text-red-600">{t('terminalSettings.stats.inactiveTerminals')}</p>
               <p className="text-2xl font-bold text-red-900">{stats.inactive}</p>
             </div>
           </div>
@@ -281,7 +283,7 @@ const TerminalSettings: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search terminals..."
+                placeholder={t('terminalSettings.search.placeholder')}
                 value={state.searchTerm}
                 onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
                 className="pl-10 pr-4 py-2 w-64 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -294,14 +296,14 @@ const TerminalSettings: React.FC = () => {
               onChange={(e) => setState(prev => ({ ...prev, statusFilter: e.target.value as any }))}
               className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
+              <option value="all">{t('terminalSettings.filters.allStatus')}</option>
+              <option value="active">{t('terminalSettings.filters.activeOnly')}</option>
+              <option value="inactive">{t('terminalSettings.filters.inactiveOnly')}</option>
             </select>
           </div>
 
           <div className="text-sm text-slate-500">
-            Showing {filteredTerminals.length} of {stats.total} terminals
+            {t('terminalSettings.search.showing', { count: filteredTerminals.length, total: stats.total })}
           </div>
         </div>
       </Card>
@@ -311,18 +313,18 @@ const TerminalSettings: React.FC = () => {
         <Card className="p-12 text-center">
           <ComputerDesktopIcon className="w-12 h-12 text-slate-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 mb-2">
-            {stats.total === 0 ? 'No terminals configured' : 'No terminals match your search'}
+            {stats.total === 0 ? t('terminalSettings.empty.noTerminals') : t('terminalSettings.empty.noMatching')}
           </h3>
           <p className="text-slate-500 mb-4">
             {stats.total === 0 
-              ? 'Get started by adding your first POS terminal.' 
-              : 'Try adjusting your search terms or filters.'
+              ? t('terminalSettings.empty.getStarted') 
+              : t('terminalSettings.empty.adjustFilters')
             }
           </p>
           {stats.total === 0 && (
             <Button onClick={handleAddTerminal}>
               <PlusIcon className="w-4 h-4 mr-2" />
-              Add Your First Terminal
+              {t('terminalSettings.addFirstTerminal')}
             </Button>
           )}
         </Card>
@@ -348,25 +350,25 @@ const TerminalSettings: React.FC = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center space-x-2 text-sm">
                   <IdentificationIcon className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-600">Device ID:</span>
+                  <span className="text-slate-600">{t('terminalSettings.details.deviceId')}</span>
                   <span className="font-mono text-slate-900">{terminal.device_id}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2 text-sm">
                   <CpuChipIcon className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-600">Platform:</span>
+                  <span className="text-slate-600">{t('terminalSettings.details.platform')}</span>
                   <span className="text-slate-900">{terminal.platform}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2 text-sm">
                   <ComputerDesktopIcon className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-600">Model:</span>
+                  <span className="text-slate-600">{t('terminalSettings.details.model')}</span>
                   <span className="text-slate-900">{terminal.model}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2 text-sm">
                   <BoltIcon className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-600">Architecture:</span>
+                  <span className="text-slate-600">{t('terminalSettings.details.architecture')}</span>
                   <span className="text-slate-900">{terminal.arch}</span>
                 </div>
               </div>
@@ -379,7 +381,7 @@ const TerminalSettings: React.FC = () => {
                     size="sm"
                     className={terminal.status === 'active' ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-600 hover:bg-green-50'}
                   >
-                    {terminal.status === 'active' ? 'Deactivate' : 'Activate'}
+                    {terminal.status === 'active' ? t('terminalSettings.status.deactivate') : t('terminalSettings.status.activate')}
                   </Button>
                 </div>
                 
@@ -461,6 +463,7 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
   onClose,
   onSave
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<TerminalFormData>({
     terminal_id: '',
     device_id: '',
@@ -506,12 +509,12 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
 
     // Validation
     const newErrors: Record<string, string> = {};
-    if (!formData.terminal_id.trim()) newErrors.terminal_id = 'Terminal ID is required';
-    if (!formData.device_id.trim()) newErrors.device_id = 'Device ID is required';
-    if (!formData.name.trim()) newErrors.name = 'Terminal name is required';
-    if (!formData.platform.trim()) newErrors.platform = 'Platform is required';
-    if (!formData.model.trim()) newErrors.model = 'Model is required';
-    if (!formData.arch.trim()) newErrors.arch = 'Architecture is required';
+    if (!formData.terminal_id.trim()) newErrors.terminal_id = t('terminalSettings.form.errors.terminalIdRequired');
+    if (!formData.device_id.trim()) newErrors.device_id = t('terminalSettings.form.errors.deviceIdRequired');
+    if (!formData.name.trim()) newErrors.name = t('terminalSettings.form.errors.nameRequired');
+    if (!formData.platform.trim()) newErrors.platform = t('terminalSettings.form.errors.platformRequired');
+    if (!formData.model.trim()) newErrors.model = t('terminalSettings.form.errors.modelRequired');
+    if (!formData.arch.trim()) newErrors.arch = t('terminalSettings.form.errors.archRequired');
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -534,32 +537,32 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
         status: formData.status
       });
     } catch (error) {
-      setErrors({ general: 'Failed to save terminal. Please try again.' });
+      setErrors({ general: t('terminalSettings.form.errors.saveFailed') });
     } finally {
       setIsLoading(false);
     }
   };
 
   const platformOptions = [
-    { value: 'Android', label: 'Android' },
-    { value: 'iOS', label: 'iOS' },
-    { value: 'Windows', label: 'Windows' },
-    { value: 'Linux', label: 'Linux' },
-    { value: 'Web', label: 'Web Browser' }
+    { value: 'Android', label: t('terminalSettings.platforms.android') },
+    { value: 'iOS', label: t('terminalSettings.platforms.ios') },
+    { value: 'Windows', label: t('terminalSettings.platforms.windows') },
+    { value: 'Linux', label: t('terminalSettings.platforms.linux') },
+    { value: 'Web', label: t('terminalSettings.platforms.web') }
   ];
 
   const archOptions = [
-    { value: 'arm64', label: 'ARM64' },
-    { value: 'x86_64', label: 'x86_64' },
-    { value: 'x86', label: 'x86' },
-    { value: 'armv7', label: 'ARMv7' }
+    { value: 'arm64', label: t('terminalSettings.architectures.arm64') },
+    { value: 'x86_64', label: t('terminalSettings.architectures.x86_64') },
+    { value: 'x86', label: t('terminalSettings.architectures.x86') },
+    { value: 'armv7', label: t('terminalSettings.architectures.armv7') }
   ];
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Edit Terminal' : 'Add New Terminal'}
+      title={isEditing ? t('terminalSettings.editTerminal') : t('terminalSettings.addTerminal')}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -574,36 +577,36 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <InputTextField
-            label="Terminal ID"
+            label={t('terminalSettings.form.terminalId')}
             value={formData.terminal_id}
             onChange={(value) => setFormData(prev => ({ ...prev, terminal_id: value }))}
             error={errors.terminal_id}
-            placeholder="TERM-001"
+            placeholder={t('terminalSettings.form.placeholders.terminalId')}
             disabled={isEditing}
             required
           />
 
           <InputTextField
-            label="Device ID"
+            label={t('terminalSettings.form.deviceId')}
             value={formData.device_id}
             onChange={(value) => setFormData(prev => ({ ...prev, device_id: value }))}
             error={errors.device_id}
-            placeholder="DEV-ABC123"
+            placeholder={t('terminalSettings.form.placeholders.deviceId')}
             required
           />
 
           <InputTextField
-            label="Terminal Name"
+            label={t('terminalSettings.form.terminalName')}
             value={formData.name}
             onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
             error={errors.name}
-            placeholder="Main Counter Terminal"
+            placeholder={t('terminalSettings.form.placeholders.terminalName')}
             required
           />
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Platform *
+              {t('terminalSettings.form.platform')} *
             </label>
             <select
               value={formData.platform}
@@ -613,7 +616,7 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
               }`}
               required
             >
-              <option value="">Select Platform</option>
+              <option value="">{t('terminalSettings.form.selectPlatform')}</option>
               {platformOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -626,17 +629,17 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
           </div>
 
           <InputTextField
-            label="Model"
+            label={t('terminalSettings.form.model')}
             value={formData.model}
             onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
             error={errors.model}
-            placeholder="iPad Pro, Galaxy Tab, etc."
+            placeholder={t('terminalSettings.form.placeholders.model')}
             required
           />
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Architecture *
+              {t('terminalSettings.form.architecture')} *
             </label>
             <select
               value={formData.arch}
@@ -646,7 +649,7 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
               }`}
               required
             >
-              <option value="">Select Architecture</option>
+              <option value="">{t('terminalSettings.form.selectArchitecture')}</option>
               {archOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -661,24 +664,24 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
-            Status
+            {t('terminalSettings.form.status')}
           </label>
           <select
             value={formData.status}
             onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' }))}
             className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active">{t('terminalSettings.status.active')}</option>
+            <option value="inactive">{t('terminalSettings.status.inactive')}</option>
           </select>
         </div>
 
         <div className="flex items-center justify-end space-x-3 pt-6 border-t border-slate-200">
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            {t('terminalSettings.actions.cancel')}
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Saving...' : (isEditing ? 'Update Terminal' : 'Add Terminal')}
+            {isLoading ? t('terminalSettings.actions.saving') : (isEditing ? t('terminalSettings.actions.updateTerminal') : t('terminalSettings.actions.addTerminal'))}
           </Button>
         </div>
       </form>

@@ -554,5 +554,434 @@
       "cancelled": "Cancelado",
       "cancelOrphaned": "Cancelar Huérfano"
     }
+  },
+  "terminalSettings": {
+    "title": "Gestión de Terminales",
+    "description": "Gestiona y configura terminales POS para tu tienda",
+    "descriptionWithStore": "Gestiona terminales POS para {{storeName}}",
+    "loading": {
+      "title": "Cargando Configuración de Terminal",
+      "description": "Por favor espera mientras obtenemos tu configuración de terminal..."
+    },
+    "noStore": {
+      "title": "Ninguna Tienda Seleccionada",
+      "description": "Por favor selecciona una tienda para gestionar sus terminales."
+    },
+    "refresh": "Actualizar",
+    "addTerminal": "Agregar Terminal",
+    "editTerminal": "Editar Terminal",
+    "addFirstTerminal": "Agregar Tu Primera Terminal",
+    "stats": {
+      "totalTerminals": "Total de Terminales",
+      "activeTerminals": "Terminales Activas", 
+      "inactiveTerminals": "Terminales Inactivas"
+    },
+    "search": {
+      "placeholder": "Buscar terminales...",
+      "showing": "Mostrando {{count}} de {{total}} terminales"
+    },
+    "filters": {
+      "allStatus": "Todos los Estados",
+      "activeOnly": "Solo Activas",
+      "inactiveOnly": "Solo Inactivas"
+    },
+    "form": {
+      "terminalId": "ID de Terminal",
+      "deviceId": "ID de Dispositivo", 
+      "terminalName": "Nombre de Terminal",
+      "platform": "Plataforma",
+      "model": "Modelo",
+      "architecture": "Arquitectura",
+      "status": "Estado",
+      "selectPlatform": "Seleccionar Plataforma",
+      "selectArchitecture": "Seleccionar Arquitectura",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "Terminal Principal de Mostrador",
+        "model": "iPad Pro, Galaxy Tab, etc."
+      },
+      "errors": {
+        "terminalIdRequired": "ID de terminal es requerido",
+        "deviceIdRequired": "ID de dispositivo es requerido", 
+        "nameRequired": "Nombre de terminal es requerido",
+        "platformRequired": "Plataforma es requerida",
+        "modelRequired": "Modelo es requerido",
+        "archRequired": "Arquitectura es requerida",
+        "saveFailed": "Error al guardar terminal. Por favor intenta de nuevo."
+      },
+      "helperText": {
+        "terminalIdReadonly": "El ID de terminal no se puede cambiar al editar"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "Navegador Web"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "activate": "Activar",
+      "deactivate": "Desactivar"
+    },
+    "actions": {
+      "saving": "Guardando...",
+      "addTerminal": "Agregar Terminal",
+      "updateTerminal": "Actualizar Terminal",
+      "cancel": "Cancelar"
+    },
+    "empty": {
+      "noTerminals": "No hay terminales configuradas",
+      "noMatching": "Ninguna terminal coincide con tu búsqueda",
+      "getStarted": "Comienza agregando tu primera terminal POS.",
+      "adjustFilters": "Intenta ajustar tus términos de búsqueda o filtros."
+    },
+    "details": {
+      "deviceId": "ID de Dispositivo:",
+      "platform": "Plataforma:",
+      "model": "Modelo:",
+      "architecture": "Arquitectura:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "Editar Tender",
+      "create": "Crear Nuevo Tender"
+    },
+    "backToPayments": "Volver a Configuración de Pagos",
+    "delete": "Eliminar",
+    "unsavedChanges": {
+      "title": "Tienes cambios sin guardar",
+      "description": "No olvides guardar tus modificaciones antes de salir de esta página.",
+      "discard": "Descartar Cambios",
+      "save": "Guardar Cambios"
+    },
+    "saving": "Guardando...",
+    "templates": {
+      "title": "Plantillas de Tender",
+      "description": "Elige una plantilla para comenzar rápidamente, o sáltala para crear desde cero",
+      "skip": "Saltar Plantillas",
+      "cash": {
+        "name": "Efectivo (AED)",
+        "description": "Pagos en efectivo en AED"
+      },
+      "visa": {
+        "name": "Tarjeta Visa", 
+        "description": "Tarjeta de crédito/débito Visa"
+      },
+      "mastercard": {
+        "name": "Mastercard",
+        "description": "Tarjeta de crédito/débito Mastercard"
+      },
+      "giftCard": {
+        "name": "Tarjeta de Regalo",
+        "description": "Tarjetas de regalo de la tienda"
+      },
+      "loyaltyPoints": {
+        "name": "Puntos de Lealtad",
+        "description": "Puntos de lealtad del cliente"
+      },
+      "voucher": {
+        "name": "Cupón",
+        "description": "Cupones y vales de la tienda"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Información Básica",
+        "description": "Detalles esenciales del tender e identificación"
+      },
+      "denominations": {
+        "title": "Denominaciones",
+        "description": "Configura las denominaciones disponibles para este tender",
+        "addDenomination": "Agregar Denominación",
+        "noDenominations": "No hay denominaciones configuradas",
+        "getStarted": "Haz clic en \"Agregar Denominación\" para comenzar",
+        "value": "Valor",
+        "description": "Descripción"
+      },
+      "configuration": {
+        "title": "Configuración", 
+        "description": "Comportamiento del tender y configuración del sistema"
+      },
+      "settings": {
+        "title": "Configuración",
+        "description": "Estado del tender y configuraciones de comportamiento"
+      }
+    },
+    "form": {
+      "tenderId": "ID de Tender",
+      "description": "Descripción",
+      "tenderType": "Tipo de Tender", 
+      "currency": "Moneda",
+      "displayOrder": "Orden de Visualización",
+      "availability": "Disponibilidad",
+      "maxRefundDays": "Días Máximos de Reembolso",
+      "changeCashLimit": "Límite de Cambio en Efectivo",
+      "placeholders": {
+        "tenderId": "Ingresa ID de tender",
+        "description": "Ingresa descripción del tender",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "Los números más bajos aparecen primero en la lista de tenders",
+        "tenderIdReadonly": "El ID de tender no se puede cambiar al editar"
+      },
+      "errors": {
+        "tenderIdRequired": "ID de tender es requerido",
+        "descriptionRequired": "Descripción es requerida", 
+        "tenderIdTooLong": "ID de tender debe tener menos de 50 caracteres",
+        "availabilityRequired": "Se requiere al menos una opción de disponibilidad",
+        "saveFailed": "Error al guardar tender. Por favor intenta de nuevo."
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "Moneda",
+        "description": "Pagos en efectivo y tenders basados en moneda"
+      },
+      "card": {
+        "label": "Tarjeta", 
+        "description": "Pagos con tarjeta de crédito y débito"
+      },
+      "giftcard": {
+        "label": "Tarjeta de Regalo",
+        "description": "Tarjetas de regalo y cupones de la tienda"
+      },
+      "loyalty": {
+        "label": "Puntos de Lealtad",
+        "description": "Redención de puntos de lealtad del cliente"
+      },
+      "voucher": {
+        "label": "Cupón",
+        "description": "Cupones y vales de la tienda"
+      }
+    },
+    "currencies": {
+      "aed": "Dirham de EAU",
+      "usd": "Dólar Estadounidense",
+      "eur": "Euro", 
+      "gbp": "Libra Esterlina"
+    },
+    "availability": {
+      "sale": {
+        "label": "Venta",
+        "description": "Se puede usar para transacciones de venta regulares"
+      },
+      "returnWithReceipt": {
+        "label": "Devolución con Recibo",
+        "description": "Se puede usar para devoluciones con recibo"
+      },
+      "returnWithoutReceipt": {
+        "label": "Devolución sin Recibo",
+        "description": "Se puede usar para devoluciones sin recibo"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "Número de Serie Requerido",
+        "description": "Requerir entrada de número de serie para este tender"
+      },
+      "openCashDrawer": {
+        "title": "Abrir Cajón de Efectivo",
+        "description": "Abrir automáticamente el cajón de efectivo al usar este tender"
+      },
+      "customerRequired": {
+        "title": "Cliente Requerido", 
+        "description": "Requerir información del cliente para este tender"
+      },
+      "splitTenderAllowed": {
+        "title": "Tender Dividido Permitido",
+        "description": "Permitir que este tender se use en pagos divididos"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "Estado Activo",
+        "description": "Si este tender está activo y disponible para uso"
+      },
+      "overTenderAllowed": {
+        "title": "Sobre Tender Permitido", 
+        "description": "Permitir a los clientes pagar más de la cantidad requerida"
+      }
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "createTender": "Crear Tender",
+      "updateTender": "Actualizar Tender"
+    },
+    "success": {
+      "created": "¡Tender creado exitosamente!",
+      "updated": "¡Tender actualizado exitosamente!"
+    }
+  },
+  "taxSettings": {
+    "title": "Configuración de Impuestos",
+    "description": "Configura autoridades fiscales, grupos y ubicaciones para tu tienda",
+    "loading": {
+      "title": "Cargando Configuración de Impuestos",
+      "description": "Por favor espera mientras obtenemos tu configuración fiscal..."
+    },
+    "unsavedChanges": "Tienes cambios sin guardar",
+    "unsavedDescription": "No olvides guardar tus modificaciones antes de salir de esta página.",
+    "discardChanges": "Descartar Cambios", 
+    "saveAllChanges": "Guardar Todos los Cambios",
+    "saving": "Guardando...",
+    "welcome": {
+      "title": "¡Bienvenido! Configurando tu configuración fiscal",
+      "description": "Hemos cargado una configuración de plantilla para comenzar. Revisa y modifica la configuración a continuación, luego guarda para crear tu configuración fiscal."
+    },
+    "noConfiguration": {
+      "title": "No se Puede Cargar la Configuración Fiscal",
+      "description": "Error al cargar la configuración fiscal. Por favor intenta de nuevo.",
+      "tryAgain": "Intentar de Nuevo"
+    },
+    "noTenant": {
+      "title": "No se Encontró Configuración Fiscal", 
+      "tenantDescription": "No existe configuración fiscal para este inquilino. Por favor contacta a tu administrador para configurar la configuración fiscal.",
+      "selectDescription": "Por favor selecciona un inquilino para configurar la configuración fiscal.",
+      "goBack": "Regresar"
+    },
+    "stats": {
+      "totalAuthorities": "Total de Autoridades",
+      "authoritiesConfigured": "Autoridades fiscales configuradas",
+      "taxGroups": "Grupos Fiscales",
+      "groupsWithRules": "Grupos con reglas",
+      "taxLocation": "Ubicación Fiscal",
+      "currentLocation": "Ubicación actual",
+      "totalRules": "Total de Reglas",
+      "rulesDefined": "Reglas fiscales definidas",
+      "notSet": "No Establecido"
+    },
+    "tabs": {
+      "authorities": "Autoridades Fiscales",
+      "groups": "Grupos Fiscales", 
+      "location": "Ubicación Fiscal",
+      "settings": "Configuración"
+    },
+    "authorities": {
+      "title": "Autoridades Fiscales",
+      "description": "Configura autoridades fiscales que aplicarán impuestos a tus productos",
+      "addAuthority": "Agregar Autoridad",
+      "noAuthorities": "No hay Autoridades Fiscales",
+      "getStarted": "Crea tu primera autoridad fiscal para comenzar.",
+      "form": {
+        "authorityId": "ID de Autoridad",
+        "authorityName": "Nombre de Autoridad",
+        "roundingCode": "Código de Redondeo",
+        "roundingDigits": "Dígitos de Redondeo",
+        "placeholders": {
+          "authorityId": "ej., CGST001",
+          "authorityName": "ej., GST Central",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "Medio Arriba",
+        "halfDown": "Medio Abajo", 
+        "up": "Arriba",
+        "down": "Abajo"
+      },
+      "details": {
+        "id": "ID:",
+        "rounding": "Redondeo:",
+        "digits": "Dígitos:"
+      }
+    },
+    "groups": {
+      "title": "Grupos Fiscales",
+      "description": "Organiza reglas fiscales en grupos para una gestión más fácil", 
+      "addGroup": "Agregar Grupo",
+      "noGroups": "No hay Grupos Fiscales",
+      "getStarted": "Crea tu primer grupo fiscal para organizar tus reglas fiscales.",
+      "totalRate": "Total",
+      "form": {
+        "taxGroupId": "ID de Grupo Fiscal", 
+        "groupName": "Nombre de Grupo",
+        "description": "Descripción",
+        "placeholders": {
+          "taxGroupId": "ej., TG001",
+          "groupName": "ej., GST Estándar",
+          "description": "Ingresa descripción del grupo"
+        }
+      },
+      "rules": {
+        "title": "Reglas Fiscales",
+        "addRule": "Agregar Regla",
+        "noRules": "No hay reglas fiscales configuradas. Haz clic en \"Agregar Regla\" para comenzar.",
+        "totalTaxRate": "Tasa Fiscal Total:",
+        "form": {
+          "name": "Nombre",
+          "taxAuthority": "Autoridad Fiscal",
+          "percentage": "Porcentaje (%)",
+          "taxTypeCode": "Código de Tipo Fiscal",
+          "description": "Descripción",
+          "placeholders": {
+            "name": "Nombre de regla",
+            "percentage": "0.00",
+            "description": "Descripción de regla"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "IVA",
+            "description": "Impuesto al Valor Agregado - Impuesto aplicado en cada etapa de producción/distribución"
+          },
+          "sales": {
+            "label": "VENTAS",
+            "description": "Impuesto a las Ventas - Impuesto aplicado en el punto de venta al consumidor final"  
+          }
+        },
+        "details": {
+          "authority": "Autoridad:",
+          "type": "Tipo:"
+        },
+        "actions": {
+          "done": "Listo",
+          "delete": "Eliminar"
+        }
+      }
+    },
+    "location": {
+      "title": "Ubicación Fiscal",
+      "description": "Configura la ubicación fiscal principal para tu tienda",
+      "form": {
+        "taxLocationId": "ID de Ubicación Fiscal",
+        "locationName": "Nombre de Ubicación", 
+        "description": "Descripción",
+        "placeholders": {
+          "locationName": "ej., Tienda Principal",
+          "description": "Ingresa descripción de ubicación"
+        }
+      },
+      "details": {
+        "id": "ID:",
+        "noDescription": "Sin descripción"
+      }
+    },
+    "generalSettings": {
+      "title": "Configuración General",
+      "description": "Configuraciones y preferencias adicionales de configuración fiscal",
+      "settingsPanel": "Panel de Configuración",
+      "additionalSettings": "Configuraciones adicionales de configuración fiscal estarán disponibles aquí."
+    },
+    "success": {
+      "created": "Configuración fiscal creada exitosamente",
+      "updated": "Configuración fiscal actualizada exitosamente"
+    },
+    "errors": {
+      "saveFailed": "Error al guardar cambios:"
+    }
   }
 }

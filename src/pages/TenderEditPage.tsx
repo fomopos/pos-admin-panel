@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -62,8 +63,8 @@ const AVAILABILITY_OPTIONS = [
 const TENDER_TEMPLATES = [
   {
     id: 'cash_aed',
-    name: 'Cash (AED)',
-    description: 'Cash payments in AED',
+    name: 'tenderEdit.templates.cash.name',
+    description: 'tenderEdit.templates.cash.description',
     type_code: 'currency',
     currency_id: 'aed',
     icon: BanknotesIcon,
@@ -86,8 +87,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'card_visa',
-    name: 'Visa Card',
-    description: 'Visa credit/debit card',
+    name: 'tenderEdit.templates.visa.name',
+    description: 'tenderEdit.templates.visa.description',
     type_code: 'card',
     currency_id: 'aed',
     icon: CreditCardIcon,
@@ -96,8 +97,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'card_mastercard',
-    name: 'Mastercard',
-    description: 'Mastercard credit/debit card',
+    name: 'tenderEdit.templates.mastercard.name',
+    description: 'tenderEdit.templates.mastercard.description',
     type_code: 'card',
     currency_id: 'aed',
     icon: CreditCardIcon,
@@ -106,8 +107,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'gift_card',
-    name: 'Gift Card',
-    description: 'Store gift cards',
+    name: 'tenderEdit.templates.giftCard.name',
+    description: 'tenderEdit.templates.giftCard.description',
     type_code: 'giftcard',
     currency_id: 'aed',
     icon: TagIcon,
@@ -116,8 +117,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'loyalty_points',
-    name: 'Loyalty Points',
-    description: 'Customer loyalty points',
+    name: 'tenderEdit.templates.loyaltyPoints.name',
+    description: 'tenderEdit.templates.loyaltyPoints.description',
     type_code: 'loyalty',
     currency_id: 'aed',
     icon: SparklesIcon,
@@ -126,8 +127,8 @@ const TENDER_TEMPLATES = [
   },
   {
     id: 'voucher',
-    name: 'Voucher',
-    description: 'Store vouchers and coupons',
+    name: 'tenderEdit.templates.voucher.name',
+    description: 'tenderEdit.templates.voucher.description',
     type_code: 'voucher',
     currency_id: 'aed',
     icon: TagIcon,
@@ -138,21 +139,22 @@ const TENDER_TEMPLATES = [
 
 // Dropdown options for select fields
 const TENDER_TYPE_OPTIONS = [
-  { id: 'currency', label: 'Currency', description: 'Cash payments and currency-based tenders' },
-  { id: 'card', label: 'Card', description: 'Credit and debit card payments' },
-  { id: 'giftcard', label: 'Gift Card', description: 'Store gift cards and vouchers' },
-  { id: 'loyalty', label: 'Loyalty Points', description: 'Customer loyalty point redemption' },
-  { id: 'voucher', label: 'Voucher', description: 'Store vouchers and coupons' }
+  { id: 'currency', label: 'tenderEdit.tenderTypes.currency.label', description: 'tenderEdit.tenderTypes.currency.description' },
+  { id: 'card', label: 'tenderEdit.tenderTypes.card.label', description: 'tenderEdit.tenderTypes.card.description' },
+  { id: 'giftcard', label: 'tenderEdit.tenderTypes.giftcard.label', description: 'tenderEdit.tenderTypes.giftcard.description' },
+  { id: 'loyalty', label: 'tenderEdit.tenderTypes.loyalty.label', description: 'tenderEdit.tenderTypes.loyalty.description' },
+  { id: 'voucher', label: 'tenderEdit.tenderTypes.voucher.label', description: 'tenderEdit.tenderTypes.voucher.description' }
 ];
 
 const CURRENCY_OPTIONS = [
-  { id: 'aed', label: 'AED', description: 'UAE Dirham' },
-  { id: 'usd', label: 'USD', description: 'US Dollar' },
-  { id: 'eur', label: 'EUR', description: 'Euro' },
-  { id: 'gbp', label: 'GBP', description: 'British Pound' }
+  { id: 'aed', label: 'AED', description: 'tenderEdit.currencies.aed' },
+  { id: 'usd', label: 'USD', description: 'tenderEdit.currencies.usd' },
+  { id: 'eur', label: 'EUR', description: 'tenderEdit.currencies.eur' },
+  { id: 'gbp', label: 'GBP', description: 'tenderEdit.currencies.gbp' }
 ];
 
 const TenderEditPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();

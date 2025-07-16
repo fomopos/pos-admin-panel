@@ -567,5 +567,434 @@
       "cancelled": "Storniert",
       "cancelOrphaned": "Verwaiste stornieren"
     }
+  },
+  "terminalSettings": {
+    "title": "Terminal-Verwaltung",
+    "description": "POS-Terminals für Ihr Geschäft verwalten und konfigurieren",
+    "descriptionWithStore": "POS-Terminals für {{storeName}} verwalten",
+    "loading": {
+      "title": "Terminal-Einstellungen werden geladen",
+      "description": "Bitte warten Sie, während wir Ihre Terminal-Konfiguration abrufen..."
+    },
+    "noStore": {
+      "title": "Kein Geschäft ausgewählt",
+      "description": "Bitte wählen Sie ein Geschäft aus, um dessen Terminals zu verwalten."
+    },
+    "refresh": "Aktualisieren",
+    "addTerminal": "Terminal hinzufügen",
+    "editTerminal": "Terminal bearbeiten",
+    "addFirstTerminal": "Ihr erstes Terminal hinzufügen",
+    "stats": {
+      "totalTerminals": "Gesamte Terminals",
+      "activeTerminals": "Aktive Terminals", 
+      "inactiveTerminals": "Inaktive Terminals"
+    },
+    "search": {
+      "placeholder": "Terminals suchen...",
+      "showing": "{{count}} von {{total}} Terminals angezeigt"
+    },
+    "filters": {
+      "allStatus": "Alle Status",
+      "activeOnly": "Nur aktive",
+      "inactiveOnly": "Nur inaktive"
+    },
+    "form": {
+      "terminalId": "Terminal-ID",
+      "deviceId": "Geräte-ID", 
+      "terminalName": "Terminal-Name",
+      "platform": "Plattform",
+      "model": "Modell",
+      "architecture": "Architektur",
+      "status": "Status",
+      "selectPlatform": "Plattform auswählen",
+      "selectArchitecture": "Architektur auswählen",
+      "placeholders": {
+        "terminalId": "TERM-001",
+        "deviceId": "DEV-ABC123",
+        "terminalName": "Haupt-Theken-Terminal",
+        "model": "iPad Pro, Galaxy Tab, usw."
+      },
+      "errors": {
+        "terminalIdRequired": "Terminal-ID ist erforderlich",
+        "deviceIdRequired": "Geräte-ID ist erforderlich", 
+        "nameRequired": "Terminal-Name ist erforderlich",
+        "platformRequired": "Plattform ist erforderlich",
+        "modelRequired": "Modell ist erforderlich",
+        "archRequired": "Architektur ist erforderlich",
+        "saveFailed": "Fehler beim Speichern des Terminals. Bitte versuchen Sie es erneut."
+      },
+      "helperText": {
+        "terminalIdReadonly": "Terminal-ID kann beim Bearbeiten nicht geändert werden"
+      }
+    },
+    "platforms": {
+      "android": "Android",
+      "ios": "iOS", 
+      "windows": "Windows",
+      "linux": "Linux",
+      "web": "Web-Browser"
+    },
+    "architectures": {
+      "arm64": "ARM64",
+      "x86_64": "x86_64",
+      "x86": "x86",
+      "armv7": "ARMv7"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren"
+    },
+    "actions": {
+      "saving": "Speichern...",
+      "addTerminal": "Terminal hinzufügen",
+      "updateTerminal": "Terminal aktualisieren",
+      "cancel": "Abbrechen"
+    },
+    "empty": {
+      "noTerminals": "Keine Terminals konfiguriert",
+      "noMatching": "Keine Terminals entsprechen Ihrer Suche",
+      "getStarted": "Beginnen Sie mit dem Hinzufügen Ihres ersten POS-Terminals.",
+      "adjustFilters": "Versuchen Sie, Ihre Suchbegriffe oder Filter anzupassen."
+    },
+    "details": {
+      "deviceId": "Geräte-ID:",
+      "platform": "Plattform:",
+      "model": "Modell:",
+      "architecture": "Architektur:"
+    }
+  },
+  "tenderEdit": {
+    "title": {
+      "edit": "Tender bearbeiten",
+      "create": "Neuen Tender erstellen"
+    },
+    "backToPayments": "Zurück zu Zahlungseinstellungen",
+    "delete": "Löschen",
+    "unsavedChanges": {
+      "title": "Sie haben ungespeicherte Änderungen",
+      "description": "Vergessen Sie nicht, Ihre Änderungen zu speichern, bevor Sie diese Seite verlassen.",
+      "discard": "Änderungen verwerfen",
+      "save": "Änderungen speichern"
+    },
+    "saving": "Speichern...",
+    "templates": {
+      "title": "Tender-Vorlagen",
+      "description": "Wählen Sie eine Vorlage für einen schnellen Start oder überspringen Sie, um von Grund auf zu erstellen",
+      "skip": "Vorlagen überspringen",
+      "cash": {
+        "name": "Bargeld (AED)",
+        "description": "Barzahlungen in AED"
+      },
+      "visa": {
+        "name": "Visa-Karte", 
+        "description": "Visa-Kredit-/Debitkarte"
+      },
+      "mastercard": {
+        "name": "Mastercard",
+        "description": "Mastercard-Kredit-/Debitkarte"
+      },
+      "giftCard": {
+        "name": "Geschenkkarte",
+        "description": "Geschäft-Geschenkkarten"
+      },
+      "loyaltyPoints": {
+        "name": "Treuepunkte",
+        "description": "Kunden-Treuepunkte"
+      },
+      "voucher": {
+        "name": "Gutschein",
+        "description": "Geschäft-Gutscheine und Coupons"
+      }
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Grundinformationen",
+        "description": "Wesentliche Tender-Details und Identifikation"
+      },
+      "denominations": {
+        "title": "Stückelungen",
+        "description": "Verfügbare Stückelungen für diesen Tender konfigurieren",
+        "addDenomination": "Stückelung hinzufügen",
+        "noDenominations": "Keine Stückelungen konfiguriert",
+        "getStarted": "Klicken Sie auf \"Stückelung hinzufügen\", um zu beginnen",
+        "value": "Wert",
+        "description": "Beschreibung"
+      },
+      "configuration": {
+        "title": "Konfiguration", 
+        "description": "Tender-Verhalten und Systemkonfiguration"
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "description": "Tender-Status und Verhaltenseinstellungen"
+      }
+    },
+    "form": {
+      "tenderId": "Tender-ID",
+      "description": "Beschreibung",
+      "tenderType": "Tender-Typ", 
+      "currency": "Währung",
+      "displayOrder": "Anzeigereihenfolge",
+      "availability": "Verfügbarkeit",
+      "maxRefundDays": "Maximale Rückerstattungstage",
+      "changeCashLimit": "Wechselgeld-Limit",
+      "placeholders": {
+        "tenderId": "Tender-ID eingeben",
+        "description": "Tender-Beschreibung eingeben",
+        "displayOrder": "1",
+        "maxRefundDays": "30",
+        "changeCashLimit": "10000.00"
+      },
+      "helperText": {
+        "displayOrder": "Niedrigere Zahlen erscheinen zuerst in der Tender-Liste",
+        "tenderIdReadonly": "Tender-ID kann beim Bearbeiten nicht geändert werden"
+      },
+      "errors": {
+        "tenderIdRequired": "Tender-ID ist erforderlich",
+        "descriptionRequired": "Beschreibung ist erforderlich", 
+        "tenderIdTooLong": "Tender-ID muss weniger als 50 Zeichen haben",
+        "availabilityRequired": "Mindestens eine Verfügbarkeitsoption ist erforderlich",
+        "saveFailed": "Fehler beim Speichern des Tenders. Bitte versuchen Sie es erneut."
+      }
+    },
+    "tenderTypes": {
+      "currency": {
+        "label": "Währung",
+        "description": "Barzahlungen und währungsbasierte Tender"
+      },
+      "card": {
+        "label": "Karte", 
+        "description": "Kredit- und Debitkarten-Zahlungen"
+      },
+      "giftcard": {
+        "label": "Geschenkkarte",
+        "description": "Geschäft-Geschenkkarten und Gutscheine"
+      },
+      "loyalty": {
+        "label": "Treuepunkte",
+        "description": "Kunden-Treuepunkte-Einlösung"
+      },
+      "voucher": {
+        "label": "Gutschein",
+        "description": "Geschäft-Gutscheine und Coupons"
+      }
+    },
+    "currencies": {
+      "aed": "VAE-Dirham",
+      "usd": "US-Dollar",
+      "eur": "Euro", 
+      "gbp": "Britisches Pfund"
+    },
+    "availability": {
+      "sale": {
+        "label": "Verkauf",
+        "description": "Kann für reguläre Verkaufstransaktionen verwendet werden"
+      },
+      "returnWithReceipt": {
+        "label": "Rückgabe mit Beleg",
+        "description": "Kann für Rückgaben mit Beleg verwendet werden"
+      },
+      "returnWithoutReceipt": {
+        "label": "Rückgabe ohne Beleg",
+        "description": "Kann für Rückgaben ohne Beleg verwendet werden"
+      }
+    },
+    "configuration": {
+      "serialNumberRequired": {
+        "title": "Seriennummer erforderlich",
+        "description": "Seriennummer-Eingabe für diesen Tender erforderlich"
+      },
+      "openCashDrawer": {
+        "title": "Kassenschublade öffnen",
+        "description": "Kassenschublade automatisch öffnen bei Verwendung dieses Tenders"
+      },
+      "customerRequired": {
+        "title": "Kunde erforderlich", 
+        "description": "Kundeninformationen für diesen Tender erforderlich"
+      },
+      "splitTenderAllowed": {
+        "title": "Geteilter Tender erlaubt",
+        "description": "Erlauben, dass dieser Tender in geteilten Zahlungen verwendet wird"
+      }
+    },
+    "settings": {
+      "activeStatus": {
+        "title": "Aktiver Status",
+        "description": "Ob dieser Tender aktiv und verfügbar für die Verwendung ist"
+      },
+      "overTenderAllowed": {
+        "title": "Überzahlung erlaubt", 
+        "description": "Kunden erlauben, mehr als den erforderlichen Betrag zu zahlen"
+      }
+    },
+    "actions": {
+      "cancel": "Abbrechen",
+      "createTender": "Tender erstellen",
+      "updateTender": "Tender aktualisieren"
+    },
+    "success": {
+      "created": "Tender erfolgreich erstellt!",
+      "updated": "Tender erfolgreich aktualisiert!"
+    }
+  },
+  "taxSettings": {
+    "title": "Steuereinstellungen",
+    "description": "Steuerbehörden, Gruppen und Standorte für Ihr Geschäft konfigurieren",
+    "loading": {
+      "title": "Steuerkonfiguration wird geladen",
+      "description": "Bitte warten Sie, während wir Ihre Steuereinstellungen abrufen..."
+    },
+    "unsavedChanges": "Sie haben ungespeicherte Änderungen",
+    "unsavedDescription": "Vergessen Sie nicht, Ihre Änderungen zu speichern, bevor Sie diese Seite verlassen.",
+    "discardChanges": "Änderungen verwerfen", 
+    "saveAllChanges": "Alle Änderungen speichern",
+    "saving": "Speichern...",
+    "welcome": {
+      "title": "Willkommen! Ihre Steuerkonfiguration einrichten",
+      "description": "Wir haben eine Vorlagenkonfiguration geladen, um Ihnen den Einstieg zu erleichtern. Überprüfen und ändern Sie die Einstellungen unten, dann speichern Sie, um Ihre Steuerkonfiguration zu erstellen."
+    },
+    "noConfiguration": {
+      "title": "Steuerkonfiguration kann nicht geladen werden",
+      "description": "Fehler beim Laden der Steuerkonfiguration. Bitte versuchen Sie es erneut.",
+      "tryAgain": "Erneut versuchen"
+    },
+    "noTenant": {
+      "title": "Keine Steuerkonfiguration gefunden", 
+      "tenantDescription": "Für diesen Mandanten existiert keine Steuerkonfiguration. Bitte kontaktieren Sie Ihren Administrator, um die Steuerkonfiguration einzurichten.",
+      "selectDescription": "Bitte wählen Sie einen Mandanten aus, um Steuereinstellungen zu konfigurieren.",
+      "goBack": "Zurück gehen"
+    },
+    "stats": {
+      "totalAuthorities": "Gesamte Behörden",
+      "authoritiesConfigured": "Steuerbehörden konfiguriert",
+      "taxGroups": "Steuergruppen",
+      "groupsWithRules": "Gruppen mit Regeln",
+      "taxLocation": "Steuerstandort",
+      "currentLocation": "Aktueller Standort",
+      "totalRules": "Gesamte Regeln",
+      "rulesDefined": "Steuerregeln definiert",
+      "notSet": "Nicht gesetzt"
+    },
+    "tabs": {
+      "authorities": "Steuerbehörden",
+      "groups": "Steuergruppen", 
+      "location": "Steuerstandort",
+      "settings": "Einstellungen"
+    },
+    "authorities": {
+      "title": "Steuerbehörden",
+      "description": "Steuerbehörden konfigurieren, die Steuern auf Ihre Produkte anwenden",
+      "addAuthority": "Behörde hinzufügen",
+      "noAuthorities": "Keine Steuerbehörden",
+      "getStarted": "Erstellen Sie Ihre erste Steuerbehörde, um zu beginnen.",
+      "form": {
+        "authorityId": "Behörden-ID",
+        "authorityName": "Behördenname",
+        "roundingCode": "Rundungscode",
+        "roundingDigits": "Rundungsstellen",
+        "placeholders": {
+          "authorityId": "z.B. CGST001",
+          "authorityName": "z.B. Zentrale GST",
+          "roundingDigits": "0-10"
+        }
+      },
+      "rounding": {
+        "halfUp": "Halbe nach oben",
+        "halfDown": "Halbe nach unten", 
+        "up": "Nach oben",
+        "down": "Nach unten"
+      },
+      "details": {
+        "id": "ID:",
+        "rounding": "Rundung:",
+        "digits": "Stellen:"
+      }
+    },
+    "groups": {
+      "title": "Steuergruppen",
+      "description": "Steuerregeln in Gruppen für einfachere Verwaltung organisieren", 
+      "addGroup": "Gruppe hinzufügen",
+      "noGroups": "Keine Steuergruppen",
+      "getStarted": "Erstellen Sie Ihre erste Steuergruppe, um Ihre Steuerregeln zu organisieren.",
+      "totalRate": "Gesamt",
+      "form": {
+        "taxGroupId": "Steuergruppen-ID", 
+        "groupName": "Gruppenname",
+        "description": "Beschreibung",
+        "placeholders": {
+          "taxGroupId": "z.B. TG001",
+          "groupName": "z.B. Standard GST",
+          "description": "Gruppenbeschreibung eingeben"
+        }
+      },
+      "rules": {
+        "title": "Steuerregeln",
+        "addRule": "Regel hinzufügen",
+        "noRules": "Keine Steuerregeln konfiguriert. Klicken Sie auf \"Regel hinzufügen\", um zu beginnen.",
+        "totalTaxRate": "Gesamtsteuersatz:",
+        "form": {
+          "name": "Name",
+          "taxAuthority": "Steuerbehörde",
+          "percentage": "Prozentsatz (%)",
+          "taxTypeCode": "Steuertyp-Code",
+          "description": "Beschreibung",
+          "placeholders": {
+            "name": "Regelname",
+            "percentage": "0.00",
+            "description": "Regelbeschreibung"
+          }
+        },
+        "taxTypes": {
+          "vat": {
+            "label": "MwSt",
+            "description": "Mehrwertsteuer - Steuer, die in jeder Stufe der Produktion/Verteilung angewendet wird"
+          },
+          "sales": {
+            "label": "VERKAUF",
+            "description": "Verkaufssteuer - Steuer, die am Verkaufspunkt für den Endverbraucher angewendet wird"  
+          }
+        },
+        "details": {
+          "authority": "Behörde:",
+          "type": "Typ:"
+        },
+        "actions": {
+          "done": "Fertig",
+          "delete": "Löschen"
+        }
+      }
+    },
+    "location": {
+      "title": "Steuerstandort",
+      "description": "Den primären Steuerstandort für Ihr Geschäft konfigurieren",
+      "form": {
+        "taxLocationId": "Steuerstandort-ID",
+        "locationName": "Standortname", 
+        "description": "Beschreibung",
+        "placeholders": {
+          "locationName": "z.B. Hauptgeschäft",
+          "description": "Standortbeschreibung eingeben"
+        }
+      },
+      "details": {
+        "id": "ID:",
+        "noDescription": "Keine Beschreibung"
+      }
+    },
+    "generalSettings": {
+      "title": "Allgemeine Einstellungen",
+      "description": "Zusätzliche Steuerkonfigurationseinstellungen und Präferenzen",
+      "settingsPanel": "Einstellungsbereich",
+      "additionalSettings": "Zusätzliche Steuerkonfigurationseinstellungen werden hier verfügbar sein."
+    },
+    "success": {
+      "created": "Steuerkonfiguration erfolgreich erstellt",
+      "updated": "Steuerkonfiguration erfolgreich aktualisiert"
+    },
+    "errors": {
+      "saveFailed": "Fehler beim Speichern der Änderungen:"
+    }
   }
 }
