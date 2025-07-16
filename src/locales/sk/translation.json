@@ -234,6 +234,50 @@
     "taxSettings": "Nastavenia daní",
     "systemSettings": "Systémové nastavenia"
   },
+  "customers": {
+    "title": "Zákazníci",
+    "description": "Spravujte svoju zákaznícku databázu",
+    "addCustomer": "Pridať zákazníka",
+    "export": "Exportovať",
+    "loading": {
+      "title": "Načítavanie zákazníkov",
+      "description": "Prosím počkajte, kým načítame vaše zákaznícke dáta..."
+    },
+    "stats": {
+      "totalCustomers": "Celkový počet zákazníkov",
+      "active": "Aktívni",
+      "totalRevenue": "Celkové tržby",
+      "avgSpent": "Priemerné útrata"
+    },
+    "search": {
+      "placeholder": "Hľadať zákazníkov..."
+    },
+    "filters": {
+      "allStatus": "Všetky stavy",
+      "active": "Aktívny",
+      "inactive": "Neaktívny"
+    },
+    "table": {
+      "title": "Zákaznícka databáza",
+      "customersFound": "zákazníkov nájdených",
+      "customer": "Zákazník",
+      "contact": "Kontakt",
+      "location": "Poloha",
+      "purchases": "Nákupy",
+      "totalSpent": "Celkové útrata",
+      "status": "Stav",
+      "actions": "Akcie"
+    },
+    "status": {
+      "active": "Aktívny",
+      "inactive": "Neaktívny"
+    },
+    "empty": {
+      "title": "Neboli nájdení žiadni zákazníci",
+      "tryAdjusting": "Skúste upraviť svoje filtre pre zobrazenie ďalších výsledkov.",
+      "getStarted": "Začnite pridaním svojho prvého zákazníka."
+    }
+  },
   "products": {
     "title": "Produkty",
     "description": "Spravujte svoj inventár produktov",

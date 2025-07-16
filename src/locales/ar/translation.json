@@ -234,6 +234,50 @@
     "taxSettings": "إعدادات الضرائب",
     "systemSettings": "إعدادات النظام"
   },
+  "customers": {
+    "title": "العملاء",
+    "description": "إدارة قاعدة بيانات العملاء",
+    "addCustomer": "إضافة عميل",
+    "export": "تصدير",
+    "loading": {
+      "title": "تحميل العملاء",
+      "description": "يرجى الانتظار بينما نجلب بيانات العملاء..."
+    },
+    "stats": {
+      "totalCustomers": "إجمالي العملاء",
+      "active": "نشط",
+      "totalRevenue": "إجمالي الإيرادات",
+      "avgSpent": "متوسط الإنفاق"
+    },
+    "search": {
+      "placeholder": "البحث في العملاء..."
+    },
+    "filters": {
+      "allStatus": "جميع الحالات",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "table": {
+      "title": "قاعدة بيانات العملاء",
+      "customersFound": "عميل موجود",
+      "customer": "العميل",
+      "contact": "الاتصال",
+      "location": "الموقع",
+      "purchases": "المشتريات",
+      "totalSpent": "إجمالي الإنفاق",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "empty": {
+      "title": "لم يتم العثور على عملاء",
+      "tryAdjusting": "حاول تعديل المرشحات لرؤية المزيد من النتائج.",
+      "getStarted": "ابدأ بإضافة عميلك الأول."
+    }
+  },
   "products": {
     "title": "المنتجات",
     "description": "إدارة مخزون المنتجات",

@@ -221,6 +221,50 @@
     "taxSettings": "Configuración de Impuestos",
     "systemSettings": "Configuración del Sistema"
   },
+  "customers": {
+    "title": "Clientes",
+    "description": "Gestiona tu base de datos de clientes",
+    "addCustomer": "Agregar Cliente",
+    "export": "Exportar",
+    "loading": {
+      "title": "Cargando Clientes",
+      "description": "Por favor espera mientras obtenemos tus datos de clientes..."
+    },
+    "stats": {
+      "totalCustomers": "Total de Clientes",
+      "active": "Activos",
+      "totalRevenue": "Ingresos Totales",
+      "avgSpent": "Promedio Gastado"
+    },
+    "search": {
+      "placeholder": "Buscar clientes..."
+    },
+    "filters": {
+      "allStatus": "Todos los Estados",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "table": {
+      "title": "Base de Datos de Clientes",
+      "customersFound": "clientes encontrados",
+      "customer": "Cliente",
+      "contact": "Contacto",
+      "location": "Ubicación",
+      "purchases": "Compras",
+      "totalSpent": "Total Gastado",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "empty": {
+      "title": "No se encontraron clientes",
+      "tryAdjusting": "Intenta ajustar tus filtros para ver más resultados.",
+      "getStarted": "Comienza agregando tu primer cliente."
+    }
+  },
   "products": {
     "title": "Productos",
     "description": "Gestiona tu inventario de productos",

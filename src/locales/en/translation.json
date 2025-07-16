@@ -234,6 +234,50 @@
     "taxSettings": "Tax Settings",
     "systemSettings": "System Settings"
   },
+  "customers": {
+    "title": "Customers",
+    "description": "Manage your customer database",
+    "addCustomer": "Add Customer",
+    "export": "Export",
+    "loading": {
+      "title": "Loading Customers",
+      "description": "Please wait while we fetch your customer data..."
+    },
+    "stats": {
+      "totalCustomers": "Total Customers",
+      "active": "Active",
+      "totalRevenue": "Total Revenue",
+      "avgSpent": "Avg. Spent"
+    },
+    "search": {
+      "placeholder": "Search customers..."
+    },
+    "filters": {
+      "allStatus": "All Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "title": "Customer Database",
+      "customersFound": "customers found",
+      "customer": "Customer",
+      "contact": "Contact",
+      "location": "Location",
+      "purchases": "Purchases",
+      "totalSpent": "Total Spent",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "empty": {
+      "title": "No customers found",
+      "tryAdjusting": "Try adjusting your filters to see more results.",
+      "getStarted": "Get started by adding your first customer."
+    }
+  },
   "products": {
     "title": "Products",
     "description": "Manage your product inventory",

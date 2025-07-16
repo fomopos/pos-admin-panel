@@ -234,6 +234,50 @@
     "taxSettings": "कर सेटिंग्स",
     "systemSettings": "सिस्टम सेटिंग्स"
   },
+  "customers": {
+    "title": "ग्राहक",
+    "description": "अपने ग्राहक डेटाबेस का प्रबंधन करें",
+    "addCustomer": "ग्राहक जोड़ें",
+    "export": "निर्यात",
+    "loading": {
+      "title": "ग्राहक लोड हो रहे हैं",
+      "description": "कृपया प्रतीक्षा करें जब तक हम आपका ग्राहक डेटा लाते हैं..."
+    },
+    "stats": {
+      "totalCustomers": "कुल ग्राहक",
+      "active": "सक्रिय",
+      "totalRevenue": "कुल आय",
+      "avgSpent": "औसत खर्च"
+    },
+    "search": {
+      "placeholder": "ग्राहक खोजें..."
+    },
+    "filters": {
+      "allStatus": "सभी स्थितियां",
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    },
+    "table": {
+      "title": "ग्राहक डेटाबेस",
+      "customersFound": "ग्राहक मिले",
+      "customer": "ग्राहक",
+      "contact": "संपर्क",
+      "location": "स्थान",
+      "purchases": "खरीदारी",
+      "totalSpent": "कुल खर्च",
+      "status": "स्थिति",
+      "actions": "क्रियाएं"
+    },
+    "status": {
+      "active": "सक्रिय",
+      "inactive": "निष्क्रिय"
+    },
+    "empty": {
+      "title": "कोई ग्राहक नहीं मिला",
+      "tryAdjusting": "अधिक परिणाम देखने के लिए अपने फिल्टर समायोजित करने का प्रयास करें।",
+      "getStarted": "अपना पहला ग्राहक जोड़कर शुरुआत करें।"
+    }
+  },
   "products": {
     "title": "उत्पाद",
     "description": "अपनी उत्पाद सूची का प्रबंधन करें",

@@ -234,6 +234,50 @@
     "taxSettings": "Steuereinstellungen",
     "systemSettings": "Systemeinstellungen"
   },
+  "customers": {
+    "title": "Kunden",
+    "description": "Verwalten Sie Ihre Kundendatenbank",
+    "addCustomer": "Kunde hinzufügen",
+    "export": "Exportieren",
+    "loading": {
+      "title": "Lade Kunden",
+      "description": "Bitte warten Sie, während wir Ihre Kundendaten abrufen..."
+    },
+    "stats": {
+      "totalCustomers": "Kunden insgesamt",
+      "active": "Aktiv",
+      "totalRevenue": "Gesamtumsatz",
+      "avgSpent": "Durchschn. Ausgaben"
+    },
+    "search": {
+      "placeholder": "Kunden suchen..."
+    },
+    "filters": {
+      "allStatus": "Alle Status",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "table": {
+      "title": "Kundendatenbank",
+      "customersFound": "Kunden gefunden",
+      "customer": "Kunde",
+      "contact": "Kontakt",
+      "location": "Standort",
+      "purchases": "Käufe",
+      "totalSpent": "Gesamtausgaben",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "empty": {
+      "title": "Keine Kunden gefunden",
+      "tryAdjusting": "Versuchen Sie, Ihre Filter anzupassen, um mehr Ergebnisse zu sehen.",
+      "getStarted": "Beginnen Sie mit dem Hinzufügen Ihres ersten Kunden."
+    }
+  },
   "products": {
     "title": "Produkte",
     "description": "Verwalten Sie Ihr Produktinventar",
