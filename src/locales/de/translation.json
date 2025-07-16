@@ -530,5 +530,42 @@
         "guests": "Gäste"
       }
     }
+  },
+  "payment": {
+    "title": "Zahlungseinstellungen",
+    "description": "Zahlungsmethoden und Tender-Konfigurationen verwalten",
+    "addTender": "Tender hinzufügen",
+    "searchPlaceholder": "Tender suchen...",
+    "allTypes": "Alle Typen",
+    "allCurrencies": "Alle Währungen",
+    "noTendersFound": "Keine Tender gefunden",
+    "noMatchingTenders": "Keine Tender entsprechen Ihren Suchkriterien.",
+    "getStartedMessage": "Beginnen Sie mit der Hinzufügung Ihres ersten Tenders.",
+    "table": {
+      "tender": "Tender",
+      "currency": "Währung",
+      "type": "Typ",
+      "overTender": "Über Tender"
+    }
+  },
+  "sales": {
+    "description": "Erweiterte Verkaufsverwaltung und Analysen",
+    "export": "Exportieren",
+    "newSale": "Neuer Verkauf",
+    "searchPlaceholder": "Verkäufe, Kunden, Kassierer suchen...",
+    "stats": {
+      "totalSales": "Gesamtverkäufe",
+      "completed": "Abgeschlossen",
+      "pending": "Ausstehend",
+      "revenue": "Umsatz"
+    },
+    "filters": {
+      "allStatus": "Alle Status",
+      "completed": "Abgeschlossen",
+      "new": "Neu",
+      "suspended": "Ausgesetzt",
+      "cancelled": "Storniert",
+      "cancelOrphaned": "Verwaiste stornieren"
+    }
   }
 }

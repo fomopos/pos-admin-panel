@@ -530,5 +530,42 @@
         "guests": "الضيوف"
       }
     }
+  },
+  "payment": {
+    "title": "إعدادات الدفع",
+    "description": "إدارة طرق الدفع وتكوينات العطاءات",
+    "addTender": "إضافة عطاء",
+    "searchPlaceholder": "البحث في العطاءات...",
+    "allTypes": "جميع الأنواع",
+    "allCurrencies": "جميع العملات",
+    "noTendersFound": "لم يتم العثور على عطاءات",
+    "noMatchingTenders": "لا توجد عطاءات تطابق معايير البحث الخاصة بك.",
+    "getStartedMessage": "ابدأ بإضافة عطاءك الأول.",
+    "table": {
+      "tender": "العطاء",
+      "currency": "العملة",
+      "type": "النوع",
+      "overTender": "العطاء الزائد"
+    }
+  },
+  "sales": {
+    "description": "إدارة المبيعات المتقدمة والتحليلات",
+    "export": "تصدير",
+    "newSale": "بيع جديد",
+    "searchPlaceholder": "البحث في المبيعات والعملاء والصرافين...",
+    "stats": {
+      "totalSales": "إجمالي المبيعات",
+      "completed": "مكتمل",
+      "pending": "معلق",
+      "revenue": "الإيرادات"
+    },
+    "filters": {
+      "allStatus": "جميع الحالات",
+      "completed": "مكتمل",
+      "new": "جديد",
+      "suspended": "معلق",
+      "cancelled": "ملغى",
+      "cancelOrphaned": "إلغاء اليتيم"
+    }
   }
 }

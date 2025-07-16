@@ -530,5 +530,42 @@
         "guests": "मेहमान"
       }
     }
+  },
+  "payment": {
+    "title": "भुगतान सेटिंग्स",
+    "description": "भुगतान विधियों और टेंडर कॉन्फ़िगरेशन का प्रबंधन करें",
+    "addTender": "टेंडर जोड़ें",
+    "searchPlaceholder": "टेंडर खोजें...",
+    "allTypes": "सभी प्रकार",
+    "allCurrencies": "सभी मुद्राएं",
+    "noTendersFound": "कोई टेंडर नहीं मिला",
+    "noMatchingTenders": "कोई टेंडर आपके खोज मानदंडों से मेल नहीं खाता।",
+    "getStartedMessage": "अपना पहला टेंडर जोड़कर शुरुआत करें।",
+    "table": {
+      "tender": "टेंडर",
+      "currency": "मुद्रा",
+      "type": "प्रकार",
+      "overTender": "ओवर टेंडर"
+    }
+  },
+  "sales": {
+    "description": "उन्नत बिक्री प्रबंधन और विश्लेषण",
+    "export": "निर्यात",
+    "newSale": "नई बिक्री",
+    "searchPlaceholder": "बिक्री, ग्राहक, कैशियर खोजें...",
+    "stats": {
+      "totalSales": "कुल बिक्री",
+      "completed": "पूर्ण",
+      "pending": "लंबित",
+      "revenue": "राजस्व"
+    },
+    "filters": {
+      "allStatus": "सभी स्थिति",
+      "completed": "पूर्ण",
+      "new": "नया",
+      "suspended": "निलंबित",
+      "cancelled": "रद्द",
+      "cancelOrphaned": "अनाथ रद्द करें"
+    }
   }
 }

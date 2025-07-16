@@ -530,5 +530,42 @@
         "guests": "Guests"
       }
     }
+  },
+  "payment": {
+    "title": "Payment Settings",
+    "description": "Manage payment methods and tender configurations",
+    "addTender": "Add Tender",
+    "searchPlaceholder": "Search tenders...",
+    "allTypes": "All Types",
+    "allCurrencies": "All Currencies",
+    "noTendersFound": "No tenders found",
+    "noMatchingTenders": "No tenders match your search criteria.",
+    "getStartedMessage": "Get started by adding your first tender.",
+    "table": {
+      "tender": "Tender",
+      "currency": "Currency",
+      "type": "Type",
+      "overTender": "Over Tender"
+    }
+  },
+  "sales": {
+    "description": "Advanced sales management and analytics",
+    "export": "Export",
+    "newSale": "New Sale",
+    "searchPlaceholder": "Search sales, customers, cashiers...",
+    "stats": {
+      "totalSales": "Total Sales",
+      "completed": "Completed",
+      "pending": "Pending",
+      "revenue": "Revenue"
+    },
+    "filters": {
+      "allStatus": "All Status",
+      "completed": "Completed",
+      "new": "New",
+      "suspended": "Suspended",
+      "cancelled": "Cancelled",
+      "cancelOrphaned": "Cancel Orphaned"
+    }
   }
 }

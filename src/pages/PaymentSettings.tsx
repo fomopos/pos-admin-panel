@@ -93,15 +93,15 @@ const PaymentSettings: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <PageHeader
-        title="Payment Settings"
-        description="Manage payment methods and tender configurations"
+        title={t('payment.title')}
+        description={t('payment.description')}
       >
         <Button
           onClick={() => navigate('/payment-settings/new')}
           className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
         >
           <PlusIcon className="w-5 h-5" />
-          <span>Add Tender</span>
+          <span>{t('payment.addTender')}</span>
         </Button>
       </PageHeader>
 
@@ -111,7 +111,7 @@ const PaymentSettings: React.FC = () => {
           <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search tenders..."
+            placeholder={t('payment.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -124,7 +124,7 @@ const PaymentSettings: React.FC = () => {
             onChange={(e) => setSelectedType(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Types</option>
+            <option value="">{t('payment.allTypes')}</option>
             {tenderTypes.map(type => (
               <option key={type} value={type}>
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -136,7 +136,7 @@ const PaymentSettings: React.FC = () => {
             onChange={(e) => setSelectedCurrency(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">All Currencies</option>
+            <option value="">{t('payment.allCurrencies')}</option>
             {currencies.map(currency => (
               <option key={currency} value={currency}>
                 {currency.toUpperCase()}
@@ -168,11 +168,11 @@ const PaymentSettings: React.FC = () => {
       ) : filteredTenders.length === 0 ? (
         <div className="text-center py-12">
           <CreditCardIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No tenders found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('payment.noTendersFound')}</h3>
           <p className="text-gray-500 mb-6">
             {searchTerm || selectedType || selectedCurrency
-              ? 'No tenders match your search criteria.'
-              : 'Get started by adding your first tender.'
+              ? t('payment.noMatchingTenders')
+              : t('payment.getStartedMessage')
             }
           </p>
           <Button
@@ -180,7 +180,7 @@ const PaymentSettings: React.FC = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <PlusIcon className="w-4 h-4 mr-2" />
-            Add Tender
+            {t('payment.addTender')}
           </Button>
         </div>
       ) : (
@@ -204,22 +204,22 @@ const PaymentSettings: React.FC = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tender
+                      {t('payment.table.tender')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Currency
+                      {t('payment.table.currency')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
+                      {t('payment.table.type')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Over Tender
+                      {t('payment.table.overTender')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      {t('common.status')}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      {t('common.actions')}
                     </th>
                   </tr>
                 </thead>

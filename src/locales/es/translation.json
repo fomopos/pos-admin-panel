@@ -517,5 +517,42 @@
         "guests": "Huéspedes"
       }
     }
+  },
+  "payment": {
+    "title": "Configuración de Pagos",
+    "description": "Gestiona métodos de pago y configuraciones de tender",
+    "addTender": "Agregar Tender",
+    "searchPlaceholder": "Buscar tenders...",
+    "allTypes": "Todos los Tipos",
+    "allCurrencies": "Todas las Monedas",
+    "noTendersFound": "No se encontraron tenders",
+    "noMatchingTenders": "Ningún tender coincide con sus criterios de búsqueda.",
+    "getStartedMessage": "Comienza agregando tu primer tender.",
+    "table": {
+      "tender": "Tender",
+      "currency": "Moneda",
+      "type": "Tipo",
+      "overTender": "Sobre Tender"
+    }
+  },
+  "sales": {
+    "description": "Gestión avanzada de ventas y análisis",
+    "export": "Exportar",
+    "newSale": "Nueva Venta",
+    "searchPlaceholder": "Buscar ventas, clientes, cajeros...",
+    "stats": {
+      "totalSales": "Total de Ventas",
+      "completed": "Completadas",
+      "pending": "Pendientes",
+      "revenue": "Ingresos"
+    },
+    "filters": {
+      "allStatus": "Todos los Estados",
+      "completed": "Completado",
+      "new": "Nuevo",
+      "suspended": "Suspendido",
+      "cancelled": "Cancelado",
+      "cancelOrphaned": "Cancelar Huérfano"
+    }
   }
 }

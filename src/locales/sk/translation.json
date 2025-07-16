@@ -530,5 +530,42 @@
         "guests": "Hostia"
       }
     }
+  },
+  "payment": {
+    "title": "Nastavenia platieb",
+    "description": "Spravujte spôsoby platby a konfigurácie tenderov",
+    "addTender": "Pridať tender",
+    "searchPlaceholder": "Hľadať tendery...",
+    "allTypes": "Všetky typy",
+    "allCurrencies": "Všetky meny",
+    "noTendersFound": "Neboli nájdené žiadne tendery",
+    "noMatchingTenders": "Žiadne tendery nezodpovedajú vašim kritériám vyhľadávania.",
+    "getStartedMessage": "Začnite pridaním svojho prvého tendera.",
+    "table": {
+      "tender": "Tender",
+      "currency": "Mena",
+      "type": "Typ",
+      "overTender": "Nad tender"
+    }
+  },
+  "sales": {
+    "description": "Pokročilá správa predaja a analytika",
+    "export": "Exportovať",
+    "newSale": "Nový predaj",
+    "searchPlaceholder": "Hľadať predaje, zákazníkov, pokladníkov...",
+    "stats": {
+      "totalSales": "Celkové predaje",
+      "completed": "Dokončené",
+      "pending": "Čakajúce",
+      "revenue": "Príjmy"
+    },
+    "filters": {
+      "allStatus": "Všetky stavy",
+      "completed": "Dokončené",
+      "new": "Nové",
+      "suspended": "Pozastavené",
+      "cancelled": "Zrušené",
+      "cancelOrphaned": "Zrušiť osirelé"
+    }
   }
 }
