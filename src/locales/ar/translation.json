@@ -743,10 +743,19 @@
       "placeholders": {
         "tenderId": "أدخل معرف العطاء",
         "description": "أدخل وصف العطاء",
+        "tenderType": "اختر نوع العطاء",
+        "searchTenderTypes": "البحث في أنواع العطاء...",
+        "currency": "اختر العملة",
+        "searchCurrencies": "البحث في العملات...",
         "displayOrder": "1",
+        "availability": "اختر خيارات توفر العطاء",
+        "searchAvailability": "البحث في خيارات التوفر...",
         "maxRefundDays": "30",
         "changeCashLimit": "10000.00"
       },
+      "selectAll": "تحديد الكل",
+      "clearAll": "مسح الكل",
+      "noAvailabilityOptions": "لم يتم العثور على خيارات التوفر",
       "helperText": {
         "displayOrder": "الأرقام الأقل تظهر أولاً في قائمة العطاءات",
         "tenderIdReadonly": "لا يمكن تغيير معرف العطاء عند التحرير"
@@ -756,7 +765,8 @@
         "descriptionRequired": "الوصف مطلوب", 
         "tenderIdTooLong": "يجب أن يكون معرف العطاء أقل من 50 حرفًا",
         "availabilityRequired": "مطلوب خيار توفر واحد على الأقل",
-        "saveFailed": "فشل في حفظ العطاء. يرجى المحاولة مرة أخرى."
+        "saveFailed": "فشل في حفظ العطاء. يرجى المحاولة مرة أخرى.",
+        "validationSummary": "يرجى إصلاح الأخطاء التالية قبل حفظ العطاء:"
       }
     },
     "tenderTypes": {

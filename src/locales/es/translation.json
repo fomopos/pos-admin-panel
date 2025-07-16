@@ -730,10 +730,19 @@
       "placeholders": {
         "tenderId": "Ingresa ID de tender",
         "description": "Ingresa descripción del tender",
+        "tenderType": "Selecciona tipo de tender",
+        "searchTenderTypes": "Buscar tipos de tender...",
+        "currency": "Selecciona moneda",
+        "searchCurrencies": "Buscar monedas...",
         "displayOrder": "1",
+        "availability": "Selecciona opciones de disponibilidad del tender",
+        "searchAvailability": "Buscar opciones de disponibilidad...",
         "maxRefundDays": "30",
         "changeCashLimit": "10000.00"
       },
+      "selectAll": "Seleccionar Todo",
+      "clearAll": "Limpiar Todo",
+      "noAvailabilityOptions": "No se encontraron opciones de disponibilidad",
       "helperText": {
         "displayOrder": "Los números más bajos aparecen primero en la lista de tenders",
         "tenderIdReadonly": "El ID de tender no se puede cambiar al editar"
@@ -743,7 +752,8 @@
         "descriptionRequired": "Descripción es requerida", 
         "tenderIdTooLong": "ID de tender debe tener menos de 50 caracteres",
         "availabilityRequired": "Se requiere al menos una opción de disponibilidad",
-        "saveFailed": "Error al guardar tender. Por favor intenta de nuevo."
+        "saveFailed": "Error al guardar tender. Por favor intenta de nuevo.",
+        "validationSummary": "Por favor corrige los siguientes errores antes de guardar el tender:"
       }
     },
     "tenderTypes": {

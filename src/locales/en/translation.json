@@ -743,10 +743,19 @@
       "placeholders": {
         "tenderId": "Enter tender ID",
         "description": "Enter tender description",
+        "tenderType": "Select tender type",
+        "searchTenderTypes": "Search tender types...",
+        "currency": "Select currency",
+        "searchCurrencies": "Search currencies...",
         "displayOrder": "1",
+        "availability": "Select tender availability options",
+        "searchAvailability": "Search availability options...",
         "maxRefundDays": "30",
         "changeCashLimit": "10000.00"
       },
+      "selectAll": "Select All",
+      "clearAll": "Clear All",
+      "noAvailabilityOptions": "No availability options found",
       "helperText": {
         "displayOrder": "Lower numbers appear first in the tender list",
         "tenderIdReadonly": "Tender ID cannot be changed when editing"
@@ -756,7 +765,8 @@
         "descriptionRequired": "Description is required", 
         "tenderIdTooLong": "Tender ID must be less than 50 characters",
         "availabilityRequired": "At least one availability option is required",
-        "saveFailed": "Failed to save tender. Please try again."
+        "saveFailed": "Failed to save tender. Please try again.",
+        "validationSummary": "Please fix the following errors before saving the tender:"
       }
     },
     "tenderTypes": {
