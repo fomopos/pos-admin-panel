@@ -3,10 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
-  Squares2X2Icon, 
-  ListBulletIcon,
   FolderIcon,
   EyeIcon,
   PencilIcon,
@@ -14,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { categoryApiService } from '../services/category/categoryApiService';
-import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, SearchAndFilter } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import type { EnhancedCategory } from '../types/category';
 import useTenantStore from '../tenants/tenantStore';
@@ -103,47 +99,23 @@ const Categories: React.FC = () => {
       </PageHeader>
 
         {/* Search and Filter Bar */}
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t('categories.search.placeholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <FunnelIcon className="w-5 h-5 text-gray-400" />
-            <select
-              value={selectedParent}
-              onChange={(e) => setSelectedParent(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">{t('categories.filters.allCategories')}</option>
-              {parentCategories.map(category => (
-                <option key={category.category_id} value={category.category_id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex border border-gray-300 rounded-lg">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
-            >
-              <Squares2X2Icon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
-            >
-              <ListBulletIcon className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+        <SearchAndFilter
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder={t('categories.search.placeholder')}
+          filterValue={selectedParent}
+          onFilterChange={setSelectedParent}
+          filterOptions={parentCategories.map(category => ({
+            id: category.category_id,
+            label: category.name
+          }))}
+          filterLabel="Parent"
+          filterPlaceholder={t('categories.filters.allCategories')}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          showViewToggle={true}
+          className="mb-6"
+        />
 
       {/* Loading State */}
       {loading ? (

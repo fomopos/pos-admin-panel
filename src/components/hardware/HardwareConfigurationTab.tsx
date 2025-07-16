@@ -180,6 +180,11 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
             open_drawer: uiDevice.open_drawer,
             character_encoding: uiDevice.character_encoding === 'windows1252' ? 'utf8' : uiDevice.character_encoding as any,
           },
+          kot_printer: {},
+          network_printer: {},
+          barcode_scanner: {},
+          cash_drawer: {},
+          label_printer: {},
         };
       
       case 'kitchen_printer':
@@ -200,6 +205,11 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
             character_encoding: uiDevice.character_encoding === 'windows1252' ? 'utf8' : uiDevice.character_encoding as any,
             kitchen_sections: uiDevice.kitchen_sections as any[],
           },
+          thermal_printer: {},
+          network_printer: {},
+          barcode_scanner: {},
+          cash_drawer: {},
+          label_printer: {},
         };
       
       case 'scanner':
@@ -217,6 +227,11 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
             beep_on_scan: uiDevice.beep_on_scan,
             decode_types: uiDevice.decode_types as any[],
           },
+          thermal_printer: {},
+          kot_printer: {},
+          network_printer: {},
+          cash_drawer: {},
+          label_printer: {},
         };
       
       case 'cash_drawer':
@@ -224,6 +239,12 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
           ...baseDevice,
           type: 'cash_drawer',
           connection_type: connectionType as any,
+          thermal_printer: {},
+          kot_printer: {},
+          network_printer: {},
+          barcode_scanner: {},
+          cash_drawer: {},
+          label_printer: {},
         };
       
       default:
@@ -231,6 +252,12 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
           ...baseDevice,
           type: 'thermal_printer',
           connection_type: connectionType as any,
+          thermal_printer: {},
+          kot_printer: {},
+          network_printer: {},
+          barcode_scanner: {},
+          cash_drawer: {},
+          label_printer: {},
         };
     }
   };

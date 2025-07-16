@@ -16,7 +16,7 @@ interface CashDrawerConfigProps {
   connectionType: string;
 }
 
-const CashDrawerConfig: React.FC<CashDrawerConfigProps> = ({
+const CashDrawerConfigComponent: React.FC<CashDrawerConfigProps> = ({
   config,
   onFieldChange,
   connectionType
@@ -111,4 +111,4 @@ const CashDrawerConfig: React.FC<CashDrawerConfigProps> = ({
   );
 };
 
-export default CashDrawerConfig;
+export default CashDrawerConfigComponent;

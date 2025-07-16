@@ -20,7 +20,7 @@ interface LabelPrinterConfigProps {
   connectionType: string;
 }
 
-const LabelPrinterConfig: React.FC<LabelPrinterConfigProps> = ({
+const LabelPrinterConfigComponent: React.FC<LabelPrinterConfigProps> = ({
   config,
   onFieldChange,
   characterEncodingOptions,
@@ -130,4 +130,4 @@ const LabelPrinterConfig: React.FC<LabelPrinterConfigProps> = ({
   );
 };
 
-export default LabelPrinterConfig;
+export default LabelPrinterConfigComponent;

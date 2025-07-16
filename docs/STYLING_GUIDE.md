@@ -9,6 +9,7 @@ This styling guide provides comprehensive guidelines for maintaining consistent 
 3. [Typography](#typography)
 4. [Spacing & Layout](#spacing--layout)
 5. [Component Guidelines](#component-guidelines)
+   - [SearchAndFilter Component](#searchandfilter-component)
    - [MultipleDropdownSearch Component](#multipledropdownsearch-component)
 6. [Page Structure](#page-structure)
 7. [Form Components](#form-components)
@@ -248,6 +249,164 @@ The `Widget` component is the primary container for content sections.
   <Button>Action Button</Button>
 </PageHeader>
 ```
+
+### SearchAndFilter Component
+The `SearchAndFilter` component provides a unified interface for search, filtering, and view controls across list pages, ensuring consistent user experience throughout the application.
+
+**Core Features:**
+- Real-time search with clear button
+- Dropdown filters with custom options
+- Grid/List view toggle
+- Active filters summary with clear all
+- Responsive design with mobile-first approach
+- Extensible with additional filters and actions
+- Consistent styling with the design system
+
+**Basic Usage:**
+```tsx
+<SearchAndFilter
+  searchValue={searchTerm}
+  onSearchChange={setSearchTerm}
+  searchPlaceholder="Search items..."
+  filterValue={selectedFilter}
+  onFilterChange={setSelectedFilter}
+  filterOptions={[
+    { id: '1', label: 'Option 1' },
+    { id: '2', label: 'Option 2' }
+  ]}
+  filterPlaceholder="All Items"
+  viewMode={viewMode}
+  onViewModeChange={setViewMode}
+/>
+```
+
+**Advanced Configuration:**
+```tsx
+<SearchAndFilter
+  // Search configuration
+  searchValue={searchTerm}
+  onSearchChange={setSearchTerm}
+  searchPlaceholder="Search categories, products, or descriptions..."
+  
+  // Primary filter
+  filterValue={selectedCategory}
+  onFilterChange={setSelectedCategory}
+  filterOptions={categoryOptions}
+  filterLabel="Category"
+  filterPlaceholder="All Categories"
+  
+  // View controls
+  viewMode={viewMode}
+  onViewModeChange={setViewMode}
+  showViewToggle={true}
+  
+  // Additional functionality
+  showClearButton={true}
+  onClear={() => {
+    // Custom clear logic
+    resetAdditionalFilters();
+  }}
+  
+  // Additional filters using design system components
+  additionalFilters={
+    <DropdownSearch
+      label=""
+      placeholder="Status: All"
+      options={statusOptions}
+      onSelect={setStatusFilter}
+      buttonClassName="py-3"
+    />
+  }
+  
+  // Actions using Button component
+  actions={
+    <Button variant="outline" size="sm">
+      Export
+    </Button>
+  }
+  
+  // Styling
+  className="mb-6"
+  searchClassName="custom-search-styles"
+  filterClassName="custom-filter-styles"
+/>
+```
+
+**Props Interface:**
+```tsx
+interface SearchAndFilterProps {
+  // Search props
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  searchPlaceholder?: string;
+  
+  // Filter props - uses DropdownSearch component internally
+  filterValue?: string;
+  onFilterChange?: (value: string) => void;
+  filterOptions?: FilterOption[];
+  filterLabel?: string;
+  filterPlaceholder?: string;
+  
+  // View mode props - uses Button components
+  viewMode?: 'grid' | 'list';
+  onViewModeChange?: (mode: 'grid' | 'list') => void;
+  showViewToggle?: boolean;
+  
+  // Additional filters
+  additionalFilters?: React.ReactNode;
+  
+  // Styling
+  className?: string;
+  searchClassName?: string;
+  filterClassName?: string;
+  
+  // Actions
+  actions?: React.ReactNode;
+  
+  // Clear functionality - uses Button component
+  showClearButton?: boolean;
+  onClear?: () => void;
+}
+
+// FilterOption extends DropdownSearchOption for consistency
+interface FilterOption extends DropdownSearchOption {
+  // Uses id as the value for filtering
+  // label for display text
+  // Optional: description, level, icon, data
+}
+```
+
+**Common Use Cases:**
+1. **Product Management**: Search products with category filters and view toggles
+2. **User Management**: Search users with role/department filters
+3. **Category Management**: Search categories with parent category filters
+4. **Order Management**: Search orders with status and date filters
+5. **Inventory Management**: Search items with location and status filters
+
+**Design Features:**
+- **Built with design system components**: Uses DropdownSearch for filters, Button components for actions and view toggle
+- **Consistent spacing**: Uses the design system's spacing scale
+- **Focus states**: Proper focus indicators for accessibility
+- **Hover effects**: Subtle transitions on interactive elements
+- **Active filter badges**: Visual feedback for applied filters
+- **Responsive layout**: Stacks vertically on mobile devices
+- **Clear affordances**: Intuitive icons and button states
+
+**Best Practices:**
+1. **Use descriptive placeholders** that guide users on what they can search for
+2. **Provide relevant filter options** based on the data being displayed
+3. **Show active filters** to help users understand the current view state
+4. **Enable clear functionality** to easily reset search and filters
+5. **Consider mobile experience** with appropriate touch targets
+6. **Include loading states** during filter operations
+7. **Maintain filter state** across navigation when appropriate
+
+**Accessibility Features:**
+- ARIA labels for screen readers
+- Keyboard navigation support
+- Proper contrast ratios
+- Focus management
+- Screen reader announcements for filter changes
 
 ### MultipleDropdownSearch Component
 The `MultipleDropdownSearch` component is a powerful multi-select dropdown with search functionality, designed for selecting multiple options from a list.
