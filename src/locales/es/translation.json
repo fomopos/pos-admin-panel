@@ -389,5 +389,78 @@
     },
     "noResults": "No se encontraron descuentos",
     "noResults.description": "Intenta ajustar tus términos de búsqueda"
+  },
+  "auth": {
+    "fields": {
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "name": "Nombre Completo"
+    },
+    "placeholders": {
+      "email": "Ingresa tu dirección de correo",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "Ingresa tu nombre completo"
+    },
+    "validation": {
+      "emailRequired": "El correo electrónico es requerido",
+      "emailInvalid": "Por favor ingresa una dirección de correo válida",
+      "passwordRequired": "La contraseña es requerida",
+      "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+      "nameRequired": "El nombre completo es requerido",
+      "nameMinLength": "El nombre debe tener al menos 2 caracteres",
+      "passwordsNoMatch": "Las contraseñas no coinciden",
+      "confirmPasswordRequired": "Por favor confirma tu contraseña"
+    },
+    "errors": {
+      "signInFailed": "Error al iniciar sesión. Verifica tus credenciales e intenta de nuevo.",
+      "userNotConfirmed": "Por favor verifica tu dirección de correo. Revisa tu bandeja de entrada para un enlace de verificación.",
+      "invalidCredentials": "Correo o contraseña incorrectos. Intenta de nuevo.",
+      "userNotFound": "No se encontró una cuenta con esta dirección de correo.",
+      "tooManyRequests": "Demasiados intentos fallidos. Espera antes de intentar de nuevo.",
+      "passwordResetRequired": "Se requiere restablecer contraseña. Por favor restablece tu contraseña.",
+      "accountNotVerified": "Cuenta no verificada. Revisa tu correo para instrucciones de verificación.",
+      "socialNotImplemented": "El inicio de sesión con {{provider}} aún no está implementado. Usa correo y contraseña.",
+      "socialFailed": "Error al iniciar sesión con {{provider}}. Intenta de nuevo.",
+      "resetEmailFailed": "Error al enviar el correo de restablecimiento. Intenta de nuevo."
+    },
+    "signIn": {
+      "welcome": "¡Bienvenido de nuevo!",
+      "subtitle": "¡Por favor ingresa tus credenciales para iniciar sesión!",
+      "button": "Iniciar Sesión",
+      "signingIn": "Iniciando sesión...",
+      "noAccount": "¿No tienes una cuenta?"
+    },
+    "signUp": {
+      "link": "Registrarse"
+    },
+    "forgotPassword": {
+      "title": "¿Olvidaste tu contraseña?",
+      "subtitle": "No te preocupes, te enviaremos instrucciones para restablecerla.",
+      "button": "Enviar correo de restablecimiento",
+      "sending": "Enviando correo de restablecimiento...",
+      "backToSignIn": "← Volver al inicio de sesión",
+      "rememberPassword": "¿Recuerdas tu contraseña?",
+      "checkEmail": "Revisa tu correo",
+      "sentCode": "Hemos enviado un código de verificación a {{email}}",
+      "redirecting": "Redirigiendo a la página de verificación..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "Al menos 8 caracteres",
+        "uppercase": "Una letra mayúscula",
+        "lowercase": "Una letra minúscula",
+        "number": "Un número",
+        "special": "Un carácter especial"
+      },
+      "doesNotMeetRequirements": "La contraseña no cumple con los requisitos"
+    },
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "orContinueWith": "o continúa con",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
   }
 }

@@ -402,5 +402,78 @@
     },
     "noResults": "Neboli nájdené žiadne zľavy",
     "noResults.description": "Skúste upraviť svoje vyhľadávacie výrazy"
+  },
+  "auth": {
+    "fields": {
+      "email": "E-mail",
+      "password": "Heslo",
+      "confirmPassword": "Potvrdiť heslo",
+      "name": "Celé meno"
+    },
+    "placeholders": {
+      "email": "Zadajte svoju e-mailovú adresu",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "Zadajte svoje celé meno"
+    },
+    "validation": {
+      "emailRequired": "E-mail je povinný",
+      "emailInvalid": "Prosím zadajte platnú e-mailovú adresu",
+      "passwordRequired": "Heslo je povinné",
+      "passwordMinLength": "Heslo musí mať aspoň 6 znakov",
+      "nameRequired": "Celé meno je povinné",
+      "nameMinLength": "Meno musí mať aspoň 2 znaky",
+      "passwordsNoMatch": "Heslá sa nezhodujú",
+      "confirmPasswordRequired": "Prosím potvrďte svoje heslo"
+    },
+    "errors": {
+      "signInFailed": "Prihlásenie zlyhalo. Prosím skontrolujte svoje údaje a skúste znovu.",
+      "userNotConfirmed": "Prosím overte svoju e-mailovú adresu. Skontrolujte doručenú poštu pre overovací odkaz.",
+      "invalidCredentials": "Neplatný e-mail alebo heslo. Prosím skúste znovu.",
+      "userNotFound": "Nebol nájdený účet s touto e-mailovou adresou.",
+      "tooManyRequests": "Príliš veľa neúspešných pokusov. Prosím počkajte pred ďalším pokusom.",
+      "passwordResetRequired": "Vyžaduje sa obnovenie hesla. Prosím obnovte svoje heslo.",
+      "accountNotVerified": "Účet nie je overený. Skontrolujte svoj e-mail pre inštrukcie overenia.",
+      "socialNotImplemented": "Prihlásenie cez {{provider}} zatiaľ nie je implementované. Prosím použite e-mail a heslo.",
+      "socialFailed": "Prihlásenie cez {{provider}} zlyhalo. Prosím skúste znovu.",
+      "resetEmailFailed": "Nepodarilo sa odoslať email na obnovenie. Prosím skúste znovu."
+    },
+    "signIn": {
+      "welcome": "Vitajte späť!",
+      "subtitle": "Prosím zadajte svoje prihlasovacie údaje!",
+      "button": "Prihlásiť sa",
+      "signingIn": "Prihlasovanie...",
+      "noAccount": "Nemáte účet?"
+    },
+    "signUp": {
+      "link": "Zaregistrovať sa"
+    },
+    "forgotPassword": {
+      "title": "Zabudli ste heslo?",
+      "subtitle": "Žiadny problém, pošleme vám inštrukcie na obnovenie.",
+      "button": "Poslať email na obnovenie",
+      "sending": "Posiela sa email na obnovenie...",
+      "backToSignIn": "← Späť na prihlásenie",
+      "rememberPassword": "Pamätáte si svoje heslo?",
+      "checkEmail": "Skontrolujte svoj email",
+      "sentCode": "Poslali sme overovací kód na {{email}}",
+      "redirecting": "Presmerovanie na stránku overenia..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "Aspoň 8 znakov",
+        "uppercase": "Jedno veľké písmeno",
+        "lowercase": "Jedno malé písmeno",
+        "number": "Jedno číslo",
+        "special": "Jeden špeciálny znak"
+      },
+      "doesNotMeetRequirements": "Heslo nespĺňa požiadavky"
+    },
+    "forgotPassword": "Zabudli ste heslo",
+    "orContinueWith": "alebo pokračovať s",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
   }
 }

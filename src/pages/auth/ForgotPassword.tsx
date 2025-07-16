@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Button from '../../components/ui/Button';
 import { cn } from '../../utils/cn';
 import { authService } from '../../auth/authService';
 
 const ForgotPassword: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -25,9 +27,9 @@ const ForgotPassword: React.FC = () => {
     const newErrors: Record<string, string> = {};
     
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('auth.validation.emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('auth.validation.emailInvalid');
     }
     
     setErrors(newErrors);
@@ -58,14 +60,14 @@ const ForgotPassword: React.FC = () => {
     } catch (error: any) {
       console.error('Password reset error:', error);
       
-      let errorMessage = 'Failed to send reset email. Please try again.';
+      let errorMessage = t('auth.errors.resetEmailFailed');
       
       if (error.code === 'UserNotFoundException') {
-        errorMessage = 'No account found with this email address.';
+        errorMessage = t('auth.errors.userNotFound');
       } else if (error.code === 'LimitExceededException') {
-        errorMessage = 'Too many requests. Please wait before trying again.';
+        errorMessage = t('auth.errors.tooManyRequests');
       } else if (error.code === 'InvalidParameterException') {
-        errorMessage = 'Invalid email address format.';
+        errorMessage = t('auth.validation.emailInvalid');
       }
       
       setErrors({ general: errorMessage });
@@ -101,15 +103,15 @@ const ForgotPassword: React.FC = () => {
               </div>
               
               <h1 className="text-2xl font-bold text-slate-900 mb-4">
-                Check your email
+                {t('auth.forgotPassword.checkEmail')}
               </h1>
               
               <p className="text-slate-600 mb-6">
-                We've sent a verification code to <span className="font-medium text-slate-900">{email}</span>
+                {t('auth.forgotPassword.sentCode', { email })}
               </p>
               
               <p className="text-sm text-slate-500 mb-8">
-                Redirecting to verification page...
+                {t('auth.forgotPassword.redirecting')}
               </p>
               
               <div className="flex items-center justify-center">
@@ -139,10 +141,10 @@ const ForgotPassword: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Forgot Password?
+              {t('auth.forgotPassword.title')}
             </h1>
             <p className="text-slate-500">
-              No worries, we'll send you reset instructions.
+              {t('auth.forgotPassword.subtitle')}
             </p>
           </div>
 
@@ -157,7 +159,7 @@ const ForgotPassword: React.FC = () => {
             {/* Email Field */}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-slate-700">
-                Email
+                {t('auth.fields.email')}
               </label>
               <input
                 id="email"
@@ -165,7 +167,7 @@ const ForgotPassword: React.FC = () => {
                 type="email"
                 value={email}
                 onChange={handleInputChange}
-                placeholder="Enter your email address"
+                placeholder={t('auth.placeholders.email')}
                 className={cn(
                   "flex h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
                   errors.email && "border-red-500 focus-visible:ring-red-500"
@@ -186,10 +188,10 @@ const ForgotPassword: React.FC = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Sending reset email...
+                  {t('auth.forgotPassword.sending')}
                 </div>
               ) : (
-                'Send reset email'
+                t('auth.forgotPassword.button')
               )}
             </Button>
 
@@ -200,7 +202,7 @@ const ForgotPassword: React.FC = () => {
                 onClick={handleBackToSignIn}
                 className="text-sm text-slate-600 hover:text-slate-900 font-medium transition-colors"
               >
-                ← Back to sign in
+                {t('auth.forgotPassword.backToSignIn')}
               </button>
             </div>
           </form>
@@ -209,12 +211,12 @@ const ForgotPassword: React.FC = () => {
         {/* Additional Help */}
         <div className="text-center mt-6">
           <p className="text-sm text-slate-500">
-            Remember your password?{' '}
+            {t('auth.forgotPassword.rememberPassword')}{' '}
             <button
               onClick={handleBackToSignIn}
               className="text-slate-900 hover:text-slate-700 font-medium transition-colors underline"
             >
-              Sign in
+              {t('auth.signIn.button')}
             </button>
           </p>
         </div>

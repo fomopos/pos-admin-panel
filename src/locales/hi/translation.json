@@ -402,5 +402,78 @@
     },
     "noResults": "कोई छूट नहीं मिली",
     "noResults.description": "अपने खोज शब्दों को समायोजित करने का प्रयास करें"
+  },
+  "auth": {
+    "fields": {
+      "email": "ईमेल",
+      "password": "पासवर्ड",
+      "confirmPassword": "पासवर्ड की पुष्टि करें",
+      "name": "पूरा नाम"
+    },
+    "placeholders": {
+      "email": "अपना ईमेल पता दर्ज करें",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "अपना पूरा नाम दर्ज करें"
+    },
+    "validation": {
+      "emailRequired": "ईमेल आवश्यक है",
+      "emailInvalid": "कृपया एक वैध ईमेल पता दर्ज करें",
+      "passwordRequired": "पासवर्ड आवश्यक है",
+      "passwordMinLength": "पासवर्ड कम से कम 6 अक्षर का होना चाहिए",
+      "nameRequired": "पूरा नाम आवश्यक है",
+      "nameMinLength": "नाम कम से कम 2 अक्षर का होना चाहिए",
+      "passwordsNoMatch": "पासवर्ड मेल नहीं खाते",
+      "confirmPasswordRequired": "कृपया अपना पासवर्ड दोबारा दर्ज करें"
+    },
+    "errors": {
+      "signInFailed": "साइन इन विफल। कृपया अपनी जानकारी जांचें और फिर से कोशिश करें।",
+      "userNotConfirmed": "कृपया अपना ईमेल पता सत्यापित करें। सत्यापन लिंक के लिए अपना इनबॉक्स जांचें।",
+      "invalidCredentials": "गलत ईमेल या पासवर्ड। कृपया फिर से कोशिश करें।",
+      "userNotFound": "इस ईमेल पते के साथ कोई खाता नहीं मिला।",
+      "tooManyRequests": "बहुत अधिक असफल प्रयास। कृपया फिर से कोशिश करने से पहले प्रतीक्षा करें।",
+      "passwordResetRequired": "पासवर्ड रीसेट की आवश्यकता है। कृपया अपना पासवर्ड रीसेट करें।",
+      "accountNotVerified": "खाता सत्यापित नहीं है। सत्यापन निर्देशों के लिए अपना ईमेल जांचें।",
+      "socialNotImplemented": "{{provider}} लॉगिन अभी तक लागू नहीं किया गया है। कृपया ईमेल और पासवर्ड का उपयोग करें।",
+      "socialFailed": "{{provider}} लॉगिन विफल। कृपया फिर से कोशिश करें।",
+      "resetEmailFailed": "रीसेट ईमेल भेजने में विफल। कृपया फिर से कोशिश करें।"
+    },
+    "signIn": {
+      "welcome": "वापस स्वागत है!",
+      "subtitle": "कृपया साइन इन करने के लिए अपनी जानकारी दर्ज करें!",
+      "button": "साइन इन",
+      "signingIn": "साइन इन हो रहा है...",
+      "noAccount": "कोई खाता नहीं है?"
+    },
+    "signUp": {
+      "link": "साइन अप करें"
+    },
+    "forgotPassword": {
+      "title": "पासवर्ड भूल गए?",
+      "subtitle": "कोई चिंता नहीं, हम आपको रीसेट निर्देश भेजेंगे।",
+      "button": "रीसेट ईमेल भेजें",
+      "sending": "रीसेट ईमेल भेजा जा रहा है...",
+      "backToSignIn": "← साइन इन पर वापस जाएं",
+      "rememberPassword": "अपना पासवर्ड याद है?",
+      "checkEmail": "अपना ईमेल जांचें",
+      "sentCode": "हमने {{email}} पर एक सत्यापन कोड भेजा है",
+      "redirecting": "सत्यापन पृष्ठ पर रीडायरेक्ट हो रहा है..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "कम से कम 8 अक्षर",
+        "uppercase": "एक बड़ा अक्षर",
+        "lowercase": "एक छोटा अक्षर",
+        "number": "एक संख्या",
+        "special": "एक विशेष अक्षर"
+      },
+      "doesNotMeetRequirements": "पासवर्ड आवश्यकताओं को पूरा नहीं करता"
+    },
+    "forgotPassword": "पासवर्ड भूल गए",
+    "orContinueWith": "या जारी रखें",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
   }
 }

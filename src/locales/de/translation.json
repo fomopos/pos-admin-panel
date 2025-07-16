@@ -402,5 +402,78 @@
     },
     "noResults": "Keine Rabatte gefunden",
     "noResults.description": "Versuchen Sie, Ihre Suchbegriffe anzupassen"
+  },
+  "auth": {
+    "fields": {
+      "email": "E-Mail",
+      "password": "Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "name": "Vollständiger Name"
+    },
+    "placeholders": {
+      "email": "Geben Sie Ihre E-Mail-Adresse ein",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "Geben Sie Ihren vollständigen Namen ein"
+    },
+    "validation": {
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich",
+      "passwordMinLength": "Passwort muss mindestens 6 Zeichen lang sein",
+      "nameRequired": "Vollständiger Name ist erforderlich",
+      "nameMinLength": "Name muss mindestens 2 Zeichen lang sein",
+      "passwordsNoMatch": "Passwörter stimmen nicht überein",
+      "confirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort"
+    },
+    "errors": {
+      "signInFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut.",
+      "userNotConfirmed": "Bitte verifizieren Sie Ihre E-Mail-Adresse. Überprüfen Sie Ihren Posteingang auf einen Verifizierungslink.",
+      "invalidCredentials": "Ungültige E-Mail oder Passwort. Bitte versuchen Sie es erneut.",
+      "userNotFound": "Kein Konto mit dieser E-Mail-Adresse gefunden.",
+      "tooManyRequests": "Zu viele fehlgeschlagene Versuche. Bitte warten Sie, bevor Sie es erneut versuchen.",
+      "passwordResetRequired": "Passwort-Reset erforderlich. Bitte setzen Sie Ihr Passwort zurück.",
+      "accountNotVerified": "Konto nicht verifiziert. Überprüfen Sie Ihre E-Mail für Verifizierungsanweisungen.",
+      "socialNotImplemented": "{{provider}}-Anmeldung ist noch nicht implementiert. Bitte verwenden Sie E-Mail und Passwort.",
+      "socialFailed": "{{provider}}-Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "resetEmailFailed": "Fehler beim Senden der Reset-E-Mail. Bitte versuchen Sie es erneut."
+    },
+    "signIn": {
+      "welcome": "Willkommen zurück!",
+      "subtitle": "Bitte geben Sie Ihre Anmeldedaten ein!",
+      "button": "Anmelden",
+      "signingIn": "Anmeldung läuft...",
+      "noAccount": "Haben Sie kein Konto?"
+    },
+    "signUp": {
+      "link": "Registrieren"
+    },
+    "forgotPassword": {
+      "title": "Passwort vergessen?",
+      "subtitle": "Keine Sorge, wir senden Ihnen Anweisungen zum Zurücksetzen.",
+      "button": "Reset-E-Mail senden",
+      "sending": "Reset-E-Mail wird gesendet...",
+      "backToSignIn": "← Zurück zur Anmeldung",
+      "rememberPassword": "Erinnern Sie sich an Ihr Passwort?",
+      "checkEmail": "Überprüfen Sie Ihre E-Mail",
+      "sentCode": "Wir haben einen Verifizierungscode an {{email}} gesendet",
+      "redirecting": "Weiterleitung zur Verifizierungsseite..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "Mindestens 8 Zeichen",
+        "uppercase": "Ein Großbuchstabe",
+        "lowercase": "Ein Kleinbuchstabe",
+        "number": "Eine Zahl",
+        "special": "Ein Sonderzeichen"
+      },
+      "doesNotMeetRequirements": "Passwort erfüllt nicht die Anforderungen"
+    },
+    "forgotPassword": "Passwort vergessen",
+    "orContinueWith": "oder fortfahren mit",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
   }
 }

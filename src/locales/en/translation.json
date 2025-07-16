@@ -402,5 +402,78 @@
     },
     "noResults": "No discounts found",
     "noResults.description": "Try adjusting your search terms"
+  },
+  "auth": {
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "name": "Full Name"
+    },
+    "placeholders": {
+      "email": "Enter your email address",
+      "password": "••••••",
+      "confirmPassword": "••••••",
+      "name": "Enter your full name"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "nameRequired": "Full name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "passwordsNoMatch": "Passwords do not match",
+      "confirmPasswordRequired": "Please confirm your password"
+    },
+    "errors": {
+      "signInFailed": "Sign in failed. Please check your credentials and try again.",
+      "userNotConfirmed": "Please verify your email address. Check your inbox for a verification link.",
+      "invalidCredentials": "Invalid email or password. Please try again.",
+      "userNotFound": "No account found with this email address.",
+      "tooManyRequests": "Too many failed attempts. Please wait before trying again.",
+      "passwordResetRequired": "Password reset required. Please reset your password.",
+      "accountNotVerified": "Account not verified. Please check your email for verification instructions.",
+      "socialNotImplemented": "{{provider}} login is not yet implemented. Please use email and password.",
+      "socialFailed": "{{provider}} login failed. Please try again.",
+      "resetEmailFailed": "Failed to send reset email. Please try again."
+    },
+    "signIn": {
+      "welcome": "Welcome back!",
+      "subtitle": "Please enter your credentials to sign in!",
+      "button": "Sign In",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?"
+    },
+    "signUp": {
+      "link": "Sign up"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "No worries, we'll send you reset instructions.",
+      "button": "Send reset email",
+      "sending": "Sending reset email...",
+      "backToSignIn": "← Back to sign in",
+      "rememberPassword": "Remember your password?",
+      "checkEmail": "Check your email",
+      "sentCode": "We've sent a verification code to {{email}}",
+      "redirecting": "Redirecting to verification page..."
+    },
+    "password": {
+      "requirements": {
+        "minLength": "At least 8 characters",
+        "uppercase": "One uppercase letter",
+        "lowercase": "One lowercase letter",
+        "number": "One number",
+        "special": "One special character"
+      },
+      "doesNotMeetRequirements": "Password does not meet requirements"
+    },
+    "forgotPassword": "Forgot password",
+    "orContinueWith": "or continue with",
+    "social": {
+      "google": "Google",
+      "github": "Github"
+    }
   }
 }
