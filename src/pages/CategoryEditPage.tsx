@@ -189,28 +189,36 @@ const CategoryEditPage: React.FC = () => {
       // Compare current form data with original category
       const currentData = {
         name: formData.name,
-        description: formData.description || null,
-        parent_category_id: formData.parent_category_id || null,
+        description: formData.description || '',
+        parent_category_id: formData.parent_category_id || undefined,
         sort_order: formData.sort_order,
         is_active: formData.is_active,
         display_on_main_screen: formData.display_on_main_screen,
-        icon_url: formData.icon_url || null,
-        image_url: formData.image_url || null,
+        icon_url: formData.icon_url || undefined,
+        image_url: formData.image_url || undefined,
         tags: formData.tags,
         properties: formData.properties
       };
 
+      // Apply the same transformations to original data as were applied when setting form data
       const originalData = {
         name: originalCategory.name,
-        description: originalCategory.description,
-        parent_category_id: originalCategory.parent_category_id,
-        sort_order: originalCategory.sort_order,
-        is_active: originalCategory.is_active,
-        display_on_main_screen: originalCategory.display_on_main_screen,
-        icon_url: originalCategory.icon_url,
-        image_url: originalCategory.image_url,
-        tags: originalCategory.tags,
-        properties: originalCategory.properties
+        description: originalCategory.description || '',
+        parent_category_id: originalCategory.parent_category_id || undefined,
+        sort_order: originalCategory.sort_order || 0,
+        is_active: originalCategory.is_active ?? true,
+        display_on_main_screen: originalCategory.display_on_main_screen ?? false,
+        icon_url: originalCategory.icon_url || undefined,
+        image_url: originalCategory.image_url || undefined,
+        tags: originalCategory.tags || [],
+        properties: {
+          color: originalCategory.color || '#3B82F6',
+          tax_rate: originalCategory.properties?.tax_rate || 0,
+          commission_rate: originalCategory.properties?.commission_rate || 0,
+          featured: originalCategory.properties?.featured || false,
+          seasonal: originalCategory.properties?.seasonal || false,
+          ...originalCategory.properties
+        }
       };
 
       setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
@@ -221,6 +229,9 @@ const CategoryEditPage: React.FC = () => {
                      formData.tags.length > 0 ||
                      formData.parent_category_id !== undefined;
       setHasChanges(hasData);
+    } else {
+      // If we're editing but don't have originalCategory yet, no changes
+      setHasChanges(false);
     }
   }, [formData, originalCategory, isEditing]);
 
@@ -384,6 +395,7 @@ const CategoryEditPage: React.FC = () => {
   const discardChanges = () => {
     discardDialog.openDiscardDialog(() => {
       if (originalCategory) {
+        // Reset form data to match exactly how it was initially loaded
         setFormData({
           name: originalCategory.name,
           description: originalCategory.description || '',
@@ -395,7 +407,7 @@ const CategoryEditPage: React.FC = () => {
           image_url: originalCategory.image_url || undefined,
           tags: originalCategory.tags || [],
           properties: {
-            color: originalCategory.properties?.color || defaultColor, // Use default random color if existing category has no color
+            color: originalCategory.color || '#3B82F6', // Use the same logic as initial load
             tax_rate: originalCategory.properties?.tax_rate || 0,
             commission_rate: originalCategory.properties?.commission_rate || 0,
             featured: originalCategory.properties?.featured || false,
@@ -426,7 +438,8 @@ const CategoryEditPage: React.FC = () => {
       }
       
       setErrors({});
-      setHasChanges(false);
+      // Force hasChanges to false after resetting
+      setTimeout(() => setHasChanges(false), 0);
     });
   };
 

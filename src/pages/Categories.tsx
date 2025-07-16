@@ -177,9 +177,6 @@ const Categories: React.FC = () => {
                       {t('categories.table.parent')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('categories.table.items')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('categories.table.status')}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -380,9 +377,6 @@ const CategoryListItem: React.FC<{
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         {parentCategory ? parentCategory.name : '-'}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-        0 {/* This would need to be calculated from product count */}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
