@@ -201,7 +201,11 @@
     "noStoresAvailable": "Žiadne obchody nie sú dostupné",
     "yourProfile": "Váš profil",
     "settings": "Nastavenia",
-    "signOut": "Odhlásiť sa"
+    "signOut": "Odhlásiť sa",
+    "clearSearch": "Vymazať vyhľadávanie",
+    "gridView": "Mriežkové zobrazenie",
+    "listView": "Zoznamové zobrazenie",
+    "all": "Všetko"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -201,7 +201,11 @@
     "noStoresAvailable": "لا توجد متاجر متاحة",
     "yourProfile": "ملفك الشخصي",
     "settings": "الإعدادات",
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "clearSearch": "مسح البحث",
+    "gridView": "عرض الشبكة",
+    "listView": "عرض القائمة",
+    "all": "الكل"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

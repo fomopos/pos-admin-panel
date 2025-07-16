@@ -188,7 +188,11 @@
     "noStoresAvailable": "No hay tiendas disponibles",
     "yourProfile": "Tu Perfil",
     "settings": "Configuración",
-    "signOut": "Cerrar Sesión"
+    "signOut": "Cerrar Sesión",
+    "clearSearch": "Limpiar búsqueda",
+    "gridView": "Vista de Cuadrícula",
+    "listView": "Vista de Lista",
+    "all": "Todos"
   },
   "nav": {
     "dashboard": "Panel",

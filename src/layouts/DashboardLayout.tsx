@@ -118,6 +118,10 @@ const DashboardLayout: React.FC = () => {
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'sk', name: 'Slovenčina', flag: '🇸🇰' },
   ];
 
   const handleSignOut = async () => {

@@ -201,7 +201,11 @@
     "noStoresAvailable": "No stores available",
     "yourProfile": "Your Profile",
     "settings": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "clearSearch": "Clear search",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "all": "All"
   },
   "nav": {
     "dashboard": "Dashboard",

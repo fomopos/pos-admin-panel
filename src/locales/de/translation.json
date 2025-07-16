@@ -201,7 +201,11 @@
     "noStoresAvailable": "Keine Geschäfte verfügbar",
     "yourProfile": "Ihr Profil",
     "settings": "Einstellungen",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "clearSearch": "Suche löschen",
+    "gridView": "Rasteransicht",
+    "listView": "Listenansicht",
+    "all": "Alle"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
@@ -53,12 +54,12 @@ export interface SearchAndFilterProps {
 export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   searchValue,
   onSearchChange,
-  searchPlaceholder = "Search...",
+  searchPlaceholder,
   filterValue = "",
   onFilterChange,
   filterOptions = [],
   filterLabel,
-  filterPlaceholder = "All",
+  filterPlaceholder,
   viewMode = 'grid',
   onViewModeChange,
   showViewToggle = true,
@@ -70,6 +71,7 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   showClearButton = true,
   onClear
 }) => {
+  const { t } = useTranslation();
   const hasActiveFilters = searchValue.trim() !== '' || filterValue !== '';
 
   const handleClear = () => {
@@ -88,7 +90,7 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder={searchPlaceholder}
+              placeholder={searchPlaceholder || t('common.searchPlaceholder')}
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
               className={cn(
@@ -106,7 +108,7 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                 onClick={() => onSearchChange('')}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100"
                 type="button"
-                aria-label="Clear search"
+                aria-label={t('common.clearSearch')}
               >
                 <XMarkIcon className="w-4 h-4" />
               </button>
@@ -129,13 +131,13 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                 <DropdownSearch
                   label=""
                   value={filterValue}
-                  placeholder={filterPlaceholder}
+                  placeholder={filterPlaceholder || t('common.all')}
                   options={filterOptions}
                   onSelect={(option) => onFilterChange?.(option?.id || '')}
                   className={cn("", filterClassName)}
                   buttonClassName="py-3 min-w-[140px] text-sm"
                   allowClear={true}
-                  clearLabel={filterPlaceholder}
+                  clearLabel={filterPlaceholder || t('common.all')}
                 />
               </div>
             </div>
@@ -157,7 +159,7 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                     ? 'bg-primary-100 text-primary-600 hover:bg-primary-200 border-r border-primary-200'
                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50 border-r border-gray-300'
                 )}
-                title="Grid View"
+                title={t('common.gridView')}
                 type="button"
               >
                 <Squares2X2Icon className="w-5 h-5" />
@@ -172,7 +174,7 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
                     ? 'bg-primary-100 text-primary-600 hover:bg-primary-200'
                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 )}
-                title="List View"
+                title={t('common.listView')}
                 type="button"
               >
                 <ListBulletIcon className="w-5 h-5" />

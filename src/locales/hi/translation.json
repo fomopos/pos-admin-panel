@@ -201,7 +201,11 @@
     "noStoresAvailable": "कोई स्टोर उपलब्ध नहीं",
     "yourProfile": "आपकी प्रोफ़ाइल",
     "settings": "सेटिंग्स",
-    "signOut": "साइन आउट"
+    "signOut": "साइन आउट",
+    "clearSearch": "खोज साफ़ करें",
+    "gridView": "ग्रिड दृश्य",
+    "listView": "सूची दृश्य",
+    "all": "सभी"
   },
   "nav": {
     "dashboard": "डैशबोर्ड",
