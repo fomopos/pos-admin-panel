@@ -6,6 +6,7 @@ interface TabItem {
   name: string;
   icon?: React.ComponentType<{ className?: string }>;
   disabled?: boolean;
+  hasError?: boolean; // Add error indicator support
 }
 
 interface TabsProps {
@@ -143,6 +144,7 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id;
+            const hasError = tab.hasError;
             return (
               <button
                 key={tab.id}
@@ -157,6 +159,8 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
                   'hover:text-primary-600',
                   isActive
                     ? 'text-primary-600 border-b-2 border-primary-500'
+                    : hasError
+                    ? 'text-red-600 border-b-2 border-red-400 hover:border-red-500'
                     : 'text-slate-600 border-b-2 border-transparent hover:border-slate-300'
                 )}
               >
@@ -164,15 +168,27 @@ export const EnhancedTabs: React.FC<EnhancedTabsProps> = ({
                   <IconComponent 
                     className={cn(
                       'h-4 w-4 transition-colors duration-200',
-                      isActive ? 'text-primary-500' : 'text-slate-400'
+                      isActive 
+                        ? 'text-primary-500' 
+                        : hasError 
+                        ? 'text-red-500' 
+                        : 'text-slate-400'
                     )} 
                   />
                 )}
-                <span className="relative">
-                  {tab.name}
+                <span className="relative flex items-center space-x-1">
+                  <span>{tab.name}</span>
+                  {hasError && !isActive && (
+                    <span className="inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full">
+                      <span className="sr-only">Has validation errors</span>
+                    </span>
+                  )}
                 </span>
                 {isActive && (
-                  <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-primary-500 rounded-full" />
+                  <div className={cn(
+                    "absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-8 h-0.5 rounded-full",
+                    hasError ? "bg-red-500" : "bg-primary-500"
+                  )} />
                 )}
               </button>
             );

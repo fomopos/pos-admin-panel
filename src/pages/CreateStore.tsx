@@ -8,7 +8,8 @@ import {
   ClockIcon,
   BuildingOfficeIcon,
   CheckIcon,
-  XMarkIcon
+  XMarkIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Button, PageHeader, EnhancedTabs, InputTextField, InputTextArea, DropdownSearch, Widget } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
@@ -26,6 +27,7 @@ import {
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
 import { detectUserCountryCode } from '../utils/locationUtils';
+import { useError } from '../hooks/useError';
 
 interface StoreFormData {
   // Basic Information
@@ -90,6 +92,7 @@ interface CreateStoreProps {
 const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   const navigate = useNavigate();
   const { currentTenant, createStore } = useTenantStore();
+  const { showError, showSuccess, showValidationError } = useError();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('basic');
@@ -144,12 +147,57 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   const [isLoadingStates, setIsLoadingStates] = useState(false);
   const [isLoadingCities, setIsLoadingCities] = useState(false);
 
+  // Helper function to check if a tab has errors
+  const getTabErrorStatus = (tabId: string): boolean => {
+    const errorFields = Object.keys(errors);
+    
+    switch (tabId) {
+      case 'basic':
+        return ['store_id', 'store_name', 'location_type', 'store_type'].some(field => errorFields.includes(field));
+      case 'address':
+        return ['address.address1', 'address.city', 'address.state', 'address.postal_code', 'address.country'].some(field => errorFields.includes(field));
+      case 'contact':
+        return ['email', 'telephone1', 'telephone2', 'telephone3', 'telephone4'].some(field => errorFields.includes(field));
+      case 'legal':
+        return ['legal_entity_id', 'legal_entity_name'].some(field => errorFields.includes(field));
+      case 'timing':
+        return ['store_timing.Monday', 'store_timing.Tuesday', 'store_timing.Wednesday', 'store_timing.Thursday', 'store_timing.Friday', 'store_timing.Saturday', 'store_timing.Sunday', 'store_timing.Holidays'].some(field => errorFields.includes(field));
+      default:
+        return false;
+    }
+  };
+
   const tabs = [
-    { id: 'basic', name: 'Basic Information', icon: BuildingStorefrontIcon },
-    { id: 'address', name: 'Address', icon: MapPinIcon },
-    { id: 'contact', name: 'Contact Info', icon: PhoneIcon },
-    { id: 'legal', name: 'Legal Entity', icon: BuildingOfficeIcon },
-    { id: 'timing', name: 'Store Timing', icon: ClockIcon }
+    { 
+      id: 'basic', 
+      name: 'Basic Information', 
+      icon: BuildingStorefrontIcon,
+      hasError: getTabErrorStatus('basic')
+    },
+    { 
+      id: 'address', 
+      name: 'Address', 
+      icon: MapPinIcon,
+      hasError: getTabErrorStatus('address')
+    },
+    { 
+      id: 'contact', 
+      name: 'Contact Info', 
+      icon: PhoneIcon,
+      hasError: getTabErrorStatus('contact')
+    },
+    { 
+      id: 'legal', 
+      name: 'Legal Entity', 
+      icon: BuildingOfficeIcon,
+      hasError: getTabErrorStatus('legal')
+    },
+    { 
+      id: 'timing', 
+      name: 'Store Timing', 
+      icon: ClockIcon,
+      hasError: getTabErrorStatus('timing')
+    }
   ];
 
   // Handle navigation when used as standalone route
@@ -263,7 +311,6 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     const newErrors: Record<string, string> = {};
 
     // Basic Information validation
-
     if (!formData.store_id?.trim()) {
       newErrors.store_id = 'Store ID is optional but should not be empty if provided';
     }
@@ -307,7 +354,60 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     }
 
     setErrors(newErrors);
+    
+    // If there are errors, show global error feedback
+    if (Object.keys(newErrors).length > 0) {
+      // Determine which tabs have errors
+      const tabsWithErrors = getTabsWithErrors(newErrors);
+      
+      // Show validation error with details about which tabs need attention
+      showValidationError(
+        `Please fix the following errors before creating the store: ${tabsWithErrors.join(', ')}`,
+        'form_validation',
+        null,
+        'required'
+      );
+    }
+    
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Helper function to determine which tabs have validation errors
+  const getTabsWithErrors = (validationErrors: Record<string, string>): string[] => {
+    const tabsWithErrors: string[] = [];
+    const errorFields = Object.keys(validationErrors);
+
+    // Check for basic information errors
+    const basicFields = ['store_id', 'store_name', 'location_type', 'store_type'];
+    if (basicFields.some(field => errorFields.includes(field))) {
+      tabsWithErrors.push('Basic Information');
+    }
+
+    // Check for address errors
+    const addressFields = ['address.address1', 'address.city', 'address.state', 'address.postal_code', 'address.country'];
+    if (addressFields.some(field => errorFields.includes(field))) {
+      tabsWithErrors.push('Address');
+    }
+
+    // Check for contact errors
+    const contactFields = ['email', 'telephone1', 'telephone2', 'telephone3', 'telephone4'];
+    if (contactFields.some(field => errorFields.includes(field))) {
+      tabsWithErrors.push('Contact Info');
+    }
+
+    // Check for legal entity errors
+    const legalFields = ['legal_entity_id', 'legal_entity_name'];
+    if (legalFields.some(field => errorFields.includes(field))) {
+      tabsWithErrors.push('Legal Entity');
+    }
+
+    // Check for timing errors
+    const timingFields = ['store_timing.Monday', 'store_timing.Tuesday', 'store_timing.Wednesday', 'store_timing.Thursday', 'store_timing.Friday', 'store_timing.Saturday', 'store_timing.Sunday', 'store_timing.Holidays'];
+    if (timingFields.some(field => errorFields.includes(field))) {
+      tabsWithErrors.push('Store Timing');
+    }
+
+    return tabsWithErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -321,7 +421,11 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       // Call the store creation API
       await createStore(currentTenant.id, formData);
       
-      setSuccessMessage('Store created successfully!');
+      // Use error framework for success message
+      showSuccess('Store created successfully!');
+      
+      // Clear local success message and navigate
+      setSuccessMessage(null);
       setTimeout(() => {
         handleSave();
       }, 1500);
@@ -342,15 +446,19 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
           });
         }
         
-        // Set field-specific errors and general error message
-        setErrors({
-          ...fieldErrors,
-          submit: error.getDisplayMessage ? error.getDisplayMessage() : error.message
-        });
+        // Set field-specific errors
+        setErrors(fieldErrors);
+        
+        // Use error framework for API error display
+        showError(error);
       } else {
-        // Fallback for non-structured errors
+        // Fallback for non-structured errors - use error framework
+        const errorMessage = error?.message || 'Failed to create store. Please try again.';
+        showError(errorMessage);
+        
+        // Also set local submit error for backward compatibility
         setErrors({ 
-          submit: error?.message || 'Failed to create store. Please try again.' 
+          submit: errorMessage
         });
       }
     } finally {
@@ -600,6 +708,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
       description="Enter your store's physical location details"
       icon={MapPinIcon}
       variant="success"
+      className='overflow-visible'
     >
       <div className="space-y-4">
         <InputTextField
@@ -1052,6 +1161,33 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                 </div>
                 <div className="ml-3">
                   <p className="text-red-700 font-medium">{errors.submit}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Validation Summary */}
+          {Object.keys(errors).length > 0 && !errors.submit && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-amber-800 font-medium mb-2">
+                    Please fix the following errors before creating the store
+                  </h3>
+                  <div className="text-sm text-amber-700 space-y-1">
+                    {getTabsWithErrors(errors).map((tabName, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                        <span>Issues found in <strong>{tabName}</strong> tab</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-amber-600">
+                    Click on the highlighted tabs above to review and fix the errors.
+                  </p>
                 </div>
               </div>
             </div>
