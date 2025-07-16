@@ -5,7 +5,9 @@ import { ChevronDownIcon } from '@heroicons/react/24/outline';
 interface Language {
   code: string;
   name: string;
+  nativeName: string;
   flag: string;
+  direction: 'ltr' | 'rtl';
 }
 
 interface LanguageSwitcherProps {
@@ -21,15 +23,24 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const languages: Language[] = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', direction: 'ltr' },
+    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', direction: 'ltr' },
+    { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳', direction: 'ltr' },
+    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', direction: 'rtl' },
+    { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', direction: 'ltr' },
+    { code: 'sk', name: 'Slovak', nativeName: 'Slovenčina', flag: '🇸🇰', direction: 'ltr' },
   ];
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  const changeLanguage = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
-    setIsOpen(false);
+  const changeLanguage = async (languageCode: string) => {
+    try {
+      await i18n.changeLanguage(languageCode);
+      setIsOpen(false);
+      console.log(`Language changed to: ${languageCode}`);
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   };
 
   return (
@@ -40,7 +51,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       >
         <span className="text-lg">{currentLanguage.flag}</span>
         {showLabel && (
-          <span className="text-sm font-medium">{currentLanguage.name}</span>
+          <span className="text-sm font-medium">{currentLanguage.nativeName}</span>
         )}
         <ChevronDownIcon className="h-4 w-4" />
       </button>
@@ -63,7 +74,10 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                 }`}
               >
                 <span className="mr-3">{lang.flag}</span>
-                {lang.name}
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">{lang.nativeName}</span>
+                  <span className="text-xs text-gray-500">{lang.name}</span>
+                </div>
               </button>
             ))}
           </div>
