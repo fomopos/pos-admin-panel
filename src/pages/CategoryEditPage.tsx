@@ -28,6 +28,7 @@ import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 
 // Category templates for quick setup
 const CATEGORY_TEMPLATES = [
@@ -85,6 +86,7 @@ const CategoryEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
+  const { showError, showSuccess, showValidationError } = useError();
   
   const isEditing = Boolean(id);
   const [originalCategory, setOriginalCategory] = useState<EnhancedCategory | null>(null);
@@ -224,7 +226,15 @@ const CategoryEditPage: React.FC = () => {
 
   const handleInputChange = (field: keyof CategoryFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handlePropertyChange = (field: string, value: any) => {
@@ -293,6 +303,18 @@ const CategoryEditPage: React.FC = () => {
     }
     
     setErrors(newErrors);
+    
+    // If there are errors, show global error feedback using error framework
+    if (Object.keys(newErrors).length > 0) {
+      const errorMessages = Object.values(newErrors);
+      showValidationError(
+        `Please fix the following errors before saving the category: ${errorMessages.join(', ')}`,
+        'form_validation',
+        null,
+        'required'
+      );
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -314,12 +336,18 @@ const CategoryEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
+        
+        // Use error framework for success message
+        showSuccess('Category updated successfully!');
         setSuccessMessage('Category updated successfully!');
       } else {
         await categoryApiService.createCategory(categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         }); 
+        
+        // Use error framework for success message
+        showSuccess('Category created successfully!');
         setSuccessMessage('Category created successfully!');
         setTimeout(() => navigate('/categories'), 1500);
       }
@@ -327,6 +355,11 @@ const CategoryEditPage: React.FC = () => {
       setHasChanges(false);
     } catch (error: any) {
       console.error('Failed to save category:', error);
+      
+      // Use error framework for API error display
+      showError(error?.message || 'Failed to save category. Please try again.');
+      
+      // Also set local error for backward compatibility
       setErrors({ submit: error.message || 'Failed to save category. Please try again.' });
     } finally {
       setIsSaving(false);
@@ -866,6 +899,33 @@ const CategoryEditPage: React.FC = () => {
               <p className="text-sm">{errors.submit}</p>
             </div>
           </Alert>
+        )}
+
+        {/* Validation Summary */}
+        {Object.keys(errors).length > 0 && !errors.submit && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-amber-800 font-medium mb-2">
+                  Please fix the following errors before saving the category
+                </h3>
+                <div className="text-sm text-amber-700 space-y-1">
+                  {Object.entries(errors).map(([field, message], index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                      <span><strong>{field === 'name' ? 'Category Name' : field}:</strong> {message}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-amber-600">
+                  Please review the form fields above and correct any highlighted errors.
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Form Actions */}
