@@ -28,6 +28,7 @@ import type { EnhancedCategory, CategoryFormData } from '../types/category';
 import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 
 // Category templates for quick setup
 const CATEGORY_TEMPLATES = [
@@ -85,6 +86,7 @@ const CategoryEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
+  const { showError, showSuccess, showValidationError } = useError();
   
   const isEditing = Boolean(id);
   const [originalCategory, setOriginalCategory] = useState<EnhancedCategory | null>(null);
@@ -187,28 +189,36 @@ const CategoryEditPage: React.FC = () => {
       // Compare current form data with original category
       const currentData = {
         name: formData.name,
-        description: formData.description || null,
-        parent_category_id: formData.parent_category_id || null,
+        description: formData.description || '',
+        parent_category_id: formData.parent_category_id || undefined,
         sort_order: formData.sort_order,
         is_active: formData.is_active,
         display_on_main_screen: formData.display_on_main_screen,
-        icon_url: formData.icon_url || null,
-        image_url: formData.image_url || null,
+        icon_url: formData.icon_url || undefined,
+        image_url: formData.image_url || undefined,
         tags: formData.tags,
         properties: formData.properties
       };
 
+      // Apply the same transformations to original data as were applied when setting form data
       const originalData = {
         name: originalCategory.name,
-        description: originalCategory.description,
-        parent_category_id: originalCategory.parent_category_id,
-        sort_order: originalCategory.sort_order,
-        is_active: originalCategory.is_active,
-        display_on_main_screen: originalCategory.display_on_main_screen,
-        icon_url: originalCategory.icon_url,
-        image_url: originalCategory.image_url,
-        tags: originalCategory.tags,
-        properties: originalCategory.properties
+        description: originalCategory.description || '',
+        parent_category_id: originalCategory.parent_category_id || undefined,
+        sort_order: originalCategory.sort_order || 0,
+        is_active: originalCategory.is_active ?? true,
+        display_on_main_screen: originalCategory.display_on_main_screen ?? false,
+        icon_url: originalCategory.icon_url || undefined,
+        image_url: originalCategory.image_url || undefined,
+        tags: originalCategory.tags || [],
+        properties: {
+          color: originalCategory.color || '#3B82F6',
+          tax_rate: originalCategory.properties?.tax_rate || 0,
+          commission_rate: originalCategory.properties?.commission_rate || 0,
+          featured: originalCategory.properties?.featured || false,
+          seasonal: originalCategory.properties?.seasonal || false,
+          ...originalCategory.properties
+        }
       };
 
       setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
@@ -219,12 +229,23 @@ const CategoryEditPage: React.FC = () => {
                      formData.tags.length > 0 ||
                      formData.parent_category_id !== undefined;
       setHasChanges(hasData);
+    } else {
+      // If we're editing but don't have originalCategory yet, no changes
+      setHasChanges(false);
     }
   }, [formData, originalCategory, isEditing]);
 
   const handleInputChange = (field: keyof CategoryFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handlePropertyChange = (field: string, value: any) => {
@@ -293,6 +314,18 @@ const CategoryEditPage: React.FC = () => {
     }
     
     setErrors(newErrors);
+    
+    // If there are errors, show global error feedback using error framework
+    if (Object.keys(newErrors).length > 0) {
+      const errorMessages = Object.values(newErrors);
+      showValidationError(
+        `Please fix the following errors before saving the category: ${errorMessages.join(', ')}`,
+        'form_validation',
+        null,
+        'required'
+      );
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -314,12 +347,18 @@ const CategoryEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
+        
+        // Use error framework for success message
+        showSuccess('Category updated successfully!');
         setSuccessMessage('Category updated successfully!');
       } else {
         await categoryApiService.createCategory(categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         }); 
+        
+        // Use error framework for success message
+        showSuccess('Category created successfully!');
         setSuccessMessage('Category created successfully!');
         setTimeout(() => navigate('/categories'), 1500);
       }
@@ -327,6 +366,11 @@ const CategoryEditPage: React.FC = () => {
       setHasChanges(false);
     } catch (error: any) {
       console.error('Failed to save category:', error);
+      
+      // Use error framework for API error display
+      showError(error?.message || 'Failed to save category. Please try again.');
+      
+      // Also set local error for backward compatibility
       setErrors({ submit: error.message || 'Failed to save category. Please try again.' });
     } finally {
       setIsSaving(false);
@@ -351,6 +395,7 @@ const CategoryEditPage: React.FC = () => {
   const discardChanges = () => {
     discardDialog.openDiscardDialog(() => {
       if (originalCategory) {
+        // Reset form data to match exactly how it was initially loaded
         setFormData({
           name: originalCategory.name,
           description: originalCategory.description || '',
@@ -362,7 +407,7 @@ const CategoryEditPage: React.FC = () => {
           image_url: originalCategory.image_url || undefined,
           tags: originalCategory.tags || [],
           properties: {
-            color: originalCategory.properties?.color || defaultColor, // Use default random color if existing category has no color
+            color: originalCategory.color || '#3B82F6', // Use the same logic as initial load
             tax_rate: originalCategory.properties?.tax_rate || 0,
             commission_rate: originalCategory.properties?.commission_rate || 0,
             featured: originalCategory.properties?.featured || false,
@@ -393,7 +438,8 @@ const CategoryEditPage: React.FC = () => {
       }
       
       setErrors({});
-      setHasChanges(false);
+      // Force hasChanges to false after resetting
+      setTimeout(() => setHasChanges(false), 0);
     });
   };
 
@@ -500,71 +546,65 @@ const CategoryEditPage: React.FC = () => {
         description={isEditing ? 'Modify category details and settings' : 'Create a new category for your products'}
       >
         <div className="flex items-center space-x-3">
-          <Button
-            onClick={() => navigate('/categories')}
-            variant="outline"
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Back to Categories</span>
-          </Button>
-          
-          {isEditing && (
-            <Button
-              onClick={handleDelete}
-              variant="outline"
-              className="text-red-600 border-red-300 hover:bg-red-50"
-            >
-              <TrashIcon className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          )}
-        </div>
-
-        {/* Save/Discard Actions */}
-        {hasChanges && (
-          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
-                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
-              </div>
+          {hasChanges && (
+            <div className="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+              <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+              Unsaved changes
             </div>
-            <div className="flex items-center justify-end space-x-3">
+          )}
+          
+          {hasChanges ? (
+            <>
               <Button
                 onClick={discardChanges}
                 variant="outline"
-                size="sm"
-                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
+                className="flex items-center space-x-2 border-amber-300 text-amber-700 hover:bg-amber-50"
               >
+                <XMarkIcon className="h-4 w-4" />
                 <span>Discard Changes</span>
               </Button>
+              
               <Button
                 onClick={saveAllChanges}
                 disabled={isSaving}
-                size="sm"
-                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
+                variant="primary"
+                className="flex items-center space-x-2"
               >
                 {isSaving ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Saving...</span>
+                    <span>{isEditing ? 'Updating...' : 'Creating...'}</span>
                   </>
                 ) : (
                   <>
                     <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>Save Changes</span>
+                    <span>{isEditing ? 'Update Category' : 'Create Category'}</span>
                   </>
                 )}
               </Button>
-            </div>
-          </div>
-        )}
+            </>
+          ) : (
+            <Button
+              onClick={() => navigate('/categories')}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              <span>Back to Categories</span>
+            </Button>
+          )}
+          
+          {isEditing && (
+            <Button
+              onClick={handleDelete}
+              variant="destructive"
+              className="flex items-center space-x-2"
+            >
+              <TrashIcon className="h-4 w-4" />
+              <span>Delete</span>
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
       {/* Success Message */}
@@ -868,35 +908,32 @@ const CategoryEditPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/categories')}
-            className="w-full sm:w-auto"
-          >
-            Cancel
-          </Button>
-          
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 w-full sm:w-auto"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <CloudArrowUpIcon className="h-4 w-4" />
-                <span>{isEditing ? 'Update Category' : 'Create Category'}</span>
-              </>
-            )}
-          </Button>
-        </div>
+        {/* Validation Summary */}
+        {Object.keys(errors).length > 0 && !errors.submit && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-amber-800 font-medium mb-2">
+                  Please fix the following errors before saving the category
+                </h3>
+                <div className="text-sm text-amber-700 space-y-1">
+                  {Object.entries(errors).map(([field, message], index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                      <span><strong>{field === 'name' ? 'Category Name' : field}:</strong> {message}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-amber-600">
+                  Please review the form fields above and correct any highlighted errors.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </form>
 
       {/* Confirm Dialogs */}

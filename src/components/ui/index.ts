@@ -27,6 +27,7 @@ export { MultipleDropdownSearch } from './MultipleDropdownSearch';
 export { CompactToggle } from './CompactToggle';
 export { IconPicker } from './IconPicker';
 export { Widget } from './Widget';
+export { SearchAndFilter } from './SearchAndFilter';
 export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGuard } from './PermissionGuard';
 export { default as VersionDisplay } from './VersionDisplay';
 

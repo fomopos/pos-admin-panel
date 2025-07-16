@@ -12,19 +12,30 @@ import {
   InputTextField,
   DropdownSearch,
   PropertyCheckbox,
-  MultipleDropdownSearch,
   Widget,
   Alert
 } from '../ui';
-import { hardwareConfigService } from '../../services/hardware/hardwareConfigService';
+import {
+  NetworkPrinterConfig as NetworkPrinterConfigComponent,
+  ThermalPrinterConfig as ThermalPrinterConfigComponent,
+  KitchenPrinterConfig as KitchenPrinterConfigComponent,
+  ScannerConfig as ScannerConfigComponent
+} from './device-configs';
 import { useTenantStore } from '../../tenants/tenantStore';
 import type {
-  HardwareDevice,
-  ReceiptPrinterConfig,
-  KitchenPrinterConfig,
-  ScannerConfig,
-  HardwareOption
+  HardwareDevice
 } from '../../types/hardware';
+import {
+  DEVICE_TYPES,
+  CONNECTION_TYPES
+} from '../../types/hardware-api';
+import type {
+  ThermalPrinterConfig,
+  KotPrinterConfig,
+  NetworkPrinterConfig,
+  BarcodeScannerConfig,
+  HardwareOption
+} from '../../types/hardware-api';
 
 interface HardwareDeviceFormProps {
   isOpen: boolean;
@@ -51,11 +62,10 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     connection_type: 'network'
   });
   const [selectedTerminalId, setSelectedTerminalId] = useState<string>('');
+  const [apiDeviceType, setApiDeviceType] = useState<string>(''); // Track the actual API device type
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-
-  const hardwareOptions = hardwareConfigService.getHardwareOptions();
 
   // Get terminal options for dropdown
   const getTerminalOptions = (): HardwareOption[] => {
@@ -70,30 +80,42 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     }));
   };
 
-  // Device type options
-  const deviceTypeOptions: HardwareOption[] = [
-    {
-      id: 'receipt_printer',
-      label: 'Receipt Printer',
-      value: 'receipt_printer',
-      icon: '🖨️',
-      description: 'Main receipt printer for customer receipts'
-    },
-    {
-      id: 'kitchen_printer',
-      label: 'Kitchen KOT Printer',
-      value: 'kitchen_printer',
-      icon: '👨‍🍳',
-      description: 'Kitchen order ticket printer'
-    },
-    {
-      id: 'scanner',
-      label: 'Barcode Scanner',
-      value: 'scanner',
-      icon: '📱',
-      description: 'Barcode and QR code scanner'
-    }
-  ];
+  // Device type options from API spec
+  const deviceTypeOptions: HardwareOption[] = DEVICE_TYPES;
+
+  // Map API device types to UI device types for form logic
+  const getUIDeviceType = (apiDeviceType: string): string => {
+    // Most device types map directly now
+    const mappings: Record<string, string> = {
+      'thermal_printer': 'thermal_printer',
+      'kitchen_printer': 'kitchen_printer', 
+      'network_printer': 'network_printer',
+      'scanner': 'scanner',
+      'cash_drawer': 'cash_drawer',
+      'label_printer': 'label_printer'
+    };
+    return mappings[apiDeviceType] || apiDeviceType;
+  };
+
+  // Helper function to get options based on device type
+  const getOptionsForDeviceType = () => {
+    const characterEncodingOptions: HardwareOption[] = [
+      { id: 'utf8', label: 'UTF-8', value: 'utf8' },
+      { id: 'ascii', label: 'ASCII', value: 'ascii' }
+    ];
+
+    const scanModeOptions: HardwareOption[] = [
+      { id: 'manual', label: 'Manual', value: 'manual' },
+      { id: 'automatic', label: 'Automatic', value: 'automatic' }
+    ];
+
+    return {
+      characterEncodingOptions,
+      scanModeOptions
+    };
+  };
+
+  const { characterEncodingOptions } = getOptionsForDeviceType();
 
   useEffect(() => {
     if (device && mode === 'edit') {
@@ -128,29 +150,51 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
   };
 
   const handleDeviceTypeChange = (typeValue: string) => {
-    const newType = typeValue as HardwareDevice['type'];
+    // Store the actual API device type  
+    const selectedApiType = typeValue;
+    setApiDeviceType(selectedApiType);
+    // Map to UI device type for form logic
+    const uiDeviceType = getUIDeviceType(selectedApiType);
     
     // Reset form data when device type changes
     const baseData = {
       name: formData.name || '',
-      type: newType,
+      type: uiDeviceType as HardwareDevice['type'], // Use UI device type for form
       enabled: formData.enabled ?? true,
       connection_type: 'network' as const
     };
 
-    // Add type-specific default values
-    switch (newType) {
+    // Add type-specific default values based on UI type
+    switch (uiDeviceType) {
       case 'receipt_printer':
-        setFormData({
-          ...baseData,
-          paper_size: 'thermal_80mm',
-          auto_print: true,
-          print_copies: 1,
-          cut_paper: true,
-          open_drawer: false,
-          character_encoding: 'utf8',
-          test_mode: false
-        } as Partial<ReceiptPrinterConfig>);
+        // Handle thermal_printer and label_printer
+        if (selectedApiType === 'thermal_printer' || selectedApiType === 'label_printer') {
+          setFormData({
+            ...baseData,
+            paper_size: 'thermal_80mm',
+            auto_print: true,
+            print_copies: 1,
+            cut_paper: true,
+            open_drawer: false,
+            character_encoding: 'utf8',
+            test_mode: false
+          } as any);
+        } else if (selectedApiType === 'network_printer') {
+          setFormData({
+            ...baseData,
+            paper_size: 'A4' as any,
+            paper_orientation: 'portrait',
+            print_quality: 'normal',
+            color_mode: 'monochrome',
+            duplex_printing: false,
+            print_copies: 1,
+            character_encoding: 'utf8',
+            supported_formats: ['PDF', 'TXT'],
+            max_resolution: '1200x1200 dpi',
+            tray_capacity: 250,
+            auto_paper_detection: true
+          } as any);
+        }
         break;
       case 'kitchen_printer':
         setFormData({
@@ -163,7 +207,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
           auto_cut: true,
           character_encoding: 'utf8',
           kitchen_sections: ['hot_kitchen']
-        } as Partial<KitchenPrinterConfig>);
+        } as Partial<KotPrinterConfig>);
         break;
       case 'scanner':
         setFormData({
@@ -173,10 +217,17 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
           suffix: '\r\n',
           min_length: 8,
           max_length: 20,
-          scan_mode: 'manual',
+          scan_mode: 'manual' as any, // Using 'any' to avoid type conflict with old HardwareDevice type
           beep_on_scan: true,
           decode_types: ['CODE128', 'EAN13', 'UPC']
-        } as Partial<ScannerConfig>);
+        });
+        break;
+      case 'cash_drawer':
+        // Cash drawer only needs basic device properties, no additional config in API
+        setFormData(baseData);
+        break;
+      default:
+        setFormData(baseData);
         break;
     }
   };
@@ -204,7 +255,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     // Network connection validation
     if (formData.connection_type === 'network') {
       if (formData.type === 'receipt_printer' || formData.type === 'kitchen_printer') {
-        const config = formData as Partial<ReceiptPrinterConfig | KitchenPrinterConfig>;
+        const config = formData as Partial<ThermalPrinterConfig | KotPrinterConfig>;
         if (!config.ip_address?.trim()) {
           newErrors.ip_address = 'IP address is required for network connection';
         }
@@ -216,7 +267,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
 
     // Scanner-specific validation
     if (formData.type === 'scanner') {
-      const scannerConfig = formData as Partial<ScannerConfig>;
+      const scannerConfig = formData as Partial<BarcodeScannerConfig>;
       if (!scannerConfig.min_length || scannerConfig.min_length < 1) {
         newErrors.min_length = 'Minimum length must be at least 1';
       }
@@ -282,214 +333,89 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
   };
 
   const renderDeviceSpecificFields = () => {
-    switch (formData.type) {
-      case 'receipt_printer':
-      case 'kitchen_printer':
-        const printerConfig = formData as Partial<ReceiptPrinterConfig | KitchenPrinterConfig>;
+    const config = formData;
+    const commonProps = {
+      onFieldChange: handleInputChange,
+      errors,
+      characterEncodingOptions
+    };
+
+    // Handle API device type mapping
+    switch (apiDeviceType || formData.type) {
+      case 'thermal_printer':
         return (
-          <div className="space-y-6">
-            {/* Printer Model */}
-            <DropdownSearch
-              label="Printer Model"
-              options={hardwareOptions.printer_models}
-              value={printerConfig.printer_model || ''}
-              onSelect={(option) => option && handleInputChange('printer_model', option.id)}
-              placeholder="Select printer model"
-              displayValue={(option) => option ? (
-                <div className="flex items-center gap-2">
-                  <span>{option.label}</span>
-                </div>
-              ) : 'Select printer model'}
-            />
+          <ThermalPrinterConfigComponent
+            config={config as Partial<ThermalPrinterConfig>}
+            connectionType={formData.connection_type || 'network'}
+            {...commonProps}
+          />
+        );
 
-            {/* Paper Size */}
-            <DropdownSearch
-              label="Paper Size"
-              options={hardwareOptions.paper_sizes}
-              value={printerConfig.paper_size || 'thermal_80mm'}
-              onSelect={(option) => option && handleInputChange('paper_size', option.id)}
-              placeholder="Select paper size"
-              required
-            />
+      case 'kitchen_printer':
+        return (
+          <KitchenPrinterConfigComponent
+            config={config as Partial<KotPrinterConfig>}
+            connectionType={formData.connection_type || 'network'}
+            {...commonProps}
+          />
+        );
 
-            {/* Network Settings */}
-            {formData.connection_type === 'network' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputTextField
-                  label="IP Address"
-                  value={printerConfig.ip_address || ''}
-                  onChange={(value) => handleInputChange('ip_address', value)}
-                  placeholder="192.168.1.100"
-                  required
-                  error={errors.ip_address}
-                />
-                <InputTextField
-                  label="Port"
-                  type="number"
-                  value={printerConfig.port?.toString() || '9100'}
-                  onChange={(value) => handleInputChange('port', parseInt(value) || 9100)}
-                  placeholder="9100"
-                  required
-                  error={errors.port}
-                />
-              </div>
-            )}
-
-            {/* Character Encoding */}
-            <DropdownSearch
-              label="Character Encoding"
-              options={hardwareOptions.character_encodings}
-              value={printerConfig.character_encoding || 'utf8'}
-              onSelect={(option) => option && handleInputChange('character_encoding', option.id)}
-              placeholder="Select character encoding"
-              required
-            />
-
-            {/* Printer Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {formData.type === 'receipt_printer' && (
-                <>
-                  <PropertyCheckbox
-                    title="Auto Print"
-                    description="Automatically print receipts after transactions"
-                    checked={(printerConfig as Partial<ReceiptPrinterConfig>).auto_print ?? true}
-                    onChange={(checked) => handleInputChange('auto_print', checked)}
-                  />
-                  <PropertyCheckbox
-                    title="Cut Paper"
-                    description="Automatically cut paper after printing"
-                    checked={(printerConfig as Partial<ReceiptPrinterConfig>).cut_paper ?? true}
-                    onChange={(checked) => handleInputChange('cut_paper', checked)}
-                  />
-                  <PropertyCheckbox
-                    title="Open Drawer"
-                    description="Open cash drawer after printing"
-                    checked={(printerConfig as Partial<ReceiptPrinterConfig>).open_drawer ?? false}
-                    onChange={(checked) => handleInputChange('open_drawer', checked)}
-                  />
-                </>
-              )}
-
-              {formData.type === 'kitchen_printer' && (
-                <>
-                  <PropertyCheckbox
-                    title="Print Header"
-                    description="Include header information on KOT"
-                    checked={(printerConfig as Partial<KitchenPrinterConfig>).print_header ?? true}
-                    onChange={(checked) => handleInputChange('print_header', checked)}
-                  />
-                  <PropertyCheckbox
-                    title="Print Timestamp"
-                    description="Include timestamp on KOT"
-                    checked={(printerConfig as Partial<KitchenPrinterConfig>).print_timestamp ?? true}
-                    onChange={(checked) => handleInputChange('print_timestamp', checked)}
-                  />
-                  <PropertyCheckbox
-                    title="Print Order Number"
-                    description="Include order number on KOT"
-                    checked={(printerConfig as Partial<KitchenPrinterConfig>).print_order_number ?? true}
-                    onChange={(checked) => handleInputChange('print_order_number', checked)}
-                  />
-                  <PropertyCheckbox
-                    title="Auto Cut"
-                    description="Automatically cut paper after printing"
-                    checked={(printerConfig as Partial<KitchenPrinterConfig>).auto_cut ?? true}
-                    onChange={(checked) => handleInputChange('auto_cut', checked)}
-                  />
-                </>
-              )}
-            </div>
-
-            {/* Kitchen Sections (for kitchen printer only) */}
-            {formData.type === 'kitchen_printer' && (
-              <MultipleDropdownSearch
-                label="Kitchen Sections"
-                values={(printerConfig as Partial<KitchenPrinterConfig>).kitchen_sections || []}
-                options={hardwareOptions.kitchen_sections}
-                onSelect={(selectedValues) => handleInputChange('kitchen_sections', selectedValues)}
-                placeholder="Select kitchen sections"
-                searchPlaceholder="Search sections..."
-                allowSelectAll={true}
-                selectAllLabel="Select All Sections"
-                clearAllLabel="Clear All Sections"
-                maxSelectedDisplay={3}
-                required
-              />
-            )}
-          </div>
+      case 'network_printer':
+        return (
+          <NetworkPrinterConfigComponent
+            config={config as Partial<NetworkPrinterConfig>}
+            {...commonProps}
+          />
         );
 
       case 'scanner':
-        const scannerConfig = formData as Partial<ScannerConfig>;
+        return (
+          <ScannerConfigComponent
+            config={config as Partial<BarcodeScannerConfig>}
+            {...commonProps}
+          />
+        );
+
+      case 'cash_drawer':
         return (
           <div className="space-y-6">
-            {/* Scanner Model */}
-            <DropdownSearch
-              label="Scanner Model"
-              options={hardwareOptions.scanner_models}
-              value={scannerConfig.scanner_model || ''}
-              onSelect={(option) => option && handleInputChange('scanner_model', option.id)}
-              placeholder="Select scanner model"
-            />
-
-            {/* Scan Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <InputTextField
-                label="Prefix"
-                value={scannerConfig.prefix || ''}
-                onChange={(value) => handleInputChange('prefix', value)}
-                placeholder="Optional prefix"
-              />
-              <InputTextField
-                label="Suffix"
-                value={scannerConfig.suffix || ''}
-                onChange={(value) => handleInputChange('suffix', value)}
-                placeholder="\\r\\n"
-              />
-              <DropdownSearch
-                label="Scan Mode"
-                options={hardwareOptions.scan_modes}
-                value={scannerConfig.scan_mode || 'manual'}
-                onSelect={(option) => option && handleInputChange('scan_mode', option.id)}
-                placeholder="Select scan mode"
-                required
-              />
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-700">
+                Cash drawer devices only require basic connection settings. 
+                No additional configuration is needed according to the API specification.
+              </p>
             </div>
+          </div>
+        );
 
-            {/* Length Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputTextField
-                label="Minimum Length"
-                type="number"
-                value={scannerConfig.min_length?.toString() || '8'}
-                onChange={(value) => handleInputChange('min_length', parseInt(value) || 8)}
-                placeholder="8"
-                required
-                error={errors.min_length}
-              />
-              <InputTextField
-                label="Maximum Length"
-                type="number"
-                value={scannerConfig.max_length?.toString() || '20'}
-                onChange={(value) => handleInputChange('max_length', parseInt(value) || 20)}
-                placeholder="20"
-                required
-                error={errors.max_length}
-              />
+      case 'label_printer':
+        return (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-700">
+                Label printer configuration will be available soon. 
+                For now, only basic connection settings are required.
+              </p>
             </div>
-
-            {/* Scanner Options */}
-            <PropertyCheckbox
-              title="Beep on Scan"
-              description="Play sound when barcode is scanned"
-              checked={scannerConfig.beep_on_scan ?? true}
-              onChange={(checked) => handleInputChange('beep_on_scan', checked)}
-            />
           </div>
         );
 
       default:
-        return null;
+        return (
+          <div className="space-y-6">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Select Device Type</h3>
+              <p className="text-sm text-gray-600 max-w-sm mx-auto">
+                Please select a device type above to configure device-specific settings and options.
+              </p>
+            </div>
+          </div>
+        );
     }
   };
 
@@ -606,11 +532,16 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
                 label="Device Type"
                 options={deviceTypeOptions}
                 value={formData.type || ''}
-                onSelect={(option) => option && handleDeviceTypeChange(option.id)}
+                onSelect={(option) => {
+                  if (option) {
+                    // Use the API device type value directly
+                    handleDeviceTypeChange(option.id);
+                  }
+                }}
                 placeholder="Select device type"
                 required
                 error={errors.type}
-                displayValue={(option) => option ? (
+                displayValue={(option: any) => option ? (
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{option.icon}</span>
                     <span>{option.label}</span>
@@ -622,7 +553,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <DropdownSearch
                 label="Connection Type"
-                options={hardwareOptions.connection_types}
+                options={CONNECTION_TYPES}
                 value={formData.connection_type || ''}
                 onSelect={(option) => option && handleInputChange('connection_type', option.id)}
                 placeholder="Select connection type"
@@ -636,7 +567,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
                 ) : 'Select connection type'}
               />
 
-              <div className="flex items-end">
+              <div>
                 <PropertyCheckbox
                   title="Enable Device"
                   description="Device is active and available for use"
@@ -649,16 +580,20 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
         </Widget>
 
         {/* Device-Specific Configuration */}
-        {formData.type && (
-          <Widget
-            title="Device Configuration"
-            description={`Configure ${formData.type.replace('_', ' ')} specific settings`}
-            icon={formData.type === 'scanner' ? QrCodeIcon : PrinterIcon}
-            className='overflow-visible'
-          >
-            {renderDeviceSpecificFields()}
-          </Widget>
-        )}
+        <Widget
+          title="Device Configuration"
+          description={formData.type 
+            ? `Configure ${formData.type.replace('_', ' ')} specific settings`
+            : "Select a device type to configure specific settings"
+          }
+          icon={formData.type 
+            ? (formData.type === 'scanner' ? QrCodeIcon : PrinterIcon)
+            : PrinterIcon
+          }
+          className='overflow-visible'
+        >
+          {renderDeviceSpecificFields()}
+        </Widget>
       </form>
     </Modal>
   );
