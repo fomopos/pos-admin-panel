@@ -30,6 +30,7 @@ import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { taxServices } from '../services/tax';
 import { validateAllModifierGroups } from '../utils/modifierValidation';
+import { ProductValidationRules, type ProductFormData } from '../utils/productValidation';
 import { DEFAULT_UOM } from '../constants/uom';
 import type { EnhancedCategory } from '../types/category';
 import type { TaxGroup } from '../services/types/tax.types';
@@ -37,12 +38,14 @@ import type {
   Product,
   ProductFormErrors
 } from '../services/types/product.types';
+import { useError } from '../hooks/useError';
 
 const ProductEdit: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = Boolean(id);
   const { currentStore, currentTenant } = useTenantStore();
+  const { showError, showSuccess, showValidationError } = useError();
   
   const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -379,36 +382,116 @@ const ProductEdit: React.FC = () => {
     } as React.ChangeEvent<HTMLInputElement>);
   };
 
+  const validateField = (fieldName: string, value: any): void => {
+    // Convert formData to ProductFormData format for validation
+    const validationData: ProductFormData = {
+      name: formData.name || '',
+      description: formData.description,
+      store_id: formData.store_id || '',
+      uom: formData.uom || '',
+      brand: formData.brand,
+      tax_group: formData.tax_group,
+      fiscal_id: formData.fiscal_id,
+      stock_status: formData.stock_status,
+      pricing: {
+        list_price: formData.pricing?.list_price || 0,
+        sale_price: formData.pricing?.sale_price,
+        tare_value: formData.pricing?.tare_value,
+        tare_uom: formData.pricing?.tare_uom,
+        discount_type: formData.pricing?.discount_type,
+        discount_value: formData.pricing?.discount_value,
+        min_discount_value: formData.pricing?.min_discount_value,
+        max_discount_value: formData.pricing?.max_discount_value
+      },
+      settings: formData.settings,
+      prompts: formData.prompts,
+      attributes: formData.attributes,
+      media: formData.media,
+      modifier_groups: formData.modifier_groups
+    };
+
+    const validation = ProductValidationRules.validateField(fieldName, value, validationData);
+    
+    setErrors(prev => ({
+      ...prev,
+      [fieldName]: validation.isValid ? undefined : validation.error
+    }));
+  };
+
   const validateForm = (): boolean => {
-    const newErrors: ProductFormErrors = {};
+    // Convert formData to ProductFormData format for validation
+    const validationData: ProductFormData = {
+      name: formData.name || '',
+      description: formData.description,
+      store_id: formData.store_id || '',
+      uom: formData.uom || '',
+      brand: formData.brand,
+      tax_group: formData.tax_group,
+      fiscal_id: formData.fiscal_id,
+      stock_status: formData.stock_status,
+      pricing: {
+        list_price: formData.pricing?.list_price || 0,
+        sale_price: formData.pricing?.sale_price,
+        tare_value: formData.pricing?.tare_value,
+        tare_uom: formData.pricing?.tare_uom,
+        discount_type: formData.pricing?.discount_type,
+        discount_value: formData.pricing?.discount_value,
+        min_discount_value: formData.pricing?.min_discount_value,
+        max_discount_value: formData.pricing?.max_discount_value
+      },
+      settings: formData.settings,
+      prompts: formData.prompts,
+      attributes: formData.attributes,
+      media: formData.media,
+      modifier_groups: formData.modifier_groups
+    };
 
-    if (!formData.name?.trim()) {
-      newErrors.name = 'Product name is required';
+    // Use the comprehensive validation system
+    const { isValid, errors: validationErrors } = ProductValidationRules.validateForm(validationData);
+    
+    // Set errors state for form fields
+    setErrors(validationErrors);
+    
+    // If there are errors, show global error feedback using error framework
+    if (!isValid) {
+      const errorMessages = Object.entries(validationErrors).map(([field, error]) => {
+        // Convert field names to user-friendly names
+        const fieldNames: Record<string, string> = {
+          'name': 'Product Name',
+          'store_id': 'Store',
+          'uom': 'Unit of Measure',
+          'pricing.list_price': 'List Price',
+          'pricing.sale_price': 'Sale Price',
+          'pricing.tare_value': 'Tare Value',
+          'pricing.discount_value': 'Discount Value',
+          'pricing.min_discount_value': 'Minimum Discount',
+          'pricing.max_discount_value': 'Maximum Discount',
+          'description': 'Description',
+          'brand': 'Brand',
+          'tax_group': 'Tax Group',
+          'fiscal_id': 'Fiscal ID',
+          'prompts.prompt_weight': 'Prompt Weight',
+          'attributes.manufacturer': 'Manufacturer',
+          'attributes.model_number': 'Model Number',
+          'attributes.category_ids': 'Categories',
+          'attributes.tags': 'Tags',
+          'media.image_url': 'Image URL',
+          'modifier_groups': 'Modifier Groups'
+        };
+        
+        const friendlyFieldName = fieldNames[field] || field;
+        return `${friendlyFieldName}: ${error}`;
+      });
+      
+      showValidationError(
+        `Please fix the following errors before saving the product: ${errorMessages.join('; ')}`,
+        'product_form_validation',
+        null,
+        'required'
+      );
     }
 
-    if (!formData.store_id) {
-      newErrors.store_id = 'Store is required';
-    }
-
-    if (!formData.uom?.trim()) {
-      newErrors.uom = 'Unit of measure is required';
-    }
-
-    if (!formData.pricing?.list_price || formData.pricing.list_price <= 0) {
-      newErrors.list_price = 'List price must be greater than 0';
-    }
-
-    // Validate modifiers if they exist
-    if (formData.modifier_groups && formData.modifier_groups.length > 0) {
-      const modifierErrors = validateAllModifierGroups(formData.modifier_groups);
-      const errorMessages = Object.values(modifierErrors);
-      if (errorMessages.length > 0) {
-        newErrors.modifiers = errorMessages.join(', ');
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -428,22 +511,39 @@ const ProductEdit: React.FC = () => {
         }
         
         const finalKey = keys[keys.length - 1];
+        let newValue: any;
         if (type === 'checkbox') {
-          current[finalKey] = (e.target as HTMLInputElement).checked;
+          newValue = (e.target as HTMLInputElement).checked;
         } else if (type === 'number') {
-          current[finalKey] = parseFloat(value) || 0;
+          newValue = parseFloat(value) || 0;
         } else {
-          current[finalKey] = value;
+          newValue = value;
         }
+        
+        current[finalKey] = newValue;
+        
+        // Perform real-time validation for the field
+        validateField(name, newValue);
         
         return updated;
       });
     } else {
+      let newValue: any;
+      if (type === 'checkbox') {
+        newValue = (e.target as HTMLInputElement).checked;
+      } else if (type === 'number') {
+        newValue = parseFloat(value) || 0;
+      } else {
+        newValue = value;
+      }
+      
       setFormData(prev => ({
         ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked :
-                type === 'number' ? parseFloat(value) || 0 : value
+        [name]: newValue
       }));
+      
+      // Perform real-time validation for the field
+      validateField(name, newValue);
     }
   };
 
@@ -464,6 +564,10 @@ const ProductEdit: React.FC = () => {
         }
         
         current[keys[keys.length - 1]] = values;
+        
+        // Perform real-time validation for array fields
+        validateField(field, values);
+        
         return updated;
       });
     } else {
@@ -471,6 +575,9 @@ const ProductEdit: React.FC = () => {
         ...prev,
         [field]: values
       }));
+      
+      // Perform real-time validation for array fields
+      validateField(field, values);
     }
   };
 
@@ -495,6 +602,10 @@ const ProductEdit: React.FC = () => {
           }
         }
         
+        // Perform validation for nested object fields
+        const fieldName = `${parent}.${key}`;
+        validateField(fieldName, value);
+        
         return updated;
       });
     } else {
@@ -505,6 +616,10 @@ const ProductEdit: React.FC = () => {
           [key]: value
         }
       }));
+      
+      // Perform validation for object fields
+      const fieldName = `${parent}.${key}`;
+      validateField(fieldName, value);
     }
   };
 
@@ -563,6 +678,7 @@ const ProductEdit: React.FC = () => {
           id,
           updateRequest
         );
+        showSuccess(`Product "${formData.name}" updated successfully`);
         console.log('Product updated successfully');
       } else {
         const createRequest: CreateProductRequest = {
@@ -603,12 +719,16 @@ const ProductEdit: React.FC = () => {
           currentStore.store_id,
           createRequest
         );
+        showSuccess(`Product "${formData.name}" created successfully`);
         console.log('Product created successfully');
       }
       
       navigate('/products');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving product:', error);
+      showError(
+        error?.message || `Failed to ${isEditing ? 'update' : 'create'} product`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -630,10 +750,12 @@ const ProductEdit: React.FC = () => {
           currentStore.store_id,
           id
         );
+        showSuccess(`Product "${productName}" deleted successfully`);
         console.log('Product deleted successfully');
         navigate('/products');
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error deleting product:', error);
+        showError(error?.message || 'Failed to delete product');
       } finally {
         setIsLoading(false);
       }
