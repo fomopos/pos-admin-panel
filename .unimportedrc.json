@@ -1,0 +1,48 @@
+{
+  "entry": ["src/main.tsx"],
+  "extensions": [".ts", ".tsx", ".js", ".jsx"],
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "ignoreUnresolved": [
+    "react-dom/client"
+  ],
+  "ignoreUnimported": [
+    "src/components/ErrorHandlingExamples.tsx",
+    "src/components/ErrorHandlingTest.tsx",
+    "src/components/examples/WidgetExamples.tsx",
+    "src/components/modifier/ModifierTest.tsx",
+    "src/components/PermissionDebug.tsx",
+    "src/components/TenantStoreDebug.tsx",
+    "src/components/TranslationDemo.tsx",
+    "src/components/TranslationTest.tsx",
+    "src/pages/AlertDemo.tsx",
+    "src/pages/DropdownSearchDemo.tsx",
+    "src/pages/EnhancedDashboard.tsx",
+    "src/pages/InputMoneyFieldDemo.tsx",
+    "src/pages/ModernDashboard.tsx",
+    "src/pages/ProductsWithDataTable.tsx",
+    "src/pages/ProductValidationDemo.tsx",
+    "src/pages/TenderEditPageTest.tsx",
+    "src/pages/TranslationDemo.tsx",
+    "src/pages/VersionDemo.tsx"
+  ],
+  "ignoreUnusedDependencies": [
+    "typescript",
+    "@types/node",
+    "@types/react",
+    "@types/react-dom",
+    "eslint",
+    "@typescript-eslint/eslint-plugin",
+    "@typescript-eslint/parser",
+    "vite",
+    "@vitejs/plugin-react",
+    "tailwindcss",
+    "postcss"
+  ]
+}
