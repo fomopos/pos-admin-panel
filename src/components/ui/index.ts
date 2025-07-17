@@ -30,6 +30,8 @@ export { Widget } from './Widget';
 export { SearchAndFilter } from './SearchAndFilter';
 export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGuard } from './PermissionGuard';
 export { default as VersionDisplay } from './VersionDisplay';
+export { default as JsonViewerEditor } from './JsonViewerEditor';
+export { default as ResizablePanels } from './ResizablePanels';
 
 // Re-export types
 export type { ButtonProps } from './Button';

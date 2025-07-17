@@ -30,6 +30,7 @@ import {
   ComputerDesktopIcon,
   LanguageIcon,
   PercentBadgeIcon,
+  CodeBracketIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavigationItem {
@@ -111,6 +112,12 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
         { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },
         { name: t('nav.systemSettings'), href: '/settings/system', icon: Cog6ToothIcon },
+      ]
+    },
+    {
+      category: 'DEVELOPER',
+      items: [
+        { name: 'Receipt Builder', href: '/developer/receipt-builder', icon: CodeBracketIcon },
       ]
     }
   ], [permissionsInitialized, canManageUsers, canManageRoles, t]);

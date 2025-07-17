@@ -42,6 +42,7 @@ import EditRolePage from './pages/roles/EditRolePage';
 import RoleDetailPage from './pages/roles/RoleDetailPage';
 import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPage, ServerAssignmentPage, TableMergeUnmergePage } from './pages/table';
 import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
+import ReceiptBuilder from './pages/ReceiptBuilder';
 
 // Error handling imports
 import ErrorBoundary from './components/ErrorBoundary';
@@ -193,6 +194,7 @@ function App() {
               <Route path="payment-settings/new" element={<TenderEditPage />} />
               <Route path="payment-settings/edit/:id" element={<TenderEditPage />} />
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
+              <Route path="developer/receipt-builder" element={<ReceiptBuilder />} />
             </Route>
 
             {/* Catch all route */}
