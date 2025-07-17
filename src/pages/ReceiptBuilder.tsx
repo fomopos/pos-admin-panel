@@ -6,7 +6,7 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon
 } from '@heroicons/react/24/outline';
-import { JsonViewerEditor, ResizablePanels } from '../components/ui';
+import { JsonViewerEditor, ResizablePanels, DropdownSearch, Button } from '../components/ui';
 import { ReceiptViewer } from '../components/receipt';
 import type { ReceiptElement } from '../types/receipt';
 
@@ -299,6 +299,14 @@ const ReceiptBuilder: React.FC<ReceiptBuilderProps> = () => {
     }
   };
 
+  // Get section options for DropdownSearch
+  const getSectionOptions = () => {
+    return getAvailableSections().map(section => ({
+      id: section,
+      label: section
+    }));
+  };
+
   // Toggle full screen mode
   const toggleFullScreen = useCallback(() => {
     setIsFullScreen(prev => !prev);
@@ -337,20 +345,20 @@ const ReceiptBuilder: React.FC<ReceiptBuilderProps> = () => {
           </p>
         </div>
         <div className="flex items-center space-x-3">
-          <select
-            value={selectedSection}
-            onChange={(e) => setSelectedSection(e.target.value)}
-            className="block w-48 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          >
-            {getAvailableSections().map(section => (
-              <option key={section} value={section}>
-                {section}
-              </option>
-            ))}
-          </select>
-          <button
+          <div className="flex-shrink-0">
+            <DropdownSearch
+              label=""
+              value={selectedSection}
+              placeholder="Select section"
+              options={getSectionOptions()}
+              onSelect={(option) => setSelectedSection(option?.id || 'StoreCopy')}
+              buttonClassName="!w-[512px] min-w-[512px] max-w-[512px]"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={toggleFullScreen}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {isFullScreen ? (
               <>
@@ -363,7 +371,7 @@ const ReceiptBuilder: React.FC<ReceiptBuilderProps> = () => {
                 Full Screen
               </>
             )}
-          </button>
+          </Button>
           <button
             onClick={generateReceipt}
             disabled={!isJsonValid.config || !isJsonValid.data}
@@ -393,7 +401,7 @@ const ReceiptBuilder: React.FC<ReceiptBuilderProps> = () => {
         <div className={`${isFullScreen ? 'flex-1 overflow-hidden flex flex-col' : ''}`}>
           {/* Resizable JSON Editors */}
           <ResizablePanels
-            className={isFullScreen ? 'flex-1' : 'min-h-[700px]'}
+            className={isFullScreen ? 'flex-1' : 'h-[700px]'}
             defaultSizes={[50, 50]}
             minSizes={[25, 25]}
             direction="vertical"

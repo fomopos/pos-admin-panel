@@ -150,9 +150,33 @@ const EditRolePage: React.FC = () => {
     }
   };
 
-  const getCategoryIcon = () => {
-    // Return appropriate icon component based on iconName
-    return ShieldCheckIcon; // Default icon
+  const getCategoryIcon = (iconName: string) => {
+    // Map icon names to actual icons
+    switch (iconName) {
+      case 'store':
+      case 'shopping-cart':
+      case 'package':
+        return ShieldCheckIcon;
+      case 'building':
+      case 'users':
+        return ShieldCheckIcon;
+      case 'chart-bar':
+      case 'bar-chart':
+      case 'trending-up':
+        return ShieldCheckIcon;
+      case 'settings-2':
+      case 'settings':
+      case 'server':
+        return ShieldCheckIcon;
+      case 'shield-check':
+      case 'warehouse':
+      case 'user-check':
+      case 'percent':
+      case 'file-search':
+      case 'folder-tree':
+      default:
+        return ShieldCheckIcon;
+    }
   };
 
   if (loading) {
@@ -302,7 +326,7 @@ const EditRolePage: React.FC = () => {
                   const categoryPermissions = category.permissions;
                   const allSelected = categoryPermissions.every(p => selectedPermissions.has(p.name));
                   const someSelected = categoryPermissions.some(p => selectedPermissions.has(p.name));
-                  const IconComponent = getCategoryIcon();
+                  const IconComponent = getCategoryIcon(category.category_info.icon);
                   
                   return (
                     <div key={category.category_info.name} className="border-2 border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-white to-gray-50/50">

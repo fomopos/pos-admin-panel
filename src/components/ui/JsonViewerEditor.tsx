@@ -115,8 +115,8 @@ const JsonViewerEditor: React.FC<JsonViewerEditorProps> = ({
   const errorDetails = getJsonErrorDetails(editValue);
 
   return (
-    <div className={`bg-white shadow rounded-lg ${isFullScreen ? 'flex-1 flex flex-col h-full' : ''} ${className}`}>
-      <div className={`px-3 py-3 ${isFullScreen ? 'flex-1 flex flex-col h-full' : ''} ${className.includes('h-full') ? 'h-full flex flex-col' : ''}`}>
+    <div className={`bg-white shadow rounded-lg ${isFullScreen ? 'flex-1 flex flex-col h-full' : className.includes('h-full') ? 'flex flex-col' : ''} ${className}`}>
+      <div className={`px-3 py-3 ${isFullScreen ? 'flex-1 flex flex-col h-full' : className.includes('h-full') ? 'flex-1 flex flex-col' : ''}`}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base leading-6 font-medium text-gray-900 flex items-center">
             <Icon className="h-4 w-4 mr-2" />
@@ -173,9 +173,9 @@ const JsonViewerEditor: React.FC<JsonViewerEditorProps> = ({
           </div>
         )}
 
-        <div className={`${isFullScreen ? 'flex-1' : ''} ${className.includes('h-full') ? 'flex-1' : ''}`}>
-          <div className={`${isFullScreen ? 'h-full flex flex-col' : ''} ${className.includes('h-full') ? 'h-full flex flex-col' : ''}`}>
-            <div className={`${isFullScreen ? 'flex-1' : ''} ${className.includes('h-full') ? 'flex-1' : ''}`}>
+        <div className={`${isFullScreen ? 'flex-1' : className.includes('h-full') ? 'flex-1' : ''}`}>
+          <div className={`${isFullScreen ? 'h-full flex flex-col' : className.includes('h-full') ? 'flex flex-col' : ''}`}>
+            <div className={`${isFullScreen ? 'flex-1' : className.includes('h-full') ? 'flex-1' : ''}`}>
               <AceEditor
                 mode="json"
                 theme="github"
@@ -187,7 +187,7 @@ const JsonViewerEditor: React.FC<JsonViewerEditorProps> = ({
                 highlightActiveLine={true}
                 readOnly={readOnly}
                 width="100%"
-                height={isFullScreen || className.includes('h-full') ? '100%' : '384px'}
+                height={isFullScreen ? '100%' : className.includes('h-full') ? '350px' : '384px'}
                 setOptions={{
                   enableBasicAutocompletion: true,
                   enableLiveAutocompletion: true,

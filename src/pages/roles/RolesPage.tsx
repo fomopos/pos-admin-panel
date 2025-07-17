@@ -41,16 +41,18 @@ const RolesPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const rolesData = await roleApiService.getRoles(currentTenant.id, currentStore.store_id);
-      setRoles(rolesData);
+      // Ensure rolesData is always an array
+      setRoles(Array.isArray(rolesData) ? rolesData : []);
     } catch (error) {
       console.error('Failed to load roles:', error);
       setError('Failed to load roles. Please try again.');
+      setRoles([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredRoles = roles.filter(role => {
+  const filteredRoles = (Array.isArray(roles) ? roles : []).filter(role => {
     const matchesSearch = role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (role.description && role.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
@@ -70,7 +72,7 @@ const RolesPage: React.FC = () => {
   };
 
   const handleDelete = async (roleId: string) => {
-    const role = roles.find(r => r.role_id === roleId);
+    const role = (Array.isArray(roles) ? roles : []).find(r => r.role_id === roleId);
     if (!role || !currentTenant?.id || !currentStore?.store_id) return;
 
     deleteDialog.openDeleteDialog(
