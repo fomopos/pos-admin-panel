@@ -1,0 +1,63 @@
+
+> pos-admin-panel@0.4.0 analyze:files
+> unimported --show-unused-files
+
+- initializing
+
+       summary               unimported v1.31.0 (node)
+────────────────────────────────────────────────────────────────────────────────
+       entry file          : src/main.tsx
+
+       unresolved imports  : 0
+       unused dependencies : 10
+       unimported files    : 41
+
+
+─────┬──────────────────────────────────────────────────────────────────────────
+     │ 41 unimported files
+─────┼──────────────────────────────────────────────────────────────────────────
+   1 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/category/CategoryManager.tsx
+   2 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/category/CreateCategoryCard.tsx
+   3 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/ErrorHandlingExamples.tsx
+   4 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/ErrorHandlingTest.tsx
+   5 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/examples/WidgetExamples.tsx
+   6 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/modifier/ModifierTest.tsx
+   7 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/PermissionDebug.tsx
+   8 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/TenantStoreDebug.tsx
+   9 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/TranslationDemo.tsx
+  10 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/TranslationTest.tsx
+  11 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/user/ActivityModal.tsx
+  12 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/user/CreateUserModal.tsx
+  13 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/user/EditUserModal.tsx
+  14 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/user/index.ts
+  15 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/components/user/TimeTrackingModal.tsx
+  16 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/data/sampleReceiptData.ts
+  17 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/errorHandling/index.ts
+  18 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/hooks/useDataTable.ts
+  19 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/i18n/index-backend.ts
+  20 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/i18n/index-backup.ts
+  21 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/i18n/index-clean.ts
+  22 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/i18n/index-modular.ts
+  23 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/AlertDemo.tsx
+  24 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/DropdownSearchDemo.tsx
+  25 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/EnhancedDashboard.tsx
+  26 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/InputMoneyFieldDemo.tsx
+  27 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/ModernDashboard.tsx
+  28 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/ProductsWithDataTable.tsx
+  29 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/ProductValidationDemo.tsx
+  30 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/roles/index.ts
+  31 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/TenderEditPageTest.tsx
+  32 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/TranslationDemo.tsx
+  33 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/user/CreateUser_fixed.tsx
+  34 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/user/UserEdit_fixed.tsx
+  35 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/UserManagement.tsx
+  36 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/pages/VersionDemo.tsx
+  37 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/services/apiService.ts
+  38 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/services/hardware/hardwareConfigService.ts
+  39 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/services/index.ts
+  40 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/services/modifier/index.ts
+  41 │ /home/runner/work/pos-admin-panel/pos-admin-panel/src/utils/modifierValidation.ts
+─────┴──────────────────────────────────────────────────────────────────────────
+
+
+       Inspect the results and run npx unimported -u to update ignore lists

@@ -10,7 +10,16 @@
     "preview": "vite preview",
     "version:patch": "npm version patch --no-git-tag-version",
     "version:minor": "npm version minor --no-git-tag-version",
-    "version:major": "npm version major --no-git-tag-version"
+    "version:major": "npm version major --no-git-tag-version",
+    "analyze:unused": "npm run analyze:files && npm run analyze:exports && npm run analyze:deps",
+    "analyze:files": "unimported --show-unused-files",
+    "analyze:exports": "ts-unused-exports tsconfig.app.json",
+    "analyze:deps": "unimported --show-unused-deps",
+    "analyze:imports": "unimported --show-unresolved-imports",
+    "analyze:full": "unimported",
+    "analyze:comprehensive": "./scripts/analyze-code.sh",
+    "clean:unused": "echo 'Review the analyze:unused output before running cleanup commands'",
+    "report:unused": "npm run analyze:unused > unused-code-report.txt 2>&1 && echo 'Report generated: unused-code-report.txt'"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.11.2",
