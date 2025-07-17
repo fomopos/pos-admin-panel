@@ -22,7 +22,7 @@ import type {
   TenderConfiguration
 } from '../services/types/payment.types';
 import { useTenantStore } from '../tenants/tenantStore';
-import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
 
 // Form data interface
@@ -213,7 +213,6 @@ const TenderEditPage: React.FC = () => {
 
   // Dialog hooks
   const deleteDialog = useDeleteConfirmDialog();
-  const discardDialog = useDiscardChangesDialog();
 
   // Load tender data
   useEffect(() => {
@@ -303,11 +302,14 @@ const TenderEditPage: React.FC = () => {
 
       setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
     } else if (!isEditing) {
-      // For new tenders, check if any fields are filled
+      // For new tenders, check if any fields are filled beyond defaults
       const hasData = formData.tender_id.trim() !== '' || 
                      formData.description.trim() !== '' ||
                      formData.denomination.length > 0;
       setHasChanges(hasData);
+    } else {
+      // If editing but no original tender loaded yet, no changes
+      setHasChanges(false);
     }
   }, [formData, originalTender, isEditing]);
 
@@ -469,85 +471,6 @@ const TenderEditPage: React.FC = () => {
     );
   };
 
-  const discardChanges = () => {
-    discardDialog.openDiscardDialog(() => {
-      if (originalTender) {
-        setFormData({
-          tender_id: originalTender.tender_id,
-          type_code: originalTender.type_code,
-          currency_id: originalTender.currency_id,
-          description: originalTender.description || '',
-          display_order: originalTender.display_order || 1,
-          is_active: originalTender.is_active ?? true,
-          over_tender_allowed: originalTender.over_tender_allowed ?? true,
-          denomination: originalTender.denomination || [],
-          user_settings: originalTender.user_settings || [],
-          configuration: originalTender.configuration || {
-            serial_nbr_req: false,
-            open_cash_drawer: true,
-            unit_count_code: 'denomination',
-            min_denomination: 0.01,
-            effective_date: new Date().toISOString(),
-            expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            max_refund_days: 30,
-            customer_required: false,
-            change_tender_id: 'local_currency',
-            change_cash_limit: 10000.00,
-            split_tender_allowed: true
-          },
-          availability: originalTender.availability || ['SALE', 'RETURN_WITH_RECEIPT', 'RETURN_WITHOUT_RECEIPT']
-        });
-      } else {
-        // Reset to empty form
-        setFormData({
-          tender_id: '',
-          type_code: 'currency',
-          currency_id: 'aed',
-          description: '',
-          display_order: 1,
-          is_active: true,
-          over_tender_allowed: true,
-          denomination: [],
-          user_settings: [
-            {
-              group_id: 'everyone',
-              usage_code: ['sale', 'default'],
-              over_tender_limit: 10000.00,
-              min_amount: 0.01,
-              max_amount: 10000.00,
-              max_refund_with_receipt: 10000.00,
-              max_refund_without_receipt: 1000.00
-            }
-          ],
-          configuration: {
-            serial_nbr_req: false,
-            open_cash_drawer: true,
-            unit_count_code: 'denomination',
-            min_denomination: 0.01,
-            effective_date: new Date().toISOString(),
-            expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            max_refund_days: 30,
-            customer_required: false,
-            change_tender_id: 'local_currency',
-            change_cash_limit: 10000.00,
-            split_tender_allowed: true
-          },
-          availability: ['SALE', 'RETURN_WITH_RECEIPT', 'RETURN_WITHOUT_RECEIPT']
-        });
-      }
-      
-      setErrors({});
-      setHasChanges(false);
-    });
-  };
-
-  const saveAllChanges = () => {
-    const form = document.querySelector('form') as HTMLFormElement;
-    if (form) {
-      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-    }
-  };
-
   if (isLoading) {
     return <Loading />;
   }
@@ -580,70 +503,28 @@ const TenderEditPage: React.FC = () => {
             </Button>
           )}
           
-          <Button
-            type="submit"
-            form="tender-form"
-            disabled={isSaving}
-            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>{t('tenderEdit.saving')}</span>
-              </>
-            ) : (
-              <>
-                <CloudArrowUpIcon className="h-4 w-4" />
-                <span>{isEditing ? t('tenderEdit.actions.updateTender') : t('tenderEdit.actions.createTender')}</span>
-              </>
-            )}
-          </Button>
+          {/* Show save button based on context */}
+          {(!isEditing || (isEditing && hasChanges)) && (
+            <Button
+              type="submit"
+              form="tender-form"
+              disabled={isSaving}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>{t('tenderEdit.saving')}</span>
+                </>
+              ) : (
+                <>
+                  <CloudArrowUpIcon className="h-4 w-4" />
+                  <span>{isEditing ? t('tenderEdit.actions.updateTender') : t('tenderEdit.actions.createTender')}</span>
+                </>
+              )}
+            </Button>
+          )}
         </div>
-
-        {/* Save/Discard Actions */}
-        {hasChanges && (
-          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-amber-900">{t('tenderEdit.unsavedChanges.title')}</h3>
-                <p className="text-xs text-amber-700 mt-1">{t('tenderEdit.unsavedChanges.description')}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end space-x-3">
-              <Button
-                onClick={discardChanges}
-                variant="outline"
-                size="sm"
-                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
-              >
-                <span>{t('tenderEdit.unsavedChanges.discard')}</span>
-              </Button>
-              <Button
-                onClick={saveAllChanges}
-                disabled={isSaving}
-                size="sm"
-                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>{t('tenderEdit.saving')}</span>
-                  </>
-                ) : (
-                  <>
-                    <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>{t('tenderEdit.unsavedChanges.save')}</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
       </PageHeader>
 
       {/* Fetch Error */}
@@ -976,18 +857,6 @@ const TenderEditPage: React.FC = () => {
         cancelText={deleteDialog.dialogState.cancelText}
         variant={deleteDialog.dialogState.variant}
         isLoading={deleteDialog.dialogState.isLoading}
-      />
-
-      <ConfirmDialog
-        isOpen={discardDialog.dialogState.isOpen}
-        onClose={discardDialog.closeDialog}
-        onConfirm={discardDialog.handleConfirm}
-        title={discardDialog.dialogState.title}
-        message={discardDialog.dialogState.message}
-        confirmText={discardDialog.dialogState.confirmText}
-        cancelText={discardDialog.dialogState.cancelText}
-        variant={discardDialog.dialogState.variant}
-        isLoading={discardDialog.dialogState.isLoading}
       />
     </div>
   );
