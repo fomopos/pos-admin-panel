@@ -18,7 +18,7 @@ import { InputTextField, InputMoneyField } from '../components/ui';
 import type { Discount, CreateDiscountRequest } from '../types/discount';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import useTenantStore from '../tenants/tenantStore';
-import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
 
 // Discount templates for quick setup
@@ -135,11 +135,10 @@ const DiscountEditPage: React.FC = () => {
   const [showTemplates, setShowTemplates] = useState(!isEditing);
 
   // Error handling hooks
-  const { showError, showSuccess, showApiError, showValidationError } = useError();
+  const { showError, showSuccess, showValidationError } = useError();
 
   // Dialog hooks
   const deleteDialog = useDeleteConfirmDialog();
-  const discardDialog = useDiscardChangesDialog();
 
   // Dropdown options
   const discountTypeOptions: DropdownSearchOption[] = [
@@ -167,61 +166,37 @@ const DiscountEditPage: React.FC = () => {
     }
   }, [id, isEditing]);
 
-  // Check for changes
+  // Check for changes to enable/disable save button
   useEffect(() => {
-    if (isEditing && originalDiscount) {
-      // Compare current form data with original discount
-      const currentData = {
-        discount_code: formData.discount_code,
-        description: formData.description,
-        typcode: formData.typcode,
-        app_mthd_code: formData.app_mthd_code,
-        calculation_mthd_code: formData.calculation_mthd_code,
-        percentage: formData.percentage,
-        discount: formData.discount,
-        effective_datetime: formData.effective_datetime + 'Z',
-        expr_datetime: formData.expr_datetime + 'Z',
-        prompt: formData.prompt,
-        sort_order: formData.sort_order,
-        min_eligible_price: formData.min_eligible_price,
-        max_discount: formData.max_discount,
-        max_amount: formData.max_amount,
-        max_trans_count: formData.max_trans_count,
-        max_percentage: formData.max_percentage,
-        exclusive_discount_flag: formData.exclusive_discount_flag,
-        serialized_discount_flag: formData.serialized_discount_flag,
-        disallow_change_flag: formData.disallow_change_flag
-      };
-
-      const originalData = {
-        discount_code: originalDiscount.discount_code,
-        description: originalDiscount.description,
-        typcode: originalDiscount.typcode,
-        app_mthd_code: originalDiscount.app_mthd_code,
-        calculation_mthd_code: originalDiscount.calculation_mthd_code,
-        percentage: originalDiscount.percentage,
-        discount: originalDiscount.discount,
-        effective_datetime: originalDiscount.effective_datetime,
-        expr_datetime: originalDiscount.expr_datetime,
-        prompt: originalDiscount.prompt,
-        sort_order: originalDiscount.sort_order,
-        min_eligible_price: originalDiscount.min_eligible_price,
-        max_discount: originalDiscount.max_discount,
-        max_amount: originalDiscount.max_amount,
-        max_trans_count: originalDiscount.max_trans_count,
-        max_percentage: originalDiscount.max_percentage,
-        exclusive_discount_flag: originalDiscount.exclusive_discount_flag,
-        serialized_discount_flag: originalDiscount.serialized_discount_flag,
-        disallow_change_flag: originalDiscount.disallow_change_flag
-      };
-
-      setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
-    } else if (!isEditing) {
-      // For new discounts, check if any fields are filled
+    if (!isEditing) {
+      // For new discounts, check if any required fields are filled
       const hasData = formData.discount_code.trim() !== '' || 
-                     formData.description.trim() !== '' ||
-                     formData.prompt.trim() !== '';
+                     formData.description.trim() !== '';
       setHasChanges(hasData);
+    } else if (originalDiscount) {
+      // For editing, check if any values have changed from original
+      const hasChanged = 
+        formData.discount_code !== originalDiscount.discount_code ||
+        formData.description !== originalDiscount.description ||
+        formData.typcode !== originalDiscount.typcode ||
+        formData.app_mthd_code !== originalDiscount.app_mthd_code ||
+        formData.calculation_mthd_code !== originalDiscount.calculation_mthd_code ||
+        formData.percentage !== originalDiscount.percentage ||
+        formData.discount !== originalDiscount.discount ||
+        formData.effective_datetime !== originalDiscount.effective_datetime.slice(0, -1) ||
+        formData.expr_datetime !== originalDiscount.expr_datetime.slice(0, -1) ||
+        formData.prompt !== originalDiscount.prompt ||
+        formData.sort_order !== originalDiscount.sort_order ||
+        formData.min_eligible_price !== originalDiscount.min_eligible_price ||
+        formData.max_discount !== originalDiscount.max_discount ||
+        formData.max_amount !== originalDiscount.max_amount ||
+        formData.max_trans_count !== originalDiscount.max_trans_count ||
+        formData.max_percentage !== originalDiscount.max_percentage ||
+        formData.exclusive_discount_flag !== originalDiscount.exclusive_discount_flag ||
+        formData.serialized_discount_flag !== originalDiscount.serialized_discount_flag ||
+        formData.disallow_change_flag !== originalDiscount.disallow_change_flag;
+      
+      setHasChanges(hasChanged);
     }
   }, [formData, originalDiscount, isEditing]);
 
@@ -262,9 +237,9 @@ const DiscountEditPage: React.FC = () => {
         serialized_discount_flag: discountData.serialized_discount_flag,
         disallow_change_flag: discountData.disallow_change_flag,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load discount:', error);
-      showApiError('Failed to load discount. Please try again.', undefined, '/v0/discount');
+      showError(error?.message || 'Failed to load discount. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +250,15 @@ const DiscountEditPage: React.FC = () => {
       ...prev,
       [field]: value
     }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const applyTemplate = (template: any) => {
@@ -307,32 +290,104 @@ const DiscountEditPage: React.FC = () => {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // Required field validations
     if (!formData.discount_code.trim()) {
       newErrors.discount_code = 'Discount code is required';
-      showValidationError('Discount code is required', 'discount_code', formData.discount_code);
+    } else if (formData.discount_code.length > 50) {
+      newErrors.discount_code = 'Discount code must be less than 50 characters';
+    } else if (!/^[A-Z0-9_-]+$/i.test(formData.discount_code)) {
+      newErrors.discount_code = 'Discount code can only contain letters, numbers, hyphens, and underscores';
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
-      showValidationError('Description is required', 'description', formData.description);
+    } else if (formData.description.length > 255) {
+      newErrors.description = 'Description must be less than 255 characters';
     }
 
-    if (formData.calculation_mthd_code === 'PERCENT' && (!formData.percentage || formData.percentage <= 0)) {
-      newErrors.percentage = 'Percentage must be greater than 0';
-      showValidationError('Percentage must be greater than 0', 'percentage', formData.percentage);
+    // Calculation method specific validations
+    if (formData.calculation_mthd_code === 'PERCENT' || formData.calculation_mthd_code === 'PROMPT_PERCENT') {
+      if (!formData.percentage || formData.percentage <= 0) {
+        newErrors.percentage = 'Percentage must be greater than 0';
+      } else if (formData.percentage > 100) {
+        newErrors.percentage = 'Percentage cannot exceed 100%';
+      }
     }
 
-    if (formData.calculation_mthd_code === 'AMOUNT' && (!formData.discount || formData.discount <= 0)) {
-      newErrors.discount = 'Discount amount must be greater than 0';
-      showValidationError('Discount amount must be greater than 0', 'discount', formData.discount);
+    if (formData.calculation_mthd_code === 'AMOUNT' || formData.calculation_mthd_code === 'PROMPT_AMOUNT') {
+      if (!formData.discount || formData.discount <= 0) {
+        newErrors.discount = 'Discount amount must be greater than 0';
+      } else if (formData.discount > 999999) {
+        newErrors.discount = 'Discount amount is too large';
+      }
     }
 
-    if (new Date(formData.effective_datetime) >= new Date(formData.expr_datetime)) {
+    // Date validations
+    const startDate = new Date(formData.effective_datetime);
+    const endDate = new Date(formData.expr_datetime);
+    const now = new Date();
+
+    if (isNaN(startDate.getTime())) {
+      newErrors.effective_datetime = 'Start date is invalid';
+    }
+
+    if (isNaN(endDate.getTime())) {
+      newErrors.expr_datetime = 'End date is invalid';
+    }
+
+    if (startDate >= endDate) {
       newErrors.expr_datetime = 'End date must be after start date';
-      showValidationError('End date must be after start date', 'expr_datetime', formData.expr_datetime);
+    }
+
+    if (!isEditing && startDate < now) {
+      newErrors.effective_datetime = 'Start date cannot be in the past';
+    }
+
+    // Business logic validations
+    if (formData.min_eligible_price && formData.min_eligible_price < 0) {
+      newErrors.min_eligible_price = 'Minimum eligible price cannot be negative';
+    }
+
+    if (formData.max_discount && formData.max_discount < 0) {
+      newErrors.max_discount = 'Maximum discount cannot be negative';
+    }
+
+    if (formData.max_amount && formData.max_amount < 0) {
+      newErrors.max_amount = 'Maximum amount cannot be negative';
+    }
+
+    if (formData.max_trans_count && formData.max_trans_count < 1) {
+      newErrors.max_trans_count = 'Maximum transaction count must be at least 1';
+    }
+
+    if (formData.max_percentage && (formData.max_percentage < 0 || formData.max_percentage > 100)) {
+      newErrors.max_percentage = 'Maximum percentage must be between 0 and 100';
+    }
+
+    if (formData.sort_order < 0) {
+      newErrors.sort_order = 'Sort order cannot be negative';
+    }
+
+    // Cross-field validations
+    if (formData.min_eligible_price && formData.max_discount && 
+        formData.calculation_mthd_code === 'AMOUNT' && 
+        formData.max_discount > formData.min_eligible_price) {
+      newErrors.max_discount = 'Maximum discount cannot exceed minimum eligible price';
     }
 
     setErrors(newErrors);
+
+    // If there are errors, show global error feedback using error framework
+    if (Object.keys(newErrors).length > 0) {
+      const errorMessages = Object.values(newErrors);
+      showValidationError(
+        `Please fix the following errors before saving the discount: ${errorMessages.slice(0, 3).join(', ')}${errorMessages.length > 3 ? '...' : ''}`,
+        'form_validation',
+        null,
+        'required'
+      );
+    }
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -383,6 +438,7 @@ const DiscountEditPage: React.FC = () => {
           submitData
         );
         showSuccess('Discount updated successfully!');
+        setHasChanges(false);
       } else {
         await discountApiService.createDiscount(
           currentTenant.id,
@@ -390,71 +446,19 @@ const DiscountEditPage: React.FC = () => {
           submitData
         );
         showSuccess('Discount created successfully!');
+        setHasChanges(false);
+        setTimeout(() => navigate('/discounts'), 1500);
       }
-
-      setHasChanges(false);
-      setTimeout(() => navigate('/discounts'), 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save discount:', error);
-      showApiError('Failed to save discount. Please try again.', undefined, '/v0/discount');
+      
+      // Use error framework for API error display
+      showError(error?.message || 'Failed to save discount. Please try again.');
+      
+      // Also set local error for backward compatibility
+      setErrors({ submit: error.message || 'Failed to save discount. Please try again.' });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const discardChanges = () => {
-    if (hasChanges) {
-      discardDialog.openDiscardDialog(() => {
-        if (isEditing && originalDiscount) {
-          setFormData({
-            discount_code: originalDiscount.discount_code,
-            description: originalDiscount.description,
-            typcode: originalDiscount.typcode,
-            app_mthd_code: originalDiscount.app_mthd_code,
-            calculation_mthd_code: originalDiscount.calculation_mthd_code,
-            percentage: originalDiscount.percentage,
-            discount: originalDiscount.discount,
-            effective_datetime: originalDiscount.effective_datetime.slice(0, -1),
-            expr_datetime: originalDiscount.expr_datetime.slice(0, -1),
-            prompt: originalDiscount.prompt,
-            sort_order: originalDiscount.sort_order,
-            min_eligible_price: originalDiscount.min_eligible_price,
-            max_discount: originalDiscount.max_discount,
-            max_amount: originalDiscount.max_amount,
-            max_trans_count: originalDiscount.max_trans_count,
-            max_percentage: originalDiscount.max_percentage,
-            exclusive_discount_flag: originalDiscount.exclusive_discount_flag,
-            serialized_discount_flag: originalDiscount.serialized_discount_flag,
-            disallow_change_flag: originalDiscount.disallow_change_flag,
-          });
-        } else {
-          // Reset to empty form
-          setFormData({
-            discount_code: '',
-            description: '',
-            typcode: 'DISCOUNT',
-            app_mthd_code: 'TRANSACTION',
-            calculation_mthd_code: 'PERCENT',
-            percentage: null,
-            discount: null,
-            effective_datetime: new Date().toISOString().slice(0, -1),
-            expr_datetime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, -1),
-            prompt: '',
-            sort_order: 1,
-            min_eligible_price: null,
-            max_discount: null,
-            max_amount: null,
-            max_trans_count: null,
-            max_percentage: null,
-            exclusive_discount_flag: 0,
-            serialized_discount_flag: 0,
-            disallow_change_flag: 0
-          });
-        }
-        setErrors({});
-      });
-    } else {
-      navigate('/discounts');
     }
   };
 
@@ -493,6 +497,26 @@ const DiscountEditPage: React.FC = () => {
             <span>Back to Discounts</span>
           </Button>
           
+          {hasChanges && (
+            <Button
+              onClick={saveAllChanges}
+              disabled={isSaving}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <CloudArrowUpIcon className="h-4 w-4" />
+                  <span>{isEditing ? 'Update Discount' : 'Create Discount'}</span>
+                </>
+              )}
+            </Button>
+          )}
+          
           {isEditing && (
             <Button
               onClick={handleDelete}
@@ -504,51 +528,6 @@ const DiscountEditPage: React.FC = () => {
             </Button>
           )}
         </div>
-
-        {/* Save/Discard Actions */}
-        {hasChanges && (
-          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-amber-900">You have unsaved changes</h3>
-                <p className="text-xs text-amber-700 mt-1">Don't forget to save your modifications before leaving this page.</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end space-x-3">
-              <Button
-                onClick={discardChanges}
-                variant="outline"
-                size="sm"
-                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
-              >
-                <span>Discard Changes</span>
-              </Button>
-              <Button
-                onClick={saveAllChanges}
-                disabled={isSaving}
-                size="sm"
-                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>Save Changes</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
       </PageHeader>
 
       {/* Template Selection for New Discounts */}
@@ -847,45 +826,15 @@ const DiscountEditPage: React.FC = () => {
         </div>
 
         {/* Error Display */}
-        {errors.general && (
+        {errors.submit && (
           <Alert variant="error">
             <ExclamationTriangleIcon className="h-4 w-4" />
             <div>
               <h4 className="font-medium">Error</h4>
-              <p className="text-sm">{errors.general}</p>
+              <p className="text-sm">{errors.submit}</p>
             </div>
           </Alert>
         )}
-
-        {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/discounts')}
-            className="w-full sm:w-auto"
-          >
-            Cancel
-          </Button>
-          
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 w-full sm:w-auto"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <CloudArrowUpIcon className="h-4 w-4" />
-                <span>{isEditing ? 'Update Discount' : 'Create Discount'}</span>
-              </>
-            )}
-          </Button>
-        </div>
       </form>
 
       {/* Confirm Dialogs */}
@@ -899,18 +848,6 @@ const DiscountEditPage: React.FC = () => {
         cancelText={deleteDialog.dialogState.cancelText}
         variant={deleteDialog.dialogState.variant}
         isLoading={deleteDialog.dialogState.isLoading}
-      />
-
-      <ConfirmDialog
-        isOpen={discardDialog.dialogState.isOpen}
-        onClose={discardDialog.closeDialog}
-        onConfirm={discardDialog.handleConfirm}
-        title={discardDialog.dialogState.title}
-        message={discardDialog.dialogState.message}
-        confirmText={discardDialog.dialogState.confirmText}
-        cancelText={discardDialog.dialogState.cancelText}
-        variant={discardDialog.dialogState.variant}
-        isLoading={discardDialog.dialogState.isLoading}
       />
     </div>
   );
