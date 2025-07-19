@@ -269,7 +269,6 @@ const StoreSettingsPage: React.FC = () => {
         {state.activeTab === 'hardware' && (
           <HardwareConfigurationTab 
             settings={state.settings}
-            onSave={(data) => handleSave('hardware', data)}
             onFieldChange={() => setState(prev => ({ ...prev, hasUnsavedChanges: true }))}
           />
         )}

@@ -106,18 +106,17 @@ const DashboardLayout: React.FC = () => {
       items: [
         { name: t('nav.storeSettings'), href: '/settings/store', icon: BuildingStorefrontIcon },
         { name: t('nav.terminalSettings'), href: '/settings/terminals', icon: ComputerDesktopIcon },
-        { name: t('nav.translationManagement'), href: '/settings/translations', icon: LanguageIcon },
         ...(permissionsInitialized && canManageUsers() ? [{ name: t('nav.userManagement'), href: '/settings/users', icon: UserIcon }] : []),
         ...(permissionsInitialized && canManageRoles() ? [{ name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon }] : []),
         { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
         { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },
-        { name: t('nav.systemSettings'), href: '/settings/system', icon: Cog6ToothIcon },
       ]
     },
     {
       category: 'DEVELOPER',
       items: [
         { name: 'Receipt Builder', href: '/developer/receipt-builder', icon: CodeBracketIcon },
+        { name: t('nav.translationManagement'), href: '/developer/translations', icon: LanguageIcon },
       ]
     }
   ], [permissionsInitialized, canManageUsers, canManageRoles, t]);

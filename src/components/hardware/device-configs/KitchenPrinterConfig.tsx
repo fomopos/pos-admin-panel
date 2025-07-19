@@ -2,11 +2,13 @@ import React from 'react';
 import {
   DropdownSearch,
   InputTextField,
-  PropertyCheckbox
+  PropertyCheckbox,
+  MultipleDropdownSearch
 } from '../../ui';
 import {
   KITCHEN_PRINTER_MODELS,
-  THERMAL_PAPER_SIZES
+  THERMAL_PAPER_SIZES,
+  KITCHEN_SECTIONS
 } from '../../../types/hardware-api';
 import type { KotPrinterConfig as KitchenConfig, HardwareOption } from '../../../types/hardware-api';
 
@@ -82,6 +84,27 @@ const KitchenPrinterConfig: React.FC<KitchenPrinterConfigProps> = ({
         onSelect={(option) => option && onFieldChange('character_encoding', option.id)}
         placeholder="Select character encoding"
         required
+      />
+
+      {/* Kitchen Sections */}
+      <MultipleDropdownSearch
+        label="Kitchen Sections"
+        values={config.kitchen_sections || []}
+        options={KITCHEN_SECTIONS}
+        onSelect={(selectedValues) => onFieldChange('kitchen_sections', selectedValues)}
+        placeholder="No sections selected"
+        searchPlaceholder="Search kitchen sections..."
+        allowSelectAll={true}
+        selectAllLabel="Select All Sections"
+        clearAllLabel="Clear All Sections"
+        maxSelectedDisplay={3}
+        displayValue={(selectedOptions) => 
+          selectedOptions.length > 0 
+            ? `${selectedOptions.length} section${selectedOptions.length > 1 ? 's' : ''} selected`
+            : "No sections selected"
+        }
+        required
+        error={errors.kitchen_sections}
       />
 
       {/* Kitchen Specific Settings */}
