@@ -313,6 +313,25 @@ const TenderEditPage: React.FC = () => {
     }
   }, [formData, originalTender, isEditing]);
 
+  // Clear field-specific errors when user starts typing
+  useEffect(() => {
+    if (errors.tender_id && formData.tender_id.trim()) {
+      setErrors(prev => ({ ...prev, tender_id: '' }));
+    }
+  }, [formData.tender_id, errors.tender_id]);
+
+  useEffect(() => {
+    if (errors.description && formData.description.trim()) {
+      setErrors(prev => ({ ...prev, description: '' }));
+    }
+  }, [formData.description, errors.description]);
+
+  useEffect(() => {
+    if (errors.availability && formData.availability.length > 0) {
+      setErrors(prev => ({ ...prev, availability: '' }));
+    }
+  }, [formData.availability, errors.availability]);
+
   const handleInputChange = (field: keyof TenderFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field]: '' }));
@@ -450,7 +469,16 @@ const TenderEditPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Failed to save tender:', error);
-      showError(error.message || t('tenderEdit.form.errors.saveFailed'));
+      
+      // Handle API validation errors
+      if (error.response?.status === 422 && error.response?.data?.errors) {
+        const apiErrors = error.response.data.errors;
+        setErrors(apiErrors);
+      } else if (error.response?.status === 409) {
+        setErrors({ tender_id: 'A tender with this ID already exists' });
+      } else {
+        showError(error.message || t('tenderEdit.form.errors.saveFailed'));
+      }
     } finally {
       setIsSaving(false);
     }
@@ -469,6 +497,14 @@ const TenderEditPage: React.FC = () => {
         navigate('/payment-settings');
       }
     );
+  };
+
+  const saveAllChanges = async () => {
+    const form = document.getElementById('tender-form') as HTMLFormElement;
+    if (form) {
+      const event = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(event);
+    }
   };
 
   if (isLoading) {
@@ -491,25 +527,12 @@ const TenderEditPage: React.FC = () => {
             <span>{t('tenderEdit.backToPayments')}</span>
           </Button>
           
-          {isEditing && (
+          {hasChanges && (
             <Button
-              onClick={handleDelete}
-              variant="outline"
+              onClick={saveAllChanges}
               disabled={isSaving}
-              className="flex items-center space-x-2 text-red-600 border-red-300 hover:bg-red-50"
-            >
-              <TrashIcon className="h-4 w-4" />
-              <span>{t('tenderEdit.delete')}</span>
-            </Button>
-          )}
-          
-          {/* Show save button based on context */}
-          {(!isEditing || (isEditing && hasChanges)) && (
-            <Button
-              type="submit"
-              form="tender-form"
-              disabled={isSaving}
-              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white"
+              variant="primary"
+              className="flex items-center space-x-2"
             >
               {isSaving ? (
                 <>
@@ -519,9 +542,21 @@ const TenderEditPage: React.FC = () => {
               ) : (
                 <>
                   <CloudArrowUpIcon className="h-4 w-4" />
-                  <span>{isEditing ? t('tenderEdit.actions.updateTender') : t('tenderEdit.actions.createTender')}</span>
+                  <span>{isEditing ? t('tenderEdit.updateTender') : t('tenderEdit.createTender')}</span>
                 </>
               )}
+            </Button>
+          )}
+          
+          {isEditing && (
+            <Button
+              onClick={handleDelete}
+              variant="outline"
+              disabled={isSaving}
+              className="flex items-center space-x-2 text-red-600 border-red-300 hover:bg-red-50"
+            >
+              <TrashIcon className="h-4 w-4" />
+              {t('tenderEdit.delete')}
             </Button>
           )}
         </div>
