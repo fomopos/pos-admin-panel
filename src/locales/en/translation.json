@@ -666,6 +666,7 @@
     }
   },
   "tenderEdit": {
+    "updateTender": "Update Tender",
     "title": {
       "edit": "Edit Tender",
       "create": "Create New Tender"
