@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ComputerDesktopIcon,
   PlusIcon,
-  CogIcon,
-  CheckIcon
+  CogIcon
 } from '@heroicons/react/24/outline';
 import {
   Widget,
@@ -16,17 +15,28 @@ import HardwareDeviceCard from './HardwareDeviceCard';
 import HardwareDeviceForm from './HardwareDeviceForm';
 import { hardwareApiService } from '../../services/hardware/hardwareApiService';
 import { useTenantStore } from '../../tenants/tenantStore';
+import { useError } from '../../hooks/useError';
 import type { 
   HardwareDevice, 
-  HardwareOption
+  HardwareOption,
+  ReceiptPrinterConfig,
+  KitchenPrinterConfig,
+  ScannerConfig,
+  CashDrawerConfig
 } from '../../types/hardware';
 import type {
-  HardwareDevice as ApiHardwareDevice
+  HardwareDevice as ApiHardwareDevice,
+  CreateHardwareDeviceRequest,
+  DeviceStatus,
+  ConnectionType,
+  CharacterEncoding,
+  KitchenSection,
+  ScanMode,
+  BarcodeDecodeType
 } from '../../types/hardware-api';
 
 interface HardwareConfigurationTabProps {
   settings: any;
-  onSave: (data: any) => void;
   onFieldChange: () => void;
 }
 
@@ -39,11 +49,13 @@ interface CombinedHardwareConfig {
 // Helper function to convert API device to UI device type
 const convertApiDeviceToUIDevice = (apiDevice: ApiHardwareDevice): HardwareDevice => {
   const baseDevice = {
-    id: apiDevice.id,
+    id: apiDevice.hardware_id, // Map hardware_id to id for UI compatibility
     name: apiDevice.name,
     enabled: apiDevice.enabled,
-    status: apiDevice.status,
+    status: apiDevice.status as any,
     last_connected: apiDevice.last_connected,
+    created_at: apiDevice.created_at,
+    updated_at: apiDevice.updated_at,
   };
 
   // Convert based on device type
@@ -52,84 +64,84 @@ const convertApiDeviceToUIDevice = (apiDevice: ApiHardwareDevice): HardwareDevic
       return {
         ...baseDevice,
         type: 'receipt_printer',
-        connection_type: apiDevice.connection_type,
-        paper_size: apiDevice.thermal_printer?.paper_size || 'thermal_80mm',
+        connection_type: apiDevice.connection_type as any,
+        printer_model: apiDevice.thermal_printer?.printer_model,
+        ip_address: apiDevice.thermal_printer?.ip_address,
+        port: apiDevice.thermal_printer?.port,
+        paper_size: (apiDevice.thermal_printer?.paper_size || 'thermal_80mm') as any,
         auto_print: apiDevice.thermal_printer?.auto_print || true,
         print_copies: apiDevice.thermal_printer?.print_copies || 1,
         cut_paper: apiDevice.thermal_printer?.cut_paper || true,
         open_drawer: apiDevice.thermal_printer?.open_drawer || false,
-        character_encoding: apiDevice.thermal_printer?.character_encoding || 'utf8',
+        character_encoding: (apiDevice.thermal_printer?.character_encoding || 'utf8') as any,
         test_mode: apiDevice.test_mode,
-        printer_model: apiDevice.thermal_printer?.printer_model,
-        ip_address: apiDevice.thermal_printer?.ip_address,
-        port: apiDevice.thermal_printer?.port,
-      } as HardwareDevice;
+      } as ReceiptPrinterConfig;
     
     case 'kitchen_printer':
       return {
         ...baseDevice,
         type: 'kitchen_printer',
-        connection_type: apiDevice.connection_type,
-        paper_size: apiDevice.kot_printer?.paper_size || 'thermal_80mm',
+        connection_type: apiDevice.connection_type as any,
+        printer_model: apiDevice.kot_printer?.printer_model,
+        ip_address: apiDevice.kot_printer?.ip_address,
+        port: apiDevice.kot_printer?.port,
+        paper_size: (apiDevice.kot_printer?.paper_size || 'thermal_80mm') as any,
         print_header: apiDevice.kot_printer?.print_header || true,
         print_timestamp: apiDevice.kot_printer?.print_timestamp || true,
         print_order_number: apiDevice.kot_printer?.print_order_number || true,
         print_table_info: apiDevice.kot_printer?.print_table_info || true,
         auto_cut: apiDevice.kot_printer?.auto_cut || true,
-        character_encoding: apiDevice.kot_printer?.character_encoding || 'utf8',
+        character_encoding: (apiDevice.kot_printer?.character_encoding || 'utf8') as any,
         kitchen_sections: apiDevice.kot_printer?.kitchen_sections || ['hot_kitchen'],
-        printer_model: apiDevice.kot_printer?.printer_model,
-        ip_address: apiDevice.kot_printer?.ip_address,
-        port: apiDevice.kot_printer?.port,
-      } as HardwareDevice;
+      } as KitchenPrinterConfig;
     
     case 'scanner':
       return {
         ...baseDevice,
         type: 'scanner',
-        connection_type: apiDevice.connection_type,
+        connection_type: apiDevice.connection_type as any,
         scanner_model: apiDevice.barcode_scanner?.scanner_model,
         prefix: apiDevice.barcode_scanner?.prefix,
         suffix: apiDevice.barcode_scanner?.suffix,
         min_length: apiDevice.barcode_scanner?.min_length || 3,
         max_length: apiDevice.barcode_scanner?.max_length || 20,
-        scan_mode: apiDevice.barcode_scanner?.scan_mode || 'manual',
+        scan_mode: (apiDevice.barcode_scanner?.scan_mode || 'manual') as any,
         beep_on_scan: apiDevice.barcode_scanner?.beep_on_scan || true,
         decode_types: apiDevice.barcode_scanner?.decode_types || ['CODE128'],
-      } as HardwareDevice;
+      } as ScannerConfig;
     
     case 'cash_drawer':
       return {
         ...baseDevice,
         type: 'cash_drawer',
-        connection_type: apiDevice.connection_type,
+        connection_type: apiDevice.connection_type as any,
         auto_open: false,
-        trigger_event: 'sale_complete',
+        trigger_event: 'sale_complete' as any,
         open_duration: 500,
-      } as HardwareDevice;
+      } as CashDrawerConfig;
     
     default:
       // Fallback to receipt printer for unknown types
       return {
         ...baseDevice,
         type: 'receipt_printer',
-        connection_type: apiDevice.connection_type,
-        paper_size: 'thermal_80mm',
+        connection_type: apiDevice.connection_type as any,
+        paper_size: 'thermal_80mm' as any,
         auto_print: true,
         print_copies: 1,
         cut_paper: true,
         open_drawer: false,
-        character_encoding: 'utf8',
+        character_encoding: 'utf8' as any,
         test_mode: false,
-      } as HardwareDevice;
+      } as ReceiptPrinterConfig;
   }
 };
 
 const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
-  onSave,
   onFieldChange
 }) => {
   const { currentStore } = useTenantStore();
+  const { showError, showSuccess } = useError();
   const [hardwareConfig, setHardwareConfig] = useState<CombinedHardwareConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeLevel, setActiveLevel] = useState<'store' | 'terminal'>('store');
@@ -139,125 +151,101 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Helper function to convert UI device to API device type
-  const convertUIDeviceToApiDevice = (uiDevice: HardwareDevice, terminalId?: string): ApiHardwareDevice => {
+  // Helper function to convert UI device to API device type for creation
+  const convertUIDeviceToCreateRequest = (uiDevice: HardwareDevice, terminalId?: string): CreateHardwareDeviceRequest => {
     // Map status (handle unknown -> disconnected mapping)
-    const apiStatus = uiDevice.status === 'unknown' ? 'disconnected' : uiDevice.status;
+    const apiStatus = (uiDevice.status === 'unknown' ? 'disconnected' : uiDevice.status) || 'disconnected';
     
+    // Map connection types (handle serial -> usb mapping)
+    const connectionType = uiDevice.connection_type === 'serial' ? 'usb' : uiDevice.connection_type;
+
     const baseDevice = {
       id: uiDevice.id,
       name: uiDevice.name,
       enabled: uiDevice.enabled,
-      status: apiStatus as any,
-      last_connected: uiDevice.last_connected || new Date().toISOString(),
-      store_id: currentStore?.store_id || '',
-      terminal_id: terminalId,
+      status: apiStatus as DeviceStatus,
+      connection_type: connectionType as ConnectionType,
       test_mode: false,
-      thermal_printer: {},
-      kot_printer: {},
-      network_printer: {},
-      barcode_scanner: {},
+      store_id: currentStore?.store_id || '',
+      terminal_id: terminalId || null,
+      last_connected: uiDevice.last_connected || new Date().toISOString(),
+      thermal_printer: null,
+      kot_printer: null,
+      network_printer: null,
+      barcode_scanner: null,
+      cash_drawer: null,
+      label_printer: null,
     };
-
-    // Map connection types (handle serial -> usb mapping)
-    const connectionType = uiDevice.connection_type === 'serial' ? 'usb' : uiDevice.connection_type;
 
     switch (uiDevice.type) {
       case 'receipt_printer':
+        const receiptDevice = uiDevice as ReceiptPrinterConfig;
         return {
           ...baseDevice,
           type: 'thermal_printer',
-          connection_type: connectionType as any,
-          test_mode: (uiDevice as any).test_mode || false,
+          test_mode: receiptDevice.test_mode || false,
           thermal_printer: {
-            printer_model: (uiDevice as any).printer_model,
-            ip_address: (uiDevice as any).ip_address,
-            port: (uiDevice as any).port,
-            paper_size: (uiDevice.paper_size === 'thermal_58mm' || uiDevice.paper_size === 'thermal_80mm') ? uiDevice.paper_size : 'thermal_80mm',
-            auto_print: uiDevice.auto_print,
-            print_copies: uiDevice.print_copies,
-            cut_paper: uiDevice.cut_paper,
-            open_drawer: uiDevice.open_drawer,
-            character_encoding: uiDevice.character_encoding === 'windows1252' ? 'utf8' : uiDevice.character_encoding as any,
+            printer_model: receiptDevice.printer_model,
+            ip_address: receiptDevice.ip_address,
+            port: receiptDevice.port,
+            paper_size: (receiptDevice.paper_size === 'thermal_58mm' || receiptDevice.paper_size === 'thermal_80mm') 
+              ? receiptDevice.paper_size : 'thermal_80mm',
+            auto_print: receiptDevice.auto_print,
+            print_copies: receiptDevice.print_copies,
+            cut_paper: receiptDevice.cut_paper,
+            open_drawer: receiptDevice.open_drawer,
+            character_encoding: receiptDevice.character_encoding === 'windows1252' ? 'utf8' : receiptDevice.character_encoding as CharacterEncoding,
           },
-          kot_printer: {},
-          network_printer: {},
-          barcode_scanner: {},
-          cash_drawer: {},
-          label_printer: {},
         };
       
       case 'kitchen_printer':
+        const kitchenDevice = uiDevice as KitchenPrinterConfig;
         return {
           ...baseDevice,
           type: 'kitchen_printer',
-          connection_type: connectionType as any,
           kot_printer: {
-            printer_model: (uiDevice as any).printer_model,
-            ip_address: (uiDevice as any).ip_address,
-            port: (uiDevice as any).port,
-            paper_size: (uiDevice.paper_size === 'thermal_58mm' || uiDevice.paper_size === 'thermal_80mm') ? uiDevice.paper_size : 'thermal_80mm',
-            print_header: uiDevice.print_header,
-            print_timestamp: uiDevice.print_timestamp,
-            print_order_number: uiDevice.print_order_number,
-            print_table_info: uiDevice.print_table_info,
-            auto_cut: uiDevice.auto_cut,
-            character_encoding: uiDevice.character_encoding === 'windows1252' ? 'utf8' : uiDevice.character_encoding as any,
-            kitchen_sections: uiDevice.kitchen_sections as any[],
+            printer_model: kitchenDevice.printer_model,
+            ip_address: kitchenDevice.ip_address,
+            port: kitchenDevice.port,
+            paper_size: (kitchenDevice.paper_size === 'thermal_58mm' || kitchenDevice.paper_size === 'thermal_80mm') 
+              ? kitchenDevice.paper_size : 'thermal_80mm',
+            print_header: kitchenDevice.print_header,
+            print_timestamp: kitchenDevice.print_timestamp,
+            print_order_number: kitchenDevice.print_order_number,
+            print_table_info: kitchenDevice.print_table_info,
+            auto_cut: kitchenDevice.auto_cut,
+            character_encoding: kitchenDevice.character_encoding === 'windows1252' ? 'utf8' : kitchenDevice.character_encoding as CharacterEncoding,
+            kitchen_sections: kitchenDevice.kitchen_sections as KitchenSection[],
           },
-          thermal_printer: {},
-          network_printer: {},
-          barcode_scanner: {},
-          cash_drawer: {},
-          label_printer: {},
         };
       
       case 'scanner':
+        const scannerDevice = uiDevice as ScannerConfig;
         return {
           ...baseDevice,
           type: 'scanner',
-          connection_type: connectionType as any,
           barcode_scanner: {
-            scanner_model: (uiDevice as any).scanner_model,
-            prefix: (uiDevice as any).prefix,
-            suffix: (uiDevice as any).suffix,
-            min_length: uiDevice.min_length,
-            max_length: uiDevice.max_length,
-            scan_mode: uiDevice.scan_mode as any,
-            beep_on_scan: uiDevice.beep_on_scan,
-            decode_types: uiDevice.decode_types as any[],
+            scanner_model: scannerDevice.scanner_model,
+            prefix: scannerDevice.prefix,
+            suffix: scannerDevice.suffix,
+            min_length: scannerDevice.min_length,
+            max_length: scannerDevice.max_length,
+            scan_mode: scannerDevice.scan_mode as ScanMode,
+            beep_on_scan: scannerDevice.beep_on_scan,
+            decode_types: scannerDevice.decode_types as BarcodeDecodeType[],
           },
-          thermal_printer: {},
-          kot_printer: {},
-          network_printer: {},
-          cash_drawer: {},
-          label_printer: {},
         };
       
       case 'cash_drawer':
         return {
           ...baseDevice,
           type: 'cash_drawer',
-          connection_type: connectionType as any,
-          thermal_printer: {},
-          kot_printer: {},
-          network_printer: {},
-          barcode_scanner: {},
-          cash_drawer: {},
-          label_printer: {},
         };
       
       default:
         return {
           ...baseDevice,
           type: 'thermal_printer',
-          connection_type: connectionType as any,
-          thermal_printer: {},
-          kot_printer: {},
-          network_printer: {},
-          barcode_scanner: {},
-          cash_drawer: {},
-          label_printer: {},
         };
     }
   };
@@ -302,7 +290,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
 
       setIsLoading(true);
       try {
-        const devices = await hardwareApiService.getHardwareDevices(
+        const devices = await hardwareApiService.getAllHardwareDevices(
           currentStore.tenant_id, 
           currentStore.store_id
         );
@@ -325,7 +313,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
         // Group terminal-level devices by terminal_id
         terminalDevices.forEach((device) => {
           // Find the original API device to get terminal_id
-          const apiDevice = devices.find(d => d.id === device.id);
+          const apiDevice = devices.find(d => d.hardware_id === device.id);
           const terminalId = apiDevice?.terminal_id || 'default';
           if (!combinedConfig.terminal_level[terminalId]) {
             combinedConfig.terminal_level[terminalId] = [];
@@ -334,9 +322,14 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
         });
         
         setHardwareConfig(combinedConfig);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch hardware config:', error);
-        setErrors({ general: 'Failed to load hardware configuration' });
+        
+        // Use error framework for initial load error
+        showError(error?.message || 'Failed to load hardware configuration. Please try again.');
+        
+        // Also set local error for backward compatibility
+        setErrors({ general: error?.message || 'Failed to load hardware configuration. Please try again.' });
       } finally {
         setIsLoading(false);
       }
@@ -364,9 +357,13 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
   const handleAddDevice = () => {
     // Check if terminal is selected for terminal level
     if (activeLevel === 'terminal' && !selectedTerminalId) {
+      showError('Please select a terminal first');
       setErrors({ general: 'Please select a terminal first' });
       return;
     }
+    
+    // Clear any previous errors
+    setErrors({});
     
     setEditingDevice(null);
     setFormMode('create');
@@ -381,16 +378,25 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
 
   const handleDeleteDevice = async (deviceId: string) => {
     if (!currentStore?.tenant_id || !currentStore?.store_id) {
+      showError('Store information not available');
       setErrors({ general: 'Store information not available' });
       return;
     }
 
     try {
+      // Clear any previous errors
+      setErrors({});
+      
+      const deviceToDelete = getCurrentDevices().find(d => d.id === deviceId);
+      const deviceName = deviceToDelete?.name || 'device';
+
       await hardwareApiService.deleteHardwareDevice(
         currentStore.tenant_id,
         currentStore.store_id,
         deviceId
       );
+
+      showSuccess(`Device "${deviceName}" deleted successfully!`);
 
       // Update local state
       if (!hardwareConfig) return;
@@ -401,6 +407,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
         updatedConfig.store_level = updatedConfig.store_level.filter((d: HardwareDevice) => d.id !== deviceId);
       } else {
         if (!selectedTerminalId) {
+          showError('Please select a terminal first');
           setErrors({ general: 'Please select a terminal first' });
           return;
         }
@@ -412,21 +419,30 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
 
       setHardwareConfig(updatedConfig);
       onFieldChange();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete device:', error);
-      setErrors({ general: 'Failed to delete device' });
+      
+      // Use error framework for API error display
+      showError(error?.message || 'Failed to delete device. Please try again.');
+      
+      // Also set local error for backward compatibility
+      setErrors({ general: error?.message || 'Failed to delete device. Please try again.' });
     }
   };
 
   const handleSaveDevice = async (device: HardwareDevice, terminalId?: string) => {
     if (!currentStore?.tenant_id || !currentStore?.store_id) {
+      showError('Store information not available');
       setErrors({ general: 'Store information not available' });
       return;
     }
 
     try {
+      // Clear any previous errors
+      setErrors({});
+      
       // Convert UI device to API device format
-      const apiDevice = convertUIDeviceToApiDevice(device, terminalId);
+      const apiDevice = convertUIDeviceToCreateRequest(device, terminalId);
 
       if (formMode === 'create') {
         // Create new device
@@ -435,6 +451,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
           currentStore.store_id,
           apiDevice
         );
+        showSuccess(`Device "${device.name}" created successfully!`);
       } else {
         // Update existing device
         await hardwareApiService.updateHardwareDevice(
@@ -450,6 +467,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
             barcode_scanner: apiDevice.barcode_scanner
           }
         );
+        showSuccess(`Device "${device.name}" updated successfully!`);
       }
 
       // Update local state
@@ -487,42 +505,43 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       setShowDeviceForm(false);
       setEditingDevice(null);
       onFieldChange();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save device:', error);
-      setErrors({ general: 'Failed to save device' });
+      
+      // Use error framework for API error display
+      showError(error?.message || `Failed to ${formMode === 'create' ? 'create' : 'update'} device. Please try again.`);
+      
+      // Also set local error for backward compatibility with UI components that check for errors
+      setErrors({ general: error?.message || `Failed to ${formMode === 'create' ? 'create' : 'update'} device. Please try again.` });
     }
   };
 
   const handleTestDevice = async (device: HardwareDevice) => {
     if (!currentStore?.tenant_id || !currentStore?.store_id) {
+      showError('Store information not available');
       setErrors({ general: 'Store information not available' });
       return;
     }
 
     try {
+      // Clear any previous errors
+      setErrors({});
+      
       await hardwareApiService.testHardwareDevice(
         currentStore.tenant_id,
         currentStore.store_id,
         device.id
       );
-      // Success feedback would be shown by the card component
-    } catch (error) {
+      
+      showSuccess(`Device "${device.name}" test completed successfully!`);
+    } catch (error: any) {
       console.error('Device test failed:', error);
-      setErrors({ general: `Failed to test ${device.name}` });
-    }
-  };
-
-  const handleSaveConfiguration = async () => {
-    try {
-      if (!hardwareConfig) return;
-
-      // For now, just save locally - in production, call proper API
-      console.log('Saving hardware configuration:', hardwareConfig);
-      onSave({ hardware_config: hardwareConfig });
-      setErrors({});
-    } catch (error) {
-      console.error('Failed to save hardware configuration:', error);
-      setErrors({ general: 'Failed to save hardware configuration' });
+      
+      // Use error framework for API error display
+      showError(error?.message || `Failed to test device "${device.name}". Please try again.`);
+      
+      // Also set local error for backward compatibility
+      setErrors({ general: error?.message || `Failed to test device "${device.name}". Please try again.` });
     }
   };
 
@@ -570,15 +589,6 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
         title="Hardware Configuration"
         description="Configure hardware devices for your point of sale system at both store and terminal levels"
         icon={ComputerDesktopIcon}
-        headerActions={
-          <Button
-            onClick={handleSaveConfiguration}
-            className="px-6"
-          >
-            <CheckIcon className="h-4 w-4 mr-2" />
-            Save Configuration
-          </Button>
-        }
       >
         {/* Level Selection Tabs */}
         <EnhancedTabs

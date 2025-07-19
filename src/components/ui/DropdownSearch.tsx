@@ -199,13 +199,13 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
           type="button"
           onClick={handleToggleDropdown}
           disabled={disabled}
-          className={`w-full flex items-center justify-between px-4 py-3 h-12 border border-slate-200 bg-slate-50 rounded-lg hover:border-blue-300 transition-all duration-200 ${
+          className={`${buttonClassName || 'w-full'} flex items-center justify-between px-4 py-3 h-12 border border-slate-200 bg-slate-50 rounded-lg hover:border-blue-300 transition-all duration-200 ${
             isOpen ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-2' : 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:border-blue-500'
           } ${
             disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           } ${
             error ? 'border-red-500 focus-visible:ring-red-500' : ''
-          } ${buttonClassName}`}
+          }`}
         >
           {renderDisplayValue()}
           <ChevronDownIcon 

@@ -743,10 +743,19 @@
       "placeholders": {
         "tenderId": "Zadajte ID tendra",
         "description": "Zadajte popis tendra",
+        "tenderType": "Vyberte typ tendra",
+        "searchTenderTypes": "Hľadať typy tendrov...",
+        "currency": "Vyberte menu",
+        "searchCurrencies": "Hľadať meny...",
         "displayOrder": "1",
+        "availability": "Vyberte možnosti dostupnosti tendra",
+        "searchAvailability": "Hľadať možnosti dostupnosti...",
         "maxRefundDays": "30",
         "changeCashLimit": "10000.00"
       },
+      "selectAll": "Vybrať všetko",
+      "clearAll": "Vymazať všetko",
+      "noAvailabilityOptions": "Neboli nájdené žiadne možnosti dostupnosti",
       "helperText": {
         "displayOrder": "Nižšie čísla sa zobrazia ako prvé v zozname tenderov",
         "tenderIdReadonly": "ID tendra nemožno zmeniť pri úprave"
@@ -756,7 +765,8 @@
         "descriptionRequired": "Popis je povinný", 
         "tenderIdTooLong": "ID tendra musí mať menej ako 50 znakov",
         "availabilityRequired": "Vyžaduje sa aspoň jedna možnosť dostupnosti",
-        "saveFailed": "Nepodarilo sa uložiť tender. Prosím skúste znovu."
+        "saveFailed": "Nepodarilo sa uložiť tender. Prosím skúste znovu.",
+        "validationSummary": "Pred uložením tendra opravte nasledujúce chyby:"
       }
     },
     "tenderTypes": {

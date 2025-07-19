@@ -1,341 +1,627 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  PlusIcon,
+  UserGroupIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon,
+  ClockIcon,
+  ChartBarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
+} from '@heroicons/react/24/outline';
+import { 
+  PageHeader, 
+  Button, 
+  SearchAndFilter,
+  Card
+} from '../../components/ui';
 import { useTenantStore } from '../../tenants/tenantStore';
 import { userService } from '../../services/user';
-import type { StoreUser, UserStats } from '../../services/types/user.types';
+import { useConfirmDialog } from '../../hooks/useConfirmDialog';
+import type { 
+  StoreUser, 
+  UserQueryParams
+} from '../../services/types/user.types';
 
-// Import all our new components
-import UserList from './UserList';
-import UserDetail from './UserDetail';
-import UserEdit from './UserEdit';
-import UserActivity from './UserActivity';
-import UserTimeTracking from './UserTimeTracking';
-import CreateUser from './CreateUser';
-
-type ViewType = 'list' | 'detail' | 'edit' | 'activity' | 'timeTracking' | 'create';
+type UserStatus = 'active' | 'inactive' | 'suspended';
+type ViewMode = 'grid' | 'list';
 
 interface UserManagementState {
-  currentView: ViewType;
-  selectedUserId: string | null;
   users: StoreUser[];
-  userStats: UserStats | null;
   isLoading: boolean;
-  errors: Record<string, string>;
+  error: string | null;
   successMessage: string | null;
+  searchTerm: string;
+  statusFilter: UserStatus | 'all';
+  viewMode: ViewMode;
+  pagination: {
+    currentPage: number;
+    limit: number;
+    total: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 const UserManagement: React.FC = () => {
-  const { currentStore } = useTenantStore();
+  const navigate = useNavigate();
+  const { currentTenant, currentStore } = useTenantStore();
+  const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog();
   
   const [state, setState] = useState<UserManagementState>({
-    currentView: 'list',
-    selectedUserId: null,
     users: [],
-    userStats: null,
     isLoading: true,
-    errors: {},
-    successMessage: null
+    error: null,
+    successMessage: null,
+    searchTerm: '',
+    statusFilter: 'all',
+    viewMode: 'grid',
+    pagination: {
+      currentPage: 1,
+      limit: 20,
+      total: 0,
+      hasNextPage: false,
+      hasPreviousPage: false
+    }
   });
 
-  // Load users and statistics
+  // Load users with current filters and pagination
   useEffect(() => {
-    if (currentStore?.store_id) {
+    if (currentTenant?.id && currentStore?.store_id) {
       loadUsers();
-      loadUserStats();
     }
-  }, [currentStore?.store_id]);
+  }, [
+    currentTenant?.id,
+    currentStore?.store_id,
+    state.searchTerm,
+    state.statusFilter,
+    state.pagination.currentPage
+  ]);
 
   const loadUsers = async () => {
+    if (!currentStore?.store_id) return;
+    
     try {
-      setState(prev => ({ ...prev, isLoading: true }));
-      const response = await userService.getUsers({
-        store_id: currentStore?.store_id || '',
-        limit: 100
-      });
-      setState(prev => ({ 
-        ...prev, 
-        users: response.users,
-        isLoading: false,
-        errors: {}
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      
+      const params: UserQueryParams = {
+        store_id: currentStore.store_id,
+        page: state.pagination.currentPage,
+        limit: state.pagination.limit,
+        ...(state.searchTerm && { search: state.searchTerm }),
+        ...(state.statusFilter !== 'all' && { status: state.statusFilter })
+      };
+
+      const response = await userService.getUsers(params);
+      
+      setState(prev => ({
+        ...prev,
+        users: response.users || [],
+        pagination: {
+          ...prev.pagination,
+          total: response.total || 0,
+          hasNextPage: (response.users?.length || 0) >= state.pagination.limit,
+          hasPreviousPage: state.pagination.currentPage > 1
+        },
+        isLoading: false
       }));
     } catch (error) {
       console.error('Failed to load users:', error);
-      setState(prev => ({ 
-        ...prev, 
-        isLoading: false,
-        errors: { ...prev.errors, load: 'Failed to load users. Please try again.' }
+      setState(prev => ({
+        ...prev,
+        error: 'Failed to load users. Please try again.',
+        isLoading: false
       }));
     }
   };
 
-  const loadUserStats = async () => {
-    try {
-      const stats = await userService.getUserStats(currentStore?.store_id || '');
-      setState(prev => ({ ...prev, userStats: stats }));
-    } catch (error) {
-      console.error('Failed to load user statistics:', error);
-    }
-  };
+  // Filter options
+  const statusOptions = [
+    { id: 'all', label: 'All Statuses' },
+    { id: 'active', label: 'Active' },
+    { id: 'inactive', label: 'Inactive' },
+    { id: 'suspended', label: 'Suspended' }
+  ];
 
-  // Navigation handlers
-  const handleNavigateToList = () => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'list', 
-      selectedUserId: null,
-      errors: {},
-      successMessage: null
+  // Event handlers
+  const handleSearchChange = (value: string) => {
+    setState(prev => ({
+      ...prev,
+      searchTerm: value,
+      pagination: { ...prev.pagination, currentPage: 1 }
     }));
   };
 
-  const handleNavigateToDetail = (userId: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'detail', 
-      selectedUserId: userId,
-      errors: {},
-      successMessage: null
+  const handleStatusFilterChange = (value: string) => {
+    setState(prev => ({
+      ...prev,
+      statusFilter: value as UserStatus | 'all',
+      pagination: { ...prev.pagination, currentPage: 1 }
     }));
   };
 
-  const handleNavigateToEdit = (userId: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'edit', 
-      selectedUserId: userId,
-      errors: {},
-      successMessage: null
+  const handleViewModeChange = (mode: ViewMode) => {
+    setState(prev => ({ ...prev, viewMode: mode }));
+  };
+
+  const handleClear = () => {
+    setState(prev => ({
+      ...prev,
+      searchTerm: '',
+      statusFilter: 'all',
+      pagination: { ...prev.pagination, currentPage: 1 }
     }));
   };
 
-  const handleNavigateToActivity = (userId: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'activity', 
-      selectedUserId: userId,
-      errors: {},
-      successMessage: null
+  const handlePageChange = (direction: 'next' | 'previous') => {
+    setState(prev => ({
+      ...prev,
+      pagination: {
+        ...prev.pagination,
+        currentPage: direction === 'next' 
+          ? prev.pagination.currentPage + 1 
+          : prev.pagination.currentPage - 1
+      }
     }));
   };
 
-  const handleNavigateToTimeTracking = (userId: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'timeTracking', 
-      selectedUserId: userId,
-      errors: {},
-      successMessage: null
-    }));
-  };
+  const handleDeleteUser = async (userId: string) => {
+    const user = state.users.find(u => u.user_id === userId);
+    if (!user || !currentStore?.store_id) return;
 
-  const handleNavigateToCreate = () => {
-    setState(prev => ({ 
-      ...prev, 
-      currentView: 'create', 
-      selectedUserId: null,
-      errors: {},
-      successMessage: null
-    }));
-  };
-
-  // Success/Error handlers
-  const handleSuccess = (message: string) => {
-    setState(prev => ({ 
-      ...prev, 
-      successMessage: message,
-      errors: {}
-    }));
-    // Reload data after successful operations
-    loadUsers();
-    loadUserStats();
-    // Clear success message after 5 seconds
-    setTimeout(() => {
-      setState(prev => ({ ...prev, successMessage: null }));
-    }, 5000);
-  };
-
-  // User operations
-  const handleUserSave = () => {
-    handleSuccess('User saved successfully');
-    handleNavigateToList();
-  };
-
-  const handleUserCreate = () => {
-    handleSuccess('User created successfully');
-    handleNavigateToList();
-  };
-
-  // Render the appropriate view based on current state
-  const renderCurrentView = () => {
-    switch (state.currentView) {
-      case 'list':
-        return (
-          <UserList
-            onViewUser={handleNavigateToDetail}
-            onEditUser={handleNavigateToEdit}
-            onViewActivity={handleNavigateToActivity}
-            onViewTimeTracking={handleNavigateToTimeTracking}
-            onCreateUser={handleNavigateToCreate}
-          />
-        );
-
-      case 'detail':
-        if (!state.selectedUserId) {
-          handleNavigateToList();
-          return null;
+    openDialog(
+      async () => {
+        try {
+          await userService.deleteUser(userId);
+          setState(prev => ({ 
+            ...prev, 
+            successMessage: 'User deleted successfully' 
+          }));
+          loadUsers(); // Reload the list
+        } catch (error) {
+          console.error('Failed to delete user:', error);
+          setState(prev => ({ 
+            ...prev, 
+            error: 'Failed to delete user. Please try again.' 
+          }));
         }
-        return (
-          <UserDetail
-            userId={state.selectedUserId}
-            onBack={handleNavigateToList}
-            onEdit={handleNavigateToEdit}
-            onViewActivity={handleNavigateToActivity}
-            onViewTimeTracking={handleNavigateToTimeTracking}
-          />
-        );
+      },
+      {
+        title: 'Delete User',
+        message: `Are you sure you want to delete ${user.first_name} ${user.last_name}? This action cannot be undone.`
+      }
+    );
+  };
 
-      case 'edit':
-        if (!state.selectedUserId) {
-          handleNavigateToList();
-          return null;
-        }
-        return (
-          <UserEdit
-            userId={state.selectedUserId}
-            onBack={handleNavigateToList}
-            onSave={handleUserSave}
-          />
-        );
-
-      case 'activity':
-        if (!state.selectedUserId) {
-          handleNavigateToList();
-          return null;
-        }
-        return (
-          <UserActivity
-            userId={state.selectedUserId}
-            onBack={handleNavigateToList}
-          />
-        );
-
-      case 'timeTracking':
-        if (!state.selectedUserId) {
-          handleNavigateToList();
-          return null;
-        }
-        return (
-          <UserTimeTracking
-            userId={state.selectedUserId}
-            onBack={handleNavigateToList}
-          />
-        );
-
-      case 'create':
-        return (
-          <CreateUser
-            storeId={currentStore?.store_id || ''}
-            onBack={handleNavigateToList}
-            onSave={handleUserCreate}
-          />
-        );
-
+  // Get status badge styling
+  const getStatusBadge = (status: UserStatus) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'suspended':
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
-        return (
-          <UserList
-            onViewUser={handleNavigateToDetail}
-            onEditUser={handleNavigateToEdit}
-            onViewActivity={handleNavigateToActivity}
-            onViewTimeTracking={handleNavigateToTimeTracking}
-            onCreateUser={handleNavigateToCreate}
-          />
-        );
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  // Global notifications
-  const renderNotifications = () => {
-    if (!state.successMessage && !Object.keys(state.errors).length) return null;
+  // Format last login date
+  const formatLastLogin = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // Render user card (grid view)
+  const renderUserCard = (user: StoreUser) => (
+    <Card key={user.user_id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <UserGroupIcon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {user.first_name} {user.last_name}
+              </h3>
+              <p className="text-sm text-gray-600">{user.email}</p>
+            </div>
+          </div>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(user.status as UserStatus)}`}>
+            {user.status}
+          </span>
+        </div>
+        
+        <div className="space-y-2 mb-4">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Department:</span>
+            <span className="text-gray-900">{user.department || 'Not assigned'}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Role:</span>
+            <span className="text-gray-900">{user.role || 'Not assigned'}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Last Login:</span>
+            <span className="text-gray-900">{formatLastLogin(user.last_login)}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/settings/users/${user.user_id}`)}
+            >
+              <EyeIcon className="w-4 h-4 mr-1" />
+              View
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/settings/users/edit/${user.user_id}`)}
+            >
+              <PencilIcon className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+          </div>
+          <div className="flex space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/settings/users/${user.user_id}/activity`)}
+            >
+              <ChartBarIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/settings/users/${user.user_id}/time-tracking`)}
+            >
+              <ClockIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteUser(user.user_id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // Render user row (list view)
+  const renderUserRow = (user: StoreUser) => (
+    <Card key={user.user_id} className="overflow-hidden hover:shadow-md transition-all duration-300">
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <UserGroupIcon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                {user.first_name} {user.last_name}
+              </h3>
+              <p className="text-sm text-gray-600">{user.email}</p>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-6">
+            <div className="text-sm">
+              <span className="text-gray-500">Department:</span>
+              <span className="ml-1 text-gray-900">{user.department || 'Not assigned'}</span>
+            </div>
+            <div className="text-sm">
+              <span className="text-gray-500">Role:</span>
+              <span className="ml-1 text-gray-900">{user.role || 'Not assigned'}</span>
+            </div>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(user.status as UserStatus)}`}>
+              {user.status}
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/settings/users/${user.user_id}`)}
+            >
+              <EyeIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/settings/users/edit/${user.user_id}`)}
+            >
+              <PencilIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/settings/users/${user.user_id}/activity`)}
+            >
+              <ChartBarIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/settings/users/${user.user_id}/time-tracking`)}
+            >
+              <ClockIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteUser(user.user_id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="md:hidden mt-3 flex items-center justify-between">
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span>{user.department || 'No dept'}</span>
+            <span>{user.role || 'No role'}</span>
+          </div>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(user.status as UserStatus)}`}>
+            {user.status}
+          </span>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // Render pagination
+  const renderPagination = () => {
+    if (state.pagination.total <= state.pagination.limit) return null;
 
     return (
-      <div className="fixed top-4 right-4 z-50 max-w-sm space-y-3">
-        {state.successMessage && (
-          <div className="bg-white border border-green-200 rounded-lg p-4 shadow-lg ring-1 ring-black/5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                  <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{state.successMessage}</p>
-              </div>
-              <div className="ml-auto pl-3">
-                <div className="-mx-1.5 -my-1.5">
-                  <button
-                    onClick={() => setState(prev => ({ ...prev, successMessage: null }))}
-                    className="inline-flex rounded-md p-1.5 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="sr-only">Dismiss</span>
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg">
+        <div className="flex flex-1 justify-between sm:hidden">
+          <Button
+            variant="outline"
+            onClick={() => handlePageChange('previous')}
+            disabled={!state.pagination.hasPreviousPage}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handlePageChange('next')}
+            disabled={!state.pagination.hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
+        
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing page <span className="font-medium">{state.pagination.currentPage}</span> of{' '}
+              <span className="font-medium">{Math.ceil(state.pagination.total / state.pagination.limit)}</span>
+              {' '}({state.pagination.total} total users)
+            </p>
           </div>
-        )}
-
-        {Object.entries(state.errors).map(([key, message]) => (
-          <div key={key} className="bg-white border border-red-200 rounded-lg p-4 shadow-lg ring-1 ring-black/5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
-                  <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{message}</p>
-              </div>
-              <div className="ml-auto pl-3">
-                <div className="-mx-1.5 -my-1.5">
-                  <button
-                    onClick={() => setState(prev => {
-                      const newErrors = { ...prev.errors };
-                      delete newErrors[key];
-                      return { ...prev, errors: newErrors };
-                    })}
-                    className="inline-flex rounded-md p-1.5 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors"
-                  >
-                    <span className="sr-only">Dismiss</span>
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange('previous')}
+              disabled={!state.pagination.hasPreviousPage}
+            >
+              <ChevronLeftIcon className="w-4 h-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange('next')}
+              disabled={!state.pagination.hasNextPage}
+            >
+              Next
+              <ChevronRightIcon className="w-4 h-4 ml-1" />
+            </Button>
           </div>
-        ))}
+        </div>
       </div>
     );
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50/50">
-      {/* Global Notifications */}
-      {renderNotifications()}
-      
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {renderCurrentView()}
+  if (state.isLoading && state.users.length === 0) {
+    return (
+      <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
+        <PageHeader
+          title="Users"
+          description="Manage store users and their permissions"
+        />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-600 mt-2">Loading users...</p>
+          </div>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
+      {/* Page Header */}
+      <PageHeader
+        title="Users"
+        description="Manage store users and their permissions"
+      >
+        <Button onClick={() => navigate('/settings/users/new')}>
+          <PlusIcon className="w-4 h-4 mr-2" />
+          Add User
+        </Button>
+      </PageHeader>
+
+      {/* Error Alert */}
+      {state.error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-red-800">{state.error}</p>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                type="button"
+                className="inline-flex text-red-400 hover:text-red-600"
+                onClick={() => setState(prev => ({ ...prev, error: null }))}
+              >
+                <span className="sr-only">Dismiss</span>
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Alert */}
+      {state.successMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-green-800">{state.successMessage}</p>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                type="button"
+                className="inline-flex text-green-400 hover:text-green-600"
+                onClick={() => setState(prev => ({ ...prev, successMessage: null }))}
+              >
+                <span className="sr-only">Dismiss</span>
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search and Filter */}
+      <SearchAndFilter
+        searchValue={state.searchTerm}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Search users by name, email, or role..."
+        filterValue={state.statusFilter}
+        onFilterChange={handleStatusFilterChange}
+        filterOptions={statusOptions}
+        filterLabel="Status"
+        filterPlaceholder="All Statuses"
+        viewMode={state.viewMode}
+        onViewModeChange={handleViewModeChange}
+        showViewToggle={true}
+        showClearButton={true}
+        onClear={handleClear}
+      />
+
+      {/* Users Grid/List */}
+      {state.users.length === 0 ? (
+        <Card className="text-center py-12">
+          <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No users found</h3>
+          <p className="mt-2 text-gray-500">
+            {state.searchTerm || state.statusFilter !== 'all'
+              ? 'Try adjusting your search or filter criteria.'
+              : 'Get started by creating your first user.'}
+          </p>
+          <div className="mt-6">
+            <Button onClick={() => navigate('/settings/users/new')}>
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Add User
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <>
+          {/* Loading overlay for subsequent loads */}
+          {state.isLoading && (
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="text-gray-600 mt-2">Updating user list...</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={state.viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+            {state.users.map(user => 
+              state.viewMode === 'grid' ? renderUserCard(user) : renderUserRow(user)
+            )}
+          </div>
+
+          {/* Pagination */}
+          {renderPagination()}
+        </>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {dialogState.isOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-50">
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex items-end justify-center min-h-full p-4 text-center sm:items-center sm:p-0">
+              <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                  <div className="sm:flex sm:items-start">
+                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                      <TrashIcon className="h-6 w-6 text-red-600" />
+                    </div>
+                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                      <h3 className="text-base font-semibold leading-6 text-gray-900">Delete User</h3>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500">
+                          {dialogState.message}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                  <Button
+                    variant="destructive"
+                    onClick={handleConfirm}
+                    disabled={dialogState.isLoading}
+                    className="ml-3"
+                  >
+                    {dialogState.isLoading ? 'Deleting...' : 'Delete'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={closeDialog}
+                    disabled={dialogState.isLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default UserManagement;
+

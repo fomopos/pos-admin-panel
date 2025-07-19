@@ -1354,4 +1354,935 @@ const ProductForm: React.FC = () => {
 };
 ```
 
+---
+
+## CRUD Operations Implementation Guide
+
+This section provides comprehensive guidelines for implementing Create, Read, Update, Delete (CRUD) operations with proper validation, error handling, and API integration patterns.
+
+### CRUD Page Architecture
+
+#### 1. File Structure Pattern
+```
+pages/
+  ItemList.tsx           // List/Read operations
+  ItemEdit.tsx           // Create/Update operations
+  ItemDetail.tsx         // Detail view (optional)
+  
+components/item/
+  ItemForm.tsx           // Reusable form component
+  ItemCard.tsx           // List item display
+  ItemFilters.tsx        // Search and filter components
+```
+
+#### 2. Core Implementation Patterns
+
+##### List Page (Read Operations)
+```tsx
+import React, { useState, useEffect } from 'react';
+import { 
+  PageHeader, 
+  SearchAndFilter, 
+  Widget, 
+  Button, 
+  Alert,
+  ConfirmDialog,
+  Loading 
+} from '../components/ui';
+import { useError } from '../hooks/useError';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { itemService } from '../services/itemService';
+
+interface Item {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  updatedAt: string;
+}
+
+const ItemList: React.FC = () => {
+  // State management
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Error and dialog management
+  const { error, setError, clearError } = useError();
+  const deleteDialog = useConfirmDialog();
+  
+  // Data fetching
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      clearError();
+      const response = await itemService.getAll({
+        search: searchTerm,
+        status: statusFilter
+      });
+      setItems(response.data);
+    } catch (err) {
+      setError('Failed to load items. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Effects
+  useEffect(() => {
+    fetchItems();
+  }, [searchTerm, statusFilter]);
+  
+  // Handlers
+  const handleDelete = async (id: string) => {
+    const item = items.find(item => item.id === id);
+    if (!item) return;
+    
+    deleteDialog.open({
+      title: 'Delete Item',
+      message: `Are you sure you want to delete "${item.name}"? This action cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await itemService.delete(id);
+          setItems(prev => prev.filter(item => item.id !== id));
+          // Optional: Show success message
+        } catch (err) {
+          setError('Failed to delete item. Please try again.');
+        }
+      }
+    });
+  };
+  
+  const handleStatusChange = async (id: string, status: 'active' | 'inactive') => {
+    try {
+      await itemService.updateStatus(id, status);
+      setItems(prev => prev.map(item => 
+        item.id === id ? { ...item, status } : item
+      ));
+    } catch (err) {
+      setError('Failed to update item status. Please try again.');
+    }
+  };
+  
+  // Filtered data
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = !statusFilter || item.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+  
+  if (loading) {
+    return (
+      <Loading
+        title="Loading Items"
+        description="Please wait while we fetch your items..."
+      />
+    );
+  }
+  
+  return (
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
+      <PageHeader
+        title="Items"
+        description="Manage your items and their settings"
+      >
+        <Button
+          variant="primary"
+          onClick={() => navigate('/items/new')}
+        >
+          Create New Item
+        </Button>
+      </PageHeader>
+      
+      {error && (
+        <Alert variant="error" onClose={clearError}>
+          {error}
+        </Alert>
+      )}
+      
+      <SearchAndFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search items by name..."
+        filterValue={statusFilter}
+        onFilterChange={setStatusFilter}
+        filterOptions={[
+          { id: 'active', label: 'Active' },
+          { id: 'inactive', label: 'Inactive' }
+        ]}
+        filterPlaceholder="All Statuses"
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+      
+      <Widget
+        title={`Items (${filteredItems.length})`}
+        description="List of all items in your system"
+      >
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No items found</p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => navigate('/items/new')}
+            >
+              Create First Item
+            </Button>
+          </div>
+        ) : (
+          <div className={`grid gap-4 ${
+            viewMode === 'grid' 
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+              : 'grid-cols-1'
+          }`}>
+            {filteredItems.map(item => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                onEdit={(id) => navigate(`/items/${id}/edit`)}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                viewMode={viewMode}
+              />
+            ))}
+          </div>
+        )}
+      </Widget>
+      
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={deleteDialog.onClose}
+        onConfirm={deleteDialog.onConfirm}
+        title={deleteDialog.title}
+        message={deleteDialog.message}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={deleteDialog.isLoading}
+      />
+    </div>
+  );
+};
+
+export default ItemList;
+```
+
+##### Edit Page (Create/Update Operations)
+```tsx
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  PageHeader, 
+  Widget, 
+  Button, 
+  Alert,
+  InputTextField,
+  InputTextArea,
+  DropdownSearch,
+  PropertyCheckbox,
+  Loading 
+} from '../components/ui';
+import { useError } from '../hooks/useError';
+import { itemService } from '../services/itemService';
+
+interface ItemFormData {
+  name: string;
+  description: string;
+  category_id: string;
+  status: 'active' | 'inactive';
+  is_featured: boolean;
+}
+
+interface ValidationErrors {
+  name?: string;
+  description?: string;
+  category_id?: string;
+  [key: string]: string | undefined;
+}
+
+const ItemEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const isEdit = Boolean(id);
+  
+  // State management
+  const [formData, setFormData] = useState<ItemFormData>({
+    name: '',
+    description: '',
+    category_id: '',
+    status: 'active',
+    is_featured: false
+  });
+  
+  const [originalData, setOriginalData] = useState<ItemFormData | null>(null);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [loading, setLoading] = useState(isEdit);
+  const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState([]);
+  
+  // Error management
+  const { error, setError, clearError } = useError();
+  
+  // Change tracking
+  const hasChanges = originalData ? 
+    JSON.stringify(formData) !== JSON.stringify(originalData) : 
+    Object.values(formData).some(value => 
+      typeof value === 'string' ? value.trim() !== '' : value !== false
+    );
+  
+  // Data fetching
+  const fetchItem = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      clearError();
+      const response = await itemService.getById(id);
+      const data = response.data;
+      setFormData(data);
+      setOriginalData(data);
+    } catch (err) {
+      setError('Failed to load item. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryService.getAll();
+      setCategories(response.data.map(cat => ({
+        id: cat.id,
+        label: cat.name,
+        description: cat.description
+      })));
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  };
+  
+  // Effects
+  useEffect(() => {
+    fetchCategories();
+    if (isEdit) {
+      fetchItem();
+    }
+  }, [id, isEdit]);
+  
+  // Clear field-specific errors when user starts typing
+  useEffect(() => {
+    if (errors.name && formData.name.trim()) {
+      setErrors(prev => ({ ...prev, name: undefined }));
+    }
+  }, [formData.name, errors.name]);
+  
+  useEffect(() => {
+    if (errors.category_id && formData.category_id) {
+      setErrors(prev => ({ ...prev, category_id: undefined }));
+    }
+  }, [formData.category_id, errors.category_id]);
+  
+  // Validation
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    // Required field validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    } else if (formData.name.length > 100) {
+      newErrors.name = 'Name must not exceed 100 characters';
+    }
+    
+    if (!formData.category_id) {
+      newErrors.category_id = 'Category is required';
+    }
+    
+    if (formData.description.length > 500) {
+      newErrors.description = 'Description must not exceed 500 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  // Form handlers
+  const handleInputChange = (field: keyof ItemFormData, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear API errors when user modifies the field
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    try {
+      setSaving(true);
+      clearError();
+      
+      let response;
+      if (isEdit) {
+        response = await itemService.update(id!, formData);
+      } else {
+        response = await itemService.create(formData);
+      }
+      
+      // Success handling
+      navigate('/items', {
+        state: {
+          message: `Item ${isEdit ? 'updated' : 'created'} successfully!`
+        }
+      });
+      
+    } catch (err: any) {
+      // Handle API validation errors
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        const apiErrors = err.response.data.errors;
+        setErrors(apiErrors);
+      } else if (err.response?.status === 409) {
+        setErrors({ name: 'An item with this name already exists' });
+      } else {
+        setError(`Failed to ${isEdit ? 'update' : 'create'} item. Please try again.`);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  const handleCancel = () => {
+    if (hasChanges) {
+      if (confirm('You have unsaved changes. Are you sure you want to leave?')) {
+        navigate('/items');
+      }
+    } else {
+      navigate('/items');
+    }
+  };
+  
+  if (loading) {
+    return (
+      <Loading
+        title="Loading Item"
+        description="Please wait while we fetch the item details..."
+      />
+    );
+  }
+  
+  return (
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
+      <PageHeader
+        title={isEdit ? 'Edit Item' : 'Create New Item'}
+        description={isEdit ? 'Update item information' : 'Add a new item to your inventory'}
+      >
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={saving}
+          >
+            Back to Items
+          </Button>
+          {hasChanges && (
+            <Button
+              variant="primary"
+              onClick={handleSubmit}
+              isLoading={saving}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : isEdit ? 'Update Item' : 'Create Item'}
+            </Button>
+          )}
+        </div>
+      </PageHeader>
+      
+      {error && (
+        <Alert variant="error" onClose={clearError}>
+          {error}
+        </Alert>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Widget
+            title="Basic Information"
+            description="Essential item details"
+            className="lg:col-span-2"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputTextField
+                label="Item Name"
+                required
+                value={formData.name}
+                onChange={(value) => handleInputChange('name', value)}
+                error={errors.name}
+                placeholder="Enter item name"
+                disabled={saving}
+              />
+              
+              <DropdownSearch
+                label="Category"
+                required
+                value={formData.category_id}
+                placeholder="Select a category"
+                options={categories}
+                onSelect={(option) => handleInputChange('category_id', option?.id || '')}
+                error={errors.category_id}
+                disabled={saving}
+              />
+              
+              <InputTextArea
+                label="Description"
+                value={formData.description}
+                onChange={(value) => handleInputChange('description', value)}
+                error={errors.description}
+                placeholder="Enter item description..."
+                rows={4}
+                colSpan="md:col-span-2"
+                helperText="Optional: Provide a detailed description (max 500 characters)"
+                disabled={saving}
+              />
+            </div>
+          </Widget>
+          
+          <Widget
+            title="Settings"
+            description="Configure item settings"
+          >
+            <div className="space-y-4">
+              <DropdownSearch
+                label="Status"
+                value={formData.status}
+                placeholder="Select status"
+                options={[
+                  { id: 'active', label: 'Active', description: 'Item is available' },
+                  { id: 'inactive', label: 'Inactive', description: 'Item is not available' }
+                ]}
+                onSelect={(option) => handleInputChange('status', option?.id || 'active')}
+                disabled={saving}
+              />
+              
+              <PropertyCheckbox
+                title="Featured Item"
+                description="Display this item prominently in listings"
+                checked={formData.is_featured}
+                onChange={(checked) => handleInputChange('is_featured', checked)}
+                disabled={saving}
+              />
+            </div>
+          </Widget>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default ItemEdit;
+```
+
+### Validation Framework
+
+#### 1. Client-Side Validation Patterns
+
+##### Field Validation Functions
+```tsx
+// utils/validation.ts
+export interface ValidationRule {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  custom?: (value: any) => string | undefined;
+}
+
+export interface FieldValidation {
+  [fieldName: string]: ValidationRule;
+}
+
+export const validateField = (
+  value: any, 
+  rules: ValidationRule, 
+  fieldName: string
+): string | undefined => {
+  // Required validation
+  if (rules.required && (!value || (typeof value === 'string' && !value.trim()))) {
+    return `${fieldName} is required`;
+  }
+  
+  // Skip other validations if field is empty and not required
+  if (!value || (typeof value === 'string' && !value.trim())) {
+    return undefined;
+  }
+  
+  // Length validations
+  if (typeof value === 'string') {
+    if (rules.minLength && value.length < rules.minLength) {
+      return `${fieldName} must be at least ${rules.minLength} characters`;
+    }
+    
+    if (rules.maxLength && value.length > rules.maxLength) {
+      return `${fieldName} must not exceed ${rules.maxLength} characters`;
+    }
+  }
+  
+  // Pattern validation
+  if (rules.pattern && typeof value === 'string' && !rules.pattern.test(value)) {
+    return `${fieldName} format is invalid`;
+  }
+  
+  // Custom validation
+  if (rules.custom) {
+    return rules.custom(value);
+  }
+  
+  return undefined;
+};
+
+export const validateForm = <T extends Record<string, any>>(
+  data: T,
+  validationRules: FieldValidation
+): Record<string, string> => {
+  const errors: Record<string, string> = {};
+  
+  Object.keys(validationRules).forEach(field => {
+    const error = validateField(
+      data[field],
+      validationRules[field],
+      field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    );
+    
+    if (error) {
+      errors[field] = error;
+    }
+  });
+  
+  return errors;
+};
+
+// Specific validation rules
+export const itemValidationRules: FieldValidation = {
+  name: {
+    required: true,
+    minLength: 2,
+    maxLength: 100
+  },
+  description: {
+    maxLength: 500
+  },
+  category_id: {
+    required: true
+  },
+  email: {
+    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    custom: (value) => {
+      if (value && !value.includes('@')) {
+        return 'Email must contain @ symbol';
+      }
+    }
+  }
+};
+```
+
+##### Real-time Validation Hook
+```tsx
+// hooks/useFormValidation.ts
+import { useState, useCallback } from 'react';
+import { validateForm, validateField, FieldValidation } from '../utils/validation';
+
+export const useFormValidation = <T extends Record<string, any>>(
+  validationRules: FieldValidation
+) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const validateSingleField = useCallback((
+    fieldName: string,
+    value: any,
+    data?: T
+  ) => {
+    const rule = validationRules[fieldName];
+    if (!rule) return;
+    
+    const error = validateField(value, rule, fieldName);
+    
+    setErrors(prev => ({
+      ...prev,
+      [fieldName]: error || undefined
+    }));
+    
+    return !error;
+  }, [validationRules]);
+  
+  const validateAllFields = useCallback((data: T) => {
+    const newErrors = validateForm(data, validationRules);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [validationRules]);
+  
+  const clearFieldError = useCallback((fieldName: string) => {
+    setErrors(prev => ({ ...prev, [fieldName]: undefined }));
+  }, []);
+  
+  const clearAllErrors = useCallback(() => {
+    setErrors({});
+  }, []);
+  
+  return {
+    errors,
+    validateSingleField,
+    validateAllFields,
+    clearFieldError,
+    clearAllErrors,
+    hasErrors: Object.keys(errors).length > 0
+  };
+};
+```
+
+#### 2. API Integration Patterns
+
+##### Service Layer Structure
+```tsx
+// services/itemService.ts
+import { apiClient } from './apiClient';
+
+export interface ItemResponse {
+  data: Item;
+  message?: string;
+}
+
+export interface ItemListResponse {
+  data: Item[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ApiError {
+  message: string;
+  errors?: Record<string, string>;
+  code?: string;
+}
+
+class ItemService {
+  private basePath = '/items';
+  
+  async getAll(params?: {
+    search?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<ItemListResponse> {
+    const response = await apiClient.get(this.basePath, { params });
+    return response.data;
+  }
+  
+  async getById(id: string): Promise<ItemResponse> {
+    const response = await apiClient.get(`${this.basePath}/${id}`);
+    return response.data;
+  }
+  
+  async create(data: ItemFormData): Promise<ItemResponse> {
+    const response = await apiClient.post(this.basePath, data);
+    return response.data;
+  }
+  
+  async update(id: string, data: ItemFormData): Promise<ItemResponse> {
+    const response = await apiClient.put(`${this.basePath}/${id}`, data);
+    return response.data;
+  }
+  
+  async delete(id: string): Promise<void> {
+    await apiClient.delete(`${this.basePath}/${id}`);
+  }
+  
+  async updateStatus(id: string, status: string): Promise<ItemResponse> {
+    const response = await apiClient.patch(`${this.basePath}/${id}/status`, { status });
+    return response.data;
+  }
+}
+
+export const itemService = new ItemService();
+```
+
+##### API Client Configuration
+```tsx
+// services/apiClient.ts
+import axios from 'axios';
+
+export const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE_URL || '/api',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor for auth
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized - redirect to login
+      localStorage.removeItem('authToken');
+      window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // Handle forbidden - show access denied
+      console.error('Access denied');
+    } else if (error.response?.status >= 500) {
+      // Handle server errors
+      console.error('Server error:', error.response.data);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+```
+
+#### 3. Error Handling Framework
+
+##### Global Error Hook
+```tsx
+// hooks/useError.ts
+import { useState, useCallback } from 'react';
+
+export interface ErrorState {
+  message: string;
+  type: 'error' | 'warning' | 'info';
+  details?: Record<string, any>;
+}
+
+export const useError = () => {
+  const [error, setErrorState] = useState<ErrorState | null>(null);
+  
+  const setError = useCallback((
+    message: string,
+    type: 'error' | 'warning' | 'info' = 'error',
+    details?: Record<string, any>
+  ) => {
+    setErrorState({ message, type, details });
+  }, []);
+  
+  const clearError = useCallback(() => {
+    setErrorState(null);
+  }, []);
+  
+  return {
+    error: error?.message || null,
+    errorType: error?.type || 'error',
+    errorDetails: error?.details,
+    setError,
+    clearError,
+    hasError: Boolean(error)
+  };
+};
+```
+
+##### API Error Handler
+```tsx
+// utils/errorHandler.ts
+export const handleApiError = (
+  error: any,
+  setFieldErrors?: (errors: Record<string, string>) => void,
+  setGlobalError?: (message: string) => void
+) => {
+  console.error('API Error:', error);
+  
+  if (error.response?.status === 422 && error.response?.data?.errors) {
+    // Validation errors
+    if (setFieldErrors) {
+      setFieldErrors(error.response.data.errors);
+    }
+  } else if (error.response?.status === 409) {
+    // Conflict errors (e.g., duplicate entries)
+    const message = error.response?.data?.message || 'A conflict occurred';
+    if (setGlobalError) {
+      setGlobalError(message);
+    }
+  } else if (error.response?.status === 404) {
+    if (setGlobalError) {
+      setGlobalError('The requested resource was not found');
+    }
+  } else if (error.response?.status >= 500) {
+    if (setGlobalError) {
+      setGlobalError('A server error occurred. Please try again later.');
+    }
+  } else if (error.code === 'NETWORK_ERROR') {
+    if (setGlobalError) {
+      setGlobalError('Network error. Please check your connection.');
+    }
+  } else {
+    if (setGlobalError) {
+      setGlobalError(error.response?.data?.message || 'An unexpected error occurred');
+    }
+  }
+};
+```
+
+### Best Practices Summary
+
+#### 1. Form State Management
+- Use separate state for form data, original data, and validation errors
+- Implement change tracking to show/hide save buttons
+- Clear field-specific errors when user starts typing
+- Maintain loading and saving states for better UX
+
+#### 2. Validation Strategy
+- Implement both client-side and server-side validation
+- Use real-time validation for immediate feedback
+- Clear validation errors when fields are modified
+- Handle API validation errors gracefully
+
+#### 3. Error Handling
+- Use consistent error messaging patterns
+- Differentiate between field-specific and global errors
+- Provide actionable error messages
+- Handle network and server errors appropriately
+
+#### 4. API Integration
+- Use service layer pattern for API calls
+- Implement proper error handling in API client
+- Handle loading states consistently
+- Use optimistic updates where appropriate
+
+#### 5. User Experience
+- Provide clear loading indicators
+- Implement confirmation dialogs for destructive actions
+- Show success messages after operations
+- Handle unsaved changes appropriately
+- Use consistent button states and visibility
+
+#### 6. Performance Considerations
+- Debounce search inputs to avoid excessive API calls
+- Use pagination for large datasets
+- Implement proper caching strategies
+- Optimize re-renders with proper dependency arrays
+
+This comprehensive guide ensures consistent implementation of CRUD operations across the POS Admin Panel while maintaining excellent user experience and robust error handling.
+
+---
+
 This styling guide provides a comprehensive foundation for maintaining consistent design across the POS Admin Panel. Always refer to existing components and patterns before creating new ones, and ensure all new components follow these established guidelines.

@@ -121,24 +121,39 @@ export interface BarcodeScannerConfig {
 
 // Main Hardware Device Interface
 export interface HardwareDevice {
-  id: string;
+  hardware_id: string; // Updated field name to match API response
+  tenant_id: string;   // Added tenant_id field
+  store_id: string;
   name: string;
   type: DeviceType;
   enabled: boolean;
   status: DeviceStatus;
   connection_type: ConnectionType;
   test_mode: boolean;
-  store_id: string;
   terminal_id?: string;
   last_connected: string; // ISO 8601 timestamp
   
   // Device-specific configurations (only one will be populated based on type)
-  thermal_printer: Partial<ThermalPrinterConfig>;
-  kot_printer: Partial<KotPrinterConfig>;
-  network_printer: Partial<NetworkPrinterConfig>;
-  barcode_scanner: Partial<BarcodeScannerConfig>;
-  cash_drawer: Partial<CashDrawerConfig>;
-  label_printer: Partial<LabelPrinterConfig>;
+  thermal_printer: Partial<ThermalPrinterConfig> | null;
+  kot_printer: Partial<KotPrinterConfig> | null;
+  network_printer: Partial<NetworkPrinterConfig> | null;
+  barcode_scanner: Partial<BarcodeScannerConfig> | null;
+  cash_drawer: Partial<CashDrawerConfig> | null;
+  label_printer: Partial<LabelPrinterConfig> | null;
+  
+  // Additional API fields
+  properties?: any;
+  created_at: string;
+  created_by: string;
+  updated_at: string;
+  updated_by?: string | null;
+}
+
+// API Response for getting hardware devices with pagination
+export interface HardwareDeviceListResponse {
+  hardware: HardwareDevice[];
+  has_more: boolean;
+  next_token?: string;
 }
 
 // Create Device Request
@@ -151,26 +166,26 @@ export interface CreateHardwareDeviceRequest {
   connection_type: ConnectionType;
   test_mode: boolean;
   store_id: string;
-  terminal_id?: string;
+  terminal_id: string | null;
   last_connected: string;
-  thermal_printer: Partial<ThermalPrinterConfig>;
-  kot_printer: Partial<KotPrinterConfig>;
-  network_printer: Partial<NetworkPrinterConfig>;
-  barcode_scanner: Partial<BarcodeScannerConfig>;
-  cash_drawer: Partial<CashDrawerConfig>;
-  label_printer: Partial<LabelPrinterConfig>;
+  thermal_printer: Partial<ThermalPrinterConfig> | null;
+  kot_printer: Partial<KotPrinterConfig> | null;
+  network_printer: Partial<NetworkPrinterConfig> | null;
+  barcode_scanner: Partial<BarcodeScannerConfig> | null;
+  cash_drawer: Partial<CashDrawerConfig> | null;
+  label_printer: Partial<LabelPrinterConfig> | null;
 }
 
 // Update Device Request
 export interface UpdateHardwareDeviceRequest {
   status?: DeviceStatus;
   enabled?: boolean;
-  thermal_printer?: Partial<ThermalPrinterConfig>;
-  kot_printer?: Partial<KotPrinterConfig>;
-  network_printer?: Partial<NetworkPrinterConfig>;
-  barcode_scanner?: Partial<BarcodeScannerConfig>;
-  cash_drawer?: Partial<CashDrawerConfig>;
-  label_printer?: Partial<LabelPrinterConfig>;
+  thermal_printer?: Partial<ThermalPrinterConfig> | null;
+  kot_printer?: Partial<KotPrinterConfig> | null;
+  network_printer?: Partial<NetworkPrinterConfig> | null;
+  barcode_scanner?: Partial<BarcodeScannerConfig> | null;
+  cash_drawer?: Partial<CashDrawerConfig> | null;
+  label_printer?: Partial<LabelPrinterConfig> | null;
 }
 
 // API Response interfaces

@@ -88,8 +88,33 @@ const RoleDetailPage: React.FC = () => {
     }
   };
 
-  const getCategoryIcon = () => {
-    return ShieldCheckIcon; // Default icon
+  const getCategoryIcon = (iconName: string) => {
+    // Map icon names to actual icons
+    switch (iconName) {
+      case 'store':
+      case 'shopping-cart':
+      case 'package':
+        return ShieldCheckIcon;
+      case 'building':
+      case 'users':
+        return ShieldCheckIcon;
+      case 'chart-bar':
+      case 'bar-chart':
+      case 'trending-up':
+        return ShieldCheckIcon;
+      case 'settings-2':
+      case 'settings':
+      case 'server':
+        return ShieldCheckIcon;
+      case 'shield-check':
+      case 'warehouse':
+      case 'user-check':
+      case 'percent':
+      case 'file-search':
+      case 'folder-tree':
+      default:
+        return ShieldCheckIcon;
+    }
   };
 
   const getPermissionsByCategory = () => {
@@ -324,7 +349,7 @@ const RoleDetailPage: React.FC = () => {
             <div className="space-y-6">
               {Object.entries(permissionsByCategory).map(([categoryName, permissions]) => {
                 const categoryInfo = permissionCategories.find(c => c.category_info.name === categoryName)?.category_info;
-                const IconComponent = getCategoryIcon();
+                const IconComponent = getCategoryIcon(categoryInfo?.icon || 'shield-check');
                 
                 return (
                   <div key={categoryName} className="border-2 border-gray-100 rounded-xl p-6 bg-white/50 backdrop-blur-sm hover:bg-white/70 transition-all duration-300">

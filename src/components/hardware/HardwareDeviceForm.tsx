@@ -22,6 +22,7 @@ import {
   ScannerConfig as ScannerConfigComponent
 } from './device-configs';
 import { useTenantStore } from '../../tenants/tenantStore';
+import { useError } from '../../hooks/useError';
 import type {
   HardwareDevice
 } from '../../types/hardware';
@@ -55,6 +56,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
   mode
 }) => {
   const { currentStore } = useTenantStore();
+  const { showError, showValidationError } = useError();
   const [formData, setFormData] = useState<Partial<HardwareDevice>>({
     name: '',
     type: 'receipt_printer',
@@ -237,19 +239,23 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
 
     if (!formData.name?.trim()) {
       newErrors.name = 'Device name is required';
+      showValidationError('Device name is required', 'name', formData.name);
     }
 
     if (!formData.type) {
       newErrors.type = 'Device type is required';
+      showValidationError('Device type is required', 'type', formData.type);
     }
 
     if (!formData.connection_type) {
       newErrors.connection_type = 'Connection type is required';
+      showValidationError('Connection type is required', 'connection_type', formData.connection_type);
     }
 
     // Terminal selection validation for terminal level
     if (level === 'terminal' && !selectedTerminalId) {
       newErrors.terminal = 'Please select a terminal for this device';
+      showValidationError('Please select a terminal for this device', 'terminal', selectedTerminalId);
     }
 
     // Network connection validation
@@ -258,9 +264,11 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
         const config = formData as Partial<ThermalPrinterConfig | KotPrinterConfig>;
         if (!config.ip_address?.trim()) {
           newErrors.ip_address = 'IP address is required for network connection';
+          showValidationError('IP address is required for network connection', 'ip_address', config.ip_address);
         }
         if (!config.port || config.port <= 0) {
           newErrors.port = 'Valid port number is required';
+          showValidationError('Valid port number is required', 'port', config.port);
         }
       }
     }
@@ -270,13 +278,36 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
       const scannerConfig = formData as Partial<BarcodeScannerConfig>;
       if (!scannerConfig.min_length || scannerConfig.min_length < 1) {
         newErrors.min_length = 'Minimum length must be at least 1';
+        showValidationError('Minimum length must be at least 1', 'min_length', scannerConfig.min_length);
       }
       if (!scannerConfig.max_length || scannerConfig.max_length < scannerConfig.min_length!) {
         newErrors.max_length = 'Maximum length must be greater than minimum length';
+        showValidationError('Maximum length must be greater than minimum length', 'max_length', scannerConfig.max_length);
+      }
+    }
+
+    // Kitchen printer specific validation
+    if (formData.type === 'kitchen_printer') {
+      const kitchenConfig = formData as Partial<KotPrinterConfig>;
+      if (!kitchenConfig.kitchen_sections || kitchenConfig.kitchen_sections.length === 0) {
+        newErrors.kitchen_sections = 'At least one kitchen section must be selected';
+        showValidationError('At least one kitchen section must be selected', 'kitchen_sections', kitchenConfig.kitchen_sections);
       }
     }
 
     setErrors(newErrors);
+    
+    // Show validation error summary if there are errors
+    if (Object.keys(newErrors).length > 0) {
+      const errorMessages = Object.values(newErrors);
+      showValidationError(
+        `Please fix the following errors before saving the device: ${errorMessages.join(', ')}`,
+        'form_validation',
+        null,
+        'required'
+      );
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -285,6 +316,9 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
 
     setIsLoading(true);
     try {
+      // Clear any previous errors
+      setErrors({});
+      
       const deviceData: HardwareDevice = {
         id: device?.id || `${formData.type}_${Date.now()}`,
         ...formData
@@ -293,9 +327,14 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
       // Pass terminal ID for terminal level devices
       onSave(deviceData, level === 'terminal' ? selectedTerminalId : undefined);
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save device:', error);
-      setErrors({ general: 'Failed to save device. Please try again.' });
+      
+      // Use error framework for API error display
+      showError(error?.message || 'Failed to save device. Please try again.');
+      
+      // Also set local error for backward compatibility
+      setErrors({ general: error?.message || 'Failed to save device. Please try again.' });
     } finally {
       setIsLoading(false);
     }

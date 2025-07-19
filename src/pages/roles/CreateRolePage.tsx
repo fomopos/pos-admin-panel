@@ -4,8 +4,9 @@ import {
   ArrowLeftIcon, 
   ShieldCheckIcon,
   ExclamationTriangleIcon,
-  CheckIcon,
-  SparklesIcon
+  SparklesIcon,
+  XMarkIcon,
+  CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { PageHeader, Button } from '../../components/ui';
 import { CategoryWidget } from '../../components/category';
@@ -23,6 +24,7 @@ const CreateRolePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasChanges, setHasChanges] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -32,6 +34,14 @@ const CreateRolePage: React.FC = () => {
   useEffect(() => {
     loadPermissions();
   }, []);
+
+  // Track changes to determine if there are unsaved changes
+  useEffect(() => {
+    const hasData = formData.name.trim() !== '' || 
+                   formData.description.trim() !== '' ||
+                   selectedPermissions.size > 0;
+    setHasChanges(hasData);
+  }, [formData, selectedPermissions]);
 
   const loadPermissions = async () => {
     if (!currentTenant?.id || !currentStore?.store_id) return;
@@ -98,9 +108,16 @@ const CreateRolePage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const discardChanges = () => {
+    setFormData({
+      name: '',
+      description: ''
+    });
+    setSelectedPermissions(new Set());
+    setErrors({});
+  };
+
+  const saveAllChanges = async () => {
     if (!validateForm() || !currentTenant?.id || !currentStore?.store_id) return;
     
     try {
@@ -123,19 +140,27 @@ const CreateRolePage: React.FC = () => {
   const getCategoryIcon = (iconName: string) => {
     // Map icon names to actual icons
     switch (iconName) {
+      case 'store':
       case 'shopping-cart':
       case 'package':
+        return ShieldCheckIcon;
+      case 'building':
       case 'users':
+        return ShieldCheckIcon;
+      case 'chart-bar':
+      case 'bar-chart':
+      case 'trending-up':
+        return ShieldCheckIcon;
+      case 'settings-2':
       case 'settings':
+      case 'server':
+        return ShieldCheckIcon;
       case 'shield-check':
       case 'warehouse':
-      case 'bar-chart':
       case 'user-check':
       case 'percent':
-      case 'server':
       case 'file-search':
       case 'folder-tree':
-      case 'trending-up':
       default:
         return ShieldCheckIcon;
     }
@@ -187,17 +212,58 @@ const CreateRolePage: React.FC = () => {
         title="Create Role"
         description="Create a new user role with specific permissions"
       >
-        <Button
-          variant="outline"
-          onClick={() => navigate('/settings/roles')}
-          className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
-        >
-          <ArrowLeftIcon className="w-4 h-4 mr-2" />
-          Back to Roles
-        </Button>
+        <div className="flex items-center space-x-3">
+          {hasChanges && (
+            <div className="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+              <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+              Unsaved changes
+            </div>
+          )}
+          
+          {hasChanges ? (
+            <>
+              <Button
+                onClick={discardChanges}
+                variant="outline"
+                className="flex items-center space-x-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+              >
+                <XMarkIcon className="h-4 w-4" />
+                <span>Discard Changes</span>
+              </Button>
+              
+              <Button
+                onClick={saveAllChanges}
+                disabled={saving}
+                variant="primary"
+                className="flex items-center space-x-2"
+              >
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  <>
+                    <CloudArrowUpIcon className="h-4 w-4" />
+                    <span>Create Role</span>
+                  </>
+                )}
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => navigate('/settings/roles')}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              <span>Back to Roles</span>
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
           {/* Basic Information Widget */}
           <CategoryWidget
@@ -369,38 +435,7 @@ const CreateRolePage: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/settings/roles')}
-            className="w-full sm:w-auto"
-            disabled={saving}
-          >
-            Cancel
-          </Button>
-          
-          <Button
-            type="submit"
-            disabled={saving}
-            className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 w-full sm:w-auto"
-          >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Creating...</span>
-              </>
-            ) : (
-              <>
-                <CheckIcon className="h-4 w-4" />
-                <span>Create Role</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };

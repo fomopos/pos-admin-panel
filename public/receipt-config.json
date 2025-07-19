@@ -1,0 +1,327 @@
+{
+  "company_info_common_pre": {
+    "type": "section",
+    "conditions": [
+      {
+        "type": "condition",
+        "field": "legalEntity",
+        "operator": "exists"
+      }
+    ],
+    "rows": [
+      {
+        "type": "text",
+        "text": "{{store.store_name}}",
+        "align": "center"
+      },
+      {
+        "type": "text",
+        "text": "{{store.address.address1}}",
+        "align": "center"
+      },
+      {
+        "type": "text",
+        "text": "{{store.telephone1}}",
+        "align": "center"
+      },
+      {
+        "type": "text",
+        "text": "{{store.store_email}}",
+        "align": "center"
+      },
+      {
+        "type": "horizontalline"
+      }
+    ]
+  },
+  "invoice_header": {
+    "type": "section",
+    "rows": [
+        {
+          "type": "row",
+          "children": [
+            {
+              "flex": 1,
+              "type": "text",
+              "text": "Table: 0",
+              "align": "left"
+            },
+            {
+              "flex": 1,
+              "type": "text",
+              "text": "Ticket: {{transaction.trans_id}}",
+              "align": "right"
+            }
+          ]
+        },
+        {
+            "type": "text",
+            "text": "{{transaction.begin_datetime|format:datetime}}",
+            "align": "left"
+        },
+        {
+            "type": "horizontalline"
+        }
+    ]
+  },
+  "header": {
+    "type": "section",
+    "rows": [
+      {
+        "type": "sectionref",
+        "ref": "company_info_common_pre"
+      },
+      {
+        "type": "sectionref",
+        "ref": "invoice_header"
+      }
+    ]
+  },
+  "footer": {
+    "type": "section",
+    "rows": [
+      {
+        "type": "barcode",
+        "barcode_type": "code128",
+        "code": "{{transaction.store_id}}{{transaction.terminal_id}}{{transaction.trans_id}}"
+      },
+      {
+        "type": "barcode",
+        "barcode_type": "qrcode",
+        "code": "Einvoice Qr Code this will be very big data with many values."
+      }
+    ]
+  },
+  "page_break": {
+    "type": "section",
+    "rows": [
+      {
+        "type": "pagebreak"
+      }
+    ]
+  },
+  "transaction_total": {
+    "type": "section",
+    "rows": [
+      { "type": "horizontalline" },
+      {
+        "type": "row",
+        "children": [
+          { "flex": 1, "type": "text", "text": "Subtotal", "align": "left" },
+          { "flex": 1, "type": "text", "text": "{{transaction.totals.subTotal}}", "align": "right" }
+        ]
+      },
+      {
+        "type": "row",
+        "children": [
+          { "flex": 1, "type": "text", "text": "Discount", "align": "left" },
+          { "flex": 1, "type": "text", "text": "-{{transaction.totals.discountTotal}}", "align": "right" }
+        ]
+      },
+      {
+        "type": "row",
+        "children": [
+          { "flex": 1, "type": "text", "text": "Tax", "align": "left" },
+          { "flex": 1, "type": "text", "text": "{{transaction.totals.taxTotal}}", "align": "right" }
+        ]
+      },
+      {
+        "type": "row",
+        "children": [
+          { "flex": 1, "type": "text", "text": "Total", "align": "left" },
+          { "flex": 1, "type": "text", "text": "{{transaction.totals.total}}", "align": "right" }
+        ]
+      },
+      { "type": "horizontalline" }
+    ]
+  },
+  "payment_line_items": {
+    "type": "section",
+    "rows": [
+      {
+        "type": "iterator",
+        "path": "transaction.paymentLineItems",
+        "rows": [
+          {
+            "type": "text",
+            "text": "{{tender_id|fit:44,left}}{{amount|fit:20,right}}",
+            "align": "left"
+          }
+        ]
+      },
+      {
+        "type": "horizontalline"
+      }
+    ]
+  },
+  "line_items": {
+    "type": "section",
+    "rows": [
+      {
+        "type": "row",
+        "children": [
+          { "flex": 3, "type": "text", "text": "{{Item}}", "align": "left" },
+          { "flex": 1, "type": "text", "text": "{{Qty}}", "align": "left" },
+          { "flex": 1, "type": "text", "text": "{{Amt}}", "align": "right" }
+        ]
+      },
+      { "type": "horizontalline" },
+      {
+        "type": "iterator",
+        "path": "transaction.lineItems",
+        "rows": [
+          { "type": "text", "text": "{{item_description}}", "align": "left" },
+          {
+            "type": "row",
+            "children": [
+              { "flex": 3, "type": "text", "text": "{{item_id}}", "align": "left" },
+              { "flex": 1, "type": "text", "text": "{{quantity}}", "align": "left" },
+              { "flex": 1, "type": "text", "text": "{{extended_amount}}", "align": "right" }
+            ]
+          },
+          {
+            "type": "sectionref",
+            "ref": "price_modifiers"
+          }
+        ]
+      }
+    ]
+  },
+  "price_modifiers": {
+    "type": "section",
+    "conditions": [
+      { "type": "condition", "field": "priceModifiers", "operator": "exists" }
+    ],
+    "rows": [
+      {
+        "type": "iterator",
+        "path": "priceModifiers",
+        "rows": [
+          {
+            "type": "text",
+            "text": "  Discount: {{description|default:Discount}} -{{amount}}",
+            "align": "left"
+          }
+        ]
+      }
+    ]
+  },
+  "kot_modifiers": {
+    "type": "section",
+    "conditions": [
+      { "type": "condition", "field": "priceModifiers", "operator": "exists" }
+    ],
+    "rows": [
+      {
+        "type": "iterator",
+        "path": "priceModifiers",
+        "rows": [
+          {
+            "type": "text",
+            "text": "  - {{description}}",
+            "align": "left"
+          }
+        ]
+      }
+    ]
+  },
+  "StoreCopy": {
+    "type": "section",
+    "conditions": [
+    ],
+    "rows": [
+      {
+        "type": "sectionref",
+        "ref": "header"
+      },
+      {
+        "type": "sectionref",
+        "ref": "line_items"
+      },
+      {
+        "type": "sectionref",
+        "ref": "transaction_total"
+      },
+      {
+        "type": "sectionref",
+        "ref": "payment_line_items"
+      },
+      {
+        "type": "sectionref",
+        "ref": "footer"
+      },
+      {
+        "type": "sectionref",
+        "ref": "page_break"
+      }
+    ]
+  },
+  "KitchenOrderTicket": {
+    "type": "section",
+    "rows": [
+      {
+        "type": "text",
+        "text": "** KITCHEN ORDER TICKET **",
+        "align": "center"
+      },
+      {
+        "type": "text",
+        "text": "Table: {{transaction.table_id|default:Takeaway}}",
+        "align": "left"
+      },
+      {
+        "type": "text",
+        "text": "Ticket: {{transaction.trans_id}}",
+        "align": "left"
+      },
+      {
+        "type": "text",
+        "text": "{{transaction.begin_datetime|format:datetime}}",
+        "align": "left"
+      },
+      {
+        "type": "horizontalline"
+      },
+      {
+        "type": "row",
+        "children": [
+          { "flex": 1, "type": "text", "text": "QTY", "align": "left" },
+          { "flex": 4, "type": "text", "text": "ITEM", "align": "left" }
+        ]
+      },
+      {
+        "type": "horizontalline"
+      },
+      {
+        "type": "iterator",
+        "path": "transaction.lineItems",
+        "rows": [
+          {
+            "type": "row",
+            "children": [
+              { "flex": 1, "type": "text", "text": "{{quantity}}", "align": "left" },
+              { "flex": 4, "type": "text", "text": "{{item_description}}", "align": "left" }
+            ]
+          },
+          {
+            "type": "sectionref",
+            "ref": "kot_modifiers"
+          }
+        ]
+      },
+      {
+        "type": "horizontalline"
+      },
+      {
+        "type": "text",
+        "text": "Server: {{transaction.cashier_name|default:Unknown}}",
+        "align": "left"
+      },
+      {
+        "type": "text",
+        "text": "Note: {{transaction.kitchen_note|default:''}}",
+        "align": "left"
+      }
+    ]
+  }
+}

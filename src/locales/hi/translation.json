@@ -743,10 +743,19 @@
       "placeholders": {
         "tenderId": "टेंडर ID दर्ज करें",
         "description": "टेंडर विवरण दर्ज करें",
+        "tenderType": "टेंडर प्रकार चुनें",
+        "searchTenderTypes": "टेंडर प्रकार खोजें...",
+        "currency": "मुद्रा चुनें",
+        "searchCurrencies": "मुद्राएं खोजें...",
         "displayOrder": "1",
+        "availability": "टेंडर उपलब्धता विकल्प चुनें",
+        "searchAvailability": "उपलब्धता विकल्प खोजें...",
         "maxRefundDays": "30",
         "changeCashLimit": "10000.00"
       },
+      "selectAll": "सभी चुनें",
+      "clearAll": "सभी साफ़ करें",
+      "noAvailabilityOptions": "कोई उपलब्धता विकल्प नहीं मिले",
       "helperText": {
         "displayOrder": "कम संख्याएं टेंडर सूची में पहले दिखाई देती हैं",
         "tenderIdReadonly": "संपादन करते समय टेंडर ID बदला नहीं जा सकता"
@@ -756,7 +765,8 @@
         "descriptionRequired": "विवरण आवश्यक है", 
         "tenderIdTooLong": "टेंडर ID 50 वर्णों से कम होना चाहिए",
         "availabilityRequired": "कम से कम एक उपलब्धता विकल्प आवश्यक है",
-        "saveFailed": "टेंडर सहेजने में विफल। कृपया पुनः प्रयास करें।"
+        "saveFailed": "टेंडर सहेजने में विफल। कृपया पुनः प्रयास करें।",
+        "validationSummary": "कृपया टेंडर सेव करने से पहले निम्नलिखित त्रुटियों को ठीक करें:"
       }
     },
     "tenderTypes": {

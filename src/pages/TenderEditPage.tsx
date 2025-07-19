@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeftIcon,
-  CheckCircleIcon,
   TrashIcon,
   PlusIcon,
   CreditCardIcon,
@@ -23,7 +22,8 @@ import type {
   TenderConfiguration
 } from '../services/types/payment.types';
 import { useTenantStore } from '../tenants/tenantStore';
-import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
+import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 
 // Form data interface
 interface TenderFormData {
@@ -40,24 +40,7 @@ interface TenderFormData {
   availability: string[];
 }
 
-// Availability options for tender usage
-const AVAILABILITY_OPTIONS = [
-  {
-    id: 'SALE',
-    label: 'Sale',
-    description: 'Can be used for regular sales transactions'
-  },
-  {
-    id: 'RETURN_WITH_RECEIPT',
-    label: 'Return with Receipt',
-    description: 'Can be used for returns with receipt'
-  },
-  {
-    id: 'RETURN_WITHOUT_RECEIPT',
-    label: 'Return without Receipt', 
-    description: 'Can be used for returns without receipt'
-  }
-];
+// Availability options for tender usage - will be created inside component with translations
 
 // Tender templates for quick setup
 const TENDER_TEMPLATES = [
@@ -137,27 +120,49 @@ const TENDER_TEMPLATES = [
   }
 ];
 
-// Dropdown options for select fields
-const TENDER_TYPE_OPTIONS = [
-  { id: 'currency', label: 'tenderEdit.tenderTypes.currency.label', description: 'tenderEdit.tenderTypes.currency.description' },
-  { id: 'card', label: 'tenderEdit.tenderTypes.card.label', description: 'tenderEdit.tenderTypes.card.description' },
-  { id: 'giftcard', label: 'tenderEdit.tenderTypes.giftcard.label', description: 'tenderEdit.tenderTypes.giftcard.description' },
-  { id: 'loyalty', label: 'tenderEdit.tenderTypes.loyalty.label', description: 'tenderEdit.tenderTypes.loyalty.description' },
-  { id: 'voucher', label: 'tenderEdit.tenderTypes.voucher.label', description: 'tenderEdit.tenderTypes.voucher.description' }
-];
-
-const CURRENCY_OPTIONS = [
-  { id: 'aed', label: 'AED', description: 'tenderEdit.currencies.aed' },
-  { id: 'usd', label: 'USD', description: 'tenderEdit.currencies.usd' },
-  { id: 'eur', label: 'EUR', description: 'tenderEdit.currencies.eur' },
-  { id: 'gbp', label: 'GBP', description: 'tenderEdit.currencies.gbp' }
-];
+// Dropdown options will be created inside component with translations
 
 const TenderEditPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
+  const { showError, showSuccess, showValidationError } = useError();
+  
+  // Dropdown options for select fields with translations
+  const TENDER_TYPE_OPTIONS = [
+    { id: 'currency', label: t('tenderEdit.tenderTypes.currency.label'), description: t('tenderEdit.tenderTypes.currency.description') },
+    { id: 'card', label: t('tenderEdit.tenderTypes.card.label'), description: t('tenderEdit.tenderTypes.card.description') },
+    { id: 'giftcard', label: t('tenderEdit.tenderTypes.giftcard.label'), description: t('tenderEdit.tenderTypes.giftcard.description') },
+    { id: 'loyalty', label: t('tenderEdit.tenderTypes.loyalty.label'), description: t('tenderEdit.tenderTypes.loyalty.description') },
+    { id: 'voucher', label: t('tenderEdit.tenderTypes.voucher.label'), description: t('tenderEdit.tenderTypes.voucher.description') }
+  ];
+
+  const CURRENCY_OPTIONS = [
+    { id: 'aed', label: 'AED', description: t('tenderEdit.currencies.aed') },
+    { id: 'usd', label: 'USD', description: t('tenderEdit.currencies.usd') },
+    { id: 'eur', label: 'EUR', description: t('tenderEdit.currencies.eur') },
+    { id: 'gbp', label: 'GBP', description: t('tenderEdit.currencies.gbp') }
+  ];
+  
+  // Availability options for tender usage with translations
+  const AVAILABILITY_OPTIONS = [
+    {
+      id: 'SALE',
+      label: t('tenderEdit.availability.sale.label'),
+      description: t('tenderEdit.availability.sale.description')
+    },
+    {
+      id: 'RETURN_WITH_RECEIPT',
+      label: t('tenderEdit.availability.returnWithReceipt.label'),
+      description: t('tenderEdit.availability.returnWithReceipt.description')
+    },
+    {
+      id: 'RETURN_WITHOUT_RECEIPT',
+      label: t('tenderEdit.availability.returnWithoutReceipt.label'), 
+      description: t('tenderEdit.availability.returnWithoutReceipt.description')
+    }
+  ];
   
   const isEditing = Boolean(id);
   const [originalTender, setOriginalTender] = useState<Tender | null>(null);
@@ -202,14 +207,12 @@ const TenderEditPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   
   const [showTemplates, setShowTemplates] = useState(!isEditing);
 
   // Dialog hooks
   const deleteDialog = useDeleteConfirmDialog();
-  const discardDialog = useDiscardChangesDialog();
 
   // Load tender data
   useEffect(() => {
@@ -299,13 +302,35 @@ const TenderEditPage: React.FC = () => {
 
       setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
     } else if (!isEditing) {
-      // For new tenders, check if any fields are filled
+      // For new tenders, check if any fields are filled beyond defaults
       const hasData = formData.tender_id.trim() !== '' || 
                      formData.description.trim() !== '' ||
                      formData.denomination.length > 0;
       setHasChanges(hasData);
+    } else {
+      // If editing but no original tender loaded yet, no changes
+      setHasChanges(false);
     }
   }, [formData, originalTender, isEditing]);
+
+  // Clear field-specific errors when user starts typing
+  useEffect(() => {
+    if (errors.tender_id && formData.tender_id.trim()) {
+      setErrors(prev => ({ ...prev, tender_id: '' }));
+    }
+  }, [formData.tender_id, errors.tender_id]);
+
+  useEffect(() => {
+    if (errors.description && formData.description.trim()) {
+      setErrors(prev => ({ ...prev, description: '' }));
+    }
+  }, [formData.description, errors.description]);
+
+  useEffect(() => {
+    if (errors.availability && formData.availability.length > 0) {
+      setErrors(prev => ({ ...prev, availability: '' }));
+    }
+  }, [formData.availability, errors.availability]);
 
   const handleInputChange = (field: keyof TenderFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -380,6 +405,36 @@ const TenderEditPage: React.FC = () => {
     }
     
     setErrors(newErrors);
+    
+    // Show validation error summary if there are errors
+    if (Object.keys(newErrors).length > 0) {
+      const errorMessages = Object.entries(newErrors).map(([field, error]) => {
+        // Create friendly field names
+        let friendlyFieldName = '';
+        switch (field) {
+          case 'tender_id':
+            friendlyFieldName = t('tenderEdit.form.tenderId');
+            break;
+          case 'description':
+            friendlyFieldName = t('tenderEdit.form.description');
+            break;
+          case 'availability':
+            friendlyFieldName = t('tenderEdit.form.availability');
+            break;
+          default:
+            friendlyFieldName = field;
+        }
+        return `${friendlyFieldName}: ${error}`;
+      });
+      
+      showValidationError(
+        `${t('tenderEdit.form.errors.validationSummary')} ${errorMessages.join('; ')}`,
+        'tender_form_validation',
+        null,
+        'required'
+      );
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -401,20 +456,29 @@ const TenderEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
-        setSuccessMessage(t('tenderEdit.success.updated'));
+        showSuccess(t('tenderEdit.success.updated'));
+        setHasChanges(false);
       } else {
         await tenderApiService.createTender(tenderData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         }); 
-        setSuccessMessage(t('tenderEdit.success.created'));
+        showSuccess(t('tenderEdit.success.created'));
+        setHasChanges(false);
         setTimeout(() => navigate('/payment-settings'), 1500);
       }
-      
-      setHasChanges(false);
     } catch (error: any) {
       console.error('Failed to save tender:', error);
-      setErrors({ submit: error.message || t('tenderEdit.form.errors.saveFailed') });
+      
+      // Handle API validation errors
+      if (error.response?.status === 422 && error.response?.data?.errors) {
+        const apiErrors = error.response.data.errors;
+        setErrors(apiErrors);
+      } else if (error.response?.status === 409) {
+        setErrors({ tender_id: 'A tender with this ID already exists' });
+      } else {
+        showError(error.message || t('tenderEdit.form.errors.saveFailed'));
+      }
     } finally {
       setIsSaving(false);
     }
@@ -435,82 +499,11 @@ const TenderEditPage: React.FC = () => {
     );
   };
 
-  const discardChanges = () => {
-    discardDialog.openDiscardDialog(() => {
-      if (originalTender) {
-        setFormData({
-          tender_id: originalTender.tender_id,
-          type_code: originalTender.type_code,
-          currency_id: originalTender.currency_id,
-          description: originalTender.description || '',
-          display_order: originalTender.display_order || 1,
-          is_active: originalTender.is_active ?? true,
-          over_tender_allowed: originalTender.over_tender_allowed ?? true,
-          denomination: originalTender.denomination || [],
-          user_settings: originalTender.user_settings || [],
-          configuration: originalTender.configuration || {
-            serial_nbr_req: false,
-            open_cash_drawer: true,
-            unit_count_code: 'denomination',
-            min_denomination: 0.01,
-            effective_date: new Date().toISOString(),
-            expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            max_refund_days: 30,
-            customer_required: false,
-            change_tender_id: 'local_currency',
-            change_cash_limit: 10000.00,
-            split_tender_allowed: true
-          },
-          availability: originalTender.availability || ['SALE', 'RETURN_WITH_RECEIPT', 'RETURN_WITHOUT_RECEIPT']
-        });
-      } else {
-        // Reset to empty form
-        setFormData({
-          tender_id: '',
-          type_code: 'currency',
-          currency_id: 'aed',
-          description: '',
-          display_order: 1,
-          is_active: true,
-          over_tender_allowed: true,
-          denomination: [],
-          user_settings: [
-            {
-              group_id: 'everyone',
-              usage_code: ['sale', 'default'],
-              over_tender_limit: 10000.00,
-              min_amount: 0.01,
-              max_amount: 10000.00,
-              max_refund_with_receipt: 10000.00,
-              max_refund_without_receipt: 1000.00
-            }
-          ],
-          configuration: {
-            serial_nbr_req: false,
-            open_cash_drawer: true,
-            unit_count_code: 'denomination',
-            min_denomination: 0.01,
-            effective_date: new Date().toISOString(),
-            expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-            max_refund_days: 30,
-            customer_required: false,
-            change_tender_id: 'local_currency',
-            change_cash_limit: 10000.00,
-            split_tender_allowed: true
-          },
-          availability: ['SALE', 'RETURN_WITH_RECEIPT', 'RETURN_WITHOUT_RECEIPT']
-        });
-      }
-      
-      setErrors({});
-      setHasChanges(false);
-    });
-  };
-
-  const saveAllChanges = () => {
-    const form = document.querySelector('form') as HTMLFormElement;
+  const saveAllChanges = async () => {
+    const form = document.getElementById('tender-form') as HTMLFormElement;
     if (form) {
-      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      const event = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(event);
     }
   };
 
@@ -534,71 +527,40 @@ const TenderEditPage: React.FC = () => {
             <span>{t('tenderEdit.backToPayments')}</span>
           </Button>
           
+          {hasChanges && (
+            <Button
+              onClick={saveAllChanges}
+              disabled={isSaving}
+              variant="primary"
+              className="flex items-center space-x-2"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>{t('tenderEdit.saving')}</span>
+                </>
+              ) : (
+                <>
+                  <CloudArrowUpIcon className="h-4 w-4" />
+                  <span>{isEditing ? t('tenderEdit.updateTender') : t('tenderEdit.createTender')}</span>
+                </>
+              )}
+            </Button>
+          )}
+          
           {isEditing && (
             <Button
               onClick={handleDelete}
               variant="outline"
-              className="text-red-600 border-red-300 hover:bg-red-50"
+              disabled={isSaving}
+              className="flex items-center space-x-2 text-red-600 border-red-300 hover:bg-red-50"
             >
-              <TrashIcon className="h-4 w-4 mr-2" />
+              <TrashIcon className="h-4 w-4" />
               {t('tenderEdit.delete')}
             </Button>
           )}
         </div>
-
-        {/* Save/Discard Actions */}
-        {hasChanges && (
-          <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-amber-900">{t('tenderEdit.unsavedChanges.title')}</h3>
-                <p className="text-xs text-amber-700 mt-1">{t('tenderEdit.unsavedChanges.description')}</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end space-x-3">
-              <Button
-                onClick={discardChanges}
-                variant="outline"
-                size="sm"
-                className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-white"
-              >
-                <span>{t('tenderEdit.unsavedChanges.discard')}</span>
-              </Button>
-              <Button
-                onClick={saveAllChanges}
-                disabled={isSaving}
-                size="sm"
-                className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700 text-white disabled:bg-gray-400 shadow-sm"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>{t('tenderEdit.saving')}</span>
-                  </>
-                ) : (
-                  <>
-                    <CloudArrowUpIcon className="h-4 w-4" />
-                    <span>{t('tenderEdit.unsavedChanges.save')}</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
       </PageHeader>
-
-      {/* Success Message */}
-      {successMessage && (
-        <Alert variant="success" className="mb-4">
-          <CheckCircleIcon className="h-5 w-5" />
-          {successMessage}
-        </Alert>
-      )}
 
       {/* Fetch Error */}
       {fetchError && (
@@ -611,8 +573,8 @@ const TenderEditPage: React.FC = () => {
       {/* Template Selection for New Tenders */}
       {showTemplates && !isEditing && (
         <Widget
-          title="Tender Templates"
-          description="Choose a template to get started quickly, or skip to create from scratch"
+          title={t('tenderEdit.templates.title')}
+          description={t('tenderEdit.templates.description')}
           icon={SparklesIcon}
           variant="primary"
           headerActions={
@@ -621,7 +583,7 @@ const TenderEditPage: React.FC = () => {
               variant="outline"
               size="sm"
             >
-              Skip Templates
+              {t('tenderEdit.templates.skip')}
             </Button>
           }
         >
@@ -643,10 +605,10 @@ const TenderEditPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                        {template.name}
+                        {t(template.name)}
                       </h4>
                       <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                        {template.description}
+                        {t(template.description)}
                       </p>
                     </div>
                   </div>
@@ -658,44 +620,44 @@ const TenderEditPage: React.FC = () => {
       )}
 
       {/* Main Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form id="tender-form" onSubmit={handleSubmit} className="space-y-6">
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
           {/* Basic Information Widget */}
           <Widget
-            title="Basic Information"
-            description="Essential tender details and identification"
+            title={t('tenderEdit.sections.basicInfo.title')}
+            description={t('tenderEdit.sections.basicInfo.description')}
             icon={CreditCardIcon}
             className="lg:col-span-2 overflow-visible"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputTextField
-                label="Tender ID"
+                label={t('tenderEdit.form.tenderId')}
                 required
                 value={formData.tender_id}
                 onChange={(value) => handleInputChange('tender_id', value)}
-                placeholder="Enter tender ID"
+                placeholder={t('tenderEdit.form.placeholders.tenderId')}
                 error={errors.tender_id}
                 disabled={isEditing}
-                helperText={isEditing ? "Tender ID cannot be changed when editing" : undefined}
+                helperText={isEditing ? t('tenderEdit.form.helperText.tenderIdReadonly') : undefined}
               />
 
               <InputTextField
-                label="Description"
+                label={t('tenderEdit.form.description')}
                 required
                 value={formData.description}
                 onChange={(value) => handleInputChange('description', value)}
-                placeholder="Enter tender description"
+                placeholder={t('tenderEdit.form.placeholders.description')}
                 error={errors.description}
               />
 
               <div>
                 <DropdownSearch
-                  label="Tender Type"
+                  label={t('tenderEdit.form.tenderType')}
                   required
                   value={formData.type_code}
-                  placeholder="Select tender type"
-                  searchPlaceholder="Search tender types..."
+                  placeholder={t('tenderEdit.form.placeholders.tenderType')}
+                  searchPlaceholder={t('tenderEdit.form.placeholders.searchTenderTypes')}
                   options={TENDER_TYPE_OPTIONS}
                   onSelect={(option) => handleInputChange('type_code', option?.id || 'currency')}
                   displayValue={(option) => option ? `${option.label} - ${option.description}` : ''}
@@ -707,11 +669,11 @@ const TenderEditPage: React.FC = () => {
 
               <div>
                 <DropdownSearch
-                  label="Currency"
+                  label={t('tenderEdit.form.currency')}
                   required
                   value={formData.currency_id}
-                  placeholder="Select currency"
-                  searchPlaceholder="Search currencies..."
+                  placeholder={t('tenderEdit.form.placeholders.currency')}
+                  searchPlaceholder={t('tenderEdit.form.placeholders.searchCurrencies')}
                   options={CURRENCY_OPTIONS}
                   onSelect={(option) => handleInputChange('currency_id', option?.id || 'aed')}
                   displayValue={(option) => option ? `${option.label} - ${option.description}` : ''}
@@ -722,28 +684,28 @@ const TenderEditPage: React.FC = () => {
               </div>
 
               <InputTextField
-                label="Display Order"
+                label={t('tenderEdit.form.displayOrder')}
                 type="number"
                 value={formData.display_order}
                 onChange={(value) => handleInputChange('display_order', parseInt(value) || 1)}
-                placeholder="1"
-                helperText="Lower numbers appear first in the tender list"
+                placeholder={t('tenderEdit.form.placeholders.displayOrder')}
+                helperText={t('tenderEdit.form.helperText.displayOrder')}
                 min={1}
               />
 
               {/* Availability Selection */}
               <div>
                 <MultipleDropdownSearch
-                  label="Availability"
+                  label={t('tenderEdit.form.availability')}
                   values={formData.availability}
                   options={AVAILABILITY_OPTIONS}
                   onSelect={(selectedValues) => handleInputChange('availability', selectedValues)}
-                  placeholder="Select tender availability options"
-                  searchPlaceholder="Search availability options..."
+                  placeholder={t('tenderEdit.form.placeholders.availability')}
+                  searchPlaceholder={t('tenderEdit.form.placeholders.searchAvailability')}
                   allowSelectAll={true}
-                  selectAllLabel="Select All"
-                  clearAllLabel="Clear All"
-                  noOptionsMessage="No availability options found"
+                  selectAllLabel={t('tenderEdit.form.selectAll')}
+                  clearAllLabel={t('tenderEdit.form.clearAll')}
+                  noOptionsMessage={t('tenderEdit.form.noAvailabilityOptions')}
                   required={true}
                   error={errors.availability}
                   className="w-full"
@@ -755,8 +717,8 @@ const TenderEditPage: React.FC = () => {
           {/* Denominations Widget - Only show for currency type */}
           {formData.type_code === 'currency' && (
             <Widget
-              title="Denominations"
-              description="Configure available denominations for this tender"
+              title={t('tenderEdit.sections.denominations.title')}
+              description={t('tenderEdit.sections.denominations.description')}
               icon={BanknotesIcon}
               headerActions={
                 <Button
@@ -766,7 +728,7 @@ const TenderEditPage: React.FC = () => {
                   className="flex items-center space-x-1"
                 >
                   <PlusIcon className="h-4 w-4" />
-                  <span>Add Denomination</span>
+                  <span>{t('tenderEdit.sections.denominations.addDenomination')}</span>
                 </Button>
               }
             >
@@ -774,8 +736,8 @@ const TenderEditPage: React.FC = () => {
                 {formData.denomination.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <BanknotesIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                    <p>No denominations configured</p>
-                    <p className="text-sm">Click "Add Denomination" to get started</p>
+                    <p>{t('tenderEdit.sections.denominations.noDenominations')}</p>
+                    <p className="text-sm">{t('tenderEdit.sections.denominations.getStarted')}</p>
                   </div>
                 ) : (
                   formData.denomination.map((denom, index) => (
@@ -787,7 +749,7 @@ const TenderEditPage: React.FC = () => {
                           value={denom.value}
                           onChange={(e) => handleDenominationChange(index, 'value', parseFloat(e.target.value) || 0)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Value"
+                          placeholder={t('tenderEdit.sections.denominations.value')}
                         />
                       </div>
                       <div className="flex-2">
@@ -796,7 +758,7 @@ const TenderEditPage: React.FC = () => {
                           value={denom.description}
                           onChange={(e) => handleDenominationChange(index, 'description', e.target.value)}
                           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Description"
+                          placeholder={t('tenderEdit.sections.denominations.description')}
                         />
                       </div>
                       <Button
@@ -816,56 +778,56 @@ const TenderEditPage: React.FC = () => {
 
           {/* Configuration Widget */}
           <Widget
-            title="Configuration"
-            description="Tender behavior and system configuration"
+            title={t('tenderEdit.sections.configuration.title')}
+            description={t('tenderEdit.sections.configuration.description')}
             icon={Cog6ToothIcon}
           >
             <div className="space-y-6">
               <PropertyCheckbox
-                title="Serial Number Required"
-                description="Require serial number entry for this tender"
+                title={t('tenderEdit.configuration.serialNumberRequired.title')}
+                description={t('tenderEdit.configuration.serialNumberRequired.description')}
                 checked={formData.configuration.serial_nbr_req}
                 onChange={(checked) => handleConfigurationChange('serial_nbr_req', checked)}
               />
 
               <PropertyCheckbox
-                title="Open Cash Drawer"
-                description="Automatically open cash drawer when using this tender"
+                title={t('tenderEdit.configuration.openCashDrawer.title')}
+                description={t('tenderEdit.configuration.openCashDrawer.description')}
                 checked={formData.configuration.open_cash_drawer}
                 onChange={(checked) => handleConfigurationChange('open_cash_drawer', checked)}
               />
 
               <PropertyCheckbox
-                title="Customer Required"
-                description="Require customer information for this tender"
+                title={t('tenderEdit.configuration.customerRequired.title')}
+                description={t('tenderEdit.configuration.customerRequired.description')}
                 checked={formData.configuration.customer_required}
                 onChange={(checked) => handleConfigurationChange('customer_required', checked)}
               />
 
               <PropertyCheckbox
-                title="Split Tender Allowed"
-                description="Allow this tender to be used in split payments"
+                title={t('tenderEdit.configuration.splitTenderAllowed.title')}
+                description={t('tenderEdit.configuration.splitTenderAllowed.description')}
                 checked={formData.configuration.split_tender_allowed}
                 onChange={(checked) => handleConfigurationChange('split_tender_allowed', checked)}
               />
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Maximum Refund Days
+                  {t('tenderEdit.form.maxRefundDays')}
                 </label>
                 <input
                   type="number"
                   value={formData.configuration.max_refund_days}
                   onChange={(e) => handleConfigurationChange('max_refund_days', parseInt(e.target.value) || 30)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="30"
+                  placeholder={t('tenderEdit.form.placeholders.maxRefundDays')}
                   min={0}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Change Cash Limit
+                  {t('tenderEdit.form.changeCashLimit')}
                 </label>
                 <input
                   type="number"
@@ -873,7 +835,7 @@ const TenderEditPage: React.FC = () => {
                   value={formData.configuration.change_cash_limit}
                   onChange={(e) => handleConfigurationChange('change_cash_limit', parseFloat(e.target.value) || 0)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="10000.00"
+                  placeholder={t('tenderEdit.form.placeholders.changeCashLimit')}
                   min={0}
                 />
               </div>
@@ -882,23 +844,23 @@ const TenderEditPage: React.FC = () => {
 
           {/* Settings Widget */}
           <Widget
-            title="Settings"
-            description="Tender status and behavioral settings"
+            title={t('tenderEdit.sections.settings.title')}
+            description={t('tenderEdit.sections.settings.description')}
             icon={Cog6ToothIcon}
             className="lg:col-span-2 overflow-visible"
           >
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <PropertyCheckbox
-                  title="Active Status"
-                  description="Whether this tender is active and available for use"
+                  title={t('tenderEdit.settings.activeStatus.title')}
+                  description={t('tenderEdit.settings.activeStatus.description')}
                   checked={formData.is_active}
                   onChange={(checked) => handleInputChange('is_active', checked)}
                 />
 
                 <PropertyCheckbox
-                  title="Over Tender Allowed"
-                  description="Allow customers to pay more than the required amount"
+                  title={t('tenderEdit.settings.overTenderAllowed.title')}
+                  description={t('tenderEdit.settings.overTenderAllowed.description')}
                   checked={formData.over_tender_allowed}
                   onChange={(checked) => handleInputChange('over_tender_allowed', checked)}
                 />
@@ -917,36 +879,6 @@ const TenderEditPage: React.FC = () => {
             </div>
           </Alert>
         )}
-
-        {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 bg-white rounded-lg p-4 sm:p-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/payment-settings')}
-            className="w-full sm:w-auto"
-          >
-            Cancel
-          </Button>
-          
-          <Button
-            type="submit"
-            disabled={isSaving}
-            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 w-full sm:w-auto"
-          >
-            {isSaving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <CloudArrowUpIcon className="h-4 w-4" />
-                <span>{isEditing ? 'Update Tender' : 'Create Tender'}</span>
-              </>
-            )}
-          </Button>
-        </div>
       </form>
 
       {/* Confirm Dialogs */}
@@ -960,18 +892,6 @@ const TenderEditPage: React.FC = () => {
         cancelText={deleteDialog.dialogState.cancelText}
         variant={deleteDialog.dialogState.variant}
         isLoading={deleteDialog.dialogState.isLoading}
-      />
-
-      <ConfirmDialog
-        isOpen={discardDialog.dialogState.isOpen}
-        onClose={discardDialog.closeDialog}
-        onConfirm={discardDialog.handleConfirm}
-        title={discardDialog.dialogState.title}
-        message={discardDialog.dialogState.message}
-        confirmText={discardDialog.dialogState.confirmText}
-        cancelText={discardDialog.dialogState.cancelText}
-        variant={discardDialog.dialogState.variant}
-        isLoading={discardDialog.dialogState.isLoading}
       />
     </div>
   );
