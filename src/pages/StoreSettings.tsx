@@ -393,6 +393,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
         description="Configure your store's basic information and settings"
         icon={BuildingStorefrontIcon}
         variant="primary"
+        className='overflow-visible'
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <InputTextField
