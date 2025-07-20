@@ -137,7 +137,7 @@ class TenantApiService {
       }
 
       // Real API call to the separate stores endpoint
-      const response = await apiClient.get<TenantStoresApiResponse>(`/v1/tenant/${tenantId}/store`);
+      const response = await apiClient.get<TenantStoresApiResponse>(`/v0/tenant/${tenantId}/store`);
       
       console.log('✅ Successfully fetched stores from API:', response.data);
       return response.data;
