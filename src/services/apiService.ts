@@ -97,9 +97,17 @@ class ApiService {
       ...(headers as Record<string, string>),
     };
 
-    // Add tenant ID header if available
+    // Add tenant ID header if available (exclude endpoints that don't need tenant context)
+    const excludedEndpoints = [
+      '/v0/tenant', // Used to fetch user's available tenants before selection
+      '/auth/', // Authentication endpoints
+      '/health', // Health check endpoints
+    ];
+    
+    const shouldIncludeTenantHeader = !excludedEndpoints.some(excluded => endpoint.includes(excluded));
     const tenantStore = useTenantStore.getState();
-    if (tenantStore.currentTenant?.id) {
+    
+    if (shouldIncludeTenantHeader && tenantStore.currentTenant?.id) {
       requestHeaders['x-tenant-id'] = tenantStore.currentTenant.id;
     }
 
