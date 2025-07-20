@@ -35,7 +35,11 @@ import CreateStore from './pages/CreateStore';
 import TerminalSettings from './pages/TerminalSettings';
 import TranslationManagement from './pages/TranslationManagement';
 import I18nTestPage from './pages/I18nTestPage';
-import { UserManagement } from './pages/user';
+import EmployeeManagement from './pages/employees/EmployeeManagement';
+import EmployeeEdit from './pages/employees/EmployeeEdit';
+import EmployeeSchedule from './pages/employees/EmployeeSchedule';
+import EmployeeTimeTracking from './pages/employees/EmployeeTimeTracking';
+import EmployeePerformance from './pages/employees/EmployeePerformance';
 import RolesPage from './pages/roles/RolesPage';
 import CreateRolePage from './pages/roles/CreateRolePage';
 import EditRolePage from './pages/roles/EditRolePage';
@@ -180,10 +184,18 @@ function App() {
               <Route path="reservations/new" element={<ReservationEditPage />} />
               <Route path="reservations/edit/:reservationId" element={<ReservationEditPage />} />
               <Route path="employee-shifts" element={<EmployeeShiftManagement />} />
+              
+              {/* Employee Management Routes */}
+              <Route path="employees" element={<EmployeeManagement />} />
+              <Route path="employees/new" element={<EmployeeEdit />} />
+              <Route path="employees/:id/edit" element={<EmployeeEdit />} />
+              <Route path="employees/:id/schedule" element={<EmployeeSchedule />} />
+              <Route path="employees/:id/time-tracking" element={<EmployeeTimeTracking />} />
+              <Route path="employees/:id/performance" element={<EmployeePerformance />} />
+              
               <Route path="settings" element={<Settings />} />
               <Route path="settings/store" element={<StoreSettings />} />
               <Route path="settings/terminals" element={<TerminalSettings />} />
-              <Route path="settings/users" element={<UserManagement />} />
               <Route path="settings/roles" element={<RolesPage />} />
               <Route path="settings/roles/new" element={<CreateRolePage />} />
               <Route path="settings/roles/edit/:id" element={<EditRolePage />} />

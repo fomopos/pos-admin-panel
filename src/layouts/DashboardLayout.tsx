@@ -18,7 +18,6 @@ import {
   XMarkIcon,
   ChevronDownIcon,
   ShoppingCartIcon,
-  UserIcon,
   RectangleStackIcon,
   UsersIcon,
   TableCellsIcon,
@@ -89,6 +88,7 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
         { name: t('nav.tableManagement'), href: '/tables', icon: TableCellsIcon },
         { name: t('nav.employeeShifts'), href: '/employee-shifts', icon: UserGroupIcon },
+        ...(permissionsInitialized && canManageUsers() ? [{ name: 'Employee Management', href: '/employees', icon: UsersIcon }] : []),
       ]
     },
     {
@@ -106,7 +106,6 @@ const DashboardLayout: React.FC = () => {
       items: [
         { name: t('nav.storeSettings'), href: '/settings/store', icon: BuildingStorefrontIcon },
         { name: t('nav.terminalSettings'), href: '/settings/terminals', icon: ComputerDesktopIcon },
-        ...(permissionsInitialized && canManageUsers() ? [{ name: t('nav.userManagement'), href: '/settings/users', icon: UserIcon }] : []),
         ...(permissionsInitialized && canManageRoles() ? [{ name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon }] : []),
         { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
         { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },

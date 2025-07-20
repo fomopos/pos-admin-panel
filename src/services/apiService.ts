@@ -1,6 +1,7 @@
 import type { AppError } from '../types/error';
 import { createApiError, createNetworkError } from '../utils/errorUtils';
 import { useErrorHandler } from './errorHandler';
+import { useTenantStore } from '../tenants/tenantStore';
 
 /**
  * Enhanced fetch wrapper with automatic error handling
@@ -91,10 +92,16 @@ class ApiService {
     // Set up timeout
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const requestHeaders = {
+    const requestHeaders: Record<string, string> = {
       ...this.defaultHeaders,
-      ...headers,
+      ...(headers as Record<string, string>),
     };
+
+    // Add tenant ID header if available
+    const tenantStore = useTenantStore.getState();
+    if (tenantStore.currentTenant?.id) {
+      requestHeaders['x-tenant-id'] = tenantStore.currentTenant.id;
+    }
 
     const requestOptions: RequestInit = {
       ...fetchOptions,

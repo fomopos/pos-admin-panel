@@ -1,5 +1,6 @@
 // Base API configuration and utilities
 import { authService } from '../auth/authService';
+import { useTenantStore } from '../tenants/tenantStore';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
@@ -85,6 +86,15 @@ export class ApiClient {
       config.headers = {
         ...config.headers,
         Authorization: `Bearer ${token}`,
+      };
+    }
+
+    // Add tenant ID header if available
+    const tenantStore = useTenantStore.getState();
+    if (tenantStore.currentTenant?.id) {
+      config.headers = {
+        ...config.headers,
+        'x-tenant-id': tenantStore.currentTenant.id,
       };
     }
 
