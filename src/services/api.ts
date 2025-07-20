@@ -109,7 +109,7 @@ export class ApiClient {
     if ('/v0/tenant' === endpoint) {
       config.headers = {
         ...config.headers,
-        'x-tenant-id': tenantStore.currentTenant?.id || '',
+        'x-tenant-id': tenantStore.currentTenant?.id || '*',
       };
     }
 
