@@ -300,7 +300,7 @@ class CategoryApiService {
         return;
       }
 
-      const path = `/v1/tenant/${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+      const path = `/v0/tenant/${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
 
       // Real API call
       await apiClient.delete(path);

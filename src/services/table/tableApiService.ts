@@ -33,7 +33,7 @@ export interface ApiContext {
 }
 
 class TableApiService {
-  private basePath = '/v1/tenant';
+  private basePath = '/v0/tenant';
 
   private getPath(tenantId: string, storeId: string, endpoint: string): string {
     return `${this.basePath}/${tenantId}/store/${storeId}${endpoint}`;
