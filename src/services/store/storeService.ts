@@ -6,18 +6,18 @@ import type { StoreDetails } from '../types/store.types';
  * Handles CRUD operations for store information
  */
 export class StoreService {
-  private readonly basePath = '/v0/tenant';
+  private readonly basePath = '/v0/store';
 
   /**
-   * Get store details by tenant and store ID
+   * Get store details by store ID
    */
-  async getStoreDetails(tenantId: string, storeId: string): Promise<StoreDetails> {
+  async getStoreDetails(storeId: string): Promise<StoreDetails> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}`;
+      const endpoint = `${this.basePath}/${storeId}`;
       const response = await apiClient.get<StoreDetails>(endpoint);
       return response.data;
     } catch (error) {
-      console.error(`Failed to fetch store details for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to fetch store details for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
@@ -25,13 +25,13 @@ export class StoreService {
   /**
    * Update store details
    */
-  async updateStoreDetails(tenantId: string, storeId: string, data: Partial<StoreDetails>): Promise<StoreDetails> {
+  async updateStoreDetails(storeId: string, data: Partial<StoreDetails>): Promise<StoreDetails> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}`;
+      const endpoint = `${this.basePath}/${storeId}`;
       const response = await apiClient.put<StoreDetails>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update store details for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update store details for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
@@ -468,7 +468,6 @@ export class StoreService {
    * Update store details with validation and comprehensive field mapping
    */
   async updateStoreWithValidation(
-    tenantId: string, 
     storeId: string, 
     storeInfo: any
   ): Promise<{ success: boolean; data?: StoreDetails; errors?: string[] }> {
@@ -483,13 +482,13 @@ export class StoreService {
       }
 
       // Get current store details for fallback values
-      const currentDetails = await this.getStoreDetails(tenantId, storeId);
+      const currentDetails = await this.getStoreDetails(storeId);
       
       // Convert store information to API format
       const updateData = this.convertFromStoreInformation(storeInfo, currentDetails);
       
       // Update the store
-      const updatedStore = await this.updateStoreDetails(tenantId, storeId, updateData);
+      const updatedStore = await this.updateStoreDetails(storeId, updateData);
       
       return {
         success: true,

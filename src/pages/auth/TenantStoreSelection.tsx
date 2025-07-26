@@ -135,8 +135,8 @@ const TenantStoreSelection: React.FC = () => {
     setLoadingStores(true);
     
     try {
-      // First switch to the selected tenant
-      switchTenant(tenantId);
+      // First switch to the selected tenant (now async with server selection)
+      await switchTenant(tenantId);
       
       // Then fetch stores for this tenant
       console.log('🔄 Fetching stores for selected tenant:', tenantId);

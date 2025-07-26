@@ -73,10 +73,10 @@ export interface CategoryQueryParams {
 }
 
 class CategoryApiService {
-  private readonly basePath = `/v0/tenant/`;
+  private readonly basePath = `/v0/store/`;
 
   /**
-   * Get all categories for a tenant/store
+   * Get all categories for a store
    */
   async getCategories(params?: CategoryQueryParams): Promise<EnhancedCategory[]> {
     try {
@@ -88,7 +88,7 @@ class CategoryApiService {
         return mockData.categories.map(this.mapToEnhancedCategory);
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category`;
+      const path = `${this.basePath}${params?.store_id}/category`;
 
       // Real API call - expecting response format: { categories: CategoryApiResponse[] }
       const response = await apiClient.get<{ categories: CategoryApiResponse[] }>(path, {});
@@ -138,7 +138,7 @@ class CategoryApiService {
         return category;
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+      const path = `${this.basePath}${params?.store_id}/category/${categoryId}`;
 
       // Real API call
       const response = await apiClient.get<CategoryApiResponse>(path, {});
@@ -187,7 +187,7 @@ class CategoryApiService {
         return newCategory;
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category`;
+      const path = `${this.basePath}${params?.store_id}/category`;
 
       // Real API call - single category creation
       const response = await apiClient.post<CategoryApiResponse>(path, data, {
@@ -226,7 +226,7 @@ class CategoryApiService {
         };
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/bulk`;
+      const path = `${this.basePath}${params?.store_id}/category/bulk`;
 
       // Real API call to addBatch endpoint
       const response = await apiClient.post<BatchOperationResponse>(path, data, {
@@ -266,12 +266,10 @@ class CategoryApiService {
         } as CategoryApiResponse;
       }
 
-      const path = `${this.basePath}${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+      const path = `${this.basePath}${params?.store_id}/category/${categoryId}`;
 
       // Real API call
-      const response = await apiClient.put<CategoryApiResponse>(path, data, {
-        headers: params?.tenant_id ? { 'X-Tenant-Id': params.tenant_id } : undefined
-      });
+      const response = await apiClient.put<CategoryApiResponse>(path, data);
       
       console.log('✅ Successfully updated category:', response.data);
       return response.data;
@@ -300,7 +298,7 @@ class CategoryApiService {
         return;
       }
 
-      const path = `/v0/tenant/${params?.tenant_id}/store/${params?.store_id}/category/${categoryId}`;
+      const path = `${this.basePath}${params?.store_id}/category/${categoryId}`;
 
       // Real API call
       await apiClient.delete(path);
@@ -355,7 +353,7 @@ class CategoryApiService {
   /**
    * Upload category icon
    */
-  async uploadCategoryIcon(categoryId: string, file: File, params?: { tenant_id?: string; store_id?: string }): Promise<{ icon_url: string }> {
+  async uploadCategoryIcon(categoryId: string, file: File): Promise<{ icon_url: string }> {
     try {
       console.log('📂 Uploading category icon for:', categoryId);
       
@@ -369,10 +367,7 @@ class CategoryApiService {
       
       const response = await fetch(`${API_BASE_URL}${this.basePath}/${categoryId}/icon`, {
         method: 'POST',
-        body: formData,
-        headers: {
-          ...(params?.tenant_id && { 'X-Tenant-Id': params.tenant_id })
-        }
+        body: formData
       });
       
       if (!response.ok) {
@@ -398,7 +393,7 @@ class CategoryApiService {
   /**
    * Upload category image
    */
-  async uploadCategoryImage(categoryId: string, file: File, params?: { tenant_id?: string; store_id?: string }): Promise<{ image_url: string }> {
+  async uploadCategoryImage(categoryId: string, file: File): Promise<{ image_url: string }> {
     try {
       console.log('📂 Uploading category image for:', categoryId);
       
@@ -412,10 +407,7 @@ class CategoryApiService {
       
       const response = await fetch(`${API_BASE_URL}${this.basePath}/${categoryId}/image`, {
         method: 'POST',
-        body: formData,
-        headers: {
-          ...(params?.tenant_id && { 'X-Tenant-Id': params.tenant_id })
-        }
+        body: formData
       });
       
       if (!response.ok) {

@@ -136,8 +136,8 @@ class TenantApiService {
         return { stores: [] };
       }
 
-      // Real API call to the separate stores endpoint
-      const response = await apiClient.get<TenantStoresApiResponse>(`/v0/tenant/${tenantId}/store`);
+      // Real API call using the updated Store API endpoint
+      const response = await apiClient.get<TenantStoresApiResponse>(`/v0/store`);
       
       console.log('✅ Successfully fetched stores from API:', response.data);
       return response.data;
@@ -178,49 +178,47 @@ class TenantApiService {
   }
 
   /**
-   * Get details for a specific store
-   * @param tenantId - The tenant ID
-   * @param storeId - The store ID to fetch details for
-   * @returns Promise with store details
+   * Get a specific store by ID
+   * @param tenantId - The tenant ID (for compatibility, but not used in new API)
+   * @param storeId - The store ID to fetch
+   * @returns Promise with store data
    */
-  async getStoreDetails(tenantId: string, storeId: string): Promise<StoreApiResponse> {
+  async getStore(tenantId: string, storeId: string): Promise<StoreApiResponse> {
     try {
-      console.log('🏪 Fetching store details:', { tenantId, storeId });
+      console.log('🏪 Fetching store:', { tenantId, storeId });
       
       if (USE_MOCK_DATA) {
         console.log('📝 Mock data mode enabled but no mock data available');
-        throw new ApiError(`Store not found: ${storeId}`, 1002, 'STORE_NOT_FOUND');
+        throw new Error('Store not found');
       }
 
-      // Real API call
-      const response = await apiClient.get<StoreApiResponse>(`/tenants/${tenantId}/stores/${storeId}`);
+      // Real API call using the updated Store API endpoint
+      const response = await apiClient.get<StoreApiResponse>(`/v0/store/${storeId}`);
+      
+      console.log('✅ Successfully fetched store from API:', response.data);
       return response.data;
-      
     } catch (error) {
-      console.error('❌ Error fetching store details:', error);
-      
-      // No fallback data available
-      throw new ApiError(`Store not found: ${storeId}`, 1002, 'STORE_NOT_FOUND');
+      console.error('❌ Error fetching store:', error);
+      throw error;
     }
   }
 
   /**
-   * Create a new store for a tenant
-   * @param tenantId - The tenant ID to create store for
+   * Create a new store
    * @param storeData - The store data to create
    * @returns Promise with created store details
    */
-  async createStore(tenantId: string, storeData: Partial<StoreApiResponse>): Promise<StoreApiResponse> {
+  async createStore(storeData: Partial<StoreApiResponse>): Promise<StoreApiResponse> {
     try {
-      console.log('🏪 Creating new store for tenant:', tenantId, storeData);
+      console.log('🏪 Creating new store:', storeData);
       
       if (USE_MOCK_DATA) {
         console.log('📝 Mock data mode enabled but store creation not supported without backend');
         throw new ApiError('Store creation requires real API backend', 1000, 'MOCK_CREATE_NOT_SUPPORTED');
       }
 
-      // Real API call using the updated endpoint structure: POST /v0/tenant/{tenantId}/store
-      const response = await apiClient.post<StoreApiResponse>(`/v0/tenant/${tenantId}/store`, storeData);
+      // Real API call using the updated Store API endpoint: POST /v0/store
+      const response = await apiClient.post<StoreApiResponse>(`/v0/store`, storeData);
       return response.data;
     } catch (error) {
       console.error('❌ Error creating store:', error);

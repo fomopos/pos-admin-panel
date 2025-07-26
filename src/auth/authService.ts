@@ -173,6 +173,26 @@ class AuthService {
       return false;
     }
   }
+
+  async refreshToken(): Promise<string | null> {
+    try {
+      console.log('🔄 Refreshing authentication token');
+      
+      // Force refresh the AWS Cognito session
+      const session = await fetchAuthSession({ forceRefresh: true });
+      const newToken = session.tokens?.idToken?.toString() || null;
+      
+      if (newToken) {
+        console.log('✅ Token refreshed successfully');
+        return newToken;
+      } else {
+        throw new Error('No token received from session refresh');
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing token:', error);
+      return null;
+    }
+  }
 }
 
 export const authService = new AuthService();

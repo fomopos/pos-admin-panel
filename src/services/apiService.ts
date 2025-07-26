@@ -1,7 +1,6 @@
 import type { AppError } from '../types/error';
 import { createApiError, createNetworkError } from '../utils/errorUtils';
 import { useErrorHandler } from './errorHandler';
-import { useTenantStore } from '../tenants/tenantStore';
 
 /**
  * Enhanced fetch wrapper with automatic error handling
@@ -97,19 +96,8 @@ class ApiService {
       ...(headers as Record<string, string>),
     };
 
-    // Add tenant ID header if available (exclude endpoints that don't need tenant context)
-    const excludedEndpoints = [
-      '/v0/tenant', // Used to fetch user's available tenants before selection
-      '/auth/', // Authentication endpoints
-      '/health', // Health check endpoints
-    ];
-    
-    const shouldIncludeTenantHeader = !excludedEndpoints.some(excluded => endpoint.includes(excluded));
-    const tenantStore = useTenantStore.getState();
-    
-    if (shouldIncludeTenantHeader && tenantStore.currentTenant?.id) {
-      requestHeaders['x-tenant-id'] = tenantStore.currentTenant.id;
-    }
+    // Tenant context is now handled by server-side tenant selection
+    // No need to add tenant ID header to requests
 
     const requestOptions: RequestInit = {
       ...fetchOptions,

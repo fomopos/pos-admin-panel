@@ -82,13 +82,12 @@ class ProductModifierService {
    * Get all modifier groups for a product
    */
   async getModifierGroups(
-    tenantId: string, 
     storeId: string, 
     itemId: string
   ): Promise<ModifierGroupsResponse> {
     try {
       const response = await apiClient.get<ModifierGroupsResponse>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups`
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups`
       );
       return response.data;
     } catch (error) {
