@@ -26,6 +26,7 @@ export const ProductPricingTab: React.FC<ProductPricingTabProps> = ({
       description="Configure pricing, discounts and cost settings"
       icon={CurrencyDollarIcon}
       variant="default"
+      className='overflow-visible'
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* List Price */}

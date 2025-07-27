@@ -11,8 +11,9 @@ import {
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline';
-import { PageHeader, Button, ConfirmDialog, Loading } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, Loading, Alert } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useError } from '../hooks/useError';
 import { useTenantStore } from '../tenants/tenantStore';
 import { productService } from '../services/product';
 
@@ -449,6 +450,10 @@ const Products: React.FC = () => {
     status: 'all'
   });
   
+  // Error management
+  const { showErrorMessage } = useError();
+  const [error, setError] = useState<string | null>(null);
+  
   const deleteDialog = useDeleteConfirmDialog();
   
   const categories = Array.from(new Set(products.map(p => p.category)));
@@ -458,8 +463,15 @@ const Products: React.FC = () => {
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!currentTenant || !currentStore) return;
+      if (!currentTenant || !currentStore) {
+        setProducts([]);
+        setError('Please select a tenant and store to view products.');
+        return;
+      }
+      
       setIsLoading(true);
+      setError(null); // Clear any previous errors
+      
       try {
         const res = await productService.getProducts(currentTenant.id, currentStore.store_id);
         // Map API products to UI Product type
@@ -482,14 +494,26 @@ const Products: React.FC = () => {
           updatedAt: new Date(apiProduct.updated_at),
         }));
         setProducts(mapped);
+        // Clear any existing errors on successful load
+        setError(null);
       } catch (error) {
         console.error('Failed to fetch products', error);
+        setError('Failed to load products. Please check your connection and try again.');
+        // Also show error notification
+        showErrorMessage('Failed to load products. Please check your connection and try again.');
       } finally {
         setIsLoading(false);
       }
     };
     fetchProducts();
-  }, [currentTenant, currentStore]);
+  }, [currentTenant, currentStore, showErrorMessage]);
+
+  // Cleanup effect to clear errors when component unmounts
+  useEffect(() => {
+    return () => {
+      setError(null);
+    };
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter(product => {
@@ -587,7 +611,8 @@ const Products: React.FC = () => {
     
     deleteDialog.openDeleteDialog(productName, async () => {
       if (!currentTenant || !currentStore) {
-        console.error('Tenant or store not selected');
+        setError('Tenant or store not selected. Please refresh the page and try again.');
+        showErrorMessage('Tenant or store not selected. Please refresh the page and try again.');
         return;
       }
 
@@ -595,9 +620,13 @@ const Products: React.FC = () => {
         await productService.deleteProduct(currentTenant.id, currentStore.store_id, id);
         setProducts(products.filter(p => p.id !== id));
         console.log('Product deleted successfully');
+        // Clear any existing errors on successful operation
+        setError(null);
       } catch (error) {
         console.error('Failed to delete product:', error);
-        // Could show a toast notification here
+        const errorMessage = 'Failed to delete product. Please check your connection and try again.';
+        setError(errorMessage);
+        showErrorMessage(errorMessage);
       }
     });
   };
@@ -615,6 +644,52 @@ const Products: React.FC = () => {
       dateRange: { start: '', end: '' },
       status: 'all'
     });
+  };
+
+  // Helper function to clear errors
+  const clearError = () => {
+    setError(null);
+  };
+
+  // Retry function to refetch products
+  const retryFetchProducts = async () => {
+    if (!currentTenant || !currentStore) {
+      setError('Please select a tenant and store to view products.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const res = await productService.getProducts(currentTenant.id, currentStore.store_id);
+      const mapped = res.items.map(apiProduct => ({
+        id: apiProduct.item_id,
+        name: apiProduct.name,
+        description: apiProduct.description || '',
+        price: apiProduct.list_price,
+        cost: 0,
+        sku: apiProduct.item_id,
+        category: apiProduct.categories?.[0] || '',
+        stockQuantity: 0,
+        minStockLevel: 0,
+        unit: apiProduct.uom || '',
+        supplier: '',
+        barcode: '',
+        tags: apiProduct.categories || [],
+        isActive: apiProduct.active !== false,
+        createdAt: new Date(apiProduct.created_at),
+        updatedAt: new Date(apiProduct.updated_at),
+      }));
+      setProducts(mapped);
+      setError(null);
+    } catch (error) {
+      console.error('Failed to fetch products', error);
+      setError('Failed to load products. Please check your connection and try again.');
+      showErrorMessage('Failed to load products. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const hasActiveFilters = searchTerm || selectedCategory || 
@@ -659,6 +734,24 @@ const Products: React.FC = () => {
           </Button>
         </div>
       </PageHeader>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="error" onClose={clearError} className="mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={retryFetchProducts}
+              disabled={isLoading}
+              className="ml-4 border-red-300 text-red-700 hover:bg-red-50"
+            >
+              {isLoading ? 'Retrying...' : 'Retry'}
+            </Button>
+          </div>
+        </Alert>
+      )}
 
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
@@ -947,7 +1040,7 @@ const Products: React.FC = () => {
         </div>
       )}
 
-      {filteredProducts.length === 0 && (
+      {filteredProducts.length === 0 && !error && (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
           <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
             <Squares2X2Icon className="w-12 h-12 text-gray-400" />

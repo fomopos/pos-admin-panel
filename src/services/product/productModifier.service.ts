@@ -107,7 +107,7 @@ class ProductModifierService {
   ): Promise<ApiModifierGroup> {
     try {
       const response = await apiClient.get<ApiModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}`
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}`
       );
       return response.data;
     } catch (error) {
@@ -127,7 +127,7 @@ class ProductModifierService {
   ): Promise<ApiModifierGroup> {
     try {
       const response = await apiClient.post<ApiModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups`,
         groupData
       );
       return response.data;
@@ -149,7 +149,7 @@ class ProductModifierService {
   ): Promise<ApiModifierGroup> {
     try {
       const response = await apiClient.put<ApiModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}`,
         groupData
       );
       return response.data;
@@ -170,7 +170,7 @@ class ProductModifierService {
   ): Promise<void> {
     try {
       await apiClient.delete(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}`
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}`
       );
     } catch (error) {
       console.error('Error deleting modifier group:', error);
@@ -193,7 +193,7 @@ class ProductModifierService {
   ): Promise<ModifiersResponse> {
     try {
       const response = await apiClient.get<ModifiersResponse>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers`
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers`
       );
       return response.data;
     } catch (error) {
@@ -214,7 +214,7 @@ class ProductModifierService {
   ): Promise<ApiModifier> {
     try {
       const response = await apiClient.get<ApiModifier>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/${modifierId}`
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/${modifierId}`
       );
       return response.data;
     } catch (error) {
@@ -235,7 +235,7 @@ class ProductModifierService {
   ): Promise<ApiModifier> {
     try {
       const response = await apiClient.post<ApiModifier>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers`,
         modifierData
       );
       return response.data;
@@ -258,7 +258,7 @@ class ProductModifierService {
   ): Promise<ApiModifier> {
     try {
       const response = await apiClient.put<ApiModifier>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/${modifierId}`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/${modifierId}`,
         modifierData
       );
       return response.data;
@@ -280,7 +280,7 @@ class ProductModifierService {
   ): Promise<void> {
     try {
       await apiClient.delete(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/${modifierId}`
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/${modifierId}`
       );
     } catch (error) {
       console.error('Error deleting modifier:', error);
@@ -303,7 +303,7 @@ class ProductModifierService {
   ): Promise<ApiModifierGroup[]> {
     try {
       const response = await apiClient.post<ApiModifierGroup[]>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/bulk`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/bulk`,
         { groups }
       );
       return response.data;
@@ -325,7 +325,7 @@ class ProductModifierService {
   ): Promise<ApiModifier[]> {
     try {
       const response = await apiClient.post<ApiModifier[]>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/bulk`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/bulk`,
         { modifiers }
       );
       return response.data;
@@ -346,7 +346,7 @@ class ProductModifierService {
   ): Promise<void> {
     try {
       await apiClient.patch(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/sort-orders`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/sort-orders`,
         { sort_orders: sortOrders }
       );
     } catch (error) {
@@ -367,7 +367,7 @@ class ProductModifierService {
   ): Promise<void> {
     try {
       await apiClient.patch(
-        `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/sort-orders`,
+        `/v0/store/${storeId}/item/${itemId}/modifier-groups/${groupId}/modifiers/sort-orders`,
         { sort_orders: sortOrders }
       );
     } catch (error) {
