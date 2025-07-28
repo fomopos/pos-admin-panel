@@ -8,7 +8,7 @@ import type {
 } from '../types/tax.types';
 
 export class TaxConfigurationService {
-  private readonly basePath = '/v0/tenant';
+  private readonly basePath = '/v0';
 
   /**
    * Get tax configuration for a tenant and store
@@ -25,7 +25,7 @@ export class TaxConfigurationService {
       console.log(`Fetching tax configuration for tenant: ${tenantId}, store: ${storeId}${country ? `, country: ${country}` : ''}`);
       
       // Construct the URL with store ID
-      let url = `${this.basePath}/${tenantId}/store/${storeId}/tax`;
+      let url = `${this.basePath}/store/${storeId}/config/tax`;
       
       // Add country parameter if provided
       if (country) {

@@ -300,7 +300,7 @@ export const useTenantStore = create<TenantState>()(
                 const { storeServices } = await import('../services/store');
                 
                 // Fetch fresh store details from API
-                const freshStoreDetails = await storeServices.store.getStoreDetails(currentTenant.id, storeId);
+                const freshStoreDetails = await storeServices.store.getStoreDetails(storeId);
                 
                 // Transform the API response to match our Store interface
                 const updatedStore: Store = {
@@ -532,6 +532,7 @@ export const useTenantStore = create<TenantState>()(
           
           // Transform store data to API format with null for empty strings
           const apiStoreData: Partial<StoreApiResponse> = {
+            tenant_id: tenantId, // Add tenant_id to the API data
             store_id: toNullIfEmpty(storeData.store_id),
             store_name: storeData.store_name?.trim() || 'New Store',
             description: toNullIfEmpty(storeData.description),
@@ -586,7 +587,7 @@ export const useTenantStore = create<TenantState>()(
           };
 
           // Use the tenant API service to create the store
-          const apiResponse = await tenantApiService.createStore(tenantId, apiStoreData);
+          const apiResponse = await tenantApiService.createStore(apiStoreData);
           
           // Transform API response to store format
           const newStore = transformApiStoreToStore(apiResponse);

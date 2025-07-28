@@ -213,8 +213,63 @@ class TenantApiService {
       console.log('🏪 Creating new store:', storeData);
       
       if (USE_MOCK_DATA) {
-        console.log('📝 Mock data mode enabled but store creation not supported without backend');
-        throw new ApiError('Store creation requires real API backend', 1000, 'MOCK_CREATE_NOT_SUPPORTED');
+        console.log('📝 Mock data mode enabled - creating mock store');
+        // Create a mock store response
+        const mockStore: StoreApiResponse = {
+          tenant_id: storeData.tenant_id || '2711',
+          store_id: storeData.store_id || `STORE_${Date.now()}`,
+          status: 'active',
+          store_name: storeData.store_name || 'New Store',
+          description: storeData.description || '',
+          location_type: storeData.location_type || 'retail',
+          store_type: storeData.store_type || 'general',
+          address: storeData.address || {
+            address1: '123 Main Street',
+            address2: null,
+            address3: null,
+            address4: null,
+            city: 'Sample City',
+            state: 'Sample State',
+            district: null,
+            area: null,
+            postal_code: '12345',
+            country: 'India',
+            county: null,
+          },
+          locale: storeData.locale || 'en-IN',
+          currency: storeData.currency || 'INR',
+          latitude: storeData.latitude || null,
+          longitude: storeData.longitude || null,
+          telephone1: storeData.telephone1 || null,
+          telephone2: storeData.telephone2 || null,
+          telephone3: storeData.telephone3 || null,
+          telephone4: storeData.telephone4 || null,
+          email: storeData.email || null,
+          legal_entity_id: storeData.legal_entity_id || null,
+          legal_entity_name: storeData.legal_entity_name || null,
+          store_timing: storeData.store_timing || {
+            Monday: "09:00-18:00",
+            Tuesday: "09:00-18:00",
+            Wednesday: "09:00-18:00",
+            Thursday: "09:00-18:00",
+            Friday: "09:00-18:00",
+            Saturday: "09:00-18:00",
+            Sunday: "10:00-17:00",
+            Holidays: "Closed"
+          },
+          terminals: {},
+          properties: null,
+          created_at: new Date().toISOString(),
+          create_user_id: 'MOCK_USER',
+          updated_at: new Date().toISOString(),
+          update_user_id: undefined
+        };
+        
+        // Simulate API delay for realistic mock behavior
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('✅ Mock store created:', mockStore);
+        return mockStore;
       }
 
       // Real API call using the updated Store API endpoint: POST /v0/store
