@@ -48,7 +48,7 @@ class ProductService {
   /**
    * Get all products for a store
    */
-  async getProducts(tenantId: string, storeId: string): Promise<ProductsResponse> {
+  async getProducts(_tenantId: string, storeId: string): Promise<ProductsResponse> {
     try {
       const response = await apiClient.get<ProductsResponse>(
         `/v0/store/${storeId}/item`
@@ -64,7 +64,7 @@ class ProductService {
    * Get a single product by ID
    */
   async getProduct(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string,
     options?: {
@@ -188,7 +188,7 @@ class ProductService {
   /**
    * Delete a product
    */
-  async deleteProduct(tenantId: string, storeId: string, itemId: string): Promise<void> {
+  async deleteProduct(_tenantId: string, storeId: string, itemId: string): Promise<void> {
     try {
       await apiClient.delete(`/v0/store/${storeId}/item/${itemId}`);
     } catch (error) {
