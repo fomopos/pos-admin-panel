@@ -27,7 +27,7 @@ import {
   ArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Card, PageHeader, Loading } from '../components/ui';
+import { Button, Card, PageHeader, Loading, Alert } from '../components/ui';
 import { transactionService, type ConvertedSale, type TransactionQueryParams } from '../services/transaction';
 
 // Use ConvertedSale from transaction service
@@ -40,7 +40,6 @@ const Sales: React.FC = () => {
   const [sales, setSales] = useState<Sale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   
@@ -59,85 +58,126 @@ const Sales: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [alertState, setAlertState] = useState<{
+    type: 'success' | 'error' | 'warning' | 'info' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
   // API Integration - Fetch transactions from API
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!currentTenant || !currentStore) {
-        console.log('⚠️ Missing tenant or store information');
-        setIsLoading(false);
-        return;
+  const fetchTransactions = async () => {
+    if (!currentTenant || !currentStore) {
+      console.log('⚠️ Missing tenant or store information');
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setAlertState({ type: null, message: '' });
+    
+    try {
+      console.log('🔄 Fetching transactions for:', {
+        tenantId: currentTenant.id,
+        storeId: currentStore.store_id,
+        dateFilter
+      });
+
+      // Build query parameters based on current filters
+      const queryParams: TransactionQueryParams = {};
+      
+      // Add date range
+      const dateRange = transactionService.getDateRange(dateFilter);
+      if (dateRange.start_date) {
+        queryParams.start_date = dateRange.start_date;
+      }
+      if (dateRange.end_date) {
+        queryParams.end_date = dateRange.end_date;
+      }
+      
+      // Handle custom date range
+      if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
+        queryParams.start_date = customDateRange.start;
+        queryParams.end_date = customDateRange.end;
+      }
+      
+      // Add filters based on current state
+      if (statusFilter !== 'all') {
+        queryParams.filter_type = 'status';
+        queryParams.value = statusFilter;
+      } else if (cashierFilter !== 'all') {
+        queryParams.filter_type = 'cashier';
+        queryParams.value = cashierFilter;
       }
 
-      setIsLoading(true);
-      setError(null);
+      // Fetch data from API
+      const response = await transactionService.getTransactionSummary(
+        currentTenant.id,
+        currentStore.store_id,
+        queryParams
+      );
+
+      // Convert API response to Sale format
+      const convertedSales = response.datalist.map(transaction => 
+        transactionService.convertTransactionToSale(transaction)
+      );
       
-      try {
-        console.log('🔄 Fetching transactions for:', {
-          tenantId: currentTenant.id,
-          storeId: currentStore.store_id,
-          dateFilter
-        });
+      setSales(convertedSales);
+      setHasNextPage(!!response.next);
+      setNextCursor(response.next);
+      
+      console.log('✅ Successfully loaded transactions:', {
+        count: convertedSales.length,
+        hasNext: !!response.next
+      });
 
-        // Build query parameters based on current filters
-        const queryParams: TransactionQueryParams = {};
-        
-        // Add date range
-        const dateRange = transactionService.getDateRange(dateFilter);
-        if (dateRange.start_date) {
-          queryParams.start_date = dateRange.start_date;
-        }
-        if (dateRange.end_date) {
-          queryParams.end_date = dateRange.end_date;
-        }
-        
-        // Handle custom date range
-        if (dateFilter === 'custom' && customDateRange.start && customDateRange.end) {
-          queryParams.start_date = customDateRange.start;
-          queryParams.end_date = customDateRange.end;
-        }
-        
-        // Add filters based on current state
-        if (statusFilter !== 'all') {
-          queryParams.filter_type = 'status';
-          queryParams.value = statusFilter;
-        } else if (cashierFilter !== 'all') {
-          queryParams.filter_type = 'cashier';
-          queryParams.value = cashierFilter;
-        }
+      // Clear any previous errors on successful load
+      setAlertState({ type: null, message: '' });
 
-        // Fetch data from API
-        const response = await transactionService.getTransactionSummary(
-          currentTenant.id,
-          currentStore.store_id,
-          queryParams
-        );
-
-        // Convert API response to Sale format
-        const convertedSales = response.datalist.map(transaction => 
-          transactionService.convertTransactionToSale(transaction)
-        );
-        
-        setSales(convertedSales);
-        setHasNextPage(!!response.next);
-        setNextCursor(response.next);
-        
-        console.log('✅ Successfully loaded transactions:', {
-          count: convertedSales.length,
-          hasNext: !!response.next
-        });
-
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error fetching transactions:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load transaction data');
+        
+        // Handle different error types with user-friendly messages
+        let errorMessage = 'Failed to load sales data. Please try again.';
+        let errorType: 'error' | 'warning' = 'error';
+        
+        if (error?.response?.status === 404) {
+          errorMessage = 'No sales data found for the selected period.';
+          errorType = 'warning';
+        } else if (error?.response?.status === 403) {
+          errorMessage = 'You do not have permission to view sales data.';
+        } else if (error?.response?.status >= 500) {
+          errorMessage = 'Server error occurred. Please try again later.';
+        } else if (error?.code === 'NETWORK_ERROR' || !navigator.onLine) {
+          errorMessage = 'Network connection error. Please check your internet connection.';
+        } else if (error instanceof Error) {
+          // Check error message patterns for different error types
+          if (error.message.includes('network') || error.message.includes('fetch')) {
+            errorMessage = 'Network connection error. Please check your internet connection.';
+          } else if (error.message.includes('404') || error.message.includes('Not Found')) {
+            errorMessage = 'Sales data not found for the selected period.';
+            errorType = 'warning';
+          } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+            errorMessage = 'You do not have permission to view sales data.';
+          } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+            errorMessage = 'Server error occurred while loading sales data.';
+          }
+        }
+        
+        setAlertState({
+          type: errorType,
+          message: errorMessage
+        });
+        
         setSales([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTransactions();
-  }, [currentTenant, currentStore, dateFilter, statusFilter, cashierFilter, customDateRange]);
+    useEffect(() => {
+      // Clear any previous alerts when filters change
+      setAlertState({ type: null, message: '' });
+      fetchTransactions();
+    }, [currentTenant, currentStore, dateFilter, statusFilter, cashierFilter, customDateRange]);
 
   // Load more transactions (pagination)
   const loadMoreTransactions = async () => {
@@ -203,8 +243,24 @@ const Sales: React.FC = () => {
         hasNext: !!response.next
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error loading more transactions:', error);
+      
+      // Show error notification for pagination failures
+      let errorMessage = 'Failed to load additional sales data. Please try again.';
+      
+      if (error?.response?.status === 404) {
+        errorMessage = 'No more sales data found.';
+      } else if (error?.response?.status >= 500) {
+        errorMessage = 'Server error occurred while loading more data.';
+      } else if (error instanceof Error && error.message.includes('network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      setAlertState({
+        type: 'error',
+        message: errorMessage
+      });
     } finally {
       setIsLoadingMore(false);
     }
@@ -429,27 +485,17 @@ const Sales: React.FC = () => {
     );
   }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-6 flex items-center justify-center">
-        <Card className="max-w-md mx-auto p-8 text-center">
-          <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Sales Data</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <Button 
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Try Again
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-6 space-y-8">
+      {/* Error handling through Alert component */}
+      {alertState.type && (
+        <Alert 
+          variant={alertState.type} 
+          onClose={() => setAlertState({ type: null, message: '' })}
+        >
+          {alertState.message}
+        </Alert>
+      )}
       {/* Enhanced Header with Stats */}
       <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/20 shadow-xl overflow-hidden">
         <div className="p-8">

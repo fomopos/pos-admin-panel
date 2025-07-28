@@ -11,6 +11,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 import ResetPassword from './pages/auth/ResetPassword';
 import TenantStoreSelection from './pages/auth/TenantStoreSelection';
+import CreateTenantPage from './pages/auth/CreateTenantPage';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import ProductEdit from './pages/ProductEdit';
@@ -47,6 +48,7 @@ import RoleDetailPage from './pages/roles/RoleDetailPage';
 import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPage, ServerAssignmentPage, TableMergeUnmergePage } from './pages/table';
 import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
 import ReceiptBuilder from './pages/ReceiptBuilder';
+import TenantAccessDebug from './pages/TenantAccessDebug';
 
 // Error handling imports
 import ErrorBoundary from './components/ErrorBoundary';
@@ -144,6 +146,16 @@ function App() {
               } 
             />
             
+            {/* Create Tenant - Protected but accessible from tenant selection */}
+            <Route 
+              path="/create-tenant" 
+              element={
+                <ProtectedRoute>
+                  <CreateTenantPage />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Protected routes - Dashboard requires tenant/store selection */}
             <Route
               path="/"
@@ -207,6 +219,7 @@ function App() {
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
               <Route path="developer/receipt-builder" element={<ReceiptBuilder />} />
               <Route path="developer/translations" element={<TranslationManagement />} />
+              <Route path="debug/tenant-access" element={<TenantAccessDebug />} />
             </Route>
 
             {/* Catch all route */}

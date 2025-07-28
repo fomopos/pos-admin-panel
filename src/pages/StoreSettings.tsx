@@ -91,7 +91,7 @@ const StoreSettingsPage: React.FC = () => {
         // Fetch store details
         const detailsPromise = async () => {
           try {
-            return await storeServices.store.getStoreDetails(tenantId, storeId);
+            return await storeServices.store.getStoreDetails(storeId);
           } catch (apiError) {
             console.warn('Failed to fetch real store details, using mock data:', apiError);
             return await storeServices.store.getMockStoreDetails();
