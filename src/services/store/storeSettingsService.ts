@@ -11,15 +11,15 @@ import type {
 } from '../types/store.types';
 
 export class StoreSettingsService {
-  private readonly basePath = '/stores/settings';
+  private readonly basePath = '/v0/store';
 
   /**
-   * Get store settings for a tenant/store
+   * Get store settings for a store
    */
   async getStoreSettings(params: StoreSettingsQueryParams): Promise<StoreSettings | null> {
     try {
-      const { tenant_id, store_id } = params;
-      const endpoint = `${this.basePath}/${tenant_id}/${store_id}`;
+      const { store_id } = params;
+      const endpoint = `${this.basePath}/${store_id}/settings`;
       const response = await apiClient.get<StoreSettings>(endpoint);
       return response.data;
     } catch (error) {
@@ -29,12 +29,13 @@ export class StoreSettingsService {
   }
 
   /**
-   * Get all store settings for a tenant
+   * Get all store settings for current tenant
    */
-  async getAllStoreSettings(params?: StoreSettingsQueryParams): Promise<StoreSettings[]> {
+  async getAllStoreSettings(): Promise<StoreSettings[]> {
     try {
-      const { tenant_id } = params || {};
-      const endpoint = tenant_id ? `${this.basePath}/${tenant_id}` : this.basePath;
+      // Note: This might need to be updated based on actual API structure
+      // For now, getting all stores and their settings might require multiple calls
+      const endpoint = `${this.basePath}/settings`;
       const response = await apiClient.get<{ settings: StoreSettings[] }>(endpoint);
       return response.data.settings || [];
     } catch (error) {
@@ -51,8 +52,8 @@ export class StoreSettingsService {
       // Validate required fields
       this.validateStoreSettingsData(data);
       
-      const { tenant_id, store_id } = data;
-      const endpoint = `${this.basePath}/${tenant_id}/${store_id}`;
+      const { store_id } = data;
+      const endpoint = `${this.basePath}/${store_id}/settings`;
       const response = await apiClient.post<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
@@ -64,13 +65,13 @@ export class StoreSettingsService {
   /**
    * Update store settings
    */
-  async updateStoreSettings(tenantId: string, storeId: string, data: UpdateStoreSettingsRequest): Promise<StoreSettings> {
+  async updateStoreSettings(storeId: string, data: UpdateStoreSettingsRequest): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}`;
+      const endpoint = `${this.basePath}/${storeId}/settings`;
       const response = await apiClient.put<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update store settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update store settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
@@ -78,12 +79,12 @@ export class StoreSettingsService {
   /**
    * Delete store settings
    */
-  async deleteStoreSettings(tenantId: string, storeId: string): Promise<void> {
+  async deleteStoreSettings(storeId: string): Promise<void> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}`;
+      const endpoint = `${this.basePath}/${storeId}/settings`;
       await apiClient.delete<void>(endpoint);
     } catch (error) {
-      console.error(`Failed to delete store settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to delete store settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
@@ -91,101 +92,101 @@ export class StoreSettingsService {
   /**
    * Update specific settings section
    */
-  async updateStoreInformation(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateStoreInformation(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/information`;
+      const endpoint = `${this.basePath}/${storeId}/settings/information`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update store information for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update store information for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateRegionalSettings(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateRegionalSettings(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/regional`;
+      const endpoint = `${this.basePath}/${storeId}/settings/regional`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update regional settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update regional settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateReceiptSettings(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateReceiptSettings(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/receipt`;
+      const endpoint = `${this.basePath}/${storeId}/settings/receipt`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update receipt settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update receipt settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateHardwareConfig(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateHardwareConfig(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/hardware`;
+      const endpoint = `${this.basePath}/${storeId}/settings/hardware`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update hardware config for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update hardware config for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateOperationalSettings(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateOperationalSettings(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/operational`;
+      const endpoint = `${this.basePath}/${storeId}/settings/operational`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update operational settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update operational settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateUserManagement(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateUserManagement(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/users`;
+      const endpoint = `${this.basePath}/${storeId}/settings/users`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update user management for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update user management for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateIntegrationSettings(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateIntegrationSettings(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/integrations`;
+      const endpoint = `${this.basePath}/${storeId}/settings/integrations`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update integration settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update integration settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateApiInformation(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateApiInformation(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/api`;
+      const endpoint = `${this.basePath}/${storeId}/settings/api`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update API information for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update API information for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }
 
-  async updateSecuritySettings(tenantId: string, storeId: string, data: any): Promise<StoreSettings> {
+  async updateSecuritySettings(storeId: string, data: any): Promise<StoreSettings> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/${storeId}/security`;
+      const endpoint = `${this.basePath}/${storeId}/settings/security`;
       const response = await apiClient.patch<StoreSettings>(endpoint, data);
       return response.data;
     } catch (error) {
-      console.error(`Failed to update security settings for ${tenantId}/${storeId}:`, error);
+      console.error(`Failed to update security settings for store ${storeId}:`, error);
       throw this.handleError(error);
     }
   }

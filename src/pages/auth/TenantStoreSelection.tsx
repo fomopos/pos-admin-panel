@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BuildingOfficeIcon, BuildingStorefrontIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { BuildingOfficeIcon, BuildingStorefrontIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../../tenants/tenantStore';
 import { authService } from '../../auth/authService';
+import { tenantAccessService } from '../../services/tenant/tenantAccessService';
 import Button from '../../components/ui/Button';
 import { Loading } from '../../components/ui';
+import CreateTenantForm from './CreateTenantForm';
 
 const TenantStoreSelection: React.FC = () => {
   const navigate = useNavigate();
@@ -30,9 +32,11 @@ const TenantStoreSelection: React.FC = () => {
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
   
-  const [step, setStep] = useState<'tenant' | 'store'>('tenant');
+  const [step, setStep] = useState<'tenant' | 'store' | 'create-tenant'>('tenant');
   const [loadingStores, setLoadingStores] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [shouldOfferTenantCreation, setShouldOfferTenantCreation] = useState(false);
+  const [checkingTenantAccess, setCheckingTenantAccess] = useState(false);
 
   // Debug: Track component mount/unmount
   useEffect(() => {
@@ -107,6 +111,34 @@ const TenantStoreSelection: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Remove dependencies to prevent re-initialization
 
+  // Separate effect to check for tenant creation offer after tenants are loaded
+  useEffect(() => {
+    const checkTenantCreationOffer = async () => {
+      if (!hasInitialized || checkingTenantAccess) return;
+      
+      setCheckingTenantAccess(true);
+      try {
+        const shouldOffer = await tenantAccessService.shouldOfferTenantCreation();
+        console.log('🔍 Should offer tenant creation:', shouldOffer);
+        setShouldOfferTenantCreation(shouldOffer);
+        
+        // If no tenants found but user has super admin role, show tenant creation
+        if (tenants.length === 0 && shouldOffer) {
+          console.log('🏢 No tenants found but user has super admin role, offering tenant creation');
+          setStep('create-tenant');
+        }
+      } catch (error) {
+        console.error('❌ Error checking tenant access:', error);
+        // Continue with normal flow even if access check fails
+        setShouldOfferTenantCreation(false);
+      } finally {
+        setCheckingTenantAccess(false);
+      }
+    };
+    
+    checkTenantCreationOffer();
+  }, [hasInitialized, tenants.length]);
+
   useEffect(() => {
     // Only redirect if user completes the selection flow properly
     // Add debugging to understand what's happening
@@ -135,8 +167,8 @@ const TenantStoreSelection: React.FC = () => {
     setLoadingStores(true);
     
     try {
-      // First switch to the selected tenant
-      switchTenant(tenantId);
+      // First switch to the selected tenant (now async with server selection)
+      await switchTenant(tenantId);
       
       // Then fetch stores for this tenant
       console.log('🔄 Fetching stores for selected tenant:', tenantId);
@@ -201,11 +233,37 @@ const TenantStoreSelection: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  const handleCreateTenant = () => {
+    console.log('🏢 User wants to create a new tenant');
+    setStep('create-tenant');
+  };
+
+  const handleTenantCreated = async (tenantId: string) => {
+    console.log('✅ Tenant created successfully:', tenantId);
+    
+    // Refresh tenants and go back to tenant selection
+    try {
+      const user = await authService.getCurrentUser();
+      if (user?.email) {
+        await fetchTenants(user.email, true);
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing tenants after creation:', error);
+    }
+    
+    setStep('tenant');
+  };
+
+  const handleCancelTenantCreation = () => {
+    console.log('❌ User cancelled tenant creation');
+    setStep('tenant');
+  };
+
+  if (isLoading || checkingTenantAccess) {
     return (
       <Loading
-        title="Loading Organizations"
-        description="Please wait while we fetch your organizations and stores..."
+        title={checkingTenantAccess ? "Checking Access" : "Loading Organizations"}
+        description={checkingTenantAccess ? "Verifying your permissions..." : "Please wait while we fetch your organizations and stores..."}
         fullScreen={true}
         size="lg"
       />
@@ -223,39 +281,47 @@ const TenantStoreSelection: React.FC = () => {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            {step === 'tenant' ? 'Select Organization' : 'Select Store'}
+            {step === 'create-tenant' ? 'Create Organization' : 
+             step === 'tenant' ? 'Select Organization' : 'Select Store'}
           </h1>
           <p className="text-slate-500">
-            {step === 'tenant' 
-              ? 'Choose the organization you want to manage'
-              : 'Select a store within your organization'
-            }
+            {step === 'create-tenant' ? 'Set up a new organization for your POS system' :
+             step === 'tenant' ? 'Choose the organization you want to manage' : 
+             'Select a store within your organization'}
           </p>
         </div>
 
-        {/* Step Indicator */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
-              step === 'tenant' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-            }`}>
-              <BuildingOfficeIcon className="h-5 w-5" />
-              <span className="font-medium">Organization</span>
-              {step !== 'tenant' && <span className="text-green-600">✓</span>}
-            </div>
-            <ChevronRightIcon className="h-5 w-5 text-slate-400" />
-            <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
-              step === 'store' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
-            }`}>
-              <BuildingStorefrontIcon className="h-5 w-5" />
-              <span className="font-medium">Store</span>
+        {/* Step Indicator - Only show for tenant/store selection */}
+        {step !== 'create-tenant' && (
+          <div className="flex items-center justify-center mb-8">
+            <div className="flex items-center space-x-4">
+              <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
+                step === 'tenant' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+              }`}>
+                <BuildingOfficeIcon className="h-5 w-5" />
+                <span className="font-medium">Organization</span>
+                {step !== 'tenant' && <span className="text-green-600">✓</span>}
+              </div>
+              <ChevronRightIcon className="h-5 w-5 text-slate-400" />
+              <div className={`flex items-center space-x-2 px-4 py-2 rounded-full ${
+                step === 'store' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+              }`}>
+                <BuildingStorefrontIcon className="h-5 w-5" />
+                <span className="font-medium">Store</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Content Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 p-8">
-          {step === 'tenant' ? (
+          {step === 'create-tenant' ? (
+            /* Tenant Creation */
+            <CreateTenantForm 
+              onSuccess={handleTenantCreated}
+              onCancel={handleCancelTenantCreation}
+            />
+          ) : step === 'tenant' ? (
             /* Tenant Selection */
             <div>
               <h2 className="text-xl font-semibold text-slate-900 mb-6">Available Organizations</h2>
@@ -265,59 +331,86 @@ const TenantStoreSelection: React.FC = () => {
                   <BuildingOfficeIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-slate-900 mb-2">No Organizations Found</h3>
                   <p className="text-slate-500 mb-6">
-                    You don't have access to any organizations. Please contact your administrator.
+                    {shouldOfferTenantCreation
+                      ? "You don't have access to any organizations yet. Create a new organization to get started."
+                      : "You don't have access to any organizations. Please contact your administrator."
+                    }
                   </p>
-                  <Button onClick={handleSignOut} variant="outline">
-                    Sign Out
-                  </Button>
+                  <div className="flex items-center justify-center space-x-4">
+                    {shouldOfferTenantCreation && (
+                      <Button onClick={handleCreateTenant} className="bg-blue-600 hover:bg-blue-700">
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Create Organization
+                      </Button>
+                    )}
+                    <Button onClick={handleSignOut} variant="outline">
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tenants.map((tenant) => {
-                    // Add safety check for tenant object and required properties
-                    if (!tenant || !tenant.id || !tenant.name) {
-                      console.warn('Invalid tenant object found:', tenant);
-                      return null;
-                    }
-                    
-                    const storeCount = (tenant.stores || []).length;
-                    
-                    return (
-                    <button
-                      key={tenant.id}
-                      onClick={() => handleTenantSelect(tenant.id)}
-                      disabled={loadingStores}
-                      className="text-left p-6 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0">
-                          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-sm text-slate-500">
+                        Select an organization to manage
+                      </p>
+                    </div>
+                    {shouldOfferTenantCreation && (
+                      <Button onClick={handleCreateTenant} variant="outline" size="sm">
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Create New
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {tenants.map((tenant) => {
+                      // Add safety check for tenant object and required properties
+                      if (!tenant || !tenant.id || !tenant.name) {
+                        console.warn('Invalid tenant object found:', tenant);
+                        return null;
+                      }
+                      
+                      const storeCount = (tenant.stores || []).length;
+                      
+                      return (
+                      <button
+                        key={tenant.id}
+                        onClick={() => handleTenantSelect(tenant.id)}
+                        disabled={loadingStores}
+                        className="text-left p-6 border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                              <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                            {tenant.name}
-                          </h3>
-                          <p className="text-sm text-slate-500 mb-2">
-                            {tenant.contact_email}
-                          </p>
-                          <div className="flex items-center space-x-4 text-xs text-slate-400">
-                            <span className={`px-2 py-1 rounded-full ${
-                              tenant.status === 'active' ? 'bg-green-100 text-green-700' :
-                              tenant.status === 'suspended' ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {capitalizeStatus(tenant.status)}
-                            </span>
-                            <span>{storeCount} store{storeCount !== 1 ? 's' : ''}</span>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                              {tenant.name}
+                            </h3>
+                            <p className="text-sm text-slate-500 mb-2">
+                              {tenant.contact_email}
+                            </p>
+                            <div className="flex items-center space-x-4 text-xs text-slate-400">
+                              <span className={`px-2 py-1 rounded-full ${
+                                tenant.status === 'active' ? 'bg-green-100 text-green-700' :
+                                tenant.status === 'suspended' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                {capitalizeStatus(tenant.status)}
+                              </span>
+                              <span>{storeCount} store{storeCount !== 1 ? 's' : ''}</span>
+                            </div>
                           </div>
+                          <ChevronRightIcon className="h-5 w-5 text-slate-400" />
                         </div>
-                        <ChevronRightIcon className="h-5 w-5 text-slate-400" />
-                      </div>
-                    </button>
-                    );
-                  })}
+                      </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

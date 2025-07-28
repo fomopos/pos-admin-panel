@@ -51,7 +51,7 @@ class ProductService {
   async getProducts(tenantId: string, storeId: string): Promise<ProductsResponse> {
     try {
       const response = await apiClient.get<ProductsResponse>(
-        `/v0/tenant/${tenantId}/store/${storeId}/item`
+        `/v0/store/${storeId}/item`
       );
       return response.data;
     } catch (error) {
@@ -78,7 +78,7 @@ class ProductService {
       }
       
       const queryString = params.toString();
-      const url = `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}${queryString ? `?${queryString}` : ''}`;
+      const url = `/v0/store/${storeId}/item/${itemId}${queryString ? `?${queryString}` : ''}`;
       
       const response = await apiClient.get<ApiProduct>(url);
       return response.data;
@@ -106,7 +106,7 @@ class ProductService {
         };
         
         const response = await apiClient.post<ApiProduct>(
-          `/v0/tenant/${tenantId}/store/${storeId}/item?include_nested_modifiers=true`,
+          `/v0/store/${storeId}/item?include_nested_modifiers=true`,
           cleanedProductData // Send complete data including cleaned modifier_groups
         );
         return response.data;
@@ -117,7 +117,7 @@ class ProductService {
         const { modifier_groups, ...productApiData } = productData;
         
         const response = await apiClient.post<ApiProduct>(
-          `/v0/tenant/${tenantId}/store/${storeId}/item`,
+          `/v0/store/${storeId}/item`,
           productApiData
         );
         
@@ -150,7 +150,7 @@ class ProductService {
           };
           
           const response = await apiClient.put<ApiProduct>(
-            `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}?include_nested_modifiers=true`,
+            `/v0/store/${storeId}/item/${itemId}?include_nested_modifiers=true`,
             cleanedProductData // Send complete data including cleaned modifier_groups
           );
           return response.data;
@@ -161,7 +161,7 @@ class ProductService {
           const { modifier_groups, ...productApiData } = productData;
           
           const response = await apiClient.put<ApiProduct>(
-            `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
+            `/v0/store/${storeId}/item/${itemId}`,
             productApiData
           );
           
@@ -173,7 +173,7 @@ class ProductService {
       } else {
         // No modifier groups to update, just update the product
         const response = await apiClient.put<ApiProduct>(
-          `/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`,
+          `/v0/store/${storeId}/item/${itemId}`,
           productData
         );
         
@@ -190,7 +190,7 @@ class ProductService {
    */
   async deleteProduct(tenantId: string, storeId: string, itemId: string): Promise<void> {
     try {
-      await apiClient.delete(`/v0/tenant/${tenantId}/store/${storeId}/item/${itemId}`);
+      await apiClient.delete(`/v0/store/${storeId}/item/${itemId}`);
     } catch (error) {
       console.error('Error deleting product:', error);
       throw new Error('Failed to delete product');
@@ -229,7 +229,6 @@ class ProductService {
       // Fallback: Load modifier groups with separate API calls (backward compatibility)
       try {
         const modifierGroupsResponse = await productModifierService.getModifierGroups(
-          tenantId, 
           storeId, 
           apiProduct.item_id
         );
@@ -366,7 +365,7 @@ class ProductService {
       // Get current modifier groups from API
       let existingGroups: ProductModifierGroup[] = [];
       try {
-        const response = await productModifierService.getModifierGroups(tenantId, storeId, itemId);
+        const response = await productModifierService.getModifierGroups(storeId, itemId);
         existingGroups = await Promise.all(
           response.items.map(async (group) => {
             const modifiersResponse = await productModifierService.getModifiers(

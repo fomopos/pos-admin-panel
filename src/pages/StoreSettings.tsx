@@ -66,44 +66,32 @@ const StoreSettingsPage: React.FC = () => {
 
   const discardDialog = useDiscardChangesDialog();
 
-  // Fetch store settings and store details
+  // Fetch store details only
   useEffect(() => {
     const fetchData = async () => {
       setState(prev => ({ ...prev, isLoading: true }));
       
       try {
-        const tenantId = currentTenant?.id || '272e';
         const storeId = currentStore?.store_id || '*';
         
-        // Fetch store settings
-        const settingsPromise = async () => {
-          try {
-            return await storeServices.settings.getStoreSettings({
-              tenant_id: tenantId,
-              store_id: storeId
-            });
-          } catch (apiError) {
-            console.warn('Failed to fetch real store settings, using mock data:', apiError);
-            return await storeServices.settings.getMockStoreSettings();
-          }
-        };
+        // Fetch store details only
+        let storeDetails;
+        try {
+          storeDetails = await storeServices.store.getStoreDetails(storeId);
+        } catch (apiError) {
+          console.warn('Failed to fetch real store details, using mock data:', apiError);
+          storeDetails = await storeServices.store.getMockStoreDetails();
+        }
         
-        // Fetch store details
-        const detailsPromise = async () => {
-          try {
-            return await storeServices.store.getStoreDetails(tenantId, storeId);
-          } catch (apiError) {
-            console.warn('Failed to fetch real store details, using mock data:', apiError);
-            return await storeServices.store.getMockStoreDetails();
-          }
-        };
+        // Create a mock settings object since we're removing the settings API call
+        const mockSettings = await storeServices.settings.getMockStoreSettings();
         
-        const [settings, storeDetails] = await Promise.all([
-          settingsPromise(),
-          detailsPromise()
-        ]);
-        
-        setState(prev => ({ ...prev, settings, storeDetails, isLoading: false }));
+        setState(prev => ({ 
+          ...prev, 
+          settings: mockSettings, 
+          storeDetails, 
+          isLoading: false 
+        }));
       } catch (error) {
         console.error('Failed to fetch store data:', error);
         setState(prev => ({ ...prev, settings: null, storeDetails: null, isLoading: false }));
@@ -133,12 +121,7 @@ const StoreSettingsPage: React.FC = () => {
     try {
       setState(prev => ({ ...prev, errors: {} }));
       
-      const tenantId = currentTenant?.id;
       const storeId = currentStore?.store_id || '*';
-
-      if (!tenantId) {
-        throw new Error('Tenant ID is required but not available');
-      }
 
       switch (section) {
         case 'information':
@@ -149,7 +132,7 @@ const StoreSettingsPage: React.FC = () => {
             // Update store details via the real store API
             if (state.storeDetails) {
               const updateData = storeServices.store.convertFromStoreInformation(storeInfoData, state.storeDetails);
-              const updatedStoreDetails = await storeServices.store.updateStoreDetails(tenantId, storeId, updateData);
+              const updatedStoreDetails = await storeServices.store.updateStoreDetails(storeId, updateData);
               
               setState(prev => ({ 
                 ...prev, 
@@ -160,11 +143,11 @@ const StoreSettingsPage: React.FC = () => {
           }
           break;
         case 'receipt':
-          const receiptSettings = await storeServices.settings.updateReceiptSettings(tenantId, storeId, data);
+          const receiptSettings = await storeServices.settings.updateReceiptSettings(storeId, data);
           setState(prev => ({ ...prev, settings: receiptSettings, hasUnsavedChanges: false }));
           break;
         case 'hardware':
-          const hardwareSettings = await storeServices.settings.updateHardwareConfig(tenantId, storeId, data);
+          const hardwareSettings = await storeServices.settings.updateHardwareConfig(storeId, data);
           setState(prev => ({ ...prev, settings: hardwareSettings, hasUnsavedChanges: false }));
           break;
         default:

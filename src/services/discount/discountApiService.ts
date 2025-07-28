@@ -8,7 +8,7 @@ import type {
 } from '../../types/discount';
 
 class DiscountApiService {
-  private readonly basePath = '/v0/discount';
+  // private readonly basePath = '/v0';
 
   /**
    * Get all discounts for a store
@@ -22,7 +22,7 @@ class DiscountApiService {
         return this.getMockDiscounts();
       }
 
-      const path = `${this.basePath}/${params.tenant_id}/${params.store_id}`;
+      const path = `/v0/store/${params.store_id}/discount`;
       const response = await apiClient.get<DiscountsResponse>(path, {});
       
       console.log('✅ Successfully fetched discounts from API:', response.data);
@@ -50,12 +50,11 @@ class DiscountApiService {
         return discount;
       }
 
-      const path = `${this.basePath}/${tenantId}/${storeId}/${discountId}`;
+      const path = `/v0/store/${storeId}/discount/${discountId}`;
       const response = await apiClient.get<Discount>(path, {});
       
       console.log('✅ Successfully fetched discount from API:', response.data);
       return response.data;
-      
     } catch (error) {
       console.error('❌ Error fetching discount from API:', error);
       throw this.handleError(error);
@@ -78,7 +77,7 @@ class DiscountApiService {
         return this.createMockDiscount(tenantId, storeId, discountData);
       }
 
-      const path = `${this.basePath}/${tenantId}/${storeId}`;
+      const path = `/v0/store/${storeId}/discount`;
       const response = await apiClient.post<Discount>(path, discountData);
       
       console.log('✅ Successfully created discount:', response.data);
@@ -107,7 +106,8 @@ class DiscountApiService {
         return this.updateMockDiscount(tenantId, storeId, discountId, discountData);
       }
 
-      const path = `${this.basePath}/${tenantId}/${storeId}/${discountId}`;
+
+      const path = `/v0/store/${storeId}/discount/${discountId}`;
       const response = await apiClient.put<Discount>(path, discountData);
       
       console.log('✅ Successfully updated discount:', response.data);
@@ -131,7 +131,7 @@ class DiscountApiService {
         return;
       }
 
-      const path = `${this.basePath}/${tenantId}/${storeId}/${discountId}`;
+      const path = `/v0/store/${storeId}/discount/${discountId}`;
       await apiClient.delete(path);
       
       console.log('✅ Successfully deleted discount');

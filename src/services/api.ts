@@ -1,6 +1,5 @@
 // Base API configuration and utilities
 import { authService } from '../auth/authService';
-import { useTenantStore } from '../tenants/tenantStore';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
@@ -89,29 +88,8 @@ export class ApiClient {
       };
     }
 
-    // Add tenant ID header if available (exclude endpoints that don't need tenant context)
-    const excludedEndpoints = [
-      // '/v0/tenant', // Used to fetch user's available tenants before selection
-      '/auth/', // Authentication endpoints
-      '/health', // Health check endpoints
-    ];
-    
-    const shouldIncludeTenantHeader = !excludedEndpoints.some(excluded => endpoint.includes(excluded));
-    const tenantStore = useTenantStore.getState();
-    
-    if (shouldIncludeTenantHeader && tenantStore.currentTenant?.id) {
-      config.headers = {
-        ...config.headers,
-        'x-tenant-id': tenantStore.currentTenant.id,
-      };
-    }
-
-    if ('/v0/tenant' === endpoint) {
-      config.headers = {
-        ...config.headers,
-        'x-tenant-id': tenantStore.currentTenant?.id || '*',
-      };
-    }
+    // Tenant context is now handled by server-side tenant selection
+    // No need to add tenant ID header to requests
 
     try {
       const response = await fetch(url, config);

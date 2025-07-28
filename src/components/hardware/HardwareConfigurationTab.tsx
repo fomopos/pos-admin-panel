@@ -291,7 +291,6 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       setIsLoading(true);
       try {
         const devices = await hardwareApiService.getAllHardwareDevices(
-          currentStore.tenant_id, 
           currentStore.store_id
         );
         
@@ -391,7 +390,6 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       const deviceName = deviceToDelete?.name || 'device';
 
       await hardwareApiService.deleteHardwareDevice(
-        currentStore.tenant_id,
         currentStore.store_id,
         deviceId
       );
@@ -447,7 +445,6 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       if (formMode === 'create') {
         // Create new device
         await hardwareApiService.createHardwareDevice(
-          currentStore.tenant_id,
           currentStore.store_id,
           apiDevice
         );
@@ -455,7 +452,6 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       } else {
         // Update existing device
         await hardwareApiService.updateHardwareDevice(
-          currentStore.tenant_id,
           currentStore.store_id,
           device.id,
           {
@@ -528,7 +524,6 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       setErrors({});
       
       await hardwareApiService.testHardwareDevice(
-        currentStore.tenant_id,
         currentStore.store_id,
         device.id
       );

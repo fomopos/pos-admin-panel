@@ -162,10 +162,15 @@ const DashboardLayout: React.FC = () => {
 
   const [storeMenuOpen, setStoreMenuOpen] = useState(false);
 
-  const handleTenantSwitch = (tenantId: string) => {
-    switchTenant(tenantId);
-    setTenantMenuOpen(false);
-    setStoreMenuOpen(false); // Close store menu when switching tenant
+  const handleTenantSwitch = async (tenantId: string) => {
+    try {
+      await switchTenant(tenantId);
+      setTenantMenuOpen(false);
+      setStoreMenuOpen(false); // Close store menu when switching tenant
+    } catch (error) {
+      console.error('Failed to switch tenant:', error);
+      // Keep menus open to allow retry
+    }
   };
 
   const handleStoreSwitch = async (storeId: string) => {
