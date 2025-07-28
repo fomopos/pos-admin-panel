@@ -100,7 +100,7 @@ class ProductModifierService {
    * Get a single modifier group by ID
    */
   async getModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string
@@ -120,7 +120,7 @@ class ProductModifierService {
    * Create a new modifier group
    */
   async createModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupData: CreateModifierGroupRequest
@@ -141,7 +141,7 @@ class ProductModifierService {
    * Update an existing modifier group
    */
   async updateModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 
@@ -163,7 +163,7 @@ class ProductModifierService {
    * Delete a modifier group
    */
   async deleteModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string
@@ -186,7 +186,7 @@ class ProductModifierService {
    * Get all modifiers for a modifier group
    */
   async getModifiers(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string
@@ -206,7 +206,7 @@ class ProductModifierService {
    * Get a single modifier by ID
    */
   async getModifier(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 
@@ -227,7 +227,7 @@ class ProductModifierService {
    * Create a new modifier
    */
   async createModifier(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 
@@ -249,7 +249,7 @@ class ProductModifierService {
    * Update an existing modifier
    */
   async updateModifier(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 
@@ -272,7 +272,7 @@ class ProductModifierService {
    * Delete a modifier
    */
   async deleteModifier(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 
@@ -296,7 +296,7 @@ class ProductModifierService {
    * Create multiple modifier groups for a product
    */
   async createModifierGroupsBulk(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groups: CreateModifierGroupRequest[]
@@ -317,7 +317,7 @@ class ProductModifierService {
    * Create multiple modifiers for a group
    */
   async createModifiersBulk(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 
@@ -339,7 +339,7 @@ class ProductModifierService {
    * Update sort orders for modifier groups
    */
   async updateModifierGroupSortOrders(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     sortOrders: Array<{ group_id: string; sort_order: number }>
@@ -359,7 +359,7 @@ class ProductModifierService {
    * Update sort orders for modifiers within a group
    */
   async updateModifierSortOrders(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     itemId: string, 
     groupId: string, 

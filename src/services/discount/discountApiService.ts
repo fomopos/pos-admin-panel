@@ -37,7 +37,7 @@ class DiscountApiService {
   /**
    * Get a specific discount by ID
    */
-  async getDiscountById(tenantId: string, storeId: string, discountId: string): Promise<Discount> {
+  async getDiscountById(_tenantId: string, storeId: string, discountId: string): Promise<Discount> {
     try {
       console.log('🎯 Fetching discount by ID:', discountId);
       
@@ -122,7 +122,7 @@ class DiscountApiService {
   /**
    * Delete a discount
    */
-  async deleteDiscount(tenantId: string, storeId: string, discountId: string): Promise<void> {
+  async deleteDiscount(_tenantId: string, storeId: string, discountId: string): Promise<void> {
     try {
       console.log('🎯 Deleting discount:', discountId);
       

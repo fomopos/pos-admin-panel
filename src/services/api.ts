@@ -88,8 +88,15 @@ export class ApiClient {
       };
     }
 
-    // Tenant context is now handled by server-side tenant selection
-    // No need to add tenant ID header to requests
+    // Add tenant ID header if available
+    const { useTenantStore } = await import('../tenants/tenantStore');
+    const currentTenant = useTenantStore.getState().currentTenant;
+    if (currentTenant?.id) {
+      config.headers = {
+        ...config.headers,
+        'X-Tenant-Id': currentTenant.id,
+      };
+    }
 
     try {
       const response = await fetch(url, config);
