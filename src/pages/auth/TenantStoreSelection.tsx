@@ -98,8 +98,19 @@ const TenantStoreSelection: React.FC = () => {
         } else {
           console.warn('⚠️ No user email found, cannot fetch tenants');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error during initialization:', error);
+        
+        // Handle API error format: { code, slug, message }
+        if (error?.response?.data) {
+          const { code, message } = error.response.data;
+          console.error(`API Error ${code}: ${message}`);
+          
+          // Handle specific error cases
+          if (code === 4000 && message === "No TenantAccess Found.") {
+            console.warn('User has no tenant access, will show create tenant option if available');
+          }
+        }
       }
       
       setStep('tenant');
@@ -127,8 +138,20 @@ const TenantStoreSelection: React.FC = () => {
           console.log('🏢 No tenants found but user has super admin role, offering tenant creation');
           setStep('create-tenant');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error checking tenant access:', error);
+        
+        // Handle API error format: { code, slug, message }
+        if (error?.response?.data) {
+          const { code, message } = error.response.data;
+          console.error(`Tenant Access API Error ${code}: ${message}`);
+          
+          // Handle specific error cases
+          if (code === 4000 && message === "No TenantAccess Found.") {
+            console.log('User has no tenant access permissions');
+          }
+        }
+        
         // Continue with normal flow even if access check fails
         setShouldOfferTenantCreation(false);
       } finally {
@@ -196,8 +219,20 @@ const TenantStoreSelection: React.FC = () => {
 
       console.log('✅ Stores fetched successfully, moving to store selection');
       setStep('store');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error selecting tenant or fetching stores:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Store Fetch API Error ${code}: ${message}`);
+        
+        // Handle specific error cases
+        if (code === 4000 && message === "No TenantAccess Found.") {
+          console.error('User lost tenant access during store fetch');
+          // Could redirect back to tenant selection or show error message
+        }
+      }
     } finally {
       setLoadingStores(false);
     }
@@ -207,8 +242,21 @@ const TenantStoreSelection: React.FC = () => {
     try {
       await switchStore(storeId);
       // Navigation will happen automatically via useEffect when currentStore is set
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to select store:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Store Selection API Error ${code}: ${message}`);
+        
+        // Handle specific error cases
+        if (code === 4000 && message === "No TenantAccess Found.") {
+          console.error('User lost tenant access during store selection');
+          // Could redirect back to tenant selection or show error message
+        }
+      }
+      
       // The store switch might have failed, but currentStore might still be set from cache
       // Let the useEffect handle the navigation
     }
@@ -228,8 +276,14 @@ const TenantStoreSelection: React.FC = () => {
     try {
       await authService.signOut();
       navigate('/auth/signin');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign out error:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Sign Out API Error ${code}: ${message}`);
+      }
     }
   };
 
@@ -247,8 +301,19 @@ const TenantStoreSelection: React.FC = () => {
       if (user?.email) {
         await fetchTenants(user.email, true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error refreshing tenants after creation:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Tenant Refresh API Error ${code}: ${message}`);
+        
+        // Handle specific error cases
+        if (code === 4000 && message === "No TenantAccess Found.") {
+          console.error('User lost tenant access after creation');
+        }
+      }
     }
     
     setStep('tenant');
