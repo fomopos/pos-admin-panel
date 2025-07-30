@@ -35,7 +35,7 @@ const TenantStoreSelection: React.FC = () => {
   const [step, setStep] = useState<'tenant' | 'store' | 'create-tenant'>('tenant');
   const [loadingStores, setLoadingStores] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [shouldOfferTenantCreation, setShouldOfferTenantCreation] = useState(false);
+  const [shouldOfferTenantCreation, setShouldOfferTenantCreation] = useState(true);
   const [checkingTenantAccess, setCheckingTenantAccess] = useState(false);
 
   // Debug: Track component mount/unmount
@@ -328,17 +328,17 @@ const TenantStoreSelection: React.FC = () => {
               
               {!tenants || tenants.length === 0 ? (
                 <div className="text-center py-12">
-                  <BuildingOfficeIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">No Organizations Found</h3>
-                  <p className="text-slate-500 mb-6">
+                  <BuildingOfficeIcon className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-slate-900 mb-3">No Organizations Found</h3>
+                  <p className="text-slate-500 mb-8 max-w-md mx-auto">
                     {shouldOfferTenantCreation
-                      ? "You don't have access to any organizations yet. Create a new organization to get started."
-                      : "You don't have access to any organizations. Please contact your administrator."
+                      ? "You don't have access to any organizations yet. Create a new organization to get started with your POS system."
+                      : "You don't have access to any organizations. Please contact your administrator for access."
                     }
                   </p>
-                  <div className="flex items-center justify-center space-x-4">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     {shouldOfferTenantCreation && (
-                      <Button onClick={handleCreateTenant} className="bg-blue-600 hover:bg-blue-700">
+                      <Button onClick={handleCreateTenant} className="bg-blue-600 hover:bg-blue-700 text-white">
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Create Organization
                       </Button>
@@ -364,7 +364,7 @@ const TenantStoreSelection: React.FC = () => {
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tenants.map((tenant) => {
                       // Add safety check for tenant object and required properties
                       if (!tenant || !tenant.id || !tenant.name) {
@@ -410,6 +410,24 @@ const TenantStoreSelection: React.FC = () => {
                       </button>
                       );
                     })}
+                    
+                    {/* Add New Organization Card - Show only if user can create tenants */}
+                    {shouldOfferTenantCreation && (
+                      <button
+                        onClick={handleCreateTenant}
+                        className="text-left p-6 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex flex-col items-center justify-center min-h-[140px]"
+                      >
+                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                          <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-1">Add New Organization</h3>
+                        <p className="text-sm text-slate-500 text-center">
+                          Create another organization to manage
+                        </p>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

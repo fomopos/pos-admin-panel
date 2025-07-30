@@ -49,7 +49,7 @@ export interface CreateRoleRequest {
 class RoleApiService {
   private baseUrl = '/v0';
 
-  private getBaseUrl(tenantId: string, storeId: string): string {
+  private getBaseUrl(_tenantId: string, storeId: string): string {
     return `${this.baseUrl}/store/${storeId}/config/role`;
   }
 
