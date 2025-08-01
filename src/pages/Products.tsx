@@ -16,6 +16,7 @@ import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
 import { useTenantStore } from '../tenants/tenantStore';
 import { productService } from '../services/product';
+import { useCurrencyFormatter } from '../utils/currencyUtils';
 
 // Types for advanced filters
 interface PriceRange {
@@ -57,10 +58,16 @@ interface Product {
   updatedAt: Date;
 }
 
-const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => void; onDelete: (id: string) => void }> = ({
+const ProductCard: React.FC<{ 
+  product: Product; 
+  onEdit: (product: Product) => void; 
+  onDelete: (id: string) => void;
+  formatCurrency: (amount: string | number) => string;
+}> = ({
   product,
   onEdit,
   onDelete,
+  formatCurrency,
 }) => {
   const { t } = useTranslation();
   const stockStatus = product.stockQuantity <= product.minStockLevel ? 'low' : 'normal';
@@ -99,8 +106,8 @@ const ProductCard: React.FC<{ product: Product; onEdit: (product: Product) => vo
       <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
         <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
           <span className="text-xs text-gray-500 uppercase tracking-wide">Price</span>
-          <p className="font-semibold text-sm sm:text-lg text-green-600">${product.price}</p>
-          <span className="text-xs text-gray-500">Cost: ${product.cost}</span>
+          <p className="font-semibold text-sm sm:text-lg text-green-600">{formatCurrency(product.price)}</p>
+          <span className="text-xs text-gray-500">Cost: {formatCurrency(product.cost)}</span>
         </div>
         <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
           <span className="text-xs text-gray-500 uppercase tracking-wide">Stock</span>
@@ -154,11 +161,13 @@ const ProductListItem: React.FC<{
   onEdit: (product: Product) => void; 
   onDelete: (id: string) => void;
   isEven?: boolean;
+  formatCurrency: (amount: string | number) => string;
 }> = ({
   product,
   onEdit,
   onDelete,
   isEven = false,
+  formatCurrency,
 }) => {
   const { t } = useTranslation();
   const stockStatus = product.stockQuantity <= product.minStockLevel ? 'low' : 'normal';
@@ -181,8 +190,8 @@ const ProductListItem: React.FC<{
         </span>
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
-        <div className="text-xs sm:text-sm font-semibold text-green-600">${product.price}</div>
-        <div className="text-xs text-gray-500">{t('products.table.cost')}: ${product.cost}</div>
+        <div className="text-xs sm:text-sm font-semibold text-green-600">{formatCurrency(product.price)}</div>
+        <div className="text-xs text-gray-500">{t('products.table.cost')}: {formatCurrency(product.cost)}</div>
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <div className="flex items-center space-x-2">
@@ -433,6 +442,7 @@ const Products: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentTenant, currentStore } = useTenantStore();
+  const formatCurrency = useCurrencyFormatter();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -997,6 +1007,7 @@ const Products: React.FC = () => {
               product={product}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              formatCurrency={formatCurrency}
             />
           ))}
         </div>
@@ -1033,6 +1044,7 @@ const Products: React.FC = () => {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   isEven={index % 2 === 0}
+                  formatCurrency={formatCurrency}
                 />
               ))}
             </tbody>
