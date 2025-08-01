@@ -255,8 +255,11 @@ const ProductEdit: React.FC = () => {
               manufacturer: '',
               model_number: '',
               category_ids: product.categories || [], // Use categories array from API response
-              tags: [],
-              custom_attributes: product.custom_attribute || {},
+              tags: product.custom_attribute?.tags || [],
+              custom_attributes: (() => {
+                const { tags, ...otherAttributes } = product.custom_attribute || {};
+                return otherAttributes;
+              })(),
               properties: product.properties || {}
             },
             media: {
@@ -700,7 +703,10 @@ const ProductEdit: React.FC = () => {
           prompt_price: formData.prompts?.prompt_price,
           prompt_description: formData.prompts?.prompt_description,
           categories: formData.attributes?.category_ids || [],
-          custom_attribute: formData.attributes?.custom_attributes,
+          custom_attribute: {
+            ...formData.attributes?.custom_attributes,
+            tags: formData.attributes?.tags || []
+          },
           properties: formData.attributes?.properties,
           modifier_groups: formData.modifier_groups
         };
@@ -739,7 +745,10 @@ const ProductEdit: React.FC = () => {
           prompt_price: formData.prompts?.prompt_price,
           prompt_description: formData.prompts?.prompt_description,
           categories: formData.attributes?.category_ids || [],
-          custom_attribute: formData.attributes?.custom_attributes,
+          custom_attribute: {
+            ...formData.attributes?.custom_attributes,
+            tags: formData.attributes?.tags || []
+          },
           properties: formData.attributes?.properties,
           modifier_groups: formData.modifier_groups
         };
