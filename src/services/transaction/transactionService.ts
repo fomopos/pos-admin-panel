@@ -251,7 +251,7 @@ export interface TransactionDetail {
 }
 
 export class TransactionService {
-  private readonly basePath = '/v0/tenant';
+  private readonly basePath = '/v0/store';
 
   /**
    * Fetch transaction summary with optional filters
@@ -262,7 +262,7 @@ export class TransactionService {
     params?: TransactionQueryParams
   ): Promise<TransactionSummaryResponse> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/transaction/summary`;
+      const endpoint = `${this.basePath}/${storeId}/transaction/summary`;
       
       // Build query parameters
       const searchParams = new URLSearchParams();
@@ -479,7 +479,7 @@ export class TransactionService {
     transactionId: string
   ): Promise<TransactionDetail> {
     try {
-      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/transaction/${transactionId}`;
+      const endpoint = `${this.basePath}/${storeId}/transaction/${transactionId}`;
 
       console.log('🔄 Fetching transaction detail:', endpoint);
 
