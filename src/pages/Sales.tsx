@@ -110,7 +110,6 @@ const Sales: React.FC = () => {
 
       // Fetch data from API
       const response = await transactionService.getTransactionSummary(
-        currentTenant.id,
         currentStore.store_id,
         queryParams
       );
@@ -219,7 +218,6 @@ const Sales: React.FC = () => {
       let response;
       try {
         response = await transactionService.getTransactionSummary(
-          currentTenant.id,
           currentStore.store_id,
           queryParams
         );

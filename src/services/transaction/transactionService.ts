@@ -257,7 +257,6 @@ export class TransactionService {
    * Fetch transaction summary with optional filters
    */
   async getTransactionSummary(
-    tenantId: string,
     storeId: string,
     params?: TransactionQueryParams
   ): Promise<TransactionSummaryResponse> {
@@ -474,7 +473,6 @@ export class TransactionService {
    * Fetch detailed transaction by transaction ID
    */
   async getTransactionDetail(
-    tenantId: string,
     storeId: string,
     transactionId: string
   ): Promise<TransactionDetail> {
