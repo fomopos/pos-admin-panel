@@ -29,7 +29,7 @@ const PaymentSettings: React.FC = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [loading, setLoading] = useState(true);
-  const { currentTenant, currentStore } = useTenantStore();
+  const { currentStore } = useTenantStore();
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
@@ -42,7 +42,6 @@ const PaymentSettings: React.FC = () => {
     try {
       setLoading(true);
       const result = await tenderApiService.getTenders({
-        tenant_id: currentTenant?.id,
         store_id: currentStore?.store_id,
       });
       setTenders(Array.isArray(result) ? result : []);
@@ -81,7 +80,6 @@ const PaymentSettings: React.FC = () => {
       tender.description,
       async () => {
         await tenderApiService.deleteTender(tenderId, {
-          tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id,
         });
         await loadTenders(); // Reload the list

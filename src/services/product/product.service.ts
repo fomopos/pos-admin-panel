@@ -35,6 +35,7 @@ export interface CreateProductRequest {
   tare_value?: number;
   tare_uom?: string | null;
   online_only?: boolean;
+  categories?: string[];
   custom_attribute?: Record<string, any>;
   properties?: Record<string, any>;
   modifier_groups?: ProductModifierGroup[];

@@ -35,7 +35,7 @@ const TenantStoreSelection: React.FC = () => {
   const [step, setStep] = useState<'tenant' | 'store' | 'create-tenant'>('tenant');
   const [loadingStores, setLoadingStores] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [shouldOfferTenantCreation, setShouldOfferTenantCreation] = useState(false);
+  const [shouldOfferTenantCreation, setShouldOfferTenantCreation] = useState(true);
   const [checkingTenantAccess, setCheckingTenantAccess] = useState(false);
 
   // Debug: Track component mount/unmount
@@ -98,8 +98,19 @@ const TenantStoreSelection: React.FC = () => {
         } else {
           console.warn('⚠️ No user email found, cannot fetch tenants');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error during initialization:', error);
+        
+        // Handle API error format: { code, slug, message }
+        if (error?.response?.data) {
+          const { code, message } = error.response.data;
+          console.error(`API Error ${code}: ${message}`);
+          
+          // Handle specific error cases
+          if (code === 4000 && message === "No TenantAccess Found.") {
+            console.warn('User has no tenant access, will show create tenant option if available');
+          }
+        }
       }
       
       setStep('tenant');
@@ -127,8 +138,20 @@ const TenantStoreSelection: React.FC = () => {
           console.log('🏢 No tenants found but user has super admin role, offering tenant creation');
           setStep('create-tenant');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error checking tenant access:', error);
+        
+        // Handle API error format: { code, slug, message }
+        if (error?.response?.data) {
+          const { code, message } = error.response.data;
+          console.error(`Tenant Access API Error ${code}: ${message}`);
+          
+          // Handle specific error cases
+          if (code === 4000 && message === "No TenantAccess Found.") {
+            console.log('User has no tenant access permissions');
+          }
+        }
+        
         // Continue with normal flow even if access check fails
         setShouldOfferTenantCreation(false);
       } finally {
@@ -196,8 +219,20 @@ const TenantStoreSelection: React.FC = () => {
 
       console.log('✅ Stores fetched successfully, moving to store selection');
       setStep('store');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error selecting tenant or fetching stores:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Store Fetch API Error ${code}: ${message}`);
+        
+        // Handle specific error cases
+        if (code === 4000 && message === "No TenantAccess Found.") {
+          console.error('User lost tenant access during store fetch');
+          // Could redirect back to tenant selection or show error message
+        }
+      }
     } finally {
       setLoadingStores(false);
     }
@@ -207,8 +242,21 @@ const TenantStoreSelection: React.FC = () => {
     try {
       await switchStore(storeId);
       // Navigation will happen automatically via useEffect when currentStore is set
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to select store:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Store Selection API Error ${code}: ${message}`);
+        
+        // Handle specific error cases
+        if (code === 4000 && message === "No TenantAccess Found.") {
+          console.error('User lost tenant access during store selection');
+          // Could redirect back to tenant selection or show error message
+        }
+      }
+      
       // The store switch might have failed, but currentStore might still be set from cache
       // Let the useEffect handle the navigation
     }
@@ -228,8 +276,14 @@ const TenantStoreSelection: React.FC = () => {
     try {
       await authService.signOut();
       navigate('/auth/signin');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign out error:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Sign Out API Error ${code}: ${message}`);
+      }
     }
   };
 
@@ -247,8 +301,19 @@ const TenantStoreSelection: React.FC = () => {
       if (user?.email) {
         await fetchTenants(user.email, true);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error refreshing tenants after creation:', error);
+      
+      // Handle API error format: { code, slug, message }
+      if (error?.response?.data) {
+        const { code, message } = error.response.data;
+        console.error(`Tenant Refresh API Error ${code}: ${message}`);
+        
+        // Handle specific error cases
+        if (code === 4000 && message === "No TenantAccess Found.") {
+          console.error('User lost tenant access after creation');
+        }
+      }
     }
     
     setStep('tenant');
@@ -328,17 +393,17 @@ const TenantStoreSelection: React.FC = () => {
               
               {!tenants || tenants.length === 0 ? (
                 <div className="text-center py-12">
-                  <BuildingOfficeIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">No Organizations Found</h3>
-                  <p className="text-slate-500 mb-6">
+                  <BuildingOfficeIcon className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                  <h3 className="text-xl font-semibold text-slate-900 mb-3">No Organizations Found</h3>
+                  <p className="text-slate-500 mb-8 max-w-md mx-auto">
                     {shouldOfferTenantCreation
-                      ? "You don't have access to any organizations yet. Create a new organization to get started."
-                      : "You don't have access to any organizations. Please contact your administrator."
+                      ? "You don't have access to any organizations yet. Create a new organization to get started with your POS system."
+                      : "You don't have access to any organizations. Please contact your administrator for access."
                     }
                   </p>
-                  <div className="flex items-center justify-center space-x-4">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     {shouldOfferTenantCreation && (
-                      <Button onClick={handleCreateTenant} className="bg-blue-600 hover:bg-blue-700">
+                      <Button onClick={handleCreateTenant} className="bg-blue-600 hover:bg-blue-700 text-white">
                         <PlusIcon className="h-4 w-4 mr-2" />
                         Create Organization
                       </Button>
@@ -364,7 +429,7 @@ const TenantStoreSelection: React.FC = () => {
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tenants.map((tenant) => {
                       // Add safety check for tenant object and required properties
                       if (!tenant || !tenant.id || !tenant.name) {
@@ -410,6 +475,24 @@ const TenantStoreSelection: React.FC = () => {
                       </button>
                       );
                     })}
+                    
+                    {/* Add New Organization Card - Show only if user can create tenants */}
+                    {shouldOfferTenantCreation && (
+                      <button
+                        onClick={handleCreateTenant}
+                        className="text-left p-6 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex flex-col items-center justify-center min-h-[140px]"
+                      >
+                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                          <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-1">Add New Organization</h3>
+                        <p className="text-sm text-slate-500 text-center">
+                          Create another organization to manage
+                        </p>
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

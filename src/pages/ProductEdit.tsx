@@ -254,9 +254,12 @@ const ProductEdit: React.FC = () => {
             attributes: {
               manufacturer: '',
               model_number: '',
-              category_ids: product.merch_level1 ? [product.merch_level1] : [], // Convert single category to array
-              tags: [],
-              custom_attributes: product.custom_attribute || {},
+              category_ids: product.categories || [], // Use categories array from API response
+              tags: product.custom_attribute?.tags || [],
+              custom_attributes: (() => {
+                const { tags, ...otherAttributes } = product.custom_attribute || {};
+                return otherAttributes;
+              })(),
               properties: product.properties || {}
             },
             media: {
@@ -699,10 +702,10 @@ const ProductEdit: React.FC = () => {
           prompt_qty: formData.prompts?.prompt_qty,
           prompt_price: formData.prompts?.prompt_price,
           prompt_description: formData.prompts?.prompt_description,
+          categories: formData.attributes?.category_ids || [],
           custom_attribute: {
             ...formData.attributes?.custom_attributes,
-            // Store category_ids in custom attributes for now
-            category_ids: formData.attributes?.category_ids || []
+            tags: formData.attributes?.tags || []
           },
           properties: formData.attributes?.properties,
           modifier_groups: formData.modifier_groups
@@ -741,10 +744,10 @@ const ProductEdit: React.FC = () => {
           prompt_qty: formData.prompts?.prompt_qty,
           prompt_price: formData.prompts?.prompt_price,
           prompt_description: formData.prompts?.prompt_description,
+          categories: formData.attributes?.category_ids || [],
           custom_attribute: {
             ...formData.attributes?.custom_attributes,
-            // Store category_ids in custom attributes for now
-            category_ids: formData.attributes?.category_ids || []
+            tags: formData.attributes?.tags || []
           },
           properties: formData.attributes?.properties,
           modifier_groups: formData.modifier_groups

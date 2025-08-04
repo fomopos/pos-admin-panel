@@ -126,7 +126,7 @@ const TenderEditPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentTenant, currentStore } = useTenantStore();
+  const { currentStore } = useTenantStore();
   const { showError, showSuccess, showValidationError } = useError();
   
   // Dropdown options for select fields with translations
@@ -224,7 +224,6 @@ const TenderEditPage: React.FC = () => {
         // If editing, load the specific tender
         if (isEditing && id) {
           const tenderData = await tenderApiService.getTenderById(id, {
-            tenant_id: currentTenant?.id,
             store_id: currentStore?.store_id
           });
           
@@ -266,7 +265,7 @@ const TenderEditPage: React.FC = () => {
     };
 
     loadData();
-  }, [isEditing, id, currentTenant, currentStore]);
+  }, [isEditing, id, currentStore]);
 
   // Check for changes
   useEffect(() => {
@@ -453,14 +452,12 @@ const TenderEditPage: React.FC = () => {
 
       if (isEditing && id) {
         await tenderApiService.updateTender(id, tenderData, {
-          tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
         showSuccess(t('tenderEdit.success.updated'));
         setHasChanges(false);
       } else {
         await tenderApiService.createTender(tenderData, {
-          tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         }); 
         showSuccess(t('tenderEdit.success.created'));
@@ -491,7 +488,6 @@ const TenderEditPage: React.FC = () => {
       originalTender?.description || 'this tender',
       async () => {
         await tenderApiService.deleteTender(id, {
-          tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
         navigate('/payment-settings');

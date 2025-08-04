@@ -1,6 +1,6 @@
 import React from 'react';
 import { TagIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Widget, TagsInput } from '../ui';
+import { Widget } from '../ui';
 import type { Product } from '../../services/types/product.types';
 
 interface ProductAttributesTabProps {
@@ -11,7 +11,7 @@ interface ProductAttributesTabProps {
   setFormData: React.Dispatch<React.SetStateAction<Partial<Product>>>;
 }
 
-export const ProductAttributesTab: React.FC<ProductAttributesTabProps> = ({
+export const ProductAttributesTabAlternative: React.FC<ProductAttributesTabProps> = ({
   formData,
   handleArrayInputChange,
   handleObjectInputChange,
@@ -19,7 +19,7 @@ export const ProductAttributesTab: React.FC<ProductAttributesTabProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      {/* Tags Widget */}
+      {/* Tags Widget - Enhanced Version */}
       <Widget
         title="Tags & Labels"
         description="Add searchable tags and labels for this product"
@@ -31,19 +31,90 @@ export const ProductAttributesTab: React.FC<ProductAttributesTabProps> = ({
             Tags
           </label>
           
-          {/* Enhanced Tags Input Component */}
-          <TagsInput
-            tags={formData.attributes?.tags || []}
-            onChange={(newTags) => handleArrayInputChange('attributes.tags', newTags.join(', '))}
-            placeholder="Enter tags (press Enter or comma to add)"
-            maxTags={20}
-            allowDuplicates={false}
-            className="w-full"
-          />
+          {/* Tags Display */}
+          {formData.attributes?.tags && formData.attributes.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {formData.attributes.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newTags = formData.attributes?.tags?.filter((_, i) => i !== index) || [];
+                      handleArrayInputChange('attributes.tags', newTags.join(', '));
+                    }}
+                    className="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none"
+                  >
+                    <XMarkIcon className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
           
-          <p className="mt-2 text-xs text-gray-500">
-            Tags help categorize and search for products. You can use spaces within tag names.
+          {/* Enhanced Tags Input */}
+          <textarea
+            value={formData.attributes?.tags?.join(', ') || ''}
+            onChange={(e) => {
+              // Explicitly handle the input to ensure commas and spaces work
+              const value = e.target.value;
+              handleArrayInputChange('attributes.tags', value);
+            }}
+            onKeyDown={(e) => {
+              // Prevent any event blocking for comma and space
+              if (e.key === ',' || e.key === ' ') {
+                e.stopPropagation();
+              }
+              // Allow Enter to add tags too
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = e.currentTarget.value;
+                if (value.trim()) {
+                  handleArrayInputChange('attributes.tags', value);
+                }
+              }
+            }}
+            onBlur={(e) => {
+              // Clean up tags when user loses focus
+              const value = e.target.value;
+              if (value.trim()) {
+                handleArrayInputChange('attributes.tags', value);
+              }
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-y"
+            placeholder="Enter tags separated by commas (e.g., electronics, premium, wireless)"
+            rows={3}
+            style={{ minHeight: '60px' }}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Separate multiple tags with commas. You can also use spaces within tag names. Press Enter to add tags.
           </p>
+          
+          {/* Example tags for guidance */}
+          <div className="mt-2">
+            <p className="text-xs text-gray-400 mb-1">Examples:</p>
+            <div className="flex flex-wrap gap-1">
+              {['electronics', 'premium', 'wireless', 'bluetooth', 'portable'].map(example => (
+                <button
+                  key={example}
+                  type="button"
+                  onClick={() => {
+                    const currentTags = formData.attributes?.tags || [];
+                    if (!currentTags.includes(example)) {
+                      const newTagsString = [...currentTags, example].join(', ');
+                      handleArrayInputChange('attributes.tags', newTagsString);
+                    }
+                  }}
+                  className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                >
+                  + {example}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </Widget>
 

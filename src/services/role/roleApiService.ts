@@ -49,8 +49,8 @@ export interface CreateRoleRequest {
 class RoleApiService {
   private baseUrl = '/v0';
 
-  private getBaseUrl(tenantId: string, storeId: string): string {
-    return `${this.baseUrl}/tenant/${tenantId}/store/${storeId}/role`;
+  private getBaseUrl(_tenantId: string, storeId: string): string {
+    return `${this.baseUrl}/store/${storeId}/config/role`;
   }
 
   /**
@@ -66,7 +66,7 @@ class RoleApiService {
    * Get all roles
    */
   async getRoles(tenantId: string, storeId: string): Promise<ApiRole[]> {
-    const url = this.getBaseUrl(tenantId, storeId);
+    const url = `${this.getBaseUrl(tenantId, storeId)}`;
     const response = await apiClient.get<GetRolesResponse>(url);
     // Extract the roles array from the response
     return Array.isArray(response.data.roles) ? response.data.roles : [];
@@ -77,7 +77,7 @@ class RoleApiService {
    */
   async createRole(tenantId: string, storeId: string, data: CreateRoleRequest): Promise<ApiRole> {
     try {
-      const url = this.getBaseUrl(tenantId, storeId);
+      const url = `${this.getBaseUrl(tenantId, storeId)}`;
       const response = await apiClient.post<ApiRole>(url, data);
       return response.data;
     } catch (error) {
