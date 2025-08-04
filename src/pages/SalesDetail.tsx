@@ -56,7 +56,6 @@ const SalesDetail: React.FC = () => {
 
       // Fetch transaction detail from API
       const transactionData = await transactionService.getTransactionDetail(
-        currentTenant.id,
         currentStore.store_id,
         transId
       );
