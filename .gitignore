@@ -24,3 +24,12 @@ dist-ssr
 *.sw?
 
 .env
+
+# Code analysis reports
+analysis-summary.txt
+lint-report.txt
+unused-files-report.txt
+unused-exports-report.txt
+unused-deps-report.txt
+build-report.txt
+unused-code-report.txt

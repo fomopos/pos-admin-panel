@@ -324,12 +324,35 @@ Multi-tenant data should be scoped using tenant ID:
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 
+#### Code Quality & Analysis
+
+- `npm run analyze:unused` - Run complete unused code analysis
+- `npm run analyze:files` - Find unimported files
+- `npm run analyze:exports` - Find unused exports
+- `npm run analyze:deps` - Find unused dependencies
+- `npm run analyze:imports` - Find unresolved imports
+- `npm run analyze:full` - Complete analysis with detailed output
+- `npm run report:unused` - Generate unused code report
+
 ### Adding New Features
 
 1. **Components**: Add reusable components to `src/components/`
 2. **Pages**: Create new pages in `src/pages/` following the established design patterns
 3. **Routes**: Update routing in `src/App.tsx`
 4. **Translations**: Add new translation keys to the API responses
+
+For detailed feature implementation guidelines, see the [Developer Guide](docs/DEVELOPER_GUIDE.md).
+
+### Code Quality Management
+
+The project includes comprehensive tools for maintaining code quality:
+
+- **Unused Code Detection**: Regular analysis to identify unused files, exports, and dependencies
+- **TypeScript Strict Mode**: Enforced type safety throughout the codebase
+- **ESLint Rules**: Strict linting rules to maintain code consistency
+- **Design System**: Comprehensive component library with usage guidelines
+
+See the [Unused Code Report](docs/UNUSED_CODE_REPORT.md) for current analysis results.
 
 ### Design System Guidelines
 
