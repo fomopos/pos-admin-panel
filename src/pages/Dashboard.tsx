@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, PageHeader, VersionDisplay } from '../components/ui';
 import KPICard from '../components/ui/KPICard';
@@ -21,6 +21,18 @@ const Dashboard: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
   const [customDateRange, setCustomDateRange] = useState<CustomDateRange>();
   const [refreshing, setRefreshing] = useState(false);
+  const initialCallMade = useRef(false);
+  const componentId = useRef(Math.random().toString(36).substr(2, 9));
+
+  console.log(`🏗️ [Dashboard] Component render - ID: ${componentId.current}`);
+
+  // Add cleanup effect to track component unmounting
+  useEffect(() => {
+    console.log(`🏗️ [Dashboard] Component mounted - ID: ${componentId.current}`);
+    return () => {
+      console.log(`🗑️ [Dashboard] Component unmounting - ID: ${componentId.current}`);
+    };
+  }, []);
 
   // Helper function to format payment method names and get icons
   const getPaymentMethodInfo = (tenderId: string) => {
@@ -44,21 +56,29 @@ const Dashboard: React.FC = () => {
 
   // Fetch dashboard metrics from the API
   const fetchMetricsData = async (period?: TimePeriod, customRange?: CustomDateRange) => {
+    const callId = Math.random().toString(36).substr(2, 9);
     try {
       setLoading(true);
       const currentPeriod = period || selectedPeriod;
-      console.log('📊 Fetching dashboard metrics for period:', currentPeriod);
+      
+      // Get caller info for debugging
+      const stack = new Error().stack;
+      const caller = stack?.split('\n')[2]?.trim() || 'unknown';
+      
+      console.log(`📊 [Dashboard] API Call #${callId} - Fetching dashboard metrics for period:`, currentPeriod);
+      console.log(`📊 [Dashboard] API Call #${callId} - Called from:`, caller);
+      console.log(`📊 [Dashboard] API Call #${callId} - Parameters:`, { period, customRange, selectedPeriod, customDateRange });
       
       const data = await dashboardMetricsService.getDashboardMetricsForPeriod(
         currentPeriod,
         undefined, // Auto-detect timezone
         customRange
       );
-      console.log('✅ Metrics data received:', data);
+      console.log(`✅ [Dashboard] API Call #${callId} - Metrics data received:`, data);
       
       setMetricsData(data);
     } catch (error) {
-      console.error('❌ Error fetching metrics data:', error);
+      console.error(`❌ [Dashboard] API Call #${callId} - Error fetching metrics data:`, error);
     } finally {
       setLoading(false);
     }
@@ -66,6 +86,7 @@ const Dashboard: React.FC = () => {
 
   // Refresh data
   const handleRefresh = async () => {
+    console.log(`🔄 [Dashboard] Component ID ${componentId.current} - Refresh button clicked`);
     setRefreshing(true);
     await fetchMetricsData();
     setRefreshing(false);
@@ -73,14 +94,23 @@ const Dashboard: React.FC = () => {
 
   // Handle period change
   const handlePeriodChange = async (period: TimePeriod, customRange?: CustomDateRange) => {
+    console.log(`📅 [Dashboard] Component ID ${componentId.current} - Period changed to:`, period, customRange);
     setSelectedPeriod(period);
     setCustomDateRange(customRange);
     await fetchMetricsData(period, customRange);
   };
 
   useEffect(() => {
-    fetchMetricsData();
-  }, []);
+    if (initialCallMade.current) {
+      console.log(`⚠️ [Dashboard] Component ID ${componentId.current} - useEffect running again but initial call already made, skipping`);
+      return;
+    }
+    
+    console.log(`🚀 [Dashboard] Component ID ${componentId.current} - Initial data fetch starting`);
+    console.log(`🚀 [Dashboard] Component ID ${componentId.current} - Current state:`, { selectedPeriod, customDateRange });
+    initialCallMade.current = true;
+    fetchMetricsData(selectedPeriod, customDateRange);
+  }, []); // Only run on mount - selectedPeriod and customDateRange have initial values
 
   // Helper functions for metrics data
 
