@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, PageHeader, VersionDisplay } from '../components/ui';
 import KPICard from '../components/ui/KPICard';
 import { dashboardKPIService, type DashboardKPIFilters } from '../services/dashboard/dashboardKPIService';
-import { dashboardMetricsService, type DashboardMetricsResponse, type TimePeriod } from '../services/dashboard/dashboardMetricsService';
+import { dashboardMetricsService, type DashboardMetricsResponse, type TimePeriod, type CustomDateRange } from '../services/dashboard/dashboardMetricsService';
 import type { DashboardKPIResponse } from '../types/dashboard-kpi';
 import {
   CurrencyDollarIcon,
@@ -26,6 +26,7 @@ const Dashboard: React.FC = () => {
   const [metricsData, setMetricsData] = useState<DashboardMetricsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
+  const [customDateRange, setCustomDateRange] = useState<CustomDateRange>();
   const [refreshing, setRefreshing] = useState(false);
 
   // Helper function to format payment method names and get icons
@@ -49,12 +50,21 @@ const Dashboard: React.FC = () => {
   };
 
   // Fetch KPI data
-  const fetchKPIData = async (period?: TimePeriod) => {
+  const fetchKPIData = async (period?: TimePeriod, customRange?: CustomDateRange) => {
     try {
       setLoading(true);
+      const currentPeriod = period || selectedPeriod;
+      
       const filters: DashboardKPIFilters = {
-        period: period || selectedPeriod,
+        period: currentPeriod,
       };
+      
+      // Add custom date range if provided and period is custom
+      if (currentPeriod === 'custom' && customRange) {
+        filters.startDate = customRange.startDate;
+        filters.endDate = customRange.endDate;
+      }
+      
       const data = await dashboardKPIService.getDashboardKPIs(filters);
       setKpiData(data);
     } catch (error) {
@@ -63,15 +73,16 @@ const Dashboard: React.FC = () => {
   };
 
   // Fetch dashboard metrics from the new API
-  const fetchMetricsData = async (period?: TimePeriod) => {
+  const fetchMetricsData = async (period?: TimePeriod, customRange?: CustomDateRange) => {
     try {
       const currentPeriod = period || selectedPeriod;
       console.log('📊 Fetching dashboard metrics for period:', currentPeriod);
       
-      const dateRange = dashboardMetricsService.getDateRangeForPeriod(currentPeriod);
-      console.log('📅 Date range for metrics:', dateRange);
-      
-      const data = await dashboardMetricsService.getDashboardMetrics(dateRange);
+      const data = await dashboardMetricsService.getDashboardMetricsForPeriod(
+        currentPeriod,
+        undefined, // Auto-detect timezone
+        customRange
+      );
       console.log('✅ Metrics data received:', data);
       
       setMetricsData(data);
@@ -81,12 +92,12 @@ const Dashboard: React.FC = () => {
   };
 
   // Fetch both data sources
-  const fetchAllData = async (period?: TimePeriod) => {
+  const fetchAllData = async (period?: TimePeriod, customRange?: CustomDateRange) => {
     try {
       setLoading(true);
       await Promise.all([
-        fetchKPIData(period),
-        fetchMetricsData(period)
+        fetchKPIData(period, customRange),
+        fetchMetricsData(period, customRange)
       ]);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -103,9 +114,10 @@ const Dashboard: React.FC = () => {
   };
 
   // Handle period change
-  const handlePeriodChange = async (period: TimePeriod) => {
+  const handlePeriodChange = async (period: TimePeriod, customRange?: CustomDateRange) => {
     setSelectedPeriod(period);
-    await fetchAllData(period);
+    setCustomDateRange(customRange);
+    await fetchAllData(period, customRange);
   };
 
   useEffect(() => {
@@ -155,7 +167,21 @@ const Dashboard: React.FC = () => {
           </button>
           <select
             value={selectedPeriod}
-            onChange={(e) => handlePeriodChange(e.target.value as TimePeriod)}
+            onChange={(e) => {
+              const period = e.target.value as TimePeriod;
+              if (period === 'custom') {
+                // Set default custom range (last 7 days)
+                const today = new Date();
+                const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const customRange: CustomDateRange = {
+                  startDate: lastWeek.toISOString().split('T')[0],
+                  endDate: today.toISOString().split('T')[0]
+                };
+                handlePeriodChange(period, customRange);
+              } else {
+                handlePeriodChange(period);
+              }
+            }}
             className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <option value="today">{t('dashboard.periods.today')}</option>
@@ -163,7 +189,41 @@ const Dashboard: React.FC = () => {
             <option value="month">{t('dashboard.periods.thisMonth')}</option>
             <option value="quarter">{t('dashboard.periods.thisQuarter')}</option>
             <option value="year">{t('dashboard.periods.thisYear')}</option>
+            <option value="custom">{t('dashboard.periods.customRange')}</option>
           </select>
+          
+          {/* Custom Date Inputs - Show when custom is selected */}
+          {selectedPeriod === 'custom' && (
+            <div className="flex items-center space-x-2 ml-3">
+              <input
+                type="date"
+                value={customDateRange?.startDate || ''}
+                onChange={(e) => {
+                  const newRange = {
+                    startDate: e.target.value,
+                    endDate: customDateRange?.endDate || e.target.value
+                  };
+                  setCustomDateRange(newRange);
+                  handlePeriodChange('custom', newRange);
+                }}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <span className="text-sm text-slate-500">to</span>
+              <input
+                type="date"
+                value={customDateRange?.endDate || ''}
+                onChange={(e) => {
+                  const newRange = {
+                    startDate: customDateRange?.startDate || e.target.value,
+                    endDate: e.target.value
+                  };
+                  setCustomDateRange(newRange);
+                  handlePeriodChange('custom', newRange);
+                }}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          )}
         </div>
       </PageHeader>
 

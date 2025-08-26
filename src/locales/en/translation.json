@@ -362,7 +362,8 @@
       "thisWeek": "This Week",
       "thisMonth": "This Month",
       "thisQuarter": "This Quarter",
-      "thisYear": "This Year"
+      "thisYear": "This Year",
+      "customRange": "Custom Range"
     },
     "alerts": {
       "active": "Active Alerts"

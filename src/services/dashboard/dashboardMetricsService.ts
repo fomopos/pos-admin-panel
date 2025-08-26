@@ -48,7 +48,12 @@ export interface DashboardMetricsFilters {
   timezone?: string;
 }
 
-export type TimePeriod = 'today' | 'week' | 'month' | 'quarter' | 'year';
+export interface CustomDateRange {
+  startDate: string; // Format: YYYY-MM-DD
+  endDate: string;   // Format: YYYY-MM-DD
+}
+
+export type TimePeriod = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 class DashboardMetricsService {
   /**
@@ -63,6 +68,34 @@ class DashboardMetricsService {
     } catch (error) {
       console.warn('Could not access tenant store, using default store ID:', error);
       return '400709'; // Default store ID from your example
+    }
+  }
+
+  /**
+   * Get current timezone dynamically
+   */
+  private getCurrentTimezone(): string {
+    try {
+      // Try to get timezone from tenant store
+      const { useTenantStore } = require('../../tenants/tenantStore');
+      const { currentStore } = useTenantStore.getState();
+      
+      if (currentStore?.timezone) {
+        return currentStore.timezone;
+      }
+      
+      // Fallback to browser timezone
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const offset = new Date().getTimezoneOffset();
+      const sign = offset > 0 ? '-' : '+';
+      const hours = Math.floor(Math.abs(offset) / 60).toString().padStart(2, '0');
+      const minutes = (Math.abs(offset) % 60).toString().padStart(2, '0');
+      
+      console.log(`🌍 Using browser timezone: ${userTimezone} (${sign}${hours}:${minutes})`);
+      return `${sign}${hours}:${minutes}`;
+    } catch (error) {
+      console.warn('Could not determine timezone, using default:', error);
+      return '+05:30'; // Default fallback
     }
   }
 
@@ -91,21 +124,25 @@ class DashboardMetricsService {
       return response.data;
     } catch (error) {
       console.error('❌ Error fetching dashboard metrics:', error);
-      console.log('🔄 Falling back to mock data');
-      // Return mock data for development/fallback
-      return this.getMockMetricsData();
+      // Don't fallback to mock data - let the error propagate
+      throw error;
     }
   }
 
   /**
    * Get date range for a given time period
    */
-  getDateRangeForPeriod(period: TimePeriod, timezone: string = '+05:30'): DashboardMetricsFilters {
+  getDateRangeForPeriod(
+    period: TimePeriod, 
+    timezone?: string,
+    customDateRange?: CustomDateRange
+  ): DashboardMetricsFilters {
     const now = new Date();
     const storeId = this.getCurrentStoreId();
+    const currentTimezone = timezone || this.getCurrentTimezone();
     
     let startDate: Date;
-    let endDate: Date = now;
+    let endDate: Date;
 
     switch (period) {
       case 'today':
@@ -116,137 +153,132 @@ class DashboardMetricsService {
         break;
       
       case 'week':
+        // Get start of current week (Monday)
         startDate = new Date(now);
-        const dayOfWeek = startDate.getDay();
-        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday = 0
-        startDate.setDate(startDate.getDate() - daysToSubtract);
+        const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days to Monday
+        startDate.setDate(startDate.getDate() - daysFromMonday);
         startDate.setHours(0, 0, 0, 0);
+        
+        // End of current week (Sunday)
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6); // Add 6 days to get to Sunday
+        endDate.setHours(23, 59, 59, 999);
         break;
       
       case 'month':
+        // Start of current month
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // End of current month
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Day 0 of next month = last day of current month
+        endDate.setHours(23, 59, 59, 999);
         break;
       
       case 'quarter':
+        // Start of current quarter
         const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
         startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // End of current quarter
+        endDate = new Date(now.getFullYear(), quarterStartMonth + 3, 0); // Last day of quarter
+        endDate.setHours(23, 59, 59, 999);
         break;
       
       case 'year':
+        // Start of current year
         startDate = new Date(now.getFullYear(), 0, 1);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // End of current year
+        endDate = new Date(now.getFullYear(), 11, 31);
+        endDate.setHours(23, 59, 59, 999);
+        break;
+      
+      case 'custom':
+        if (!customDateRange) {
+          throw new Error('Custom date range is required when period is "custom"');
+        }
+        
+        // Parse custom start date
+        const [startYear, startMonth, startDay] = customDateRange.startDate.split('-').map(Number);
+        startDate = new Date(startYear, startMonth - 1, startDay);
+        startDate.setHours(0, 0, 0, 0);
+        
+        // Parse custom end date
+        const [endYear, endMonth, endDay] = customDateRange.endDate.split('-').map(Number);
+        endDate = new Date(endYear, endMonth - 1, endDay);
+        endDate.setHours(23, 59, 59, 999);
+        
+        // Validate custom date range
+        if (startDate > endDate) {
+          throw new Error('Custom start date cannot be after end date');
+        }
+        
+        console.log('📅 Custom date range:', {
+          provided: customDateRange,
+          parsed: {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
+          }
+        });
         break;
       
       default:
+        // Default to current month
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate.setHours(23, 59, 59, 999);
         break;
     }
 
-    return {
+    const result = {
       storeId,
       startDate: startDate.toISOString().split('T')[0],
       endDate: endDate.toISOString().split('T')[0],
-      timezone
+      timezone: currentTimezone
     };
+
+    console.log(`📅 Date range for ${period}:`, {
+      period,
+      startDate: result.startDate,
+      endDate: result.endDate,
+      timezone: currentTimezone,
+      debug: {
+        now: now.toISOString(),
+        startDateObj: startDate.toISOString(),
+        endDateObj: endDate.toISOString()
+      }
+    });
+
+    return result;
   }
 
   /**
-   * Mock data matching the API response format you provided
+   * Get dashboard metrics for a specific time period
    */
-  private getMockMetricsData(): DashboardMetricsResponse {
-    return {
-      metrics: {
-        total_sales: 1221,
-        total_orders: 8,
-        avg_order_value: 152.625,
-        total_discounts: 39,
-        taxes_collected: 186.2599959373474,
-        unique_items: 15,
-        total_quantity: 17
-      },
-      hourly_revenue: [
-        {
-          hour: 0,
-          revenue: 330,
-          orders: 2,
-          avg_order_value: 165,
-          total_items: 3
-        },
-        {
-          hour: 17,
-          revenue: 71,
-          orders: 1,
-          avg_order_value: 71,
-          total_items: 3
-        },
-        {
-          hour: 18,
-          revenue: 60,
-          orders: 1,
-          avg_order_value: 60,
-          total_items: 1
-        },
-        {
-          hour: 19,
-          revenue: 240,
-          orders: 1,
-          avg_order_value: 240,
-          total_items: 5
-        },
-        {
-          hour: 23,
-          revenue: 520,
-          orders: 3,
-          avg_order_value: 173.33333333333334,
-          total_items: 5
-        }
-      ],
-      weekly_revenue: [
-        {
-          day_of_week: 4,
-          day_name: "Thursday",
-          revenue: 520,
-          orders: 3,
-          avg_order_value: 173.33333333333334,
-          total_items: 5
-        },
-        {
-          day_of_week: 5,
-          day_name: "Friday",
-          revenue: 330,
-          orders: 2,
-          avg_order_value: 165,
-          total_items: 3
-        },
-        {
-          day_of_week: 6,
-          day_name: "Saturday",
-          revenue: 371,
-          orders: 3,
-          avg_order_value: 123.66666666666667,
-          total_items: 9
-        }
-      ],
-      payment_breakdown: [
-        {
-          tender_id: "cash_usd",
-          total_amount: 1221,
-          avg_amount: 152.625,
-          transaction_count: 8
-        },
-        {
-          tender_id: "card_visa",
-          total_amount: 850,
-          avg_amount: 170,
-          transaction_count: 5
-        },
-        {
-          tender_id: "digital_wallet",
-          total_amount: 345,
-          avg_amount: 115,
-          transaction_count: 3
-        }
-      ]
-    };
+  async getDashboardMetricsForPeriod(
+    period: TimePeriod, 
+    timezone?: string,
+    customDateRange?: CustomDateRange
+  ): Promise<DashboardMetricsResponse> {
+    const filters = this.getDateRangeForPeriod(period, timezone, customDateRange);
+    return this.getDashboardMetrics(filters);
+  }
+
+  /**
+   * Get dashboard metrics for a custom date range
+   */
+  async getDashboardMetricsForCustomRange(
+    startDate: string, 
+    endDate: string,
+    timezone?: string
+  ): Promise<DashboardMetricsResponse> {
+    const customDateRange: CustomDateRange = { startDate, endDate };
+    return this.getDashboardMetricsForPeriod('custom', timezone, customDateRange);
   }
 }
 
