@@ -6,6 +6,15 @@ import type { EnhancedCategory, CategoryNode } from '../types/category';
  */
 export class CategoryUtils {
   /**
+   * Generate a compact unique category ID
+   */
+  static generateCategoryId(): string {
+    const timestamp = Date.now().toString(36).slice(-3);
+    const random = Math.random().toString(36).substr(2, 4);
+    return `C${timestamp}${random}`.toUpperCase();
+  }
+
+  /**
    * Get the full path of a category including its parent hierarchy
    * @param category - The category to get path for
    * @param allCategories - All available categories

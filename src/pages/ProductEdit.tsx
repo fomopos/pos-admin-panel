@@ -719,8 +719,15 @@ const ProductEdit: React.FC = () => {
         showSuccess(`Product "${formData.name}" updated successfully`);
         console.log('Product updated successfully');
       } else {
+        // Generate a shorter, more compact product ID
+        const generateProductId = (): string => {
+          const timestamp = Date.now().toString(36).slice(-3);
+          const random = Math.random().toString(36).substr(2, 4);
+          return `P${timestamp}${random}`.toUpperCase();
+        };
+        
         const createRequest: CreateProductRequest = {
-          item_id: `prod_${Date.now()}`, // Generate a unique ID for new products
+          item_id: (formData.item_id && formData.item_id.trim()) || generateProductId(), // Always generate ID on frontend for consistent short format
           store_id: currentStore.store_id,
           name: formData.name!,
           description: formData.description,

@@ -96,6 +96,7 @@ const CategoryEditPage: React.FC = () => {
   const defaultColor = useMemo(() => generateRandomColor(), []);
 
   const [formData, setFormData] = useState<CategoryFormData>({
+    category_id: '',
     name: '',
     description: '',
     parent_category_id: undefined,
@@ -153,6 +154,7 @@ const CategoryEditPage: React.FC = () => {
           
           // Map to form data
           setFormData({
+            category_id: categoryData.category_id,
             name: categoryData.name,
             description: categoryData.description || '',
             parent_category_id: categoryData.parent_category_id || undefined,
@@ -188,6 +190,7 @@ const CategoryEditPage: React.FC = () => {
     if (isEditing && originalCategory) {
       // Compare current form data with original category
       const currentData = {
+        category_id: formData.category_id,
         name: formData.name,
         description: formData.description || '',
         parent_category_id: formData.parent_category_id || undefined,
@@ -202,6 +205,7 @@ const CategoryEditPage: React.FC = () => {
 
       // Apply the same transformations to original data as were applied when setting form data
       const originalData = {
+        category_id: originalCategory.category_id,
         name: originalCategory.name,
         description: originalCategory.description || '',
         parent_category_id: originalCategory.parent_category_id || undefined,
@@ -224,7 +228,8 @@ const CategoryEditPage: React.FC = () => {
       setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
     } else if (!isEditing) {
       // For new categories, check if any fields are filled
-      const hasData = formData.name.trim() !== '' || 
+      const hasData = formData.category_id?.trim() !== '' ||
+                     formData.name.trim() !== '' || 
                      formData.description.trim() !== '' ||
                      formData.tags.length > 0 ||
                      formData.parent_category_id !== undefined;
@@ -312,6 +317,18 @@ const CategoryEditPage: React.FC = () => {
     if (formData.name.length > 100) {
       newErrors.name = 'Category name must be less than 100 characters';
     }
+
+    // Validate category_id if provided
+    if (formData.category_id && formData.category_id.trim().length > 0) {
+      if (formData.category_id.trim().length > 20) {
+        newErrors.category_id = 'Category ID must be less than 20 characters';
+      }
+      
+      const validIdPattern = /^[a-zA-Z0-9\-_]+$/;
+      if (!validIdPattern.test(formData.category_id.trim())) {
+        newErrors.category_id = 'Category ID can only contain letters, numbers, hyphens, and underscores';
+      }
+    }
     
     setErrors(newErrors);
     
@@ -340,6 +357,8 @@ const CategoryEditPage: React.FC = () => {
 
       const categoryData = {
         ...formData,
+        // Generate ID on frontend if empty to ensure consistent short format
+        category_id: (formData.category_id && formData.category_id.trim()) || CategoryUtils.generateCategoryId(),
       };
 
       if (isEditing && id) {
@@ -696,8 +715,42 @@ const CategoryEditPage: React.FC = () => {
                 onChange={(value) => handleInputChange('name', value)}
                 placeholder="Enter category name"
                 error={errors.name}
-                colSpan="md:col-span-2"
+                colSpan="md:col-span-1"
               />
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Category ID
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={formData.category_id || ''}
+                    onChange={(e) => handleInputChange('category_id', e.target.value)}
+                    placeholder={isEditing ? 'Cannot change when editing' : 'Auto-generated if empty'}
+                    className="flex-1"
+                    disabled={isEditing}
+                    error={errors.category_id}
+                  />
+                  {!isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleInputChange('category_id', CategoryUtils.generateCategoryId())}
+                      className="px-3"
+                    >
+                      Generate
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {isEditing 
+                    ? 'Category ID cannot be changed when editing'
+                    : 'Leave empty for auto-generated ID (e.g., CK7M2N4X)'
+                  }
+                </p>
+              </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

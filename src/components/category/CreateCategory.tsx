@@ -59,6 +59,7 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
 
   // Form state
   const [formData, setFormData] = useState<CategoryFormData>({
+    category_id: '',
     name: '',
     description: '',
     parent_category_id: parentCategoryId || '',
@@ -223,6 +224,7 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
 
   const resetForm = () => {
     setFormData({
+      category_id: '',
       name: '',
       description: '',
       parent_category_id: parentCategoryId || '',
@@ -374,6 +376,36 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category ID
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        value={formData.category_id || ''}
+                        onChange={(e) => handleFieldChange('category_id', e.target.value)}
+                        placeholder="Auto-generated if empty"
+                        error={touchedFields.has('category_id') ? errors.category_id : undefined}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleFieldChange('category_id', CategoryUtils.generateCategoryId())}
+                        className="px-3"
+                      >
+                        Generate
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave empty for auto-generated ID (e.g., CK7M2N4X)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {t('categories.create.fields.sortOrder')}
@@ -732,6 +764,12 @@ export const CreateCategory: React.FC<CreateCategoryProps> = ({
 
                   {/* Category Details */}
                   <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Category ID:</span>
+                      <span className="ml-2 text-gray-900 font-mono text-xs">
+                        {formData.category_id || 'Auto-generated'}
+                      </span>
+                    </div>
                     <div>
                       <span className="font-medium text-gray-700">{t('categories.create.fields.name')}:</span>
                       <span className="ml-2 text-gray-900">{formData.name || '—'}</span>
