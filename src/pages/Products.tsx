@@ -11,9 +11,10 @@ import {
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline';
-import { PageHeader, Button, ConfirmDialog, Loading, Alert } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, Loading, Alert, DropdownSearch } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
+import { useCategories } from '../hooks/useCategories';
 import { useTenantStore } from '../tenants/tenantStore';
 import { productService } from '../services/product';
 import { useCurrencyFormatter } from '../utils/currencyUtils';
@@ -47,6 +48,7 @@ interface Product {
   cost: number;
   sku: string;
   category: string;
+  categoryName: string; // Display name for the category
   stockQuantity: number;
   minStockLevel: number;
   unit: string;
@@ -124,7 +126,7 @@ const ProductCard: React.FC<{
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-1 sm:space-x-2">
           <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-primary-100 text-primary-700 text-xs rounded-full font-medium">
-            {product.category}
+            {product.categoryName || product.category || 'Uncategorized'}
           </span>
           {product.tags.length > 0 && (
             <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
@@ -186,7 +188,7 @@ const ProductListItem: React.FC<{
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-          {product.category}
+          {product.categoryName || product.category || 'Uncategorized'}
         </span>
       </td>
       <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
@@ -442,6 +444,11 @@ const Products: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentTenant, currentStore } = useTenantStore();
+  const { categoryOptions, getCategoryNames } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
   const formatCurrency = useCurrencyFormatter();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -466,7 +473,6 @@ const Products: React.FC = () => {
   
   const deleteDialog = useDeleteConfirmDialog();
   
-  const categories = Array.from(new Set(products.map(p => p.category)));
   const suppliers = Array.from(new Set(products.map(p => p.supplier)));
   const allTags = Array.from(new Set(products.flatMap(p => p.tags)));
 
@@ -483,26 +489,46 @@ const Products: React.FC = () => {
       setError(null); // Clear any previous errors
       
       try {
-        const res = await productService.getProducts(currentTenant.id, currentStore.store_id);
-        // Map API products to UI Product type
-        const mapped = res.items.map(apiProduct => ({
-          id: apiProduct.item_id,
-          name: apiProduct.name,
-          description: apiProduct.description || '',
-          price: apiProduct.list_price,
-          cost: 0, // Not available in API, set to 0 or fetch if available
-          sku: apiProduct.item_id,
-          category: apiProduct.categories?.[0] || '',
-          stockQuantity: 0, // Not available in API, set to 0 or fetch if available
-          minStockLevel: 0, // Not available in API, set to 0 or fetch if available
-          unit: apiProduct.uom || '',
-          supplier: '', // Not available in API
-          barcode: '', // Not available in API
-          tags: apiProduct.categories || [],
-          isActive: apiProduct.active !== false,
-          createdAt: new Date(apiProduct.created_at),
-          updatedAt: new Date(apiProduct.updated_at),
-        }));
+        // Fetch products from API
+        const productsRes = await productService.getProducts(currentTenant.id, currentStore.store_id);
+
+        // Get all unique category IDs from products
+        const categoryIds = Array.from(new Set(
+          productsRes.items
+            .map((product: any) => product.categories || [])
+            .flat()
+            .filter(Boolean)
+        ));
+
+        // Get category names for all categories used by products
+        const categoryNames = await getCategoryNames(categoryIds);
+
+        // Map API products to UI Product type with category names
+        const mapped = productsRes.items.map((apiProduct: any) => {
+          const categoryId = apiProduct.categories?.[0] || '';
+          const categoryName = categoryNames[categoryId] || categoryId;
+          
+          return {
+            id: apiProduct.item_id,
+            name: apiProduct.name,
+            description: apiProduct.description || '',
+            price: apiProduct.list_price,
+            cost: 0, // Not available in API, set to 0 or fetch if available
+            sku: apiProduct.item_id,
+            category: categoryId,
+            categoryName: categoryName,
+            stockQuantity: 0, // Not available in API, set to 0 or fetch if available
+            minStockLevel: 0, // Not available in API, set to 0 or fetch if available
+            unit: apiProduct.uom || '',
+            supplier: '', // Not available in API
+            barcode: '', // Not available in API
+            tags: apiProduct.categories || [],
+            isActive: apiProduct.active !== false,
+            createdAt: new Date(apiProduct.created_at),
+            updatedAt: new Date(apiProduct.updated_at),
+          };
+        });
+
         setProducts(mapped);
         // Clear any existing errors on successful load
         setError(null);
@@ -516,7 +542,7 @@ const Products: React.FC = () => {
       }
     };
     fetchProducts();
-  }, [currentTenant, currentStore, showErrorMessage]);
+  }, [currentTenant, currentStore, getCategoryNames, showErrorMessage]);
 
   // Cleanup effect to clear errors when component unmounts
   useEffect(() => {
@@ -672,25 +698,46 @@ const Products: React.FC = () => {
     setError(null);
     
     try {
-      const res = await productService.getProducts(currentTenant.id, currentStore.store_id);
-      const mapped = res.items.map(apiProduct => ({
-        id: apiProduct.item_id,
-        name: apiProduct.name,
-        description: apiProduct.description || '',
-        price: apiProduct.list_price,
-        cost: 0,
-        sku: apiProduct.item_id,
-        category: apiProduct.categories?.[0] || '',
-        stockQuantity: 0,
-        minStockLevel: 0,
-        unit: apiProduct.uom || '',
-        supplier: '',
-        barcode: '',
-        tags: apiProduct.categories || [],
-        isActive: apiProduct.active !== false,
-        createdAt: new Date(apiProduct.created_at),
-        updatedAt: new Date(apiProduct.updated_at),
-      }));
+      // Fetch products from API
+      const productsRes = await productService.getProducts(currentTenant.id, currentStore.store_id);
+
+      // Get all unique category IDs from products
+      const categoryIds = Array.from(new Set(
+        productsRes.items
+          .map((product: any) => product.categories || [])
+          .flat()
+          .filter(Boolean)
+      ));
+
+      // Get category names for all categories used by products
+      const categoryNames = await getCategoryNames(categoryIds);
+
+      // Map API products to UI Product type with category names
+      const mapped = productsRes.items.map((apiProduct: any) => {
+        const categoryId = apiProduct.categories?.[0] || '';
+        const categoryName = categoryNames[categoryId] || categoryId;
+        
+        return {
+          id: apiProduct.item_id,
+          name: apiProduct.name,
+          description: apiProduct.description || '',
+          price: apiProduct.list_price,
+          cost: 0,
+          sku: apiProduct.item_id,
+          category: categoryId,
+          categoryName: categoryName,
+          stockQuantity: 0,
+          minStockLevel: 0,
+          unit: apiProduct.uom || '',
+          supplier: '',
+          barcode: '',
+          tags: apiProduct.categories || [],
+          isActive: apiProduct.active !== false,
+          createdAt: new Date(apiProduct.created_at),
+          updatedAt: new Date(apiProduct.updated_at),
+        };
+      });
+
       setProducts(mapped);
       setError(null);
     } catch (error) {
@@ -778,16 +825,17 @@ const Products: React.FC = () => {
           </div>
           <div className="flex items-center space-x-2">
             <FunnelIcon className="w-5 h-5 text-gray-400" />
-            <select
+            <DropdownSearch
+              label=""
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="">{t('products.filters.allCategories')}</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
+              placeholder={t('products.filters.allCategories')}
+              options={categoryOptions}
+              onSelect={(option) => setSelectedCategory(option?.id || '')}
+              allowClear={true}
+              clearLabel={t('products.filters.allCategories')}
+              className="min-w-48"
+              buttonClassName="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
           </div>
           <Button
             variant={showAdvancedFilters ? "primary" : "outline"}
@@ -842,7 +890,7 @@ const Products: React.FC = () => {
                   )}
                   {selectedCategory && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      {t('categories.title')}: {selectedCategory}
+                      {t('categories.title')}: {categoryOptions.find(opt => opt.id === selectedCategory)?.label || selectedCategory}
                       <button
                         onClick={() => setSelectedCategory('')}
                         className="ml-1 text-primary-600 hover:text-primary-800"

@@ -26,12 +26,11 @@ import {
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { productService, type CreateProductRequest, type UpdateProductRequest } from '../services/product';
 import { globalModifierService, type GlobalModifierTemplate } from '../services/modifier/globalModifier.service';
-import { categoryApiService } from '../services/category/categoryApiService';
 import { CategoryUtils } from '../utils/categoryUtils';
+import { useCategories } from '../hooks/useCategories';
 import { taxServices } from '../services/tax';
 import { ProductValidationRules, type ProductFormData } from '../utils/productValidation';
 import { DEFAULT_UOM } from '../constants/uom';
-import type { EnhancedCategory } from '../types/category';
 import type { TaxGroup } from '../services/types/tax.types';
 import type { 
   Product,
@@ -108,8 +107,12 @@ const ProductEdit: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
-  // Category state
-  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  // Category state - using the cached hook
+  const { categories } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
 
   // Tax groups state
   const [taxGroups, setTaxGroups] = useState<TaxGroup[]>([]);
@@ -123,23 +126,7 @@ const ProductEdit: React.FC = () => {
   const deleteDialog = useDeleteConfirmDialog();
 
   // Load categories for dropdown
-  useEffect(() => {
-    const loadCategories = async () => {
-      if (currentTenant && currentStore) {
-        try {
-          const result = await categoryApiService.getCategories({
-            tenant_id: currentTenant.id,
-            store_id: currentStore.store_id
-          });
-          setCategories(result);
-        } catch (error) {
-          console.error('Error loading categories:', error);
-        }
-      }
-    };
-
-    loadCategories();
-  }, [currentTenant, currentStore]);
+  // This is now handled by the useCategories hook automatically
 
   // Load tax groups for dropdown
   useEffect(() => {
@@ -298,7 +285,7 @@ const ProductEdit: React.FC = () => {
 
   // Convert categories to MultipleDropdownSearchOption format
   const getCategoryDropdownOptions = (): MultipleDropdownSearchOption[] => {
-    return categories.map(category => {
+    return categories.map((category: any) => {
       const level = CategoryUtils.getCategoryAncestors(category.category_id, categories).length;
       return {
         id: category.category_id,
@@ -307,7 +294,7 @@ const ProductEdit: React.FC = () => {
         level: level,
         data: category
       };
-    }).sort((a, b) => a.label.localeCompare(b.label));
+    }).sort((a: any, b: any) => a.label.localeCompare(b.label));
   };
 
   // Handle category selection (multiple categories)

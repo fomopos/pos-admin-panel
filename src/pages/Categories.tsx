@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -9,45 +9,34 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { categoryApiService } from '../services/category/categoryApiService';
 import { PageHeader, Button, ConfirmDialog, SearchAndFilter } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import type { EnhancedCategory } from '../types/category';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useCategories } from '../hooks/useCategories';
+import { categoryCacheService } from '../services/category/categoryCache';
 
 const Categories: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentTenant, currentStore } = useTenantStore();
   
-  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  // Use cached categories
+  const { categories, isLoading: loading } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedParent, setSelectedParent] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [loading, setLoading] = useState(true);
-  const { currentTenant, currentStore } = useTenantStore();
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    try {
-      setLoading(true);
-      const result = await categoryApiService.getCategories({
-        tenant_id: currentTenant?.id,
-        store_id: currentStore?.store_id,
-      });
-      setCategories(result);
-    } catch (error) {
-      console.error('Failed to load categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Categories are loaded automatically by the useCategories hook
 
   const parentCategories = categories.filter(cat => !cat.parent_category_id);
 
@@ -68,16 +57,21 @@ const Categories: React.FC = () => {
 
   const handleDelete = async (categoryId: string) => {
     const category = categories.find(c => c.category_id === categoryId);
-    if (!category) return;
+    if (!category || !currentTenant || !currentStore) return;
 
     deleteDialog.openDeleteDialog(
       category.name,
       async () => {
+        // Import the API service dynamically to avoid circular dependency issues
+        const { categoryApiService } = await import('../services/category/categoryApiService');
+        
         await categoryApiService.deleteCategory(categoryId, {
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id,
+          tenant_id: currentTenant.id,
+          store_id: currentStore.store_id,
         });
-        await loadCategories(); // Reload the list
+        
+        // Remove from cache and refresh the categories
+        categoryCacheService.removeCategory(currentTenant.id, currentStore.store_id, categoryId);
       }
     );
   };

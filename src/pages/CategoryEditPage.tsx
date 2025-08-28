@@ -16,6 +16,7 @@ import {
   SwatchIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
+import { categoryCacheService } from '../services/category/categoryCache';
 import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, IconPicker } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -28,6 +29,7 @@ import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
+import { useCategories } from '../hooks/useCategories';
 
 // Category templates for quick setup
 const CATEGORY_TEMPLATES = [
@@ -89,7 +91,13 @@ const CategoryEditPage: React.FC = () => {
   
   const isEditing = Boolean(id);
   const [originalCategory, setOriginalCategory] = useState<EnhancedCategory | null>(null);
-  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  
+  // Use cached categories instead of loading them directly
+  const { categories } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
   
   // Generate a random color only for new categories
   const defaultColor = useMemo(() => generateRandomColor(), []);
@@ -134,15 +142,12 @@ const CategoryEditPage: React.FC = () => {
         setIsLoading(true);
         setFetchError(null);
 
-        // Load all categories for parent selection
-        const allCategories = await categoryApiService.getCategories({
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id
-        });
-        setCategories(allCategories);
+        // Use cached categories instead of API call
+        // Categories are already loaded by the useCategories hook
 
         // If editing, load the specific category
         if (isEditing && id) {
+          const { categoryApiService } = await import('../services/category/categoryApiService');
           const categoryData = await categoryApiService.getCategoryById(id, {
             tenant_id: currentTenant?.id,
             store_id: currentStore?.store_id
@@ -362,18 +367,42 @@ const CategoryEditPage: React.FC = () => {
       };
 
       if (isEditing && id) {
-        await categoryApiService.updateCategory(id, categoryData, {
+        const updatedCategory = await categoryApiService.updateCategory(id, categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
         
+        // Update the cache with the updated category (convert from API response to Enhanced)
+        if (updatedCategory && currentTenant && currentStore) {
+          const enhancedCategory: EnhancedCategory = {
+            ...updatedCategory,
+            color: updatedCategory.color || undefined,
+            productCount: 0,
+            children: [],
+            level: 0
+          };
+          categoryCacheService.addOrUpdateCategory(currentTenant.id, currentStore.store_id, enhancedCategory, false);
+        }
+        
         // Use error framework for success message
         showSuccess('Category updated successfully!');
       } else {
-        await categoryApiService.createCategory(categoryData, {
+        const newCategory = await categoryApiService.createCategory(categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
-        }); 
+        });
+        
+        // Add the new category to the cache (convert from API response to Enhanced)
+        if (newCategory && currentTenant && currentStore) {
+          const enhancedCategory: EnhancedCategory = {
+            ...newCategory,
+            color: newCategory.color || undefined,
+            productCount: 0,
+            children: [],
+            level: 0
+          };
+          categoryCacheService.addOrUpdateCategory(currentTenant.id, currentStore.store_id, enhancedCategory, true);
+        }
         
         // Use error framework for success message
         showSuccess('Category created successfully!');
@@ -404,6 +433,12 @@ const CategoryEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
+        
+        // Remove the category from cache
+        if (currentTenant && currentStore) {
+          categoryCacheService.removeCategory(currentTenant.id, currentStore.store_id, id);
+        }
+        
         navigate('/categories');
       }
     );

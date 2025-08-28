@@ -13,7 +13,7 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { categoryApiService } from '../services/category/categoryApiService';
+import { categoryCacheService } from '../services/category/categoryCache';
 import { PageHeader, Button, Loading, ConfirmDialog } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import { CategoryWidget } from '../components/category/CategoryWidget';
@@ -22,6 +22,7 @@ import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
+import { useCategories } from '../hooks/useCategories';
 
 const CategoryDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,56 +30,30 @@ const CategoryDetailPage: React.FC = () => {
   const { currentTenant, currentStore } = useTenantStore();
   const { showError } = useError();
   
-  const [category, setCategory] = useState<EnhancedCategory | null>(null);
-  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Use cached categories
+  const { categories, isLoading } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
+  
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
+  // Get the specific category from the cached categories
+  const category = categories.find(cat => cat.category_id === id) || null;
+
+  // Check for errors when categories are loaded but category is not found
   useEffect(() => {
-    const loadData = async () => {
-      if (!id) return;
-      
-      try {
-        setIsLoading(true);
-        setFetchError(null);
-
-        // Load all categories for parent/children relationships
-        const allCategories = await categoryApiService.getCategories({
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id
-        });
-        setCategories(allCategories);
-
-        // Load the specific category
-        const categoryData = await categoryApiService.getCategoryById(id, {
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id
-        });
-        
-        // Map to EnhancedCategory if needed
-        const enhancedCategory: EnhancedCategory = {
-          ...categoryData,
-          color: categoryData.color || undefined,
-          productCount: 0, // This would come from a separate API call
-          children: [],
-          level: 0
-        };
-        
-        setCategory(enhancedCategory);
-      } catch (error) {
-        console.error('Failed to load category:', error);
-        setFetchError('Failed to load category data. Please try again.');
-        showError('Failed to load category data. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, [id, currentTenant, currentStore, showError]);
+    if (!isLoading && categories.length > 0 && !category && id) {
+      setFetchError('Category not found');
+      showError('Category not found. It may have been deleted.');
+    } else if (!isLoading && category) {
+      setFetchError(null);
+    }
+  }, [isLoading, categories, category, id, showError]);
 
   const handleEdit = () => {
     if (category) {
@@ -87,15 +62,22 @@ const CategoryDetailPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!category) return;
+    if (!category || !currentTenant || !currentStore) return;
     
     deleteDialog.openDeleteDialog(
       category.name,
       async () => {
+        // Import the API service dynamically to avoid circular dependency issues
+        const { categoryApiService } = await import('../services/category/categoryApiService');
+        
         await categoryApiService.deleteCategory(category.category_id, {
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id
+          tenant_id: currentTenant.id,
+          store_id: currentStore.store_id
         });
+        
+        // Remove from cache
+        categoryCacheService.removeCategory(currentTenant.id, currentStore.store_id, category.category_id);
+        
         navigate('/categories');
       }
     );
