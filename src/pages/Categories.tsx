@@ -131,6 +131,7 @@ const Categories: React.FC = () => {
                 <CategoryCard
                   key={category.category_id}
                   category={category}
+                  categories={categories}
                   onEdit={handleEdit}
                   onView={handleView}
                   onDelete={handleDelete}
@@ -214,11 +215,16 @@ const Categories: React.FC = () => {
 // Category Card Component for Grid View
 const CategoryCard: React.FC<{
   category: EnhancedCategory;
+  categories: EnhancedCategory[];
   onEdit: (category: EnhancedCategory) => void;
   onView: (category: EnhancedCategory) => void;
   onDelete: (id: string) => void;
-}> = ({ category, onEdit, onView, onDelete }) => {
+}> = ({ category, categories, onEdit, onView, onDelete }) => {
   const { t } = useTranslation();
+  
+  const parentCategory = category.parent_category_id 
+    ? categories.find(c => c.category_id === category.parent_category_id)
+    : null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
@@ -227,8 +233,11 @@ const CategoryCard: React.FC<{
           <div className="flex items-center space-x-3">
             {category.icon_url ? (
               <div 
-                className="w-10 h-10 rounded flex items-center justify-center text-white"
-                style={{ backgroundColor: category.color || '#3B82F6' }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm border border-gray-100"
+                style={{ 
+                  backgroundColor: category.color || '#3B82F6',
+                  color: 'white'
+                }}
               >
                 {(() => {
                   const iconDefinition = getIconComponent(category.icon_url);
@@ -241,17 +250,20 @@ const CategoryCard: React.FC<{
               </div>
             ) : (
               <div 
-                className="w-10 h-10 rounded flex items-center justify-center text-white"
-                style={{ backgroundColor: category.color || '#6B7280' }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm border border-gray-100"
+                style={{ 
+                  backgroundColor: category.color || '#6B7280',
+                  color: 'white'
+                }}
               >
                 <FolderIcon className="w-5 h-5" />
               </div>
             )}
             <div>
-              <h3 className="text-lg font-medium text-gray-900">{category.name}</h3>
-              {category.parent_category_id && (
+              <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+              {category.parent_category_id && parentCategory && (
                 <p className="text-sm text-gray-500">
-                  {t('categories.parentCategory')}
+                  Parent: {parentCategory.name}
                 </p>
               )}
             </div>
@@ -286,13 +298,21 @@ const CategoryCard: React.FC<{
           <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
             {category.sort_order || 0} {t('categories.fields.sortOrder')}
           </span>
-          <span className={`px-2 py-1 text-xs rounded-full ${
-            category.is_active !== false
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {category.is_active !== false ? t('common.active') : t('common.inactive')}
-          </span>
+          <div className="flex items-center space-x-2">
+            {/* Color indicator */}
+            <div 
+              className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+              style={{ backgroundColor: category.color || '#6B7280' }}
+              title={`Color: ${category.color || '#6B7280'}`}
+            />
+            <span className={`px-2 py-1 text-xs rounded-full ${
+              category.is_active !== false
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {category.is_active !== false ? t('common.active') : t('common.inactive')}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -319,8 +339,11 @@ const CategoryListItem: React.FC<{
         <div className="flex items-center">
           {category.icon_url ? (
             <div 
-              className="w-8 h-8 rounded flex items-center justify-center text-white mr-3"
-              style={{ backgroundColor: category.color || '#3B82F6' }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white mr-3 shadow-sm border border-gray-100"
+              style={{ 
+                backgroundColor: category.color || '#3B82F6',
+                color: 'white'
+              }}
             >
               {(() => {
                 const iconDefinition = getIconComponent(category.icon_url);
@@ -333,8 +356,11 @@ const CategoryListItem: React.FC<{
             </div>
           ) : (
             <div 
-              className="w-8 h-8 rounded flex items-center justify-center text-white mr-3"
-              style={{ backgroundColor: category.color || '#6B7280' }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white mr-3 shadow-sm border border-gray-100"
+              style={{ 
+                backgroundColor: category.color || '#6B7280',
+                color: 'white'
+              }}
             >
               <FolderIcon className="w-4 h-4" />
             </div>
