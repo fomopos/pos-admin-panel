@@ -20,6 +20,7 @@ import GlobalModifierEdit from './pages/GlobalModifierEdit';
 import GlobalModifierDetail from './pages/GlobalModifierDetail';
 import Categories from './pages/Categories';
 import CategoryEditPage from './pages/CategoryEditPage';
+import CategoryDetailPage from './pages/CategoryDetailPage';
 import Discounts from './pages/Discounts';
 import DiscountEditPage from './pages/DiscountEditPage';
 import DiscountDetailPage from './pages/DiscountDetailPage';
@@ -177,6 +178,7 @@ function App() {
               <Route path="categories" element={<Categories />} />
               <Route path="categories/new" element={<CategoryEditPage />} />
               <Route path="categories/edit/:id" element={<CategoryEditPage />} />
+              <Route path="categories/:id" element={<CategoryDetailPage />} />
               <Route path="discounts" element={<Discounts />} />
               <Route path="discounts/new" element={<DiscountEditPage />} />
               <Route path="discounts/edit/:id" element={<DiscountEditPage />} />

@@ -585,10 +585,12 @@ class ProductService {
   }
 
   /**
-   * Generate a unique item ID
+   * Generate a compact unique item ID
    */
   private generateItemId(): string {
-    return 'ITEM_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const timestamp = Date.now().toString(36).slice(-3);
+    const random = Math.random().toString(36).substr(2, 4);
+    return `P${timestamp}${random}`.toUpperCase();
   }
 }
 

@@ -48,6 +48,7 @@ export interface EnhancedCategory {
 
 // Form data interface for creating/editing categories
 export interface CategoryFormData {
+  category_id?: string;
   name: string;
   description: string;
   parent_category_id?: string;

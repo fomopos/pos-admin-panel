@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -9,45 +9,34 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { categoryApiService } from '../services/category/categoryApiService';
 import { PageHeader, Button, ConfirmDialog, SearchAndFilter } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import type { EnhancedCategory } from '../types/category';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
+import { useCategories } from '../hooks/useCategories';
+import { categoryCacheService } from '../services/category/categoryCache';
 
 const Categories: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentTenant, currentStore } = useTenantStore();
   
-  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  // Use cached categories
+  const { categories, isLoading: loading } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedParent, setSelectedParent] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [loading, setLoading] = useState(true);
-  const { currentTenant, currentStore } = useTenantStore();
 
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
-  const loadCategories = async () => {
-    try {
-      setLoading(true);
-      const result = await categoryApiService.getCategories({
-        tenant_id: currentTenant?.id,
-        store_id: currentStore?.store_id,
-      });
-      setCategories(result);
-    } catch (error) {
-      console.error('Failed to load categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Categories are loaded automatically by the useCategories hook
 
   const parentCategories = categories.filter(cat => !cat.parent_category_id);
 
@@ -68,16 +57,21 @@ const Categories: React.FC = () => {
 
   const handleDelete = async (categoryId: string) => {
     const category = categories.find(c => c.category_id === categoryId);
-    if (!category) return;
+    if (!category || !currentTenant || !currentStore) return;
 
     deleteDialog.openDeleteDialog(
       category.name,
       async () => {
+        // Import the API service dynamically to avoid circular dependency issues
+        const { categoryApiService } = await import('../services/category/categoryApiService');
+        
         await categoryApiService.deleteCategory(categoryId, {
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id,
+          tenant_id: currentTenant.id,
+          store_id: currentStore.store_id,
         });
-        await loadCategories(); // Reload the list
+        
+        // Remove from cache and refresh the categories
+        categoryCacheService.removeCategory(currentTenant.id, currentStore.store_id, categoryId);
       }
     );
   };
@@ -131,6 +125,7 @@ const Categories: React.FC = () => {
                 <CategoryCard
                   key={category.category_id}
                   category={category}
+                  categories={categories}
                   onEdit={handleEdit}
                   onView={handleView}
                   onDelete={handleDelete}
@@ -214,11 +209,16 @@ const Categories: React.FC = () => {
 // Category Card Component for Grid View
 const CategoryCard: React.FC<{
   category: EnhancedCategory;
+  categories: EnhancedCategory[];
   onEdit: (category: EnhancedCategory) => void;
   onView: (category: EnhancedCategory) => void;
   onDelete: (id: string) => void;
-}> = ({ category, onEdit, onView, onDelete }) => {
+}> = ({ category, categories, onEdit, onView, onDelete }) => {
   const { t } = useTranslation();
+  
+  const parentCategory = category.parent_category_id 
+    ? categories.find(c => c.category_id === category.parent_category_id)
+    : null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
@@ -227,8 +227,11 @@ const CategoryCard: React.FC<{
           <div className="flex items-center space-x-3">
             {category.icon_url ? (
               <div 
-                className="w-10 h-10 rounded flex items-center justify-center text-white"
-                style={{ backgroundColor: category.color || '#3B82F6' }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm border border-gray-100"
+                style={{ 
+                  backgroundColor: category.color || '#3B82F6',
+                  color: 'white'
+                }}
               >
                 {(() => {
                   const iconDefinition = getIconComponent(category.icon_url);
@@ -241,17 +244,20 @@ const CategoryCard: React.FC<{
               </div>
             ) : (
               <div 
-                className="w-10 h-10 rounded flex items-center justify-center text-white"
-                style={{ backgroundColor: category.color || '#6B7280' }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm border border-gray-100"
+                style={{ 
+                  backgroundColor: category.color || '#6B7280',
+                  color: 'white'
+                }}
               >
                 <FolderIcon className="w-5 h-5" />
               </div>
             )}
             <div>
-              <h3 className="text-lg font-medium text-gray-900">{category.name}</h3>
-              {category.parent_category_id && (
+              <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+              {category.parent_category_id && parentCategory && (
                 <p className="text-sm text-gray-500">
-                  {t('categories.parentCategory')}
+                  Parent: {parentCategory.name}
                 </p>
               )}
             </div>
@@ -286,13 +292,21 @@ const CategoryCard: React.FC<{
           <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
             {category.sort_order || 0} {t('categories.fields.sortOrder')}
           </span>
-          <span className={`px-2 py-1 text-xs rounded-full ${
-            category.is_active !== false
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {category.is_active !== false ? t('common.active') : t('common.inactive')}
-          </span>
+          <div className="flex items-center space-x-2">
+            {/* Color indicator */}
+            <div 
+              className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+              style={{ backgroundColor: category.color || '#6B7280' }}
+              title={`Color: ${category.color || '#6B7280'}`}
+            />
+            <span className={`px-2 py-1 text-xs rounded-full ${
+              category.is_active !== false
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {category.is_active !== false ? t('common.active') : t('common.inactive')}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -319,8 +333,11 @@ const CategoryListItem: React.FC<{
         <div className="flex items-center">
           {category.icon_url ? (
             <div 
-              className="w-8 h-8 rounded flex items-center justify-center text-white mr-3"
-              style={{ backgroundColor: category.color || '#3B82F6' }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white mr-3 shadow-sm border border-gray-100"
+              style={{ 
+                backgroundColor: category.color || '#3B82F6',
+                color: 'white'
+              }}
             >
               {(() => {
                 const iconDefinition = getIconComponent(category.icon_url);
@@ -333,8 +350,11 @@ const CategoryListItem: React.FC<{
             </div>
           ) : (
             <div 
-              className="w-8 h-8 rounded flex items-center justify-center text-white mr-3"
-              style={{ backgroundColor: category.color || '#6B7280' }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white mr-3 shadow-sm border border-gray-100"
+              style={{ 
+                backgroundColor: category.color || '#6B7280',
+                color: 'white'
+              }}
             >
               <FolderIcon className="w-4 h-4" />
             </div>

@@ -1,6 +1,7 @@
 // Category API service for real backend integration
 import { apiClient, ApiError, USE_MOCK_DATA, API_BASE_URL } from '../api';
 import { useErrorHandler } from '../errorHandler';
+import { CategoryUtils } from '../../utils/categoryUtils';
 
 // Types for Category API integration (matching backend schema)
 import type { EnhancedCategory } from '../../types/category';
@@ -167,7 +168,7 @@ class CategoryApiService {
         console.log('📝 Mock data mode - simulating category creation');
         // Simulate creation in mock mode
         const newCategory: CategoryApiResponse = {
-          category_id: data.category_id || Date.now().toString(),
+          category_id: data.category_id || CategoryUtils.generateCategoryId(),
           name: data.name,
           description: data.description || '',
           parent_category_id: data.parent_category_id || null,
@@ -430,6 +431,9 @@ class CategoryApiService {
     }
   }
 
+  /**
+   * Generate a compact unique category ID
+   */
   /**
    * Get mock categories data (for development/fallback)
    */
