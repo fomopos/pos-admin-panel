@@ -65,6 +65,13 @@ const Discounts: React.FC = () => {
     }
   };
 
+  const isDiscountActive = (discount: Discount) => {
+    const now = new Date();
+    const startDate = new Date(discount.effective_datetime);
+    const endDate = new Date(discount.expr_datetime);
+    return now >= startDate && now <= endDate;
+  };
+
   const handleDelete = async (discountId: string) => {
     const discount = discounts.find(d => d.discount_id === discountId);
     if (!discount) {
@@ -96,13 +103,6 @@ const Discounts: React.FC = () => {
                          (selectedStatus === 'inactive' && !isDiscountActive(discount));
     return matchesSearch && matchesType && matchesStatus;
   });
-
-  const isDiscountActive = (discount: Discount) => {
-    const now = new Date();
-    const startDate = new Date(discount.effective_datetime);
-    const endDate = new Date(discount.expr_datetime);
-    return now >= startDate && now <= endDate;
-  };
 
   return (
     <div className="p-6">
