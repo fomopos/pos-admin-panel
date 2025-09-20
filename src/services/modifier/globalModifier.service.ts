@@ -109,7 +109,7 @@ class GlobalModifierService {
    * Get all global modifier groups for a store
    */
   async getGlobalModifierGroups(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string,
     filters?: {
       active?: boolean;
@@ -288,7 +288,7 @@ class GlobalModifierService {
    * Get a single global modifier group by ID (includes modifiers)
    */
   async getGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupId: string
   ): Promise<ApiGlobalModifierGroup> {
@@ -366,7 +366,7 @@ class GlobalModifierService {
    * Create a new global modifier group
    */
   async createGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupData: CreateGlobalModifierGroupRequest
   ): Promise<ApiGlobalModifierGroup> {
@@ -386,7 +386,7 @@ class GlobalModifierService {
    * Update an existing global modifier group
    */
   async updateGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupId: string, 
     groupData: UpdateGlobalModifierGroupRequest
@@ -407,7 +407,7 @@ class GlobalModifierService {
    * Delete a global modifier group
    */
   async deleteGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupId: string
   ): Promise<void> {
@@ -429,7 +429,7 @@ class GlobalModifierService {
    * Apply a global modifier group template to a product
    */
   async applyTemplateToProduct(
-    tenantId: string,
+    _tenantId: string,
     storeId: string,
     templateGroupId: string,
     itemId: string
@@ -449,7 +449,7 @@ class GlobalModifierService {
    * Get usage statistics for a global modifier group
    */
   async getTemplateUsageStats(
-    tenantId: string,
+    _tenantId: string,
     storeId: string,
     groupId: string
   ): Promise<{
