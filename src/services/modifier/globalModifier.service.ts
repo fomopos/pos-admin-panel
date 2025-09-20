@@ -274,7 +274,7 @@ class GlobalModifierService {
       if (filters?.includeModifiers) params.append('include_modifiers', 'true'); // Add parameter for embedded modifiers
 
       const queryString = params.toString();
-      const url = `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups${queryString ? `?${queryString}` : ''}`;
+      const url = `/v0/store/${storeId}/global-modifier-groups${queryString ? `?${queryString}` : ''}`;
       
       const response = await apiClient.get<GlobalModifierGroupsResponse>(url);
       return response.data;
@@ -353,7 +353,7 @@ class GlobalModifierService {
 
     try {
       const response = await apiClient.get<ApiGlobalModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}`
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}`
       );
       return response.data;
     } catch (error) {
@@ -372,7 +372,7 @@ class GlobalModifierService {
   ): Promise<ApiGlobalModifierGroup> {
     try {
       const response = await apiClient.post<ApiGlobalModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups`,
+        `/v0/store/${storeId}/global-modifier-groups`,
         groupData
       );
       return response.data;
@@ -393,7 +393,7 @@ class GlobalModifierService {
   ): Promise<ApiGlobalModifierGroup> {
     try {
       const response = await apiClient.put<ApiGlobalModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}`,
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}`,
         groupData
       );
       return response.data;
@@ -413,7 +413,7 @@ class GlobalModifierService {
   ): Promise<void> {
     try {
       await apiClient.delete(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}`
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}`
       );
     } catch (error) {
       console.error('Error deleting global modifier group:', error);
@@ -436,7 +436,7 @@ class GlobalModifierService {
   ): Promise<void> {
     try {
       await apiClient.post(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${templateGroupId}/apply-to-product`,
+        `/v0/store/${storeId}/global-modifier-groups/${templateGroupId}/apply-to-product`,
         { item_id: itemId }
       );
     } catch (error) {
@@ -475,7 +475,7 @@ class GlobalModifierService {
         usage_count: number;
         products: Array<{ item_id: string; name: string }>;
       }>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}/usage`
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}/usage`
       );
       return response.data;
     } catch (error) {

@@ -101,7 +101,12 @@ const SalesDetail: React.FC = () => {
       cancel_orphaned: { bg: 'bg-gray-100', text: 'text-gray-800', icon: ExclamationTriangleIcon }
     };
     
-    const config = statusConfig[status];
+    // Fallback for unknown status values
+    const config = statusConfig[status] || { 
+      bg: 'bg-gray-100', 
+      text: 'text-gray-800', 
+      icon: ClockIcon 
+    };
     const IconComponent = config.icon;
     
     return (
