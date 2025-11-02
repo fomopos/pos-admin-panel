@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
@@ -30,13 +30,7 @@ const ReasonCodes: React.FC = () => {
   // Dialog hook
   const deleteDialog = useDeleteConfirmDialog();
 
-  useEffect(() => {
-    if (currentTenant?.id && currentStore?.store_id) {
-      loadReasonCodes();
-    }
-  }, [currentTenant?.id, currentStore?.store_id]);
-
-  const loadReasonCodes = async () => {
+  const loadReasonCodes = useCallback(async () => {
     if (!currentTenant?.id || !currentStore?.store_id) {
       showError('Missing tenant or store information');
       return;
@@ -56,7 +50,13 @@ const ReasonCodes: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentTenant?.id, currentStore?.store_id, showError, showApiError]);
+
+  useEffect(() => {
+    if (currentTenant?.id && currentStore?.store_id) {
+      loadReasonCodes();
+    }
+  }, [currentTenant?.id, currentStore?.store_id, loadReasonCodes]);
 
   const handleDelete = async (reasonCodeId: string) => {
     const reasonCode = reasonCodes.find(rc => rc.reason_code_id === reasonCodeId);

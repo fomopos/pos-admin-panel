@@ -301,7 +301,7 @@ class ReasonCodeApiService {
   /**
    * Handle API errors
    */
-  private handleError(error: any): ApiError {
+  private handleError(error: unknown): ApiError {
     if (error instanceof ApiError) {
       return error;
     }
