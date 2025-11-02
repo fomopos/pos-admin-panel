@@ -107,6 +107,8 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
       );
       
       // Add to local state
+      // Note: For production, consider refetching from API to ensure consistency
+      // with server state, especially if multiple users are editing simultaneously
       setReasonCodes(prev => [...prev, newReasonCode]);
       
       return newReasonCode;

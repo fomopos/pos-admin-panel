@@ -2,6 +2,7 @@
 import { apiClient, ApiError, USE_MOCK_DATA } from '../api';
 import type { 
   ReasonCode, 
+  ReasonCodeCategory,
   CreateReasonCodeRequest, 
   ReasonCodesResponse, 
   ReasonCodeQueryParams 
@@ -21,7 +22,17 @@ class ReasonCodeApiService {
       }
 
       const path = `/v0/store/${params.store_id}/reason-code`;
-      const response = await apiClient.get<ReasonCodesResponse>(path, {});
+      const queryParams = new URLSearchParams();
+      if (params.active_only) queryParams.append('active_only', 'true');
+      if (params.category) queryParams.append('category', params.category);
+      if (params.search) queryParams.append('search', params.search);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.offset) queryParams.append('offset', params.offset.toString());
+      
+      const response = await apiClient.get<ReasonCodesResponse>(
+        `${path}${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
+        {}
+      );
       
       console.log('✅ Successfully fetched reason codes from API:', response.data);
       return response.data;
@@ -245,7 +256,7 @@ class ReasonCodeApiService {
     }
 
     if (params.category) {
-      filtered = filtered.filter(rc => rc.categories.includes(params.category!));
+      filtered = filtered.filter(rc => rc.categories.includes(params.category as ReasonCodeCategory));
     }
 
     if (params.search) {
