@@ -24,6 +24,7 @@ import CategoryDetailPage from './pages/CategoryDetailPage';
 import Discounts from './pages/Discounts';
 import DiscountEditPage from './pages/DiscountEditPage';
 import DiscountDetailPage from './pages/DiscountDetailPage';
+import ReasonCodes from './pages/ReasonCodes';
 import Sales from './pages/Sales';
 import SalesDetail from './pages/SalesDetail';
 import ReceiptDemo from './pages/ReceiptDemo';
@@ -183,6 +184,7 @@ function App() {
               <Route path="discounts/new" element={<DiscountEditPage />} />
               <Route path="discounts/edit/:id" element={<DiscountEditPage />} />
               <Route path="discounts/:id" element={<DiscountDetailPage />} />
+              <Route path="reason-codes" element={<ReasonCodes />} />
               <Route path="sales" element={<Sales />} />
               <Route path="sales/:transId" element={<SalesDetail />} />
               <Route path="receipt-demo" element={<ReceiptDemo />} />
