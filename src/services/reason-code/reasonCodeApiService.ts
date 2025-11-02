@@ -21,7 +21,7 @@ class ReasonCodeApiService {
         return this.getMockReasonCodes(params);
       }
 
-      const path = `/v0/store/${params.store_id}/reason-code`;
+      const path = `/v0/store/${params.store_id}/config/reason-code`;
       const queryParams = new URLSearchParams();
       if (params.active_only) queryParams.append('active_only', 'true');
       if (params.category) queryParams.append('category', params.category);
@@ -59,7 +59,7 @@ class ReasonCodeApiService {
         return reasonCode;
       }
 
-      const path = `/v0/store/${storeId}/reason-code/${reasonCodeId}`;
+      const path = `/v0/store/${storeId}/config/reason-code/${reasonCodeId}`;
       const response = await apiClient.get<ReasonCode>(path, {});
       
       console.log('✅ Successfully fetched reason code from API:', response.data);
@@ -86,7 +86,7 @@ class ReasonCodeApiService {
         return this.createMockReasonCode(tenantId, storeId, reasonCodeData);
       }
 
-      const path = `/v0/store/${storeId}/reason-code`;
+      const path = `/v0/store/${storeId}/config/reason-code`;
       const response = await apiClient.post<ReasonCode>(path, reasonCodeData);
       
       console.log('✅ Successfully created reason code:', response.data);
@@ -115,7 +115,7 @@ class ReasonCodeApiService {
         return this.updateMockReasonCode(tenantId, storeId, reasonCodeId, reasonCodeData);
       }
 
-      const path = `/v0/store/${storeId}/reason-code/${reasonCodeId}`;
+      const path = `/v0/store/${storeId}/config/reason-code/${reasonCodeId}`;
       const response = await apiClient.put<ReasonCode>(path, reasonCodeData);
       
       console.log('✅ Successfully updated reason code:', response.data);
@@ -139,7 +139,7 @@ class ReasonCodeApiService {
         return;
       }
 
-      const path = `/v0/store/${storeId}/reason-code/${reasonCodeId}`;
+      const path = `/v0/store/${storeId}/config/reason-code/${reasonCodeId}`;
       await apiClient.delete(path);
       
       console.log('✅ Successfully deleted reason code');
