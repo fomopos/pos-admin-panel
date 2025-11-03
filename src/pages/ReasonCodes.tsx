@@ -8,8 +8,19 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { reasonCodeApiService } from '../services/reason-code/reasonCodeApiService';
-import { PageHeader, Button, ConfirmDialog, Modal, Badge } from '../components/ui';
-import type { ReasonCode, ReasonCodeCategory } from '../types/reasonCode';
+import { 
+  PageHeader, 
+  Button, 
+  ConfirmDialog, 
+  Modal, 
+  Badge, 
+  MultipleDropdownSearch,
+  DropdownSearch,
+} from '../components/ui';
+import type { MultipleDropdownSearchOption } from '../components/ui/MultipleDropdownSearch';
+import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
+import { PropertyCheckbox } from '../components/ui/PropertyCheckbox';
+import type { ReasonCode } from '../types/reasonCode';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
@@ -17,7 +28,7 @@ import { useError } from '../hooks/useError';
 const ReasonCodes: React.FC = () => {
   const [reasonCodes, setReasonCodes] = useState<ReasonCode[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ReasonCodeCategory | ''>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<'active' | 'inactive' | ''>('');
   const [loading, setLoading] = useState(true);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -39,7 +50,6 @@ const ReasonCodes: React.FC = () => {
     try {
       setLoading(true);
       const result = await reasonCodeApiService.getReasonCodes({
-        tenant_id: currentTenant?.id,
         store_id: currentStore?.store_id,
       });
       setReasonCodes(result.reason_codes || []);
@@ -58,8 +68,8 @@ const ReasonCodes: React.FC = () => {
     }
   }, [currentTenant?.id, currentStore?.store_id, loadReasonCodes]);
 
-  const handleDelete = async (reasonCodeId: string) => {
-    const reasonCode = reasonCodes.find(rc => rc.reason_code_id === reasonCodeId);
+  const handleDelete = async (code: string) => {
+    const reasonCode = reasonCodes.find(rc => rc.code === code);
     if (!reasonCode) {
       showError('Reason code not found');
       return;
@@ -72,7 +82,7 @@ const ReasonCodes: React.FC = () => {
           await reasonCodeApiService.deleteReasonCode(
             reasonCode.tenant_id, 
             reasonCode.store_id, 
-            reasonCode.reason_code_id
+            reasonCode.code
           );
           showSuccess('Reason code deleted successfully!');
           await loadReasonCodes();
@@ -115,16 +125,15 @@ const ReasonCodes: React.FC = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const getCategoryColor = (category: ReasonCodeCategory): string => {
-    const colors: Record<ReasonCodeCategory, string> = {
-      'DISCOUNT': 'bg-green-100 text-green-800',
-      'RETURN': 'bg-red-100 text-red-800',
-      'VOID': 'bg-yellow-100 text-yellow-800',
-      'TRANSACTION': 'bg-blue-100 text-blue-800',
-      'PROMOTION': 'bg-purple-100 text-purple-800',
-      'OTHER': 'bg-gray-100 text-gray-800',
+  const getCategoryColor = (category: string): string => {
+    const colors: Record<string, string> = {
+      'operational': 'bg-blue-100 text-blue-800',
+      'financial': 'bg-green-100 text-green-800',
+      'item-related': 'bg-purple-100 text-purple-800',
+      'transaction': 'bg-yellow-100 text-yellow-800',
+      'other': 'bg-gray-100 text-gray-800',
     };
-    return colors[category] || colors['OTHER'];
+    return colors[category] || colors['other'];
   };
 
   return (
@@ -162,16 +171,15 @@ const ReasonCodes: React.FC = () => {
               <FunnelIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value as ReasonCodeCategory | '')}
+                onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
               >
                 <option value="">All Categories</option>
-                <option value="DISCOUNT">Discount</option>
-                <option value="RETURN">Return</option>
-                <option value="VOID">Void</option>
-                <option value="TRANSACTION">Transaction</option>
-                <option value="PROMOTION">Promotion</option>
-                <option value="OTHER">Other</option>
+                <option value="operational">Operational</option>
+                <option value="financial">Financial</option>
+                <option value="item-related">Item Related</option>
+                <option value="transaction">Transaction</option>
+                <option value="other">Other</option>
               </select>
             </div>
           </div>
@@ -227,6 +235,12 @@ const ReasonCodes: React.FC = () => {
                     Categories
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Parent Code
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Requires Comment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -236,7 +250,7 @@ const ReasonCodes: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredReasonCodes.map((reasonCode) => (
-                  <tr key={reasonCode.reason_code_id} className="hover:bg-gray-50">
+                  <tr key={reasonCode.code} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <TagIcon className="h-5 w-5 text-gray-400 mr-2" />
@@ -258,6 +272,14 @@ const ReasonCodes: React.FC = () => {
                         ))}
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {reasonCode.parent_code || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Badge color={reasonCode.req_cmt ? 'blue' : 'gray'}>
+                        {reasonCode.req_cmt ? 'Yes' : 'No'}
+                      </Badge>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge color={reasonCode.active ? 'green' : 'gray'}>
                         {reasonCode.active ? 'Active' : 'Inactive'}
@@ -273,7 +295,7 @@ const ReasonCodes: React.FC = () => {
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(reasonCode.reason_code_id)}
+                          onClick={() => handleDelete(reasonCode.code)}
                           className="text-red-600 hover:text-red-900"
                           title="Delete"
                         >
@@ -330,12 +352,53 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
   const [formData, setFormData] = useState({
     code: '',
     description: '',
-    categories: [] as ReasonCodeCategory[],
+    categories: [] as string[],
+    parent_code: null as string | null,
+    req_cmt: false,
+    sort_order: 0,
     active: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { currentTenant, currentStore } = useTenantStore();
   const { showError, showApiError, showSuccess } = useError();
+
+  // Category options for MultipleDropdownSearch
+  const categoryOptions: MultipleDropdownSearchOption[] = [
+    { id: 'operational', label: 'Operational' },
+    { id: 'financial', label: 'Financial' },
+    { id: 'item-related', label: 'Item Related' },
+    { id: 'transaction', label: 'Transaction' },
+    { id: 'other', label: 'Other' },
+  ];
+
+  // Parent code options (all other reason codes)
+  const [parentCodeOptions, setParentCodeOptions] = useState<DropdownSearchOption[]>([]);
+
+  // Load parent code options
+  useEffect(() => {
+    const loadParentCodes = async () => {
+      if (!currentTenant?.id || !currentStore?.store_id) return;
+      
+      try {
+        const result = await reasonCodeApiService.getReasonCodes({
+          store_id: currentStore.store_id,
+        });
+        const options: DropdownSearchOption[] = (result.reason_codes || [])
+          .filter(rc => rc.code !== reasonCode?.code) // Exclude current code
+          .map(rc => ({
+            id: rc.code,
+            label: `${rc.code} - ${rc.description}`,
+          }));
+        setParentCodeOptions(options);
+      } catch (error) {
+        console.error('Failed to load parent codes:', error);
+      }
+    };
+
+    if (isOpen) {
+      loadParentCodes();
+    }
+  }, [isOpen, currentTenant?.id, currentStore?.store_id, reasonCode]);
 
   useEffect(() => {
     if (reasonCode) {
@@ -343,6 +406,9 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
         code: reasonCode.code,
         description: reasonCode.description,
         categories: reasonCode.categories,
+        parent_code: reasonCode.parent_code,
+        req_cmt: reasonCode.req_cmt,
+        sort_order: reasonCode.sort_order || 0,
         active: reasonCode.active,
       });
     } else {
@@ -350,6 +416,9 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
         code: '',
         description: '',
         categories: [],
+        parent_code: null,
+        req_cmt: false,
+        sort_order: 0,
         active: true,
       });
     }
@@ -386,7 +455,7 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
         await reasonCodeApiService.updateReasonCode(
           currentTenant.id,
           currentStore.store_id,
-          reasonCode.reason_code_id,
+          reasonCode.code,
           formData
         );
         showSuccess('Reason code updated successfully!');
@@ -413,17 +482,6 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
     }
   };
 
-  const toggleCategory = (category: ReasonCodeCategory) => {
-    setFormData(prev => ({
-      ...prev,
-      categories: prev.categories.includes(category)
-        ? prev.categories.filter(c => c !== category)
-        : [...prev.categories, category],
-    }));
-  };
-
-  const allCategories: ReasonCodeCategory[] = ['DISCOUNT', 'RETURN', 'VOID', 'TRANSACTION', 'PROMOTION', 'OTHER'];
-
   return (
     <Modal
       isOpen={isOpen}
@@ -444,9 +502,12 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
             onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="e.g., DISC10, RET01"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !!reasonCode}
             required
           />
+          {reasonCode && (
+            <p className="text-xs text-gray-500 mt-1">Code cannot be changed after creation</p>
+          )}
         </div>
 
         {/* Description */}
@@ -466,51 +527,80 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
           />
         </div>
 
-        {/* Categories */}
+        {/* Categories - MultipleDropdownSearch */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Categories <span className="text-red-500">*</span>
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {allCategories.map((category) => (
-              <label
-                key={category}
-                className="flex items-center space-x-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={formData.categories.includes(category)}
-                  onChange={() => toggleCategory(category)}
-                  disabled={isSubmitting}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">{category}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Active Toggle */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="active"
-            checked={formData.active}
-            onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+          <MultipleDropdownSearch
+            label="Categories"
+            values={formData.categories}
+            options={categoryOptions}
+            onSelect={(selectedValues: string[]) => setFormData(prev => ({ ...prev, categories: selectedValues }))}
+            placeholder="Select categories"
+            required
             disabled={isSubmitting}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
           />
-          <label htmlFor="active" className="ml-2 text-sm text-gray-700">
-            Active
-          </label>
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4">
+        {/* Parent Code - DropdownSearch */}
+        <div>
+          <DropdownSearch
+            label="Parent Code"
+            value={formData.parent_code || undefined}
+            options={parentCodeOptions}
+            onSelect={(option: DropdownSearchOption | null) => 
+              setFormData(prev => ({ ...prev, parent_code: option?.id || null }))
+            }
+            placeholder="Select parent reason code"
+            disabled={isSubmitting}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Link this reason code to a parent for hierarchical organization
+          </p>
+        </div>
+
+        {/* Sort Order */}
+        <div>
+          <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 mb-1">
+            Sort Order
+          </label>
+          <input
+            type="number"
+            id="sort_order"
+            value={formData.sort_order}
+            onChange={(e) => setFormData(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="0"
+            disabled={isSubmitting}
+            min="0"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Lower numbers appear first in lists
+          </p>
+        </div>
+
+        {/* Require Comment - PropertyCheckbox */}
+        <PropertyCheckbox
+          title="Require Comment"
+          description="When enabled, users must provide a comment when using this reason code"
+          checked={formData.req_cmt}
+          onChange={(checked) => setFormData(prev => ({ ...prev, req_cmt: checked }))}
+          disabled={isSubmitting}
+        />
+
+        {/* Active Toggle - PropertyCheckbox */}
+        <PropertyCheckbox
+          title="Active"
+          description="Only active reason codes can be used in transactions"
+          checked={formData.active}
+          onChange={(checked) => setFormData(prev => ({ ...prev, active: checked }))}
+          disabled={isSubmitting}
+        />
+
+        {/* Form Actions */}
+        <div className="flex justify-end gap-3 pt-4 border-t">
           <Button
             type="button"
-            variant="secondary"
             onClick={onClose}
+            variant="outline"
             disabled={isSubmitting}
           >
             Cancel
@@ -519,7 +609,7 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Saving...' : reasonCode ? 'Update' : 'Create'}
+            {isSubmitting ? 'Saving...' : (reasonCode ? 'Update' : 'Create')}
           </Button>
         </div>
       </form>

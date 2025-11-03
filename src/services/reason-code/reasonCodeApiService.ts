@@ -1,9 +1,9 @@
 // Reason Code API service for managing reason codes
 import { apiClient, ApiError, USE_MOCK_DATA } from '../api';
 import type { 
-  ReasonCode, 
-  ReasonCodeCategory,
-  CreateReasonCodeRequest, 
+  ReasonCode,
+  CreateReasonCodeRequest,
+  UpdateReasonCodeRequest,
   ReasonCodesResponse, 
   ReasonCodeQueryParams 
 } from '../../types/reasonCode';
@@ -23,11 +23,8 @@ class ReasonCodeApiService {
 
       const path = `/v0/store/${params.store_id}/config/reason-code`;
       const queryParams = new URLSearchParams();
-      if (params.active_only) queryParams.append('active_only', 'true');
+      if (params.active !== undefined) queryParams.append('active', params.active.toString());
       if (params.category) queryParams.append('category', params.category);
-      if (params.search) queryParams.append('search', params.search);
-      if (params.limit) queryParams.append('limit', params.limit.toString());
-      if (params.offset) queryParams.append('offset', params.offset.toString());
       
       const response = await apiClient.get<ReasonCodesResponse>(
         `${path}${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
@@ -44,22 +41,22 @@ class ReasonCodeApiService {
   }
 
   /**
-   * Get a specific reason code by ID
+   * Get a specific reason code by code
    */
-  async getReasonCodeById(_tenantId: string, storeId: string, reasonCodeId: string): Promise<ReasonCode> {
+  async getReasonCodeByCode(_tenantId: string, storeId: string, code: string): Promise<ReasonCode> {
     try {
-      console.log('🎯 Fetching reason code by ID:', reasonCodeId);
+      console.log('🎯 Fetching reason code by code:', code);
       
       if (USE_MOCK_DATA) {
-        const mockData = this.getMockReasonCodes({});
-        const reasonCode = mockData.reason_codes.find(rc => rc.reason_code_id === reasonCodeId);
+        const mockData = this.getMockReasonCodes({ store_id: storeId });
+        const reasonCode = mockData.reason_codes.find(rc => rc.code === code);
         if (!reasonCode) {
           throw new ApiError('Reason code not found', 404, 'REASON_CODE_NOT_FOUND');
         }
         return reasonCode;
       }
 
-      const path = `/v0/store/${storeId}/config/reason-code/${reasonCodeId}`;
+      const path = `/v0/store/${storeId}/config/reason-code/${code}`;
       const response = await apiClient.get<ReasonCode>(path, {});
       
       console.log('✅ Successfully fetched reason code from API:', response.data);
@@ -74,7 +71,7 @@ class ReasonCodeApiService {
    * Create a new reason code
    */
   async createReasonCode(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     reasonCodeData: CreateReasonCodeRequest
   ): Promise<ReasonCode> {
@@ -83,7 +80,7 @@ class ReasonCodeApiService {
       
       if (USE_MOCK_DATA) {
         console.log('📝 Using mock reason code creation');
-        return this.createMockReasonCode(tenantId, storeId, reasonCodeData);
+        return this.createMockReasonCode(storeId, reasonCodeData);
       }
 
       const path = `/v0/store/${storeId}/config/reason-code`;
@@ -102,20 +99,20 @@ class ReasonCodeApiService {
    * Update an existing reason code
    */
   async updateReasonCode(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
-    reasonCodeId: string, 
-    reasonCodeData: Partial<CreateReasonCodeRequest>
+    code: string, 
+    reasonCodeData: UpdateReasonCodeRequest
   ): Promise<ReasonCode> {
     try {
-      console.log('🎯 Updating reason code:', reasonCodeId, reasonCodeData);
+      console.log('🎯 Updating reason code:', code, reasonCodeData);
       
       if (USE_MOCK_DATA) {
         console.log('📝 Using mock reason code update');
-        return this.updateMockReasonCode(tenantId, storeId, reasonCodeId, reasonCodeData);
+        return this.updateMockReasonCode(storeId, code, reasonCodeData);
       }
 
-      const path = `/v0/store/${storeId}/config/reason-code/${reasonCodeId}`;
+      const path = `/v0/store/${storeId}/config/reason-code/${code}`;
       const response = await apiClient.put<ReasonCode>(path, reasonCodeData);
       
       console.log('✅ Successfully updated reason code:', response.data);
@@ -130,16 +127,16 @@ class ReasonCodeApiService {
   /**
    * Delete a reason code
    */
-  async deleteReasonCode(_tenantId: string, storeId: string, reasonCodeId: string): Promise<void> {
+  async deleteReasonCode(_tenantId: string, storeId: string, code: string): Promise<void> {
     try {
-      console.log('🎯 Deleting reason code:', reasonCodeId);
+      console.log('🎯 Deleting reason code:', code);
       
       if (USE_MOCK_DATA) {
         console.log('📝 Using mock reason code deletion');
         return;
       }
 
-      const path = `/v0/store/${storeId}/config/reason-code/${reasonCodeId}`;
+      const path = `/v0/store/${storeId}/config/reason-code/${code}`;
       await apiClient.delete(path);
       
       console.log('✅ Successfully deleted reason code');
@@ -156,115 +153,96 @@ class ReasonCodeApiService {
   private getMockReasonCodes(params: ReasonCodeQueryParams): ReasonCodesResponse {
     const mockReasonCodes: ReasonCode[] = [
       {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_DISC10",
-        code: "DISC10",
-        description: "10% Discount - Customer Loyalty",
-        categories: ["DISCOUNT"],
+        tenant_id: "tenant-123",
+        store_id: params.store_id,
+        categories: ["operational", "transaction"],
+        code: "VOID_001",
+        description: "Customer changed mind",
         active: true,
-        created_at: "2025-01-15T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-15T10:00:00Z",
-        update_user_id: null
+        sort_order: 1,
+        req_cmt: true,
+        parent_code: null,
+        created_at: "2025-11-04T10:30:00Z",
+        updated_at: "2025-11-04T10:30:00Z",
+        create_user_id: "user-123",
+        update_user_id: "user-123",
+        type: "reason_code"
       },
       {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_RET01",
-        code: "RET01",
-        description: "Return - Defective Item",
-        categories: ["RETURN"],
+        tenant_id: "tenant-123",
+        store_id: params.store_id,
+        categories: ["financial"],
+        code: "REFUND_DEFECT",
+        description: "Product defective",
         active: true,
-        created_at: "2025-01-15T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-15T10:00:00Z",
-        update_user_id: null
+        sort_order: 2,
+        req_cmt: false,
+        parent_code: "REFUND",
+        created_at: "2025-11-04T10:30:00Z",
+        updated_at: "2025-11-04T10:30:00Z",
+        create_user_id: "user-123",
+        update_user_id: "user-123",
+        type: "reason_code"
       },
       {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_RET02",
-        code: "RET02",
-        description: "Return - Customer Changed Mind",
-        categories: ["RETURN"],
+        tenant_id: "tenant-123",
+        store_id: params.store_id,
+        categories: ["operational"],
+        code: "DISCOUNT_MGR",
+        description: "Manager Discount Authorization",
         active: true,
-        created_at: "2025-01-15T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-15T10:00:00Z",
-        update_user_id: null
+        sort_order: 3,
+        req_cmt: true,
+        parent_code: null,
+        created_at: "2025-11-04T10:30:00Z",
+        updated_at: "2025-11-04T10:30:00Z",
+        create_user_id: "user-123",
+        update_user_id: "user-123",
+        type: "reason_code"
       },
       {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_VOID01",
-        code: "VOID01",
-        description: "Void - Cashier Error",
-        categories: ["VOID", "TRANSACTION"],
+        tenant_id: "tenant-123",
+        store_id: params.store_id,
+        categories: ["item-related", "operational"],
+        code: "PRICE_OVERRIDE",
+        description: "Price Override - Damaged Item",
         active: true,
-        created_at: "2025-01-15T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-15T10:00:00Z",
-        update_user_id: null
+        sort_order: 4,
+        req_cmt: true,
+        parent_code: null,
+        created_at: "2025-11-04T10:30:00Z",
+        updated_at: "2025-11-04T10:30:00Z",
+        create_user_id: "user-123",
+        update_user_id: "user-123",
+        type: "reason_code"
       },
       {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_PROMO01",
-        code: "PROMO01",
-        description: "Promotional - Manager Special",
-        categories: ["PROMOTION", "DISCOUNT"],
-        active: true,
-        created_at: "2025-01-15T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-15T10:00:00Z",
-        update_user_id: null
-      },
-      {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_TRANS01",
-        code: "TRANS01",
-        description: "Transaction Adjustment",
-        categories: ["TRANSACTION", "OTHER"],
-        active: true,
-        created_at: "2025-01-15T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-15T10:00:00Z",
-        update_user_id: null
-      },
-      {
-        tenant_id: "2711",
-        store_id: "10001",
-        reason_code_id: "RC_10001_OLD01",
-        code: "OLD01",
+        tenant_id: "tenant-123",
+        store_id: params.store_id,
+        categories: ["other"],
+        code: "OLD_CODE",
         description: "Deprecated Reason Code",
-        categories: ["OTHER"],
         active: false,
-        created_at: "2025-01-01T10:00:00Z",
-        create_user_id: "Y8Z4UL",
-        updated_at: "2025-01-10T10:00:00Z",
-        update_user_id: "Y8Z4UL"
+        sort_order: 99,
+        req_cmt: false,
+        parent_code: null,
+        created_at: "2025-10-01T10:30:00Z",
+        updated_at: "2025-11-01T10:30:00Z",
+        create_user_id: "user-123",
+        update_user_id: "user-123",
+        type: "reason_code"
       }
     ];
 
     // Apply filters
     let filtered = mockReasonCodes;
 
-    if (params.active_only) {
-      filtered = filtered.filter(rc => rc.active);
+    if (params.active !== undefined) {
+      filtered = filtered.filter(rc => rc.active === params.active);
     }
 
     if (params.category) {
-      filtered = filtered.filter(rc => rc.categories.includes(params.category as ReasonCodeCategory));
-    }
-
-    if (params.search) {
-      const searchLower = params.search.toLowerCase();
-      filtered = filtered.filter(rc => 
-        rc.code.toLowerCase().includes(searchLower) ||
-        rc.description.toLowerCase().includes(searchLower)
-      );
+      filtered = filtered.filter(rc => rc.categories.includes(params.category!));
     }
 
     return {
@@ -273,39 +251,47 @@ class ReasonCodeApiService {
     };
   }
 
-  private createMockReasonCode(tenantId: string, storeId: string, reasonCodeData: CreateReasonCodeRequest): ReasonCode {
+  private createMockReasonCode(storeId: string, reasonCodeData: CreateReasonCodeRequest): ReasonCode {
     const now = new Date().toISOString();
     return {
-      tenant_id: tenantId,
+      tenant_id: "tenant-123",
       store_id: storeId,
-      reason_code_id: `RC_${storeId}_${reasonCodeData.code}`,
-      ...reasonCodeData,
+      categories: reasonCodeData.categories,
+      code: reasonCodeData.code,
+      description: reasonCodeData.description,
+      active: reasonCodeData.active ?? true,
+      sort_order: reasonCodeData.sort_order ?? 0,
+      req_cmt: reasonCodeData.req_cmt ?? false,
+      parent_code: reasonCodeData.parent_code ?? null,
       created_at: now,
-      create_user_id: "MOCK_USER",
       updated_at: now,
-      update_user_id: null
+      create_user_id: "MOCK_USER",
+      update_user_id: "MOCK_USER",
+      type: "reason_code"
     };
   }
 
   private updateMockReasonCode(
-    tenantId: string, 
     storeId: string, 
-    reasonCodeId: string, 
-    reasonCodeData: Partial<CreateReasonCodeRequest>
+    code: string, 
+    reasonCodeData: UpdateReasonCodeRequest
   ): ReasonCode {
     const now = new Date().toISOString();
     return {
-      tenant_id: tenantId,
+      tenant_id: "tenant-123",
       store_id: storeId,
-      reason_code_id: reasonCodeId,
-      code: reasonCodeData.code || 'MOCK_CODE',
-      description: reasonCodeData.description || 'Mock reason code',
-      categories: reasonCodeData.categories || ['OTHER'],
-      active: reasonCodeData.active !== undefined ? reasonCodeData.active : true,
+      categories: reasonCodeData.categories || ["other"],
+      code: reasonCodeData.code || code,
+      description: reasonCodeData.description || "Mock reason code",
+      active: reasonCodeData.active ?? true,
+      sort_order: reasonCodeData.sort_order ?? 0,
+      req_cmt: reasonCodeData.req_cmt ?? false,
+      parent_code: reasonCodeData.parent_code ?? null,
       created_at: now,
-      create_user_id: "MOCK_USER",
       updated_at: now,
-      update_user_id: "MOCK_USER"
+      create_user_id: "MOCK_USER",
+      update_user_id: "MOCK_USER",
+      type: "reason_code"
     };
   }
 

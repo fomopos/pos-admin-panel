@@ -1,26 +1,47 @@
 // Reason Code types for the POS system
 
-export type ReasonCodeCategory = 'DISCOUNT' | 'RETURN' | 'TRANSACTION' | 'VOID' | 'PROMOTION' | 'OTHER';
+export type ReasonCodeCategory = 'operational' | 'financial' | 'item-related' | 'transaction' | 'other';
 
 export interface ReasonCode {
   tenant_id: string;
   store_id: string;
-  reason_code_id: string;
+  categories: string[];
   code: string;
   description: string;
-  categories: ReasonCodeCategory[];
   active: boolean;
+  sort_order: number;
+  req_cmt: boolean;
+  parent_code: string | null;
   created_at: string;
-  create_user_id: string;
   updated_at: string;
-  update_user_id: string | null;
+  create_user_id: string;
+  update_user_id: string;
+  type: string;
+}
+
+export interface ReasonCodeDAO extends ReasonCode {
+  pk: string;
+  sk: string;
 }
 
 export interface CreateReasonCodeRequest {
+  categories: string[];
   code: string;
   description: string;
-  categories: ReasonCodeCategory[];
-  active: boolean;
+  active?: boolean;
+  sort_order?: number;
+  req_cmt?: boolean;
+  parent_code?: string | null;
+}
+
+export interface UpdateReasonCodeRequest {
+  categories?: string[];
+  code?: string;
+  description?: string;
+  active?: boolean;
+  sort_order?: number;
+  req_cmt?: boolean;
+  parent_code?: string | null;
 }
 
 export interface ReasonCodesResponse {
@@ -29,11 +50,7 @@ export interface ReasonCodesResponse {
 }
 
 export interface ReasonCodeQueryParams {
-  tenant_id?: string;
-  store_id?: string;
-  active_only?: boolean;
-  category?: ReasonCodeCategory;
-  search?: string;
-  limit?: number;
-  offset?: number;
+  store_id: string;
+  category?: string;
+  active?: boolean;
 }

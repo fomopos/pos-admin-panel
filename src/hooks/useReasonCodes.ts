@@ -1,7 +1,7 @@
 // Hook for managing reason codes
 import { useState, useEffect, useCallback } from 'react';
 import { reasonCodeApiService } from '../services/reason-code/reasonCodeApiService';
-import type { ReasonCode, ReasonCodeCategory } from '../types/reasonCode';
+import type { ReasonCode } from '../types/reasonCode';
 
 interface UseReasonCodesOptions {
   tenantId?: string;
@@ -18,11 +18,14 @@ interface UseReasonCodesReturn {
   error: string | null;
   
   // Functions
-  getReasonCodesByCategory: (categories: ReasonCodeCategory[]) => ReasonCode[];
+  getReasonCodesByCategory: (categories: string[]) => ReasonCode[];
   createReasonCode: (reasonCodeData: {
     code: string;
     description: string;
-    categories: ReasonCodeCategory[];
+    categories: string[];
+    parent_code?: string | null;
+    req_cmt?: boolean;
+    sort_order?: number;
     active: boolean;
   }) => Promise<ReasonCode>;
   updateReasonCode: (
@@ -30,7 +33,10 @@ interface UseReasonCodesReturn {
     reasonCodeData: Partial<{
       code: string;
       description: string;
-      categories: ReasonCodeCategory[];
+      categories: string[];
+      parent_code: string | null;
+      req_cmt: boolean;
+      sort_order: number;
       active: boolean;
     }>
   ) => Promise<ReasonCode>;
@@ -60,7 +66,6 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
       setError(null);
       
       const response = await reasonCodeApiService.getReasonCodes({
-        tenant_id: tenantId,
         store_id: storeId,
       });
       
@@ -82,7 +87,7 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
   }, [autoLoad, tenantId, storeId, loadReasonCodes]);
 
   // Get reason codes by category
-  const getReasonCodesByCategory = useCallback((categories: ReasonCodeCategory[]): ReasonCode[] => {
+  const getReasonCodesByCategory = useCallback((categories: string[]): ReasonCode[] => {
     return reasonCodes.filter(rc => 
       rc.active && categories.some(cat => rc.categories.includes(cat))
     );
@@ -92,7 +97,10 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
   const createReasonCode = useCallback(async (reasonCodeData: {
     code: string;
     description: string;
-    categories: ReasonCodeCategory[];
+    categories: string[];
+    parent_code?: string | null;
+    req_cmt?: boolean;
+    sort_order?: number;
     active: boolean;
   }): Promise<ReasonCode> => {
     if (!tenantId || !storeId) {
@@ -124,7 +132,10 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
     reasonCodeData: Partial<{
       code: string;
       description: string;
-      categories: ReasonCodeCategory[];
+      categories: string[];
+      parent_code: string | null;
+      req_cmt: boolean;
+      sort_order: number;
       active: boolean;
     }>
   ): Promise<ReasonCode> => {
@@ -142,7 +153,7 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
       
       // Update local state
       setReasonCodes(prev => 
-        prev.map(rc => rc.reason_code_id === reasonCodeId ? updatedReasonCode : rc)
+        prev.map(rc => rc.code === reasonCodeId ? updatedReasonCode : rc)
       );
       
       return updatedReasonCode;
@@ -162,7 +173,7 @@ export const useReasonCodes = (options: UseReasonCodesOptions = {}): UseReasonCo
       await reasonCodeApiService.deleteReasonCode(tenantId, storeId, reasonCodeId);
       
       // Remove from local state
-      setReasonCodes(prev => prev.filter(rc => rc.reason_code_id !== reasonCodeId));
+      setReasonCodes(prev => prev.filter(rc => rc.code !== reasonCodeId));
     } catch (err) {
       console.error('Failed to delete reason code:', err);
       throw err;
