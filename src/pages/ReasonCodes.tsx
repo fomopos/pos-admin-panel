@@ -363,13 +363,29 @@ const ReasonCodeFormModal: React.FC<ReasonCodeFormModalProps> = ({
   const { showError, showApiError, showSuccess } = useError();
 
   // Category options for MultipleDropdownSearch
-  const categoryOptions: MultipleDropdownSearchOption[] = [
-    { id: 'operational', label: 'Operational' },
-    { id: 'financial', label: 'Financial' },
-    { id: 'item-related', label: 'Item Related' },
-    { id: 'transaction', label: 'Transaction' },
-    { id: 'other', label: 'Other' },
-  ];
+const categoryOptions: MultipleDropdownSearchOption[] = [
+  { id: 'PRICE_CHANGE', label: 'Price Change', description: 'Reason required when changing the price of an item manually' },
+  { id: 'LINE_ITEM_DISCOUNT', label: 'Line Item Discount', description: 'Reason required when applying a discount to a specific item' },
+  { id: 'TRANSACTION_DISCOUNT', label: 'Transaction Discount', description: 'Reason required when applying a discount to the full transaction' },
+  { id: 'VOID_LINE_ITEM', label: 'Void Line Item', description: 'Reason required when removing or voiding an item from the bill' },
+  { id: 'VOID_TRANSACTION', label: 'Void Transaction', description: 'Reason required when voiding or cancelling an entire transaction' },
+  { id: 'SUSPEND_TRANSACTION', label: 'Suspend Transaction', description: 'Reason required when suspending a transaction to hold temporarily' },
+  { id: 'RETURN_ITEM', label: 'Return Item', description: 'Reason required when returning an item purchased earlier' },
+  { id: 'REFUND', label: 'Refund', description: 'Reason required when issuing a refund to the customer' },
+  { id: 'OVERRIDE', label: 'Manager Override', description: 'Reason required when an action needs managerial authorization' },
+  { id: 'CANCEL_RECEIPT', label: 'Cancel Receipt', description: 'Reason required when cancelling a generated receipt' },
+  { id: 'OPEN_CASH_DRAWER', label: 'Open Cash Drawer', description: 'Reason required when opening cash drawer without sale' },
+  { id: 'NO_SALE', label: 'No Sale', description: 'Reason required when performing a no-sale operation' },
+  { id: 'PRICE_OVERRIDE', label: 'Price Override', description: 'Reason required when overriding a system price or promotion' },
+  { id: 'TAX_EXEMPT', label: 'Tax Exempt', description: 'Reason required when applying tax exemption to sale' },
+  { id: 'INVENTORY_ADJUSTMENT', label: 'Inventory Adjustment', description: 'Reason required when adjusting stock manually' },
+  { id: 'CUSTOMER_COMPLAINT', label: 'Customer Complaint', description: 'Reason required for actions taken due to customer complaint' },
+  { id: 'DISCOUNT_OVERRIDE', label: 'Discount Override', description: 'Reason required when overriding a discount rule' },
+  { id: 'REPRINT_RECEIPT', label: 'Reprint Receipt', description: 'Reason required when reprinting a receipt for auditing' },
+  { id: 'EXCHANGE_ITEM', label: 'Exchange Item', description: 'Reason required when exchanging an item for another' },
+  { id: 'MANUAL_ENTRY', label: 'Manual Entry', description: 'Reason required when item is entered manually without scan' }
+];
+
 
   // Parent code options (all other reason codes)
   const [parentCodeOptions, setParentCodeOptions] = useState<DropdownSearchOption[]>([]);
