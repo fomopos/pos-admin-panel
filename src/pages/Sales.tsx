@@ -5,7 +5,8 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Loading, Alert, Badge, PageHeader, PageContainer } from '../components/ui';
+import { Button, Loading, Alert, Badge, PageHeader, PageContainer, AdvancedSearchFilter } from '../components/ui';
+import type { FilterConfig } from '../components/ui';
 import DataTable, { type Column } from '../components/ui/DataTable';
 import { transactionService, type ConvertedSale, type TransactionQueryParams } from '../services/transaction';
 import { AdvancedFilter, type AdvancedFilterState } from '../components/filters/AdvancedFilter';
@@ -304,7 +305,108 @@ const Sales: React.FC = () => {
       amountRangeFilter: { min: '', max: '' },
       cashierFilter: 'all'
     });
+  };
+
+  // Filter configuration for AdvancedSearchFilter
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: 'dateFilter',
+      label: 'Date Range',
+      type: 'dropdown',
+      options: [
+        { id: 'today', label: 'Today' },
+        { id: 'yesterday', label: 'Yesterday' },
+        { id: 'last7days', label: 'Last 7 Days' },
+        { id: 'last30days', label: 'Last 30 Days' },
+        { id: 'thisMonth', label: 'This Month' },
+        { id: 'lastMonth', label: 'Last Month' },
+        { id: 'custom', label: 'Custom Range' }
+      ],
+      value: advancedFilters.dateFilter
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'dropdown',
+      options: [
+        { id: 'all', label: 'All Status' },
+        { id: 'completed', label: 'Completed' },
+        { id: 'pending', label: 'Pending' },
+        { id: 'cancelled', label: 'Cancelled' },
+        { id: 'refunded', label: 'Refunded' }
+      ],
+      value: advancedFilters.statusFilter
+    },
+    {
+      key: 'paymentStatus',
+      label: 'Payment Status',
+      type: 'dropdown',
+      options: [
+        { id: 'all', label: 'All' },
+        { id: 'paid', label: 'Paid' },
+        { id: 'partially_paid', label: 'Partially Paid' },
+        { id: 'unpaid', label: 'Unpaid' }
+      ],
+      value: advancedFilters.paymentStatusFilter
+    }
+  ];
+
+  // Handle filter changes from AdvancedSearchFilter
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === 'dateFilter') {
+      setAdvancedFilters(prev => ({ ...prev, dateFilter: value as string }));
+    } else if (key === 'status') {
+      setAdvancedFilters(prev => ({ ...prev, statusFilter: value as string }));
+    } else if (key === 'paymentStatus') {
+      setAdvancedFilters(prev => ({ ...prev, paymentStatusFilter: value as string }));
+    }
+  };
+
+  // Active filters for badge display
+  const activeFilters: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+  
+  if (searchTerm) {
+    activeFilters.push({
+      key: 'search',
+      label: 'Search',
+      value: searchTerm,
+      onRemove: () => setSearchTerm('')
+    });
+  }
+  
+  if (advancedFilters.dateFilter !== 'today') {
+    const dateLabel = filterConfigs[0].options?.find(opt => opt.id === advancedFilters.dateFilter)?.label || advancedFilters.dateFilter;
+    activeFilters.push({
+      key: 'dateFilter',
+      label: 'Date Range',
+      value: dateLabel,
+      onRemove: () => setAdvancedFilters(prev => ({ ...prev, dateFilter: 'today' }))
+    });
+  }
+  
+  if (advancedFilters.statusFilter !== 'all') {
+    const statusLabel = filterConfigs[1].options?.find(opt => opt.id === advancedFilters.statusFilter)?.label || advancedFilters.statusFilter;
+    activeFilters.push({
+      key: 'status',
+      label: 'Status',
+      value: statusLabel,
+      onRemove: () => setAdvancedFilters(prev => ({ ...prev, statusFilter: 'all' }))
+    });
+  }
+  
+  if (advancedFilters.paymentStatusFilter !== 'all') {
+    const paymentLabel = filterConfigs[2].options?.find(opt => opt.id === advancedFilters.paymentStatusFilter)?.label || advancedFilters.paymentStatusFilter;
+    activeFilters.push({
+      key: 'paymentStatus',
+      label: 'Payment Status',
+      value: paymentLabel,
+      onRemove: () => setAdvancedFilters(prev => ({ ...prev, paymentStatusFilter: 'all' }))
+    });
+  }
+
+  const handleClearAllFilters = () => {
     setSearchTerm('');
+    handleAdvancedFilterClear();
   };
 
   // Utility functions
@@ -456,7 +558,7 @@ const Sales: React.FC = () => {
 
         {/* Error/Warning Alerts */}
         {alertState.type && (
-          <div className="mb-4 px-4 sm:px-6 lg:px-8">
+          <div className="mb-4">
             <Alert 
               variant={alertState.type} 
               onClose={() => setAlertState({ type: null, message: '' })}
@@ -466,40 +568,34 @@ const Sales: React.FC = () => {
           </div>
         )}
 
-        {/* Action Bar @TODO This needs attention*/}
-        <div className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              {/* Search Input */}
-              <div className="relative flex-1 max-w-md">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search transactions..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Filter Button */}
-              <Button
-                variant="outline"
-                onClick={() => setShowAdvancedFilters(true)}
-                className="text-sm"
-              >
-                <FunnelIcon className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-            </div>
-          </div>
-        </div>
+        {/* Search and Filter */}
+        <AdvancedSearchFilter
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchLabel="Search Transactions"
+          searchPlaceholder="Search by transaction ID, customer, or cashier..."
+          filters={filterConfigs}
+          onFilterChange={handleFilterChange}
+          activeFilters={activeFilters}
+          totalResults={sales.length}
+          filteredResults={filteredSales.length}
+          showResultsCount={true}
+          onClearAll={handleClearAllFilters}
+          className="mb-6"
+          additionalActions={
+            <Button
+              variant="outline"
+              onClick={() => setShowAdvancedFilters(true)}
+              className="text-sm"
+            >
+              <FunnelIcon className="h-4 w-4 mr-2" />
+              More Filters
+            </Button>
+          }
+        />
 
         {/* DataTable with built-in search, sorting, and pagination */}
-        <div className="mt-6">
-          <DataTable
+        <DataTable
               data={filteredSales}
               columns={columns}
               loading={false}
@@ -525,7 +621,6 @@ const Sales: React.FC = () => {
                 </div>
               }
             />
-        </div>
 
       {/* Advanced Filter Modal */}
       <AdvancedFilter
