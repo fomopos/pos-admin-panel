@@ -40,7 +40,7 @@ export const ProductBasicInfoTab: React.FC<ProductBasicInfoTabProps> = ({
       title="Basic Information"
       description="Enter the fundamental details for this product"
       icon={ClipboardDocumentListIcon}
-      variant="primary"
+      variant="default"
       className='overflow-visible'
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

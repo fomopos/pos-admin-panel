@@ -57,3 +57,4 @@ export type { ButtonProps } from './Button';
 export type { BadgeProps } from './Badge';
 export type { PageContainerProps } from './PageContainer';
 export type { TypographyProps, TypographyVariant, TypographyColor, TypographyAlign, TypographyWeight } from './Typography';
+export type { Column } from './DataTable';
