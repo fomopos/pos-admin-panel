@@ -818,6 +818,14 @@ The `InputTextArea` component provides a consistent multi-line text input with t
 <Button variant="outline" size="md">Outline Button</Button>
 <Button variant="ghost" size="md">Ghost Button</Button>
 <Button variant="destructive" size="md">Delete Button</Button>
+<Button variant="glass" size="md">Glass Button</Button>
+<Button variant="glassOutline" size="md">Glass Outline Button</Button>
+
+// Glass/Backdrop variants - Perfect for overlays and modern UI
+<Button variant="glassOutline">
+  <ArrowLeftIcon className="w-4 h-4 mr-2" />
+  Back
+</Button>
 
 // Loading state
 <Button isLoading={loading}>

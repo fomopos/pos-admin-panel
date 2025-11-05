@@ -35,8 +35,25 @@ export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGu
 export { default as VersionDisplay } from './VersionDisplay';
 export { default as JsonViewerEditor } from './JsonViewerEditor';
 export { default as ResizablePanels } from './ResizablePanels';
+export { 
+  Typography, 
+  H1, 
+  H2, 
+  H3, 
+  H4, 
+  H5, 
+  H6, 
+  Body1, 
+  Body2, 
+  Subtitle1, 
+  Subtitle2, 
+  Caption, 
+  Overline, 
+  Label 
+} from './Typography';
 
 // Re-export types
 export type { ButtonProps } from './Button';
 export type { BadgeProps } from './Badge';
 export type { PageContainerProps } from './PageContainer';
+export type { TypographyProps, TypographyVariant, TypographyColor, TypographyAlign, TypographyWeight } from './Typography';
