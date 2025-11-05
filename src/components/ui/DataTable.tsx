@@ -216,7 +216,7 @@ function DataTable<T extends Record<string, any>>({
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+      <div>
         <Table>
           <TableHeader>
             <TableRow hoverable={false}>

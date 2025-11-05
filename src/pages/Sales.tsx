@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  PlusIcon, 
   MagnifyingGlassIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Loading, Alert, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui';
+import { Button, Loading, Alert, Badge, PageHeader } from '../components/ui';
+import DataTable, { type Column } from '../components/ui/DataTable';
 import { transactionService, type ConvertedSale, type TransactionQueryParams } from '../services/transaction';
 import { AdvancedFilter, type AdvancedFilterState } from '../components/filters/AdvancedFilter';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
@@ -23,9 +23,6 @@ const Sales: React.FC = () => {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(new Set());
-  
-  // Tab state for transaction status
-  const [activeTab, setActiveTab] = useState('all');
   
   // Simple search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -323,21 +320,8 @@ const Sales: React.FC = () => {
     return <Badge color={config.color} size="sm">{config.label}</Badge>;
   };
 
-  const getPaymentMethodIcon = (method: Sale['paymentMethod']) => {
-    // Return simple text for now since we removed icon imports
-    return method;
-  };
-
   const handleViewDetails = (sale: Sale) => {
     navigate(`/sales/${sale.id}`);
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedTransactions(new Set(filteredSales.map(s => s.id)));
-    } else {
-      setSelectedTransactions(new Set());
-    }
   };
 
   const handleSelectTransaction = (id: string, checked: boolean) => {
@@ -348,15 +332,6 @@ const Sales: React.FC = () => {
       newSelection.delete(id);
     }
     setSelectedTransactions(newSelection);
-  };
-
-  // Calculate tab counts
-  const tabCounts = {
-    all: sales.length,
-    new: sales.filter(s => s.status === 'pending' || s.status === 'suspended').length,
-    completed: sales.filter(s => s.status === 'completed').length,
-    suspended: sales.filter(s => s.status === 'suspended').length,
-    cancelled: sales.filter(s => s.status === 'cancelled').length
   };
 
   const formatCurrency = (amount: number) => {
@@ -376,6 +351,77 @@ const Sales: React.FC = () => {
     });
   };
 
+  // Define DataTable columns
+  const columns: Column<Sale>[] = [
+    {
+      key: 'id',
+      title: '',
+      width: '50px',
+      render: (_, sale) => (
+        <input
+          type="checkbox"
+          checked={selectedTransactions.has(sale.id)}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleSelectTransaction(sale.id, e.target.checked);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+      ),
+    },
+    {
+      key: 'createdAt',
+      title: 'Date',
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm text-gray-900">{formatDateTime(value).split(',')[0]}</div>
+      ),
+    },
+    {
+      key: 'saleNumber',
+      title: 'Transaction number',
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm font-medium text-gray-900">{value}</div>
+      ),
+    },
+    {
+      key: 'customerName',
+      title: 'Description',
+      sortable: true,
+      render: (_, sale) => (
+        <div>
+          <div className="text-sm text-gray-900">{sale.customerName}</div>
+          <div className="text-xs text-gray-500">{sale.items.length} item{sale.items.length !== 1 ? 's' : ''}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'total',
+      title: 'Amount',
+      sortable: true,
+      className: 'text-right',
+      render: (value) => (
+        <div className="text-sm font-semibold text-gray-900">{formatCurrency(value)}</div>
+      ),
+    },
+    {
+      key: 'paymentMethod',
+      title: 'Category',
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm text-gray-700 capitalize">{value.replace('_', ' ')}</div>
+      ),
+    },
+    {
+      key: 'status',
+      title: 'Status',
+      sortable: true,
+      render: (value) => getStatusBadge(value),
+    },
+  ];
+
   if (isLoading) {
     return (
       <Loading
@@ -389,15 +435,16 @@ const Sales: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-        </div>
+      <div className="mx-auto">
+        {/* Page Header */}
+          <PageHeader
+            title="Transactions"
+            description={currentStore ? `${currentStore.store_name} - Manage your sales transactions` : 'Manage your sales transactions'}
+          />
 
         {/* Error/Warning Alerts */}
         {alertState.type && (
-          <div className="mb-6">
+          <div className="mb-4 px-4 sm:px-6 lg:px-8">
             <Alert 
               variant={alertState.type} 
               onClose={() => setAlertState({ type: null, message: '' })}
@@ -407,202 +454,75 @@ const Sales: React.FC = () => {
           </div>
         )}
 
-        {/* Main Content Card */}
-        <div className="bg-white rounded-lg shadow">
-          {/* Tabs for Transaction Status */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`${
-                  activeTab === 'all'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
-              >
-                All transactions
-                <Badge color="gray" size="sm">{tabCounts.all}</Badge>
-              </button>
-              <button
-                onClick={() => setActiveTab('new')}
-                className={`${
-                  activeTab === 'new'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
-              >
-                Pending review
-                <Badge color="yellow" size="sm">{tabCounts.new}</Badge>
-              </button>
-              <button
-                onClick={() => setActiveTab('completed')}
-                className={`${
-                  activeTab === 'completed'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
-              >
-                Approved
-                <Badge color="green" size="sm">{tabCounts.completed}</Badge>
-              </button>
-            </nav>
-          </div>
-
-          {/* Action Bar */}
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 flex-1">
-                {/* Search Input */}
-                <div className="relative flex-1 max-w-md">
-                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search transactions..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  />
-                </div>
+        {/* Action Bar */}
+        <div className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1">
+              {/* Search Input */}
+              <div className="relative flex-1 max-w-md">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search transactions..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                />
               </div>
+            </div>
 
-              <div className="flex items-center gap-2">
-                {/* Filter Button */}
+            <div className="flex items-center gap-2">
+              {/* Filter Button */}
+              <Button
+                variant="outline"
+                onClick={() => setShowAdvancedFilters(true)}
+                className="text-sm"
+              >
+                <FunnelIcon className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* DataTable with built-in search, sorting, and pagination */}
+        <div className="mt-6 shadow-md">
+          <DataTable
+              data={filteredSales}
+              columns={columns}
+              loading={false}
+              searchable={false}
+              pagination={true}
+              pageSize={20}
+              pageSizeOptions={[10, 20, 50, 100]}
+              defaultSort={{ key: 'createdAt', direction: 'desc' }}
+              onRowClick={(sale) => handleViewDetails(sale)}
+              emptyState={
+                <div className="text-center py-12">
+                  <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">No transactions found</h3>
+                  <p className="mt-2 text-sm text-gray-500">
+                    {searchTerm || advancedFilters.statusFilter !== 'all'
+                      ? 'Try adjusting your filters to see more results.'
+                      : 'No transactions available at the moment.'
+                    }
+                  </p>
+                </div>
+              }
+            />
+            
+            {/* Load More for API Pagination */}
+            {hasNextPage && filteredSales.length > 0 && (
+              <div className="mt-4 flex justify-center">
                 <Button
+                  onClick={loadMoreTransactions}
+                  disabled={isLoadingMore}
                   variant="outline"
-                  onClick={() => setShowAdvancedFilters(true)}
-                  className="text-sm"
                 >
-                  <FunnelIcon className="h-4 w-4 mr-2" />
-                  Filter
+                  {isLoadingMore ? 'Loading...' : 'Load More'}
                 </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Table */}
-          {filteredSales.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
-                        <input
-                          type="checkbox"
-                          checked={selectedTransactions.size === filteredSales.length && filteredSales.length > 0}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                      </TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Transaction number</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredSales.map((sale) => (
-                      <TableRow 
-                        key={sale.id}
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleViewDetails(sale)}
-                      >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedTransactions.has(sale.id)}
-                            onChange={(e) => handleSelectTransaction(sale.id, e.target.checked)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-gray-900">{formatDateTime(sale.createdAt).split(',')[0]}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm font-medium text-gray-900">{sale.saleNumber}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-gray-900">{sale.customerName}</div>
-                          <div className="text-xs text-gray-500">{sale.items.length} item{sale.items.length !== 1 ? 's' : ''}</div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="text-sm font-semibold text-gray-900">{formatCurrency(sale.total)}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-gray-700 capitalize">{getPaymentMethodIcon(sale.paymentMethod).replace('_', ' ')}</div>
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(sale.status)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Pagination */}
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Showing {Math.min(filteredSales.length, 20)} of {filteredSales.length} items
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">Rows per page:</span>
-                  <select className="border border-gray-300 rounded px-2 py-1 text-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option>10</option>
-                    <option selected>20</option>
-                    <option>50</option>
-                    <option>100</option>
-                  </select>
-                  <div className="flex items-center gap-1 ml-4">
-                    <Button variant="outline" size="sm" disabled>
-                      Previous
-                    </Button>
-                    <Button variant="outline" size="sm" className="bg-blue-600 text-white border-blue-600">
-                      1
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      2
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Load More for API Pagination */}
-              {hasNextPage && (
-                <div className="px-6 py-4 border-t border-gray-200 flex justify-center">
-                  <Button
-                    onClick={loadMoreTransactions}
-                    disabled={isLoadingMore}
-                    variant="outline"
-                  >
-                    {isLoadingMore ? 'Loading...' : 'Load More'}
-                  </Button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12 px-6">
-              <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">No transactions found</h3>
-              <p className="mt-2 text-sm text-gray-500">
-                {searchTerm || advancedFilters.statusFilter !== 'all'
-                  ? 'Try adjusting your filters to see more results.'
-                  : 'Get started by creating your first transaction.'
-                }
-              </p>
-              {!searchTerm && advancedFilters.statusFilter === 'all' && (
-                <Button className="mt-4">
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Create transaction
-                </Button>
-              )}
-            </div>
-          )}
+            )}
         </div>
       </div>
 
