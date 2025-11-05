@@ -117,11 +117,6 @@ const SalesDetail: React.FC = () => {
     alert(`Printing receipt for transaction ${transId}`);
   };
 
-  const handleDuplicateTransaction = () => {
-    console.log('Duplicating transaction:', transId);
-    alert(`Duplicating transaction ${transId}`);
-  };
-
   // Tab configuration
   const tabs = [
     {
@@ -191,18 +186,11 @@ const SalesDetail: React.FC = () => {
         >
         <div className="flex items-center space-x-3">
           <Button
-            variant="glassOutline"
+            variant="outline"
             onClick={() => navigate('/sales')}
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back to Sales
-          </Button>
-          <Button
-            variant="glassOutline"
-            onClick={handleDuplicateTransaction}
-          >
-            <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
-            Duplicate
           </Button>
           <Button
             variant="primary"
