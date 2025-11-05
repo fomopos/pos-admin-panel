@@ -334,13 +334,6 @@ const Sales: React.FC = () => {
     setSelectedTransactions(newSelection);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       month: 'short',
@@ -372,46 +365,79 @@ const Sales: React.FC = () => {
     },
     {
       key: 'createdAt',
-      title: 'Date',
+      title: 'Date & Time',
       sortable: true,
       render: (value) => (
-        <div className="text-sm text-gray-900">{formatDateTime(value).split(',')[0]}</div>
+        <div className="text-sm">
+          <div className="font-medium text-gray-900">{formatDateTime(value).split(',')[0]}</div>
+          <div className="text-xs text-gray-500">{formatDateTime(value).split(',')[1]}</div>
+        </div>
       ),
     },
     {
       key: 'saleNumber',
-      title: 'Transaction number',
+      title: 'Transaction ID',
       sortable: true,
       render: (value) => (
-        <div className="text-sm font-medium text-gray-900">{value}</div>
+        <div className="text-sm font-medium text-blue-600">{value}</div>
       ),
     },
     {
-      key: 'customerName',
-      title: 'Description',
+      key: 'terminalId',
+      title: 'Terminal',
       sortable: true,
-      render: (_, sale) => (
-        <div>
-          <div className="text-sm text-gray-900">{sale.customerName}</div>
-          <div className="text-xs text-gray-500">{sale.items.length} item{sale.items.length !== 1 ? 's' : ''}</div>
+      render: (value) => (
+        <div className="text-sm text-gray-700">{value}</div>
+      ),
+    },
+    {
+      key: 'lineItemsCount',
+      title: 'Items',
+      sortable: true,
+      render: (value) => (
+        <div className="text-sm text-gray-900 text-center">{value}</div>
+      ),
+    },
+    {
+      key: 'subtotal',
+      title: 'Subtotal',
+      sortable: true,
+      className: 'text-right',
+      render: (value, sale) => (
+        <div className="text-sm text-gray-700">
+          {new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: sale.currency || 'USD' 
+          }).format(value)}
+        </div>
+      ),
+    },
+    {
+      key: 'totalTax',
+      title: 'Tax',
+      sortable: true,
+      className: 'text-right',
+      render: (value, sale) => (
+        <div className="text-sm text-gray-700">
+          {new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: sale.currency || 'USD' 
+          }).format(value)}
         </div>
       ),
     },
     {
       key: 'total',
-      title: 'Amount',
+      title: 'Total Amount',
       sortable: true,
       className: 'text-right',
-      render: (value) => (
-        <div className="text-sm font-semibold text-gray-900">{formatCurrency(value)}</div>
-      ),
-    },
-    {
-      key: 'paymentMethod',
-      title: 'Category',
-      sortable: true,
-      render: (value) => (
-        <div className="text-sm text-gray-700 capitalize">{value.replace('_', ' ')}</div>
+      render: (value, sale) => (
+        <div className="text-sm font-semibold text-gray-900">
+          {new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: sale.currency || 'USD' 
+          }).format(value)}
+        </div>
       ),
     },
     {
@@ -486,7 +512,7 @@ const Sales: React.FC = () => {
         </div>
 
         {/* DataTable with built-in search, sorting, and pagination */}
-        <div className="mt-6 shadow-md">
+        <div className="mt-6">
           <DataTable
               data={filteredSales}
               columns={columns}
@@ -497,6 +523,9 @@ const Sales: React.FC = () => {
               pageSizeOptions={[10, 20, 50, 100]}
               defaultSort={{ key: 'createdAt', direction: 'desc' }}
               onRowClick={(sale) => handleViewDetails(sale)}
+              hasMore={hasNextPage}
+              onLoadMore={loadMoreTransactions}
+              loadingMore={isLoadingMore}
               emptyState={
                 <div className="text-center py-12">
                   <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -510,19 +539,6 @@ const Sales: React.FC = () => {
                 </div>
               }
             />
-            
-            {/* Load More for API Pagination */}
-            {hasNextPage && filteredSales.length > 0 && (
-              <div className="mt-4 flex justify-center">
-                <Button
-                  onClick={loadMoreTransactions}
-                  disabled={isLoadingMore}
-                  variant="outline"
-                >
-                  {isLoadingMore ? 'Loading...' : 'Load More'}
-                </Button>
-              </div>
-            )}
         </div>
       </div>
 

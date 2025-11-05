@@ -9,10 +9,13 @@ export interface TenderSummary {
 export interface TransactionSummary {
   transaction_id: string;
   terminal_id: string;
+  barcode?: string;
   business_date: string;
+  begin_datetime?: string;
   created_at: string;
-  status: 'completed' | 'cancelled' | 'cancel_orphaned' | 'new' | 'suspended';
-  transaction_type: 'sale' | 'return' | 'exchange';
+  created_by?: string;
+  status: 'COMPLETED' | 'CANCELLED' | 'CANCEL_ORPHANED' | 'NEW' | 'SUSPENDED' | 'IN_PROGRESS' | 'completed' | 'cancelled' | 'cancel_orphaned' | 'new' | 'suspended';
+  transaction_type: 'SALE' | 'RETURN' | 'EXCHANGE' | 'sale' | 'return' | 'exchange';
   total: string;
   sub_total: string;
   tax_total: string;
@@ -21,6 +24,7 @@ export interface TransactionSummary {
   is_void: boolean;
   tender_summary: TenderSummary[];
   line_items_count: number;
+  discount_amount?: string;
 }
 
 export interface TransactionSummaryResponse {
@@ -314,22 +318,25 @@ export class TransactionService {
     // Map transaction status
     const status = this.mapTransactionStatus(transaction.status, transaction.is_void);
 
+    // Use begin_datetime if available, otherwise fallback to created_at
+    const displayDate = transaction.begin_datetime || transaction.created_at;
+
     return {
       id: transaction.transaction_id,
-      saleNumber: `TXN-${transaction.transaction_id}`,
+      saleNumber: transaction.transaction_id,
       customerName: 'Walk-in Customer', // API doesn't provide customer info
       customerEmail: undefined,
       items: [], // Would need separate API call to get line items
-      subtotal: parseFloat(transaction.sub_total),
-      totalDiscount: 0, // Not provided in summary API
-      totalTax: parseFloat(transaction.tax_total),
-      total: parseFloat(transaction.total),
+      subtotal: parseFloat(transaction.sub_total || '0'),
+      totalDiscount: parseFloat(transaction.discount_amount || '0'),
+      totalTax: parseFloat(transaction.tax_total || '0'),
+      total: parseFloat(transaction.total || '0'),
       paymentMethod,
       paymentStatus,
       status,
       notes: transaction.is_void ? 'Transaction voided' : undefined,
-      createdAt: transaction.created_at,
-      updatedAt: transaction.created_at, // API doesn't provide updated_at
+      createdAt: displayDate,
+      updatedAt: transaction.created_at,
       cashierId: transaction.associates[0] || 'unknown',
       cashierName: this.getCashierName(transaction.associates[0]),
       currency: transaction.store_currency,
@@ -365,11 +372,15 @@ export class TransactionService {
   private mapStatusToPaymentStatus(status: string, isVoid: boolean): 'paid' | 'pending' | 'partial' | 'refunded' {
     if (isVoid) return 'refunded';
     
-    switch (status) {
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = status.toLowerCase();
+    
+    switch (normalizedStatus) {
       case 'completed':
         return 'paid';
       case 'new':
       case 'suspended':
+      case 'in_progress':
         return 'pending';
       case 'cancelled':
       case 'cancel_orphaned':
@@ -385,10 +396,14 @@ export class TransactionService {
   private mapTransactionStatus(status: string, isVoid: boolean): 'completed' | 'pending' | 'cancelled' | 'refunded' | 'suspended' {
     if (isVoid) return 'refunded';
     
-    switch (status) {
+    // Normalize status to lowercase for comparison
+    const normalizedStatus = status.toLowerCase();
+    
+    switch (normalizedStatus) {
       case 'completed':
         return 'completed';
       case 'new':
+      case 'in_progress':
         return 'pending';
       case 'suspended':
         return 'suspended';

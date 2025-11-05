@@ -202,11 +202,12 @@
     "yourProfile": "Your Profile",
     "settings": "Settings",
     "signOut": "Sign out",
-    "clearSearch": "Clear search",
     "gridView": "Grid View",
     "listView": "List View",
     "all": "All",
-    "status": "Status"
+    "status": "Status",
+    "of": "of",
+    "rowsPerPage": "rows per page"
   },
   "nav": {
     "dashboard": "Dashboard",
