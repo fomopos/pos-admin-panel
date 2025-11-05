@@ -8,6 +8,15 @@
     "editCategory": "Edit Category",
     "newDescription": "Create a new category to organize your products",
     "editDescription": "Edit the details of this category",
+    "table": {
+      "category": "Category",
+      "description": "Description",
+      "parent": "Parent Category",
+      "sortOrder": "Sort Order",
+      "status": "Status",
+      "products": "Products",
+      "actions": "Actions"
+    },
     "fields": {
         "name": "Category Name",
         "description": "Description",
@@ -95,7 +104,8 @@
       }
     },
     "search": {
-      "placeholder": "Search categories..."
+      "placeholder": "Search categories...",
+      "label": "Search Categories"
     },
     "filters": {
       "all": "All Categories",
@@ -104,7 +114,8 @@
       "mainScreen": "Main Screen",
       "withSubcategories": "With Subcategories",
       "allCategories": "All Categories",
-      "allStatus":"All Status"
+      "allStatus":"All Status",
+      "parent": "Parent Category"
     },
     "card": {
       "order": "Order",
@@ -124,6 +135,10 @@
       "description": "Start organizing your products by creating your first category",
       "noResults": "No categories found",
       "noResultsDescription": "Try adjusting your search or filter criteria"
+    },
+    "loading": {
+      "title": "Loading Categories",
+      "description": "Please wait while we fetch your categories..."
     },
     "stats": {
       "total": "Total Categories",
