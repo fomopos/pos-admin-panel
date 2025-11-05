@@ -207,7 +207,8 @@
     "all": "All",
     "status": "Status",
     "of": "of",
-    "rowsPerPage": "rows per page"
+    "rowsPerPage": "rows per page",
+    "loadMore": "Load More"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -14,6 +14,7 @@ export { default as TimeSlotPicker } from './TimeSlotPicker';
 // New unified components
 export { Tabs, TabsList, TabsTrigger, TabsContent, EnhancedTabs } from './Tabs';
 export { PageHeader } from './PageHeader';
+export { default as PageContainer } from './PageContainer';
 export { Alert } from './Alert';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Modal } from './Modal';
@@ -38,3 +39,4 @@ export { default as ResizablePanels } from './ResizablePanels';
 // Re-export types
 export type { ButtonProps } from './Button';
 export type { BadgeProps } from './Badge';
+export type { PageContainerProps } from './PageContainer';

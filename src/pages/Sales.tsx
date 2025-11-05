@@ -5,11 +5,12 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
-import { Button, Loading, Alert, Badge, PageHeader } from '../components/ui';
+import { Button, Loading, Alert, Badge, PageHeader, PageContainer } from '../components/ui';
 import DataTable, { type Column } from '../components/ui/DataTable';
 import { transactionService, type ConvertedSale, type TransactionQueryParams } from '../services/transaction';
 import { AdvancedFilter, type AdvancedFilterState } from '../components/filters/AdvancedFilter';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
+import { formattingService } from '../services/formatting';
 
 // Use ConvertedSale from transaction service
 type Sale = ConvertedSale;
@@ -334,16 +335,6 @@ const Sales: React.FC = () => {
     setSelectedTransactions(newSelection);
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   // Define DataTable columns
   const columns: Column<Sale>[] = [
     {
@@ -367,12 +358,15 @@ const Sales: React.FC = () => {
       key: 'createdAt',
       title: 'Date & Time',
       sortable: true,
-      render: (value) => (
-        <div className="text-sm">
-          <div className="font-medium text-gray-900">{formatDateTime(value).split(',')[0]}</div>
-          <div className="text-xs text-gray-500">{formatDateTime(value).split(',')[1]}</div>
-        </div>
-      ),
+      render: (value) => {
+        const { date, time } = formattingService.formatDateTimeSeparate(value, 'medium');
+        return (
+          <div className="text-sm">
+            <div className="font-medium text-gray-900">{date}</div>
+            <div className="text-xs text-gray-500">{time}</div>
+          </div>
+        );
+      },
     },
     {
       key: 'saleNumber',
@@ -405,10 +399,7 @@ const Sales: React.FC = () => {
       className: 'text-right',
       render: (value, sale) => (
         <div className="text-sm text-gray-700">
-          {new Intl.NumberFormat('en-US', { 
-            style: 'currency', 
-            currency: sale.currency || 'USD' 
-          }).format(value)}
+          {formattingService.formatCurrency(value, { currency: sale.currency || 'USD' })}
         </div>
       ),
     },
@@ -419,10 +410,7 @@ const Sales: React.FC = () => {
       className: 'text-right',
       render: (value, sale) => (
         <div className="text-sm text-gray-700">
-          {new Intl.NumberFormat('en-US', { 
-            style: 'currency', 
-            currency: sale.currency || 'USD' 
-          }).format(value)}
+          {formattingService.formatCurrency(value, { currency: sale.currency || 'USD' })}
         </div>
       ),
     },
@@ -433,10 +421,7 @@ const Sales: React.FC = () => {
       className: 'text-right',
       render: (value, sale) => (
         <div className="text-sm font-semibold text-gray-900">
-          {new Intl.NumberFormat('en-US', { 
-            style: 'currency', 
-            currency: sale.currency || 'USD' 
-          }).format(value)}
+          {formattingService.formatCurrency(value, { currency: sale.currency || 'USD' })}
         </div>
       ),
     },
@@ -450,23 +435,24 @@ const Sales: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Loading
-        title="Loading Sales"
-        description="Please wait while we fetch your sales data..."
-        fullScreen={false}
-        size="md"
-      />
+      <PageContainer spacing="md">
+        <Loading
+          title="Loading Sales"
+          description="Please wait while we fetch your sales data..."
+          fullScreen={false}
+          size="md"
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto">
-        {/* Page Header */}
-          <PageHeader
-            title="Transactions"
-            description={currentStore ? `${currentStore.store_name} - Manage your sales transactions` : 'Manage your sales transactions'}
-          />
+    <PageContainer spacing="none">
+      {/* Page Header */}
+      <PageHeader
+        title="Transactions"
+        description={currentStore ? `${currentStore.store_name} - Manage your sales transactions` : 'Manage your sales transactions'}
+      />
 
         {/* Error/Warning Alerts */}
         {alertState.type && (
@@ -480,7 +466,7 @@ const Sales: React.FC = () => {
           </div>
         )}
 
-        {/* Action Bar */}
+        {/* Action Bar @TODO This needs attention*/}
         <div className="px-4 sm:px-6 lg:px-8 py-4 bg-white border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
@@ -540,7 +526,6 @@ const Sales: React.FC = () => {
               }
             />
         </div>
-      </div>
 
       {/* Advanced Filter Modal */}
       <AdvancedFilter
@@ -552,7 +537,7 @@ const Sales: React.FC = () => {
         cashierOptions={getUniqueCashiers()}
         showCashierFilter={true}
       />
-    </div>
+    </PageContainer>
   );
 };
 

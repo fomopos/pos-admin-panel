@@ -15,7 +15,7 @@ import {
   ShoppingBagIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import { Button, Card, PageHeader, Loading } from '../components/ui';
+import { Button, Card, PageHeader, Loading, PageContainer } from '../components/ui';
 import { EnhancedTabs, TabsContent } from '../components/ui/Tabs';
 import { ReceiptViewer } from '../components/receipt';
 import { useTenantStore } from '../tenants/tenantStore';
@@ -182,7 +182,7 @@ const SalesDetail: React.FC = () => {
 
   if (error || !transaction) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-4">
+      <PageContainer variant="default" spacing="md">
         <div className="max-w-2xl mx-auto pt-20">
           <Card className="p-8 text-center bg-white/80 backdrop-blur-sm border-white/20">
             <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-500 mb-4" />
@@ -194,12 +194,12 @@ const SalesDetail: React.FC = () => {
             </Button>
           </Card>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 p-4 space-y-8">
+    <PageContainer variant="default" spacing="lg">
       {/* Header */}
       <PageHeader
         title={`Transaction ${transaction.trans_id}`}
@@ -479,7 +479,7 @@ const SalesDetail: React.FC = () => {
           </EnhancedTabs>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
