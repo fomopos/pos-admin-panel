@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   PlusIcon, 
-  MagnifyingGlassIcon, 
-  FunnelIcon,
   TagIcon,
   PencilIcon,
   TrashIcon,
@@ -16,9 +14,13 @@ import {
   Badge, 
   MultipleDropdownSearch,
   DropdownSearch,
+  AdvancedSearchFilter,
+  DataTable,
 } from '../components/ui';
 import type { MultipleDropdownSearchOption } from '../components/ui/MultipleDropdownSearch';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
+import type { FilterConfig } from '../components/ui/AdvancedSearchFilter';
+import type { Column } from '../components/ui/DataTable';
 import { PropertyCheckbox } from '../components/ui/PropertyCheckbox';
 import type { ReasonCode } from '../types/reasonCode';
 import useTenantStore from '../tenants/tenantStore';
@@ -127,17 +129,211 @@ const ReasonCodes: React.FC = () => {
 
   const getCategoryColor = (category: string): string => {
     const colors: Record<string, string> = {
-      'operational': 'bg-blue-100 text-blue-800',
-      'financial': 'bg-green-100 text-green-800',
-      'item-related': 'bg-purple-100 text-purple-800',
-      'transaction': 'bg-yellow-100 text-yellow-800',
-      'other': 'bg-gray-100 text-gray-800',
+      'PRICE_CHANGE': 'blue',
+      'LINE_ITEM_DISCOUNT': 'purple',
+      'TRANSACTION_DISCOUNT': 'purple',
+      'VOID_LINE_ITEM': 'red',
+      'VOID_TRANSACTION': 'red',
+      'SUSPEND_TRANSACTION': 'yellow',
+      'RETURN_ITEM': 'orange',
+      'REFUND': 'orange',
+      'OVERRIDE': 'indigo',
+      'CANCEL_RECEIPT': 'red',
+      'OPEN_CASH_DRAWER': 'gray',
+      'NO_SALE': 'gray',
+      'PRICE_OVERRIDE': 'blue',
+      'TAX_EXEMPT': 'green',
+      'INVENTORY_ADJUSTMENT': 'cyan',
+      'CUSTOMER_COMPLAINT': 'pink',
+      'DISCOUNT_OVERRIDE': 'purple',
+      'REPRINT_RECEIPT': 'gray',
+      'EXCHANGE_ITEM': 'orange',
+      'MANUAL_ENTRY': 'slate',
     };
-    return colors[category] || colors['other'];
+    return colors[category] || 'gray';
   };
 
+  // Filter configuration for AdvancedSearchFilter
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: 'category',
+      label: 'Category',
+      type: 'dropdown',
+      options: [
+        { id: 'PRICE_CHANGE', label: 'Price Change' },
+        { id: 'LINE_ITEM_DISCOUNT', label: 'Line Item Discount' },
+        { id: 'TRANSACTION_DISCOUNT', label: 'Transaction Discount' },
+        { id: 'VOID_LINE_ITEM', label: 'Void Line Item' },
+        { id: 'VOID_TRANSACTION', label: 'Void Transaction' },
+        { id: 'SUSPEND_TRANSACTION', label: 'Suspend Transaction' },
+        { id: 'RETURN_ITEM', label: 'Return Item' },
+        { id: 'REFUND', label: 'Refund' },
+        { id: 'OVERRIDE', label: 'Manager Override' },
+        { id: 'CANCEL_RECEIPT', label: 'Cancel Receipt' },
+        { id: 'OPEN_CASH_DRAWER', label: 'Open Cash Drawer' },
+        { id: 'NO_SALE', label: 'No Sale' },
+        { id: 'PRICE_OVERRIDE', label: 'Price Override' },
+        { id: 'TAX_EXEMPT', label: 'Tax Exempt' },
+        { id: 'INVENTORY_ADJUSTMENT', label: 'Inventory Adjustment' },
+        { id: 'CUSTOMER_COMPLAINT', label: 'Customer Complaint' },
+        { id: 'DISCOUNT_OVERRIDE', label: 'Discount Override' },
+        { id: 'REPRINT_RECEIPT', label: 'Reprint Receipt' },
+        { id: 'EXCHANGE_ITEM', label: 'Exchange Item' },
+        { id: 'MANUAL_ENTRY', label: 'Manual Entry' }
+      ],
+      value: selectedCategory
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'dropdown',
+      options: [
+        { id: 'active', label: 'Active' },
+        { id: 'inactive', label: 'Inactive' }
+      ],
+      value: selectedStatus
+    }
+  ];
+
+  // Handle filter changes from AdvancedSearchFilter
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === 'category') {
+      setSelectedCategory(value as string);
+    } else if (key === 'status') {
+      setSelectedStatus(value as 'active' | 'inactive' | '');
+    }
+  };
+
+  // Active filters for badge display
+  const activeFilters: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+  
+  if (searchTerm) {
+    activeFilters.push({
+      key: 'search',
+      label: 'Search',
+      value: searchTerm,
+      onRemove: () => setSearchTerm('')
+    });
+  }
+  
+  if (selectedCategory) {
+    const categoryLabel = filterConfigs[0].options?.find(opt => opt.id === selectedCategory)?.label || selectedCategory;
+    activeFilters.push({
+      key: 'category',
+      label: 'Category',
+      value: categoryLabel,
+      onRemove: () => setSelectedCategory('')
+    });
+  }
+  
+  if (selectedStatus) {
+    const statusLabel = filterConfigs[1].options?.find(opt => opt.id === selectedStatus)?.label || selectedStatus;
+    activeFilters.push({
+      key: 'status',
+      label: 'Status',
+      value: statusLabel,
+      onRemove: () => setSelectedStatus('')
+    });
+  }
+
+  const handleClearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('');
+    setSelectedStatus('');
+  };
+
+  // DataTable columns configuration
+  const columns: Column<ReasonCode>[] = [
+    {
+      key: 'code',
+      title: 'Code',
+      sortable: true,
+      render: (_value, item) => (
+        <div className="flex items-center">
+          <TagIcon className="h-5 w-5 text-gray-400 mr-2" />
+          <span className="text-sm font-medium text-gray-900">{item.code}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'description',
+      title: 'Description',
+      sortable: true,
+      render: (value) => <div className="text-sm text-gray-900">{value}</div>,
+    },
+    {
+      key: 'categories',
+      title: 'Categories',
+      render: (_value, item) => (
+        <div className="flex flex-wrap gap-1">
+          {item.categories.map((category) => (
+            <Badge key={category} color={getCategoryColor(category) as any}>
+              {category.replace(/_/g, ' ')}
+            </Badge>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: 'parent_code',
+      title: 'Parent Code',
+      sortable: true,
+      render: (value) => (
+        <span className="text-sm text-gray-500">{value || '-'}</span>
+      ),
+    },
+    {
+      key: 'req_cmt',
+      title: 'Requires Comment',
+      sortable: true,
+      render: (value) => (
+        <Badge color={value ? 'blue' : 'gray'}>
+          {value ? 'Yes' : 'No'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'active',
+      title: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge color={value ? 'green' : 'gray'}>
+          {value ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'code',
+      title: 'Actions',
+      render: (_value, item) => (
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(item);
+            }}
+            className="text-blue-600 hover:text-blue-900"
+            title="Edit"
+          >
+            <PencilIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(item.code);
+            }}
+            className="text-red-600 hover:text-red-900"
+            title="Delete"
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
       <PageHeader
         title="Reason Codes"
         description="Manage reason codes for discounts, returns, voids, and other transactions"
@@ -149,65 +345,30 @@ const ReasonCodes: React.FC = () => {
       </PageHeader>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search reason codes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div className="w-full md:w-48">
-            <div className="relative">
-              <FunnelIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-              >
-                <option value="">All Categories</option>
-                <option value="operational">Operational</option>
-                <option value="financial">Financial</option>
-                <option value="item-related">Item Related</option>
-                <option value="transaction">Transaction</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Status Filter */}
-          <div className="w-full md:w-40">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value as 'active' | 'inactive' | '')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <AdvancedSearchFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchLabel="Search Reason code"
+        searchPlaceholder="Search by code or description..."
+        filters={filterConfigs}
+        onFilterChange={handleFilterChange}
+        activeFilters={activeFilters}
+        totalResults={reasonCodes.length}
+        filteredResults={filteredReasonCodes.length}
+        showResultsCount={true}
+        onClearAll={handleClearAllFilters}
+      />
 
       {/* Reason Codes Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading reason codes...</p>
-          </div>
-        ) : filteredReasonCodes.length === 0 ? (
-          <div className="p-8 text-center">
+      <DataTable
+        data={filteredReasonCodes}
+        columns={columns}
+        loading={loading}
+        searchable={false}
+        pagination={true}
+        pageSize={25}
+        emptyState={
+          <div className="text-center py-8">
             <TagIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No reason codes</h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -220,96 +381,9 @@ const ReasonCodes: React.FC = () => {
               </Button>
             </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Code
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Categories
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Parent Code
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Requires Comment
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredReasonCodes.map((reasonCode) => (
-                  <tr key={reasonCode.code} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <TagIcon className="h-5 w-5 text-gray-400 mr-2" />
-                        <span className="text-sm font-medium text-gray-900">{reasonCode.code}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{reasonCode.description}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {reasonCode.categories.map((category) => (
-                          <span
-                            key={category}
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(category)}`}
-                          >
-                            {category}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {reasonCode.parent_code || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge color={reasonCode.req_cmt ? 'blue' : 'gray'}>
-                        {reasonCode.req_cmt ? 'Yes' : 'No'}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge color={reasonCode.active ? 'green' : 'gray'}>
-                        {reasonCode.active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleEdit(reasonCode)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Edit"
-                        >
-                          <PencilIcon className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(reasonCode.code)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Delete"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+        }
+        onRowClick={(item) => handleEdit(item)}
+      />
 
       {/* Form Modal */}
       <ReasonCodeFormModal
