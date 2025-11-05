@@ -3,18 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   PlusIcon, 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
   Squares2X2Icon, 
-  ListBulletIcon,
-  XMarkIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
-import { PageHeader, Button, ConfirmDialog, Loading, Alert, DropdownSearch, PageContainer, H3, H4, Body1, Body2, Caption, Label, DataTable } from '../components/ui';
-import type { Column } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, Loading, Alert, PageContainer, H4, Body1, Body2, Caption, DataTable, AdvancedSearchFilter } from '../components/ui';
+import type { Column, FilterConfig, ViewMode } from '../components/ui';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
 import { useCategories } from '../hooks/useCategories';
@@ -162,189 +156,6 @@ const ProductCard: React.FC<{
 };
 
 // Advanced Filter Panel Component
-const AdvancedFilterPanel: React.FC<{
-  filters: AdvancedFilters;
-  onFiltersChange: (filters: AdvancedFilters) => void;
-  onClearFilters: () => void;
-  suppliers: string[];
-  allTags: string[];
-}> = ({ filters, onFiltersChange, onClearFilters, suppliers, allTags }) => {
-  const { t } = useTranslation();
-  
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <H3>{t('products.filters.advancedFilters')}</H3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClearFilters}
-          className="flex items-center space-x-2"
-        >
-          <XMarkIcon className="w-4 h-4" />
-          <Body2>{t('products.filters.clearAll')}</Body2>
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-        {/* Price Range */}
-        <div className="space-y-3">
-          <Label>{t('products.filters.priceRange')}</Label>
-          <div className="flex items-center space-x-3">
-            <div className="flex-1">
-              <input
-                type="number"
-                placeholder={t('products.filters.minPrice')}
-                value={filters.priceRange.min}
-                onChange={(e) => onFiltersChange({
-                  ...filters,
-                  priceRange: { ...filters.priceRange, min: e.target.value === '' ? '' : Number(e.target.value) }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              />
-            </div>
-            <span className="text-gray-400 text-sm">{t('products.filters.to')}</span>
-            <div className="flex-1">
-              <input
-                type="number"
-                placeholder={t('products.filters.maxPrice')}
-                value={filters.priceRange.max}
-                onChange={(e) => onFiltersChange({
-                  ...filters,
-                  priceRange: { ...filters.priceRange, max: e.target.value === '' ? '' : Number(e.target.value) }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Stock Level */}
-        <div className="space-y-3">
-          <Label>{t('products.filters.stockLevel')}</Label>
-          <select
-            value={filters.stockLevel}
-            onChange={(e) => onFiltersChange({
-              ...filters,
-              stockLevel: e.target.value as AdvancedFilters['stockLevel']
-            })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-          >
-            <option value="all">{t('products.filters.allStockLevels')}</option>
-            <option value="in-stock">{t('products.filters.inStock')}</option>
-            <option value="low-stock">{t('products.filters.lowStock')}</option>
-            <option value="out-of-stock">{t('products.filters.outOfStock')}</option>
-          </select>
-        </div>
-
-        {/* Status */}
-        <div className="space-y-3">
-          <Label>{t('products.filters.productStatus')}</Label>
-          <select
-            value={filters.status}
-            onChange={(e) => onFiltersChange({
-              ...filters,
-              status: e.target.value as AdvancedFilters['status']
-            })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-          >
-            <option value="all">{t('products.filters.allStatus')}</option>
-            <option value="active">{t('products.filters.activeProducts')}</option>
-            <option value="inactive">{t('products.filters.inactiveProducts')}</option>
-          </select>
-        </div>
-
-        {/* Suppliers */}
-        <div className="space-y-3">
-          <Label>
-            {t('products.filters.suppliers')} ({filters.suppliers.length} {t('products.filters.selected')})
-          </Label>
-          <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
-            <div className="space-y-2">
-              {suppliers.map(supplier => (
-                <label key={supplier} className="flex items-center cursor-pointer hover:bg-white rounded p-1 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={filters.suppliers.includes(supplier)}
-                    onChange={(e) => {
-                      const newSuppliers = e.target.checked
-                        ? [...filters.suppliers, supplier]
-                        : filters.suppliers.filter(s => s !== supplier);
-                      onFiltersChange({ ...filters, suppliers: newSuppliers });
-                    }}
-                    className="mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <Body2 className="truncate">{supplier}</Body2>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="space-y-3">
-          <Label>
-            Product Tags ({filters.tags.length} selected)
-          </Label>
-          <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
-            <div className="space-y-2">
-              {allTags.map(tag => (
-                <label key={tag} className="flex items-center cursor-pointer hover:bg-white rounded p-1 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={filters.tags.includes(tag)}
-                    onChange={(e) => {
-                      const newTags = e.target.checked
-                        ? [...filters.tags, tag]
-                        : filters.tags.filter(t => t !== tag);
-                      onFiltersChange({ ...filters, tags: newTags });
-                    }}
-                    className="mr-3 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <Caption className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                    {tag}
-                  </Caption>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Date Range */}
-        <div className="space-y-3">
-          <Label>Created Date Range</Label>
-          <div className="space-y-2">
-            <div>
-              <Caption color="muted" className="block mb-1">From</Caption>
-              <input
-                type="date"
-                value={filters.dateRange.start}
-                onChange={(e) => onFiltersChange({
-                  ...filters,
-                  dateRange: { ...filters.dateRange, start: e.target.value }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              />
-            </div>
-            <div>
-              <Caption color="muted" className="block mb-1">To</Caption>
-              <input
-                type="date"
-                value={filters.dateRange.end}
-                onChange={(e) => onFiltersChange({
-                  ...filters,
-                  dateRange: { ...filters.dateRange, end: e.target.value }
-                })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Products: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -359,8 +170,7 @@ const Products: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
     priceRange: { min: '', max: '' },
     stockLevel: 'all',
@@ -376,8 +186,90 @@ const Products: React.FC = () => {
   
   const deleteDialog = useDeleteConfirmDialog();
   
-  const suppliers = Array.from(new Set(products.map(p => p.supplier)));
   const allTags = Array.from(new Set(products.flatMap(p => p.tags)));
+
+  // Filter configuration for AdvancedSearchFilter
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: 'category',
+      label: t('products.filters.category'),
+      type: 'dropdown',
+      options: [
+        { id: '', label: t('products.filters.allCategories') },
+        ...categoryOptions
+      ],
+      value: selectedCategory
+    },
+    {
+      key: 'status',
+      label: t('products.filters.status'),
+      type: 'dropdown',
+      options: [
+        { id: 'all', label: t('products.filters.allStatuses') },
+        { id: 'active', label: t('products.filters.active') },
+        { id: 'inactive', label: t('products.filters.inactive') }
+      ],
+      value: advancedFilters.status
+    },
+    {
+      key: 'tags',
+      label: t('products.filters.tags'),
+      type: 'multiselect',
+      options: allTags.map(t => ({ id: t, label: t })),
+      value: advancedFilters.tags
+    }
+  ];
+
+  // Handle filter changes from AdvancedSearchFilter
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === 'category') {
+      setSelectedCategory(value as string);
+    } else if (key === 'status') {
+      setAdvancedFilters(prev => ({ ...prev, status: value as AdvancedFilters['status'] }));
+    } else if (key === 'tags') {
+      setAdvancedFilters(prev => ({ ...prev, tags: value as string[] }));
+    }
+  };
+
+  // Active filters for badge display
+  const activeFilters: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+  
+  if (searchTerm) {
+    activeFilters.push({
+      key: 'search',
+      label: t('common.search'),
+      value: searchTerm,
+      onRemove: () => setSearchTerm('')
+    });
+  }
+  
+  if (selectedCategory) {
+    const categoryLabel = categoryOptions.find(c => c.id === selectedCategory)?.label || selectedCategory;
+    activeFilters.push({
+      key: 'category',
+      label: t('products.filters.category'),
+      value: categoryLabel,
+      onRemove: () => setSelectedCategory('')
+    });
+  }
+  
+  if (advancedFilters.status !== 'all') {
+    activeFilters.push({
+      key: 'status',
+      label: t('products.filters.status'),
+      value: advancedFilters.status === 'active' ? t('products.filters.active') : t('products.filters.inactive'),
+      onRemove: () => setAdvancedFilters(prev => ({ ...prev, status: 'all' }))
+    });
+  }
+  
+  if (advancedFilters.tags.length > 0) {
+    activeFilters.push({
+      key: 'tags',
+      label: t('products.filters.tags'),
+      value: `${advancedFilters.tags.length} selected`,
+      onRemove: () => setAdvancedFilters(prev => ({ ...prev, tags: [] }))
+    });
+  }
 
   // Fetch products from API
   useEffect(() => {
@@ -820,139 +712,27 @@ const Products: React.FC = () => {
         </Alert>
       )}
 
-      {/* Search and Filter Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t('products.search.placeholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <FunnelIcon className="w-5 h-5 text-gray-400" />
-            <DropdownSearch
-              label=""
-              value={selectedCategory}
-              placeholder={t('products.filters.allCategories')}
-              options={categoryOptions}
-              onSelect={(option) => setSelectedCategory(option?.id || '')}
-              allowClear={true}
-              clearLabel={t('products.filters.allCategories')}
-              className="min-w-48"
-              buttonClassName="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
-          <Button
-            variant={showAdvancedFilters ? "primary" : "outline"}
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className="flex items-center space-x-2"
-          >
-            <FunnelIcon className="w-4 h-4" />
-            <span>{t('products.filters.advancedFilters')}</span>
-            {showAdvancedFilters ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}
-          </Button>
-          <div className="flex border border-gray-300 rounded-lg">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-l-lg transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-primary-100 text-primary-600' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <Squares2X2Icon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-r-lg transition-colors ${
-                viewMode === 'list' 
-                  ? 'bg-primary-100 text-primary-600' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              <ListBulletIcon className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Active Filters Summary */}
-        {hasActiveFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">{t('products.filters.activeFilters')}</span>
-                <div className="flex flex-wrap gap-2">
-                  {searchTerm && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      {t('common.search')}: {searchTerm}
-                      <button
-                        onClick={() => setSearchTerm('')}
-                        className="ml-1 hover:opacity-70 transition-opacity"
-                      >
-                        <XMarkIcon className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-                  {selectedCategory && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      {t('categories.title')}: {categoryOptions.find(opt => opt.id === selectedCategory)?.label || selectedCategory}
-                      <button
-                        onClick={() => setSelectedCategory('')}
-                        className="ml-1 hover:opacity-70 transition-opacity"
-                      >
-                        <XMarkIcon className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-                  {/* Show advanced filters summary */}
-                  {advancedFilters.stockLevel !== 'all' && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      {t('products.filters.stockLevel')}: {advancedFilters.stockLevel.replace('-', ' ')}
-                    </span>
-                  )}
-                  {advancedFilters.status !== 'all' && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      {t('common.status')}: {advancedFilters.status}
-                    </span>
-                  )}
-                  {(advancedFilters.priceRange.min !== '' || advancedFilters.priceRange.max !== '') && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                      {t('products.results.price')}: ${advancedFilters.priceRange.min || '0'} - ${advancedFilters.priceRange.max || '∞'}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm" 
-                onClick={handleClearFilters}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                {t('products.filters.clearAllFilters')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Advanced Filters Panel */}
-      {showAdvancedFilters && (
-        <AdvancedFilterPanel
-          filters={advancedFilters}
-          onFiltersChange={setAdvancedFilters}
-          onClearFilters={handleClearFilters}
-          suppliers={suppliers}
-          allTags={allTags}
-        />
-      )}
+      {/* Search and Filter */}
+      <AdvancedSearchFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchLabel={t('products.search.label')}
+        searchPlaceholder={t('products.search.placeholder')}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        enabledViews={['grid', 'list']}
+        filters={filterConfigs}
+        onFilterChange={handleFilterChange}
+        activeFilters={activeFilters}
+        totalResults={products.length}
+        filteredResults={filteredProducts.length}
+        showResultsCount={true}
+        onClearAll={handleClearFilters}
+        className="mb-4 sm:mb-6"
+      />
 
       {/* Products Display */}
-      {viewMode === 'grid' ? (
+      {viewMode === 'grid' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map(product => (
             <ProductCard
@@ -964,7 +744,9 @@ const Products: React.FC = () => {
             />
           ))}
         </div>
-      ) : (
+      )}
+
+      {(viewMode === 'list' || viewMode === 'table') && (
         <DataTable
           data={filteredProducts}
           columns={tableColumns}

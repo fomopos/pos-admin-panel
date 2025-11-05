@@ -103,7 +103,8 @@
       "inactive": "Inactive",
       "mainScreen": "Main Screen",
       "withSubcategories": "With Subcategories",
-      "allCategories": "All Categories"
+      "allCategories": "All Categories",
+      "allStatus":"All Status"
     },
     "card": {
       "order": "Order",
@@ -290,7 +291,8 @@
       "description": "Please wait while we fetch your product data..."
     },
     "search": {
-      "placeholder": "Search products by name or SKU..."
+      "placeholder": "Search products by name or SKU...",
+      "label": "Search Products"
     },
     "filters": {
       "allCategories": "All Categories",
@@ -308,7 +310,8 @@
       "lowStock": "Low Stock (At/Below Min Level)",
       "outOfStock": "Out of Stock (0 items)",
       "productStatus": "Product Status",
-      "allStatus": "All Status",
+      "status": "Status",
+      "allStatuses": "All Statuses",
       "activeProducts": "Active Products",
       "inactiveProducts": "Inactive Products",
       "suppliers": "Suppliers",
@@ -316,7 +319,8 @@
       "tags": "Tags",
       "dateRange": "Date Range",
       "startDate": "Start Date",
-      "endDate": "End Date"
+      "endDate": "End Date",
+      "category": "Category"
     },
     "table": {
       "product": "Product",

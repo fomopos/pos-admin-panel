@@ -41,6 +41,14 @@ interface InputTextFieldProps {
   step?: number;
   /** Auto-focus the input when rendered */
   autoFocus?: boolean;
+  /** Prefix icon component to display on the left side */
+  prefixIcon?: React.ComponentType<{ className?: string }>;
+  /** Custom prefix text to display on the left side */
+  prefixText?: string;
+  /** Suffix icon component to display on the right side */
+  suffixIcon?: React.ComponentType<{ className?: string }>;
+  /** Custom suffix text to display on the right side */
+  suffixText?: string;
 }
 
 /**
@@ -88,6 +96,10 @@ export const InputTextField: React.FC<InputTextFieldProps> = ({
   max,
   step,
   autoFocus = false,
+  prefixIcon,
+  prefixText,
+  suffixIcon,
+  suffixText,
 }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -98,11 +110,19 @@ export const InputTextField: React.FC<InputTextFieldProps> = ({
     className
   ].filter(Boolean).join(' ');
 
+  const hasPrefix = prefixIcon || prefixText;
+  const hasSuffix = suffixIcon || suffixText;
+
   const inputClasses = [
     'w-full',
     error ? 'border-red-300' : 'border-gray-300',
+    hasPrefix ? 'pl-10' : '',
+    hasSuffix ? 'pr-10' : '',
     inputClassName
   ].filter(Boolean).join(' ');
+
+  const PrefixIconComponent = prefixIcon;
+  const SuffixIconComponent = suffixIcon;
 
   return (
     <div className={wrapperClasses}>
@@ -111,20 +131,44 @@ export const InputTextField: React.FC<InputTextFieldProps> = ({
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       
-      <Input
-        type={type}
-        value={value ?? ''}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={inputClasses}
-        autoComplete={autoComplete}
-        maxLength={maxLength}
-        min={min}
-        max={max}
-        step={step}
-        autoFocus={autoFocus}
-      />
+      <div className="relative">
+        <Input
+          type={type}
+          value={value ?? ''}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={inputClasses}
+          autoComplete={autoComplete}
+          maxLength={maxLength}
+          min={min}
+          max={max}
+          step={step}
+          autoFocus={autoFocus}
+        />
+        
+        {/* Prefix Icon/Text - Positioned to align with input field center */}
+        {hasPrefix && (
+          <div className="absolute left-3 top-[0.90rem] flex items-center justify-center z-10 pointer-events-none">
+            {PrefixIconComponent ? (
+              <PrefixIconComponent className="h-5 w-5 text-slate-400" />
+            ) : (
+              <span className="text-slate-400 font-medium text-sm">{prefixText}</span>
+            )}
+          </div>
+        )}
+        
+        {/* Suffix Icon/Text - Positioned to align with input field center */}
+        {hasSuffix && (
+          <div className="absolute right-3 top-[0.90rem] flex items-center justify-center z-10 pointer-events-none">
+            {SuffixIconComponent ? (
+              <SuffixIconComponent className="h-5 w-5 text-slate-400" />
+            ) : (
+              <span className="text-slate-400 font-medium text-sm">{suffixText}</span>
+            )}
+          </div>
+        )}
+      </div>
       
       {error && (
         <p className="mt-2 text-sm text-red-600 flex items-center">
