@@ -37,7 +37,7 @@ console.log('Example API request format:', JSON.stringify(exampleKitchenPrinterR
 
 // Example thermal printer request
 const exampleThermalPrinterRequest: CreateHardwareDeviceRequest = {
-  id: "receipt_printer_001",
+  id: "thermal_printer_001",
   name: "Main Receipt Printer",
   type: "thermal_printer",
   enabled: true,

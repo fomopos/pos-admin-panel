@@ -19,7 +19,7 @@ import { useError } from '../../hooks/useError';
 import type { 
   HardwareDevice, 
   HardwareOption,
-  ReceiptPrinterConfig,
+  ThermalPrinterConfig,
   KitchenPrinterConfig,
   ScannerConfig,
   CashDrawerConfig
@@ -63,7 +63,7 @@ const convertApiDeviceToUIDevice = (apiDevice: ApiHardwareDevice): HardwareDevic
     case 'thermal_printer':
       return {
         ...baseDevice,
-        type: 'receipt_printer',
+        type: 'thermal_printer',
         connection_type: apiDevice.connection_type as any,
         printer_model: apiDevice.thermal_printer?.printer_model,
         ip_address: apiDevice.thermal_printer?.ip_address,
@@ -75,7 +75,7 @@ const convertApiDeviceToUIDevice = (apiDevice: ApiHardwareDevice): HardwareDevic
         open_drawer: apiDevice.thermal_printer?.open_drawer || false,
         character_encoding: (apiDevice.thermal_printer?.character_encoding || 'utf8') as any,
         test_mode: apiDevice.test_mode,
-      } as ReceiptPrinterConfig;
+      } as ThermalPrinterConfig;
     
     case 'kitchen_printer':
       return {
@@ -121,10 +121,10 @@ const convertApiDeviceToUIDevice = (apiDevice: ApiHardwareDevice): HardwareDevic
       } as CashDrawerConfig;
     
     default:
-      // Fallback to receipt printer for unknown types
+      // Fallback to thermal printer for unknown types
       return {
         ...baseDevice,
-        type: 'receipt_printer',
+        type: 'thermal_printer',
         connection_type: apiDevice.connection_type as any,
         paper_size: 'thermal_80mm' as any,
         auto_print: true,
@@ -133,7 +133,7 @@ const convertApiDeviceToUIDevice = (apiDevice: ApiHardwareDevice): HardwareDevic
         open_drawer: false,
         character_encoding: 'utf8' as any,
         test_mode: false,
-      } as ReceiptPrinterConfig;
+      } as ThermalPrinterConfig;
   }
 };
 
@@ -153,6 +153,12 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
 
   // Helper function to convert UI device to API device type for creation
   const convertUIDeviceToCreateRequest = (uiDevice: HardwareDevice, terminalId?: string): CreateHardwareDeviceRequest => {
+    console.log('🔄 Starting device conversion:', {
+      deviceType: uiDevice.type,
+      deviceName: uiDevice.name,
+      connectionType: uiDevice.connection_type
+    });
+    
     // Map status (handle unknown -> disconnected mapping)
     const apiStatus = (uiDevice.status === 'unknown' ? 'disconnected' : uiDevice.status) || 'disconnected';
     
@@ -177,75 +183,132 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       label_printer: null,
     };
 
+    console.log('🔄 Entering switch statement, device type:', uiDevice.type);
+
     switch (uiDevice.type) {
-      case 'receipt_printer':
-        const receiptDevice = uiDevice as ReceiptPrinterConfig;
+      case 'thermal_printer':
+        const receiptDevice = uiDevice as ThermalPrinterConfig;
+        
+        // Debug logging to see what's being sent
+        console.log('🔍 Converting receipt printer device:', {
+          uiDevice,
+          receiptDevice,
+          hasIpAddress: !!receiptDevice.ip_address,
+          hasPort: !!receiptDevice.port,
+          hasPrinterModel: !!receiptDevice.printer_model
+        });
+        
         return {
           ...baseDevice,
           type: 'thermal_printer',
           test_mode: receiptDevice.test_mode || false,
           thermal_printer: {
-            printer_model: receiptDevice.printer_model,
-            ip_address: receiptDevice.ip_address,
-            port: receiptDevice.port,
+            printer_model: receiptDevice.printer_model || 'epson_tm_t88v',
+            ip_address: receiptDevice.ip_address || '',
+            port: receiptDevice.port || 9100,
             paper_size: (receiptDevice.paper_size === 'thermal_58mm' || receiptDevice.paper_size === 'thermal_80mm') 
               ? receiptDevice.paper_size : 'thermal_80mm',
-            auto_print: receiptDevice.auto_print,
-            print_copies: receiptDevice.print_copies,
-            cut_paper: receiptDevice.cut_paper,
-            open_drawer: receiptDevice.open_drawer,
-            character_encoding: receiptDevice.character_encoding === 'windows1252' ? 'utf8' : receiptDevice.character_encoding as CharacterEncoding,
+            auto_print: receiptDevice.auto_print ?? true,
+            print_copies: receiptDevice.print_copies || 1,
+            cut_paper: receiptDevice.cut_paper ?? true,
+            open_drawer: receiptDevice.open_drawer ?? false,
+            character_encoding: receiptDevice.character_encoding === 'windows1252' ? 'utf8' : (receiptDevice.character_encoding as CharacterEncoding || 'utf8'),
           },
         };
       
       case 'kitchen_printer':
         const kitchenDevice = uiDevice as KitchenPrinterConfig;
+        
+        // Debug logging
+        console.log('🔍 Converting kitchen printer device:', {
+          uiDevice,
+          kitchenDevice,
+          hasIpAddress: !!kitchenDevice.ip_address,
+          hasPort: !!kitchenDevice.port,
+          kitchen_sections: kitchenDevice.kitchen_sections
+        });
+        
         return {
           ...baseDevice,
           type: 'kitchen_printer',
           kot_printer: {
-            printer_model: kitchenDevice.printer_model,
-            ip_address: kitchenDevice.ip_address,
-            port: kitchenDevice.port,
+            printer_model: kitchenDevice.printer_model || 'star_tsp143',
+            ip_address: kitchenDevice.ip_address || '',
+            port: kitchenDevice.port || 9100,
             paper_size: (kitchenDevice.paper_size === 'thermal_58mm' || kitchenDevice.paper_size === 'thermal_80mm') 
               ? kitchenDevice.paper_size : 'thermal_80mm',
-            print_header: kitchenDevice.print_header,
-            print_timestamp: kitchenDevice.print_timestamp,
-            print_order_number: kitchenDevice.print_order_number,
-            print_table_info: kitchenDevice.print_table_info,
-            auto_cut: kitchenDevice.auto_cut,
-            character_encoding: kitchenDevice.character_encoding === 'windows1252' ? 'utf8' : kitchenDevice.character_encoding as CharacterEncoding,
-            kitchen_sections: kitchenDevice.kitchen_sections as KitchenSection[],
+            print_header: kitchenDevice.print_header ?? true,
+            print_timestamp: kitchenDevice.print_timestamp ?? true,
+            print_order_number: kitchenDevice.print_order_number ?? true,
+            print_table_info: kitchenDevice.print_table_info ?? true,
+            auto_cut: kitchenDevice.auto_cut ?? true,
+            character_encoding: kitchenDevice.character_encoding === 'windows1252' ? 'utf8' : (kitchenDevice.character_encoding as CharacterEncoding || 'utf8'),
+            kitchen_sections: (kitchenDevice.kitchen_sections && kitchenDevice.kitchen_sections.length > 0) 
+              ? kitchenDevice.kitchen_sections as KitchenSection[] 
+              : ['hot_kitchen'] as KitchenSection[],
           },
         };
       
       case 'scanner':
         const scannerDevice = uiDevice as ScannerConfig;
+        
+        // Debug logging
+        console.log('🔍 Converting scanner device:', {
+          uiDevice,
+          scannerDevice,
+          decode_types: scannerDevice.decode_types
+        });
+        
         return {
           ...baseDevice,
           type: 'scanner',
           barcode_scanner: {
-            scanner_model: scannerDevice.scanner_model,
-            prefix: scannerDevice.prefix,
-            suffix: scannerDevice.suffix,
-            min_length: scannerDevice.min_length,
-            max_length: scannerDevice.max_length,
-            scan_mode: scannerDevice.scan_mode as ScanMode,
-            beep_on_scan: scannerDevice.beep_on_scan,
-            decode_types: scannerDevice.decode_types as BarcodeDecodeType[],
+            scanner_model: scannerDevice.scanner_model || 'symbol_ls2208',
+            prefix: scannerDevice.prefix || '',
+            suffix: scannerDevice.suffix || '\r\n',
+            min_length: scannerDevice.min_length || 3,
+            max_length: scannerDevice.max_length || 20,
+            scan_mode: (scannerDevice.scan_mode as ScanMode) || 'manual',
+            beep_on_scan: scannerDevice.beep_on_scan ?? true,
+            decode_types: (scannerDevice.decode_types && scannerDevice.decode_types.length > 0) 
+              ? scannerDevice.decode_types as BarcodeDecodeType[]
+              : ['CODE128', 'EAN13'] as BarcodeDecodeType[],
           },
         };
       
       case 'cash_drawer':
+        // Debug logging
+        console.log('🔍 Converting cash drawer device:', {
+          uiDevice
+        });
+        
         return {
           ...baseDevice,
           type: 'cash_drawer',
+          cash_drawer: null, // API spec says cash_drawer config can be null
         };
       
       default:
+        console.log('⚠️ WARNING: Unhandled device type in switch statement:', {
+          deviceType: uiDevice.type,
+          fallbackToThermalPrinter: true
+        });
+        
+        // Fallback: treat as receipt printer with defaults
         return {
           ...baseDevice,
           type: 'thermal_printer',
+          thermal_printer: {
+            printer_model: (uiDevice as any).printer_model || 'epson_tm_t88v',
+            ip_address: (uiDevice as any).ip_address || '',
+            port: (uiDevice as any).port || 9100,
+            paper_size: 'thermal_80mm',
+            auto_print: true,
+            print_copies: 1,
+            cut_paper: true,
+            open_drawer: false,
+            character_encoding: 'utf8' as CharacterEncoding,
+          },
         };
     }
   };
@@ -439,8 +502,26 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       // Clear any previous errors
       setErrors({});
       
+      // Debug: Log the incoming device object
+      console.log('📥 Incoming device from form:', {
+        device,
+        deviceType: device.type,
+        hasIpAddress: !!(device as any).ip_address,
+        hasPort: !!(device as any).port,
+        allKeys: Object.keys(device)
+      });
+      
       // Convert UI device to API device format
       const apiDevice = convertUIDeviceToCreateRequest(device, terminalId);
+      
+      console.log('🚀 Sending hardware device to API:', {
+        mode: formMode,
+        deviceName: device.name,
+        deviceType: device.type,
+        apiDeviceType: apiDevice.type,
+        payload: apiDevice,
+        hasConfig: !!(apiDevice.thermal_printer || apiDevice.kot_printer || apiDevice.barcode_scanner)
+      });
 
       if (formMode === 'create') {
         // Create new device

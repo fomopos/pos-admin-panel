@@ -390,7 +390,7 @@ export class StoreSettingsService {
           min_length: 8,
           max_length: 20
         },
-        receipt_printer: {
+        thermal_printer: {
           enabled: true,
           printer_name: "EPSON TM-T88V",
           connection_type: "usb",

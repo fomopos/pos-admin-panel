@@ -249,9 +249,9 @@ export class HardwareConfigService {
         store_id: 'store_456',
         devices: [
           {
-            id: 'receipt_printer_001',
+            id: 'thermal_printer_001',
             name: 'Main Receipt Printer',
-            type: 'receipt_printer',
+            type: 'thermal_printer',
             enabled: true,
             status: 'connected',
             printer_model: 'epson_tm_t88v',
@@ -322,9 +322,9 @@ export class HardwareConfigService {
           store_id: 'store_456',
           devices: [
             {
-              id: 'receipt_printer_terminal_001',
+              id: 'thermal_printer_terminal_001',
               name: 'Register 1 Receipt Printer',
-              type: 'receipt_printer',
+              type: 'thermal_printer',
               enabled: true,
               status: 'connected',
               printer_model: 'citizen_ct_s310',

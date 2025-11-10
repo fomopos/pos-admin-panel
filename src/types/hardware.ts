@@ -13,9 +13,9 @@ export interface BaseHardwareDevice {
   updated_at?: string;
 }
 
-// Receipt Printer Configuration
-export interface ReceiptPrinterConfig extends BaseHardwareDevice {
-  type: 'receipt_printer';
+// Thermal Printer Configuration
+export interface ThermalPrinterConfig extends BaseHardwareDevice {
+  type: 'thermal_printer';
   printer_model?: string;
   connection_type: HardwareConnectionType;
   ip_address?: string;
@@ -95,7 +95,7 @@ export interface ScaleConfig extends BaseHardwareDevice {
 
 // Union type for all hardware devices
 export type HardwareDevice = 
-  | ReceiptPrinterConfig
+  | ThermalPrinterConfig
   | KitchenPrinterConfig 
   | ScannerConfig
   | CashDrawerConfig

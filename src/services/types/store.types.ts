@@ -136,7 +136,7 @@ export interface HardwareConfig {
     min_length?: number;
     max_length?: number;
   };
-  receipt_printer: {
+  thermal_printer: {
     enabled: boolean;
     printer_name?: string;
     connection_type: 'usb' | 'network' | 'bluetooth';

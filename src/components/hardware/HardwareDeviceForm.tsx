@@ -59,7 +59,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
   const { showError, showValidationError } = useError();
   const [formData, setFormData] = useState<Partial<HardwareDevice>>({
     name: '',
-    type: 'receipt_printer',
+    type: 'thermal_printer',
     enabled: true,
     connection_type: 'network'
   });
@@ -125,7 +125,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     } else {
       setFormData({
         name: '',
-        type: 'receipt_printer',
+        type: 'thermal_printer',
         enabled: true,
         connection_type: 'network'
       });
@@ -168,7 +168,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
 
     // Add type-specific default values based on UI type
     switch (uiDeviceType) {
-      case 'receipt_printer':
+      case 'thermal_printer':
         // Handle thermal_printer and label_printer
         if (selectedApiType === 'thermal_printer' || selectedApiType === 'label_printer') {
           setFormData({
@@ -260,7 +260,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
 
     // Network connection validation
     if (formData.connection_type === 'network') {
-      if (formData.type === 'receipt_printer' || formData.type === 'kitchen_printer') {
+      if (formData.type === 'thermal_printer' || formData.type === 'kitchen_printer') {
         const config = formData as Partial<ThermalPrinterConfig | KotPrinterConfig>;
         if (!config.ip_address?.trim()) {
           newErrors.ip_address = 'IP address is required for network connection';

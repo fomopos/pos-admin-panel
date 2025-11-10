@@ -36,7 +36,7 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
   // Get device type icon
   const getDeviceIcon = (deviceType: string) => {
     switch (deviceType) {
-      case 'receipt_printer':
+      case 'thermal_printer':
       case 'kitchen_printer':
         return PrinterIcon;
       case 'scanner':
@@ -95,8 +95,8 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
   // Format device type for display
   const formatDeviceType = (type: string) => {
     switch (type) {
-      case 'receipt_printer':
-        return 'Receipt Printer';
+      case 'thermal_printer':
+        return 'Thermal Printer';
       case 'kitchen_printer':
         return 'Kitchen KOT Printer';
       case 'scanner':
@@ -225,7 +225,7 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
         </div>
 
         {/* Device-specific info */}
-        {device.type === 'receipt_printer' && 'paper_size' in device && (
+        {device.type === 'thermal_printer' && 'paper_size' in device && (
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-gray-500">Paper Size</span>
             <span className="text-xs text-gray-700">
