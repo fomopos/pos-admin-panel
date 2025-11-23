@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { authService } from '../auth/authService';
+import logoSvg from '../assets/logo_border.svg';
 import { PermissionManager, usePermissions } from '../utils/permissions';
 import { VersionDisplay } from '../components/ui';
 import {
@@ -232,9 +233,7 @@ const DashboardLayout: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg mr-3">
-                <span className="text-white font-bold text-sm">P</span>
-              </div>
+              <img src={logoSvg} alt="Logo" className="w-8 h-8 mr-3" />
               <span className="text-lg font-semibold text-gray-900">POS Admin</span>
             </div>
             <button
