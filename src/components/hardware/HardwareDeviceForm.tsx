@@ -4,47 +4,72 @@ import {
   QrCodeIcon,
   XMarkIcon,
   CheckIcon,
-  PlayIcon
+  PlayIcon,
+  CpuChipIcon,
+  SignalIcon
 } from '@heroicons/react/24/outline';
 import {
   Modal,
   Button,
   InputTextField,
   DropdownSearch,
-  PropertyCheckbox,
   Widget,
   Alert
 } from '../ui';
 import {
-  NetworkPrinterConfig as NetworkPrinterConfigComponent,
+  NetworkConfigForm,
+  BluetoothConfigForm,
+  USBConfigForm,
+  AIDLConfigForm,
+  SerialConfigForm
+} from './connection-configs';
+import {
   ThermalPrinterConfig as ThermalPrinterConfigComponent,
-  KitchenPrinterConfig as KitchenPrinterConfigComponent,
-  ScannerConfig as ScannerConfigComponent
+  KotPrinterConfig as KotPrinterConfigComponent,
+  NetworkPrinterConfig as NetworkPrinterConfigComponent,
+  BarcodeScannerConfig as BarcodeScannerConfigComponent,
+  PaymentTerminalConfig as PaymentTerminalConfigComponent,
+  ScaleConfig as ScaleConfigComponent,
+  LabelPrinterConfig as LabelPrinterConfigComponent,
+  CapabilitiesConfig as CapabilitiesConfigComponent
 } from './device-configs';
 import { useTenantStore } from '../../tenants/tenantStore';
 import { useError } from '../../hooks/useError';
 import type {
-  HardwareDevice
-} from '../../types/hardware';
+  HardwareDevice,
+  DeviceType,
+  ConnectionType,
+  NetworkConfig,
+  BluetoothConfig,
+  USBConfig,
+  AIDLConfig,
+  SerialConfig,
+  KotPrinterConfig,
+  BarcodeScannerConfig,
+  Capabilities
+} from '../../types/hardware-new.types';
 import {
   DEVICE_TYPES,
-  CONNECTION_TYPES
-} from '../../types/hardware-api';
-import type {
-  ThermalPrinterConfig,
-  KotPrinterConfig,
-  NetworkPrinterConfig,
-  BarcodeScannerConfig,
-  HardwareOption
-} from '../../types/hardware-api';
+  CONNECTION_TYPES,
+  getConnectionTypesForDevice,
+  getDeviceModelsByType
+} from '../../constants/hardwareOptions';
 
 interface HardwareDeviceFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (device: HardwareDevice, terminalId?: string) => void;
+  onSave: (device: Partial<HardwareDevice>, terminalId?: string) => void;
   device?: HardwareDevice | null;
   level: 'store' | 'terminal';
   mode: 'create' | 'edit';
+}
+
+interface HardwareOption {
+  id: string;
+  label: string;
+  value: string;
+  description?: string;
+  icon?: string;
 }
 
 const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
@@ -57,14 +82,22 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
 }) => {
   const { currentStore } = useTenantStore();
   const { showError, showValidationError } = useError();
+  
+  // Form state with new type structure
   const [formData, setFormData] = useState<Partial<HardwareDevice>>({
     name: '',
-    type: 'thermal_printer',
-    enabled: true,
-    connection_type: 'network'
+    device_type: 'thermal_printer',
+    connection_type: 'network',
+    status: 'connected',
+    description: '',
+    location: '',
+    manufacturer: '',
+    model: '',
+    serial_number: '',
+    firmware_version: ''
   });
+  
   const [selectedTerminalId, setSelectedTerminalId] = useState<string>('');
-  const [apiDeviceType, setApiDeviceType] = useState<string>(''); // Track the actual API device type
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -82,52 +115,46 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     }));
   };
 
-  // Device type options from API spec
-  const deviceTypeOptions: HardwareOption[] = DEVICE_TYPES;
-
-  // Map API device types to UI device types for form logic
-  const getUIDeviceType = (apiDeviceType: string): string => {
-    // Most device types map directly now
-    const mappings: Record<string, string> = {
-      'thermal_printer': 'thermal_printer',
-      'kitchen_printer': 'kitchen_printer', 
-      'network_printer': 'network_printer',
-      'scanner': 'scanner',
-      'cash_drawer': 'cash_drawer',
-      'label_printer': 'label_printer'
-    };
-    return mappings[apiDeviceType] || apiDeviceType;
+  // Get connection type options based on selected device type
+  const getConnectionTypeOptions = (): HardwareOption[] => {
+    if (!formData.device_type) return CONNECTION_TYPES;
+    return getConnectionTypesForDevice(formData.device_type);
   };
 
-  // Helper function to get options based on device type
-  const getOptionsForDeviceType = () => {
-    const characterEncodingOptions: HardwareOption[] = [
-      { id: 'utf8', label: 'UTF-8', value: 'utf8' },
-      { id: 'ascii', label: 'ASCII', value: 'ascii' }
-    ];
-
-    const scanModeOptions: HardwareOption[] = [
-      { id: 'manual', label: 'Manual', value: 'manual' },
-      { id: 'automatic', label: 'Automatic', value: 'automatic' }
-    ];
-
-    return {
-      characterEncodingOptions,
-      scanModeOptions
-    };
+  // Get device model options based on selected device type
+  const getDeviceModelOptions = (): HardwareOption[] => {
+    if (!formData.device_type) return [];
+    return getDeviceModelsByType(formData.device_type);
   };
-
-  const { characterEncodingOptions } = getOptionsForDeviceType();
 
   useEffect(() => {
     if (device && mode === 'edit') {
       setFormData(device);
+      if (device.terminal_id) {
+        setSelectedTerminalId(device.terminal_id);
+      }
     } else {
+      // Default values for new device
       setFormData({
         name: '',
-        type: 'thermal_printer',
-        enabled: true,
-        connection_type: 'network'
+        device_type: 'thermal_printer',
+        connection_type: 'network',
+        status: 'connected',
+        description: '',
+        location: '',
+        manufacturer: '',
+        model: '',
+        serial_number: '',
+        firmware_version: '',
+        connection_config: {},
+        device_config: {},
+        capabilities: {
+          can_print: false,
+          can_scan: false,
+          can_accept_payment: false,
+          can_weigh: false,
+          can_open_drawer: false
+        }
       });
     }
     
@@ -151,147 +178,134 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     }
   };
 
-  const handleDeviceTypeChange = (typeValue: string) => {
-    // Store the actual API device type  
-    const selectedApiType = typeValue;
-    setApiDeviceType(selectedApiType);
-    // Map to UI device type for form logic
-    const uiDeviceType = getUIDeviceType(selectedApiType);
-    
-    // Reset form data when device type changes
-    const baseData = {
-      name: formData.name || '',
-      type: uiDeviceType as HardwareDevice['type'], // Use UI device type for form
-      enabled: formData.enabled ?? true,
-      connection_type: 'network' as const
-    };
-
-    // Add type-specific default values based on UI type
-    switch (uiDeviceType) {
-      case 'thermal_printer':
-        // Handle thermal_printer and label_printer
-        if (selectedApiType === 'thermal_printer' || selectedApiType === 'label_printer') {
-          setFormData({
-            ...baseData,
-            paper_size: 'thermal_80mm',
-            auto_print: true,
-            print_copies: 1,
-            cut_paper: true,
-            open_drawer: false,
-            character_encoding: 'utf8',
-            test_mode: false
-          } as any);
-        } else if (selectedApiType === 'network_printer') {
-          setFormData({
-            ...baseData,
-            paper_size: 'A4' as any,
-            paper_orientation: 'portrait',
-            print_quality: 'normal',
-            color_mode: 'monochrome',
-            duplex_printing: false,
-            print_copies: 1,
-            character_encoding: 'utf8',
-            supported_formats: ['PDF', 'TXT'],
-            max_resolution: '1200x1200 dpi',
-            tray_capacity: 250,
-            auto_paper_detection: true
-          } as any);
-        }
-        break;
-      case 'kitchen_printer':
-        setFormData({
-          ...baseData,
-          paper_size: 'thermal_80mm',
-          print_header: true,
-          print_timestamp: true,
-          print_order_number: true,
-          print_table_info: true,
-          auto_cut: true,
-          character_encoding: 'utf8',
-          kitchen_sections: ['hot_kitchen']
-        } as Partial<KotPrinterConfig>);
-        break;
-      case 'scanner':
-        setFormData({
-          ...baseData,
-          connection_type: 'usb',
-          prefix: '',
-          suffix: '\r\n',
-          min_length: 8,
-          max_length: 20,
-          scan_mode: 'manual' as any, // Using 'any' to avoid type conflict with old HardwareDevice type
-          beep_on_scan: true,
-          decode_types: ['CODE128', 'EAN13', 'UPC']
-        });
-        break;
-      case 'cash_drawer':
-        // Cash drawer only needs basic device properties, no additional config in API
-        setFormData(baseData);
-        break;
-      default:
-        setFormData(baseData);
-        break;
+  const handleConnectionConfigChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      connection_config: {
+        ...prev.connection_config,
+        [field]: value
+      }
+    }));
+    // Clear error when user changes value
+    const errorKey = `connection_config.${field}`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({ ...prev, [errorKey]: '' }));
     }
+  };
+
+  const handleDeviceConfigChange = (config: any) => {
+    setFormData(prev => ({
+      ...prev,
+      device_config: config
+    }));
+  };
+
+  const handleCapabilitiesChange = (config: Capabilities) => {
+    setFormData(prev => ({
+      ...prev,
+      capabilities: config
+    }));
+  };
+
+  const handleDeviceTypeChange = (deviceType: DeviceType) => {
+    // Get compatible connection types for this device
+    const compatibleConnections = getConnectionTypesForDevice(deviceType);
+    const defaultConnection = compatibleConnections[0]?.id as ConnectionType || 'network';
+
+    // Reset form with new device type and default connection
+    setFormData(prev => ({
+      ...prev,
+      device_type: deviceType,
+      connection_type: defaultConnection,
+      device_subtype: undefined,
+      connection_config: {},
+      device_config: {},
+      capabilities: {
+        can_print: deviceType.includes('printer'),
+        can_scan: deviceType === 'barcode_scanner',
+        can_accept_payment: deviceType === 'payment_terminal',
+        can_weigh: deviceType === 'scale',
+        can_open_drawer: deviceType === 'cash_drawer'
+      }
+    }));
+  };
+
+  const handleConnectionTypeChange = (connectionType: ConnectionType) => {
+    setFormData(prev => ({
+      ...prev,
+      connection_type: connectionType,
+      connection_config: {} // Reset connection config when type changes
+    }));
   };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // Basic field validation
     if (!formData.name?.trim()) {
       newErrors.name = 'Device name is required';
-      showValidationError('Device name is required', 'name', formData.name);
     }
 
-    if (!formData.type) {
-      newErrors.type = 'Device type is required';
-      showValidationError('Device type is required', 'type', formData.type);
+    if (!formData.device_type) {
+      newErrors.device_type = 'Device type is required';
     }
 
     if (!formData.connection_type) {
       newErrors.connection_type = 'Connection type is required';
-      showValidationError('Connection type is required', 'connection_type', formData.connection_type);
     }
 
     // Terminal selection validation for terminal level
     if (level === 'terminal' && !selectedTerminalId) {
       newErrors.terminal = 'Please select a terminal for this device';
-      showValidationError('Please select a terminal for this device', 'terminal', selectedTerminalId);
     }
 
-    // Network connection validation
+    // Connection config validation based on connection type
     if (formData.connection_type === 'network') {
-      if (formData.type === 'thermal_printer' || formData.type === 'kitchen_printer') {
-        const config = formData as Partial<ThermalPrinterConfig | KotPrinterConfig>;
-        if (!config.ip_address?.trim()) {
-          newErrors.ip_address = 'IP address is required for network connection';
-          showValidationError('IP address is required for network connection', 'ip_address', config.ip_address);
-        }
-        if (!config.port || config.port <= 0) {
-          newErrors.port = 'Valid port number is required';
-          showValidationError('Valid port number is required', 'port', config.port);
-        }
+      const config = formData.connection_config as NetworkConfig;
+      if (!config?.ip_address?.trim()) {
+        newErrors['connection_config.ip_address'] = 'IP address is required for network connection';
+      }
+      if (!config?.port || config.port <= 0 || config.port > 65535) {
+        newErrors['connection_config.port'] = 'Valid port number (1-65535) is required';
+      }
+    } else if (formData.connection_type === 'bluetooth') {
+      const config = formData.connection_config as BluetoothConfig;
+      if (!config?.mac_address?.trim()) {
+        newErrors['connection_config.mac_address'] = 'MAC address is required for Bluetooth connection';
+      }
+    } else if (formData.connection_type === 'usb') {
+      const config = formData.connection_config as USBConfig;
+      if (!config?.vendor_id) {
+        newErrors['connection_config.vendor_id'] = 'Vendor ID is required for USB connection';
+      }
+      if (!config?.product_id) {
+        newErrors['connection_config.product_id'] = 'Product ID is required for USB connection';
+      }
+    } else if (formData.connection_type === 'serial') {
+      const config = formData.connection_config as SerialConfig;
+      if (!config?.baud_rate || config.baud_rate <= 0) {
+        newErrors['connection_config.baud_rate'] = 'Baud rate is required for serial connection';
+      }
+    } else if (formData.connection_type === 'aidl') {
+      const config = formData.connection_config as AIDLConfig;
+      if (!config?.package_name?.trim()) {
+        newErrors['connection_config.package_name'] = 'Package name is required for AIDL connection';
+      }
+      if (!config?.service_name?.trim()) {
+        newErrors['connection_config.service_name'] = 'Service name is required for AIDL connection';
       }
     }
 
-    // Scanner-specific validation
-    if (formData.type === 'scanner') {
-      const scannerConfig = formData as Partial<BarcodeScannerConfig>;
-      if (!scannerConfig.min_length || scannerConfig.min_length < 1) {
-        newErrors.min_length = 'Minimum length must be at least 1';
-        showValidationError('Minimum length must be at least 1', 'min_length', scannerConfig.min_length);
+    // Device-specific config validation
+    if (formData.device_type === 'kot_printer') {
+      const config = formData.device_config as KotPrinterConfig;
+      if (!config?.kitchen_sections || config.kitchen_sections.length === 0) {
+        newErrors['device_config.kitchen_sections'] = 'At least one kitchen section must be selected';
       }
-      if (!scannerConfig.max_length || scannerConfig.max_length < scannerConfig.min_length!) {
-        newErrors.max_length = 'Maximum length must be greater than minimum length';
-        showValidationError('Maximum length must be greater than minimum length', 'max_length', scannerConfig.max_length);
-      }
-    }
-
-    // Kitchen printer specific validation
-    if (formData.type === 'kitchen_printer') {
-      const kitchenConfig = formData as Partial<KotPrinterConfig>;
-      if (!kitchenConfig.kitchen_sections || kitchenConfig.kitchen_sections.length === 0) {
-        newErrors.kitchen_sections = 'At least one kitchen section must be selected';
-        showValidationError('At least one kitchen section must be selected', 'kitchen_sections', kitchenConfig.kitchen_sections);
+    } else if (formData.device_type === 'barcode_scanner') {
+      const config = formData.device_config as BarcodeScannerConfig;
+      if (config?.min_length && config?.max_length && config.max_length < config.min_length) {
+        newErrors['device_config.max_length'] = 'Maximum length must be greater than minimum length';
       }
     }
 
@@ -299,9 +313,9 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     
     // Show validation error summary if there are errors
     if (Object.keys(newErrors).length > 0) {
-      const errorMessages = Object.values(newErrors);
+      const errorMessages = Object.values(newErrors).slice(0, 3); // Show first 3 errors
       showValidationError(
-        `Please fix the following errors before saving the device: ${errorMessages.join(', ')}`,
+        `Please fix validation errors: ${errorMessages.join(', ')}${Object.keys(newErrors).length > 3 ? '...' : ''}`,
         'form_validation',
         null,
         'required'
@@ -319,10 +333,12 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
       // Clear any previous errors
       setErrors({});
       
-      const deviceData: HardwareDevice = {
-        id: device?.id || `${formData.type}_${Date.now()}`,
-        ...formData
-      } as HardwareDevice;
+      // Prepare device data
+      const deviceData: Partial<HardwareDevice> = {
+        ...formData,
+        terminal_id: level === 'terminal' ? selectedTerminalId : undefined,
+        updated_at: new Date().toISOString()
+      };
 
       // Pass terminal ID for terminal level devices
       onSave(deviceData, level === 'terminal' ? selectedTerminalId : undefined);
@@ -358,7 +374,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
       setTestResult({
         success,
         message: success 
-          ? `${formData.type?.replace('_', ' ')} test successful`
+          ? `${formData.device_type?.replace('_', ' ')} test successful`
           : 'Device not responding. Please check connection settings.'
       });
     } catch (error) {
@@ -371,88 +387,122 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
     }
   };
 
-  const renderDeviceSpecificFields = () => {
-    const config = formData;
-    const commonProps = {
-      onFieldChange: handleInputChange,
-      errors,
-      characterEncodingOptions
+  // Wrapper for connection config onChange - converts full config to field changes
+  const handleConnectionConfigUpdate = (config: any) => {
+    setFormData(prev => ({
+      ...prev,
+      connection_config: config
+    }));
+  };
+
+  // Render connection config form based on connection type
+  const renderConnectionConfig = () => {
+    if (!formData.connection_type) {
+      return (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+          <p className="text-sm text-gray-600">
+            Please select a connection type to configure connection settings.
+          </p>
+        </div>
+      );
+    }
+
+    const commonPropsNetwork = {
+      config: (formData.connection_config || {}) as any,
+      onFieldChange: handleConnectionConfigChange,
+      errors
     };
 
-    // Handle API device type mapping
-    switch (apiDeviceType || formData.type) {
-      case 'thermal_printer':
-        return (
-          <ThermalPrinterConfigComponent
-            config={config as Partial<ThermalPrinterConfig>}
-            connectionType={formData.connection_type || 'network'}
-            {...commonProps}
-          />
-        );
+    const commonPropsOthers = {
+      config: (formData.connection_config || {}) as any,
+      onChange: handleConnectionConfigUpdate,
+      errors
+    };
 
-      case 'kitchen_printer':
+    switch (formData.connection_type) {
+      case 'network':
+        return <NetworkConfigForm {...commonPropsNetwork} />;
+      case 'bluetooth':
+        return <BluetoothConfigForm {...commonPropsOthers} />;
+      case 'usb':
+        return <USBConfigForm {...commonPropsOthers} />;
+      case 'serial':
+        return <SerialConfigForm {...commonPropsOthers} />;
+      case 'aidl':
+        return <AIDLConfigForm {...commonPropsOthers} />;
+      default:
         return (
-          <KitchenPrinterConfigComponent
-            config={config as Partial<KotPrinterConfig>}
-            connectionType={formData.connection_type || 'network'}
-            {...commonProps}
-          />
-        );
-
-      case 'network_printer':
-        return (
-          <NetworkPrinterConfigComponent
-            config={config as Partial<NetworkPrinterConfig>}
-            {...commonProps}
-          />
-        );
-
-      case 'scanner':
-        return (
-          <ScannerConfigComponent
-            config={config as Partial<BarcodeScannerConfig>}
-            {...commonProps}
-          />
-        );
-
-      case 'cash_drawer':
-        return (
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-700">
-                Cash drawer devices only require basic connection settings. 
-                No additional configuration is needed according to the API specification.
-              </p>
-            </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-700">
+              Connection type "{formData.connection_type}" does not require additional configuration.
+            </p>
           </div>
         );
+    }
+  };
 
+  // Render device config form based on device type
+  const renderDeviceConfig = () => {
+    if (!formData.device_type) {
+      return (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Select Device Type</h3>
+          <p className="text-sm text-gray-600 max-w-sm mx-auto">
+            Please select a device type above to configure device-specific settings and options.
+          </p>
+        </div>
+      );
+    }
+
+    const commonProps = {
+      config: (formData.device_config || {}) as any,
+      onChange: handleDeviceConfigChange,
+      errors
+    };
+
+    switch (formData.device_type) {
+      case 'thermal_printer':
+        return <ThermalPrinterConfigComponent {...commonProps} />;
+      
+      case 'kot_printer':
+        return <KotPrinterConfigComponent {...commonProps} />;
+      
+      case 'network_printer':
+        return <NetworkPrinterConfigComponent {...commonProps} />;
+      
+      case 'barcode_scanner':
+        return <BarcodeScannerConfigComponent {...commonProps} />;
+      
+      case 'payment_terminal':
+        return <PaymentTerminalConfigComponent {...commonProps} />;
+      
+      case 'scale':
+        return <ScaleConfigComponent {...commonProps} />;
+      
       case 'label_printer':
+        return <LabelPrinterConfigComponent {...commonProps} />;
+      
+      case 'cash_drawer':
         return (
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-700">
-                Label printer configuration will be available soon. 
-                For now, only basic connection settings are required.
-              </p>
-            </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-700">
+              Cash drawer devices only require basic connection settings. 
+              No additional device configuration is needed.
+            </p>
           </div>
         );
 
       default:
         return (
-          <div className="space-y-6">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Select Device Type</h3>
-              <p className="text-sm text-gray-600 max-w-sm mx-auto">
-                Please select a device type above to configure device-specific settings and options.
-              </p>
-            </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p className="text-sm text-amber-700">
+              Device type "{formData.device_type}" does not have specific configuration options yet.
+            </p>
           </div>
         );
     }
@@ -520,7 +570,7 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
         <Widget
           title="Basic Information"
           description="Configure the basic device settings"
-          icon={PrinterIcon}
+          icon={CpuChipIcon}
           className='overflow-visible'
         >
           <div className="space-y-6">
@@ -562,24 +612,23 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
                 label="Device Name"
                 value={formData.name || ''}
                 onChange={(value) => handleInputChange('name', value)}
-                placeholder="Enter device name"
+                placeholder="Enter device name (e.g., 'Receipt Printer 1')"
                 required
                 error={errors.name}
               />
 
               <DropdownSearch
                 label="Device Type"
-                options={deviceTypeOptions}
-                value={formData.type || ''}
+                options={DEVICE_TYPES}
+                value={formData.device_type || ''}
                 onSelect={(option) => {
                   if (option) {
-                    // Use the API device type value directly
-                    handleDeviceTypeChange(option.id);
+                    handleDeviceTypeChange(option.id as DeviceType);
                   }
                 }}
                 placeholder="Select device type"
                 required
-                error={errors.type}
+                error={errors.device_type}
                 displayValue={(option: any) => option ? (
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{option.icon}</span>
@@ -592,9 +641,9 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <DropdownSearch
                 label="Connection Type"
-                options={CONNECTION_TYPES}
+                options={getConnectionTypeOptions()}
                 value={formData.connection_type || ''}
-                onSelect={(option) => option && handleInputChange('connection_type', option.id)}
+                onSelect={(option) => option && handleConnectionTypeChange(option.id as ConnectionType)}
                 placeholder="Select connection type"
                 required
                 error={errors.connection_type}
@@ -606,32 +655,98 @@ const HardwareDeviceForm: React.FC<HardwareDeviceFormProps> = ({
                 ) : 'Select connection type'}
               />
 
-              <div>
-                <PropertyCheckbox
-                  title="Enable Device"
-                  description="Device is active and available for use"
-                  checked={formData.enabled ?? true}
-                  onChange={(checked) => handleInputChange('enabled', checked)}
-                />
-              </div>
+              <DropdownSearch
+                label="Device Model (Optional)"
+                options={getDeviceModelOptions()}
+                value={formData.model || ''}
+                onSelect={(option) => option && handleInputChange('model', option.id)}
+                placeholder="Select device model"
+                error={errors.model}
+              />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputTextField
+                label="Manufacturer (Optional)"
+                value={formData.manufacturer || ''}
+                onChange={(value) => handleInputChange('manufacturer', value)}
+                placeholder="e.g., Epson, Star, Zebra"
+              />
+
+              <InputTextField
+                label="Serial Number (Optional)"
+                value={formData.serial_number || ''}
+                onChange={(value) => handleInputChange('serial_number', value)}
+                placeholder="Device serial number"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputTextField
+                label="Location (Optional)"
+                value={formData.location || ''}
+                onChange={(value) => handleInputChange('location', value)}
+                placeholder="e.g., Front Counter, Kitchen"
+              />
+
+              <InputTextField
+                label="Firmware Version (Optional)"
+                value={formData.firmware_version || ''}
+                onChange={(value) => handleInputChange('firmware_version', value)}
+                placeholder="e.g., 1.2.3"
+              />
+            </div>
+
+            <InputTextField
+              label="Description (Optional)"
+              value={formData.description || ''}
+              onChange={(value) => handleInputChange('description', value)}
+              placeholder="Additional notes about this device"
+            />
           </div>
+        </Widget>
+
+        {/* Connection Configuration */}
+        <Widget
+          title="Connection Configuration"
+          description={formData.connection_type 
+            ? `Configure ${formData.connection_type} connection settings`
+            : "Select a connection type to configure connection settings"
+          }
+          icon={SignalIcon}
+          className='overflow-visible'
+        >
+          {renderConnectionConfig()}
         </Widget>
 
         {/* Device-Specific Configuration */}
         <Widget
           title="Device Configuration"
-          description={formData.type 
-            ? `Configure ${formData.type.replace('_', ' ')} specific settings`
+          description={formData.device_type 
+            ? `Configure ${formData.device_type.replace('_', ' ')} specific settings`
             : "Select a device type to configure specific settings"
           }
-          icon={formData.type 
-            ? (formData.type === 'scanner' ? QrCodeIcon : PrinterIcon)
+          icon={formData.device_type 
+            ? (formData.device_type === 'barcode_scanner' ? QrCodeIcon : PrinterIcon)
             : PrinterIcon
           }
           className='overflow-visible'
         >
-          {renderDeviceSpecificFields()}
+          {renderDeviceConfig()}
+        </Widget>
+
+        {/* Device Capabilities */}
+        <Widget
+          title="Device Capabilities"
+          description="Define what this device can do"
+          icon={CpuChipIcon}
+          className='overflow-visible'
+        >
+          <CapabilitiesConfigComponent
+            config={(formData.capabilities || {}) as Capabilities}
+            onChange={handleCapabilitiesChange}
+            errors={errors}
+          />
         </Widget>
       </form>
     </Modal>

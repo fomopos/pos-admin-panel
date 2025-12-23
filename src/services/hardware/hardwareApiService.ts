@@ -1,224 +1,311 @@
+/**
+ * Hardware API Service - New Backend Specification
+ * 
+ * API service for hardware device management using the new backend specification.
+ * Handles CRUD operations, device testing, and type transformations.
+ * 
+ * @see src/types/hardware-new.types.ts
+ * @see docs/HARDWARE_CONFIGURATION_MIGRATION_PLAN.md
+ */
+
 import { apiClient } from '../api';
-import type { 
-  HardwareDevice, 
-  HardwareDeviceListResponse,
-  CreateHardwareDeviceRequest, 
-  UpdateHardwareDeviceRequest,
+import type {
+  HardwareDevice,
+  CreateHardwareDTO,
+  UpdateHardwareDTO,
   HardwareDeviceResponse,
-  DeleteHardwareDeviceResponse
-} from '../../types/hardware-api';
+  HardwareDeviceListResponse,
+  HardwareTestRequest,
+  HardwareTestResponse,
+  DeviceType,
+  DeviceStatus
+} from '../../types/hardware-new.types';
 
 export class HardwareApiService {
+  private readonly basePath = '/v0/tenant';
+
   /**
-   * Get all hardware devices for a store with pagination support
+   * Get all hardware devices for a store
+   * 
+   * @param tenantId - Tenant ID
+   * @param storeId - Store ID
+   * @param terminalId - Optional terminal ID to filter by
+   * @returns List of hardware devices
    */
   async getHardwareDevices(
-    storeId: string, 
-    params?: {
-      terminal_id?: string;
-      type?: string;
-      limit?: number;
-      next_token?: string;
-    }
+    tenantId: string,
+    storeId: string,
+    terminalId?: string | null
   ): Promise<HardwareDevice[]> {
     try {
-      const queryParams = new URLSearchParams();
-      if (params?.terminal_id) queryParams.append('terminal_id', params.terminal_id);
-      if (params?.type) queryParams.append('type', params.type);
-      if (params?.limit) queryParams.append('limit', params.limit.toString());
-      if (params?.next_token) queryParams.append('next_token', params.next_token);
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/hardware`;
+      const params: Record<string, string> = {};
       
-      const queryString = queryParams.toString();
-      const url = `/v0/store/${storeId}/config/hardware${queryString ? `?${queryString}` : ''}`;
-      
-      const response = await apiClient.get<HardwareDeviceListResponse>(url);
-      
-      // Handle case when no hardware devices exist
-      if (!response.data || !response.data.hardware) {
-        return [];
+      if (terminalId) {
+        params.terminal_id = terminalId;
       }
-      
-      // Return just the hardware array from the response
-      return response.data.hardware;
-    } catch (error: any) {
-      console.error('Error fetching hardware devices:', error);
-      
-      // If it's a 404 or similar "not found" error, return empty array
-      if (error?.response?.status === 404 || error?.response?.status === 204) {
-        return [];
-      }
-      
-      throw error;
+
+      const response = await apiClient.get<HardwareDeviceListResponse>(endpoint, { params });
+      return this.transformDeviceList(response.data.devices || []);
+    } catch (error) {
+      console.error('Failed to fetch hardware devices:', error);
+      throw this.handleError(error);
     }
   }
 
   /**
-   * Get all hardware devices with pagination handling (fetches all pages)
-   */
-  async getAllHardwareDevices(
-    storeId: string, 
-    params?: {
-      terminal_id?: string;
-      type?: string;
-    }
-  ): Promise<HardwareDevice[]> {
-    try {
-      let allDevices: HardwareDevice[] = [];
-      let nextToken: string | undefined = undefined;
-      let hasMore = true;
-
-      while (hasMore) {
-        const queryParams = new URLSearchParams();
-        if (params?.terminal_id) queryParams.append('terminal_id', params.terminal_id);
-        if (params?.type) queryParams.append('type', params.type);
-        queryParams.append('limit', '50'); // Fetch in batches of 50
-        if (nextToken) queryParams.append('next_token', nextToken);
-        
-        const queryString = queryParams.toString();
-        const url = `/v0/store/${storeId}/config/hardware?${queryString}`;
-        
-        const response = await apiClient.get<HardwareDeviceListResponse>(url);
-        
-        // Handle case when no hardware devices exist
-        if (!response.data || !response.data.hardware) {
-          return [];
-        }
-        
-        allDevices = allDevices.concat(response.data.hardware);
-        hasMore = response.data.has_more;
-        nextToken = response.data.next_token;
-      }
-
-      return allDevices;
-    } catch (error: any) {
-      console.error('Error fetching all hardware devices:', error);
-      
-      // If it's a 404 or similar "not found" error, return empty array
-      if (error?.response?.status === 404 || error?.response?.status === 204) {
-        return [];
-      }
-      
-      throw error;
-    }
-  }
-
-  /**
-   * Get a specific hardware device by ID
+   * Get a single hardware device by ID
+   * 
+   * @param tenantId - Tenant ID
+   * @param storeId - Store ID
+   * @param deviceId - Device ID
+   * @returns Hardware device
    */
   async getHardwareDevice(
-    storeId: string, 
+    tenantId: string,
+    storeId: string,
     deviceId: string
   ): Promise<HardwareDevice> {
     try {
-      const url = `/v0/store/${storeId}/config/hardware/${deviceId}`;
-      const response = await apiClient.get<HardwareDevice>(url);
-      return response.data;
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/hardware/${deviceId}`;
+      const response = await apiClient.get<HardwareDeviceResponse>(endpoint);
+      return this.transformDevice(response.data.device);
     } catch (error) {
-      console.error('Error fetching hardware device:', error);
-      throw error;
+      console.error(`Failed to fetch hardware device ${deviceId}:`, error);
+      throw this.handleError(error);
     }
   }
 
   /**
    * Create a new hardware device
+   * 
+   * @param tenantId - Tenant ID
+   * @param storeId - Store ID
+   * @param data - Device creation data
+   * @returns Created hardware device
    */
   async createHardwareDevice(
+    tenantId: string,
     storeId: string,
-    deviceData: CreateHardwareDeviceRequest
-  ): Promise<HardwareDeviceResponse> {
+    data: CreateHardwareDTO
+  ): Promise<HardwareDevice> {
     try {
-      const url = `/v0/store/${storeId}/config/hardware`;
-      const response = await apiClient.post<HardwareDeviceResponse>(url, deviceData);
-      return response.data;
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/hardware`;
+      
+      // Transform data to match backend expectations
+      const requestData = this.prepareCreateRequest(data, storeId);
+      
+      const response = await apiClient.post<HardwareDeviceResponse>(endpoint, requestData);
+      return this.transformDevice(response.data.device);
     } catch (error) {
-      console.error('Error creating hardware device:', error);
-      throw error;
+      console.error('Failed to create hardware device:', error);
+      throw this.handleError(error);
     }
   }
 
   /**
    * Update an existing hardware device
+   * 
+   * @param tenantId - Tenant ID
+   * @param storeId - Store ID
+   * @param deviceId - Device ID
+   * @param data - Device update data
+   * @returns Updated hardware device
    */
   async updateHardwareDevice(
+    tenantId: string,
     storeId: string,
     deviceId: string,
-    updates: UpdateHardwareDeviceRequest
-  ): Promise<HardwareDeviceResponse> {
+    data: UpdateHardwareDTO
+  ): Promise<HardwareDevice> {
     try {
-      const url = `/v0/store/${storeId}/config/hardware/${deviceId}`;
-      const response = await apiClient.put<HardwareDeviceResponse>(url, updates);
-      return response.data;
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/hardware/${deviceId}`;
+      
+      // Transform data to match backend expectations
+      const requestData = this.prepareUpdateRequest(data);
+      
+      const response = await apiClient.patch<HardwareDeviceResponse>(endpoint, requestData);
+      return this.transformDevice(response.data.device);
     } catch (error) {
-      console.error('Error updating hardware device:', error);
-      throw error;
+      console.error(`Failed to update hardware device ${deviceId}:`, error);
+      throw this.handleError(error);
     }
   }
 
   /**
    * Delete a hardware device
+   * 
+   * @param tenantId - Tenant ID
+   * @param storeId - Store ID
+   * @param deviceId - Device ID
    */
   async deleteHardwareDevice(
+    tenantId: string,
     storeId: string,
     deviceId: string
-  ): Promise<DeleteHardwareDeviceResponse> {
+  ): Promise<void> {
     try {
-      const url = `/v0/store/${storeId}/config/hardware/${deviceId}`;
-      const response = await apiClient.delete<DeleteHardwareDeviceResponse>(url);
-      return response.data;
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/hardware/${deviceId}`;
+      await apiClient.delete(endpoint);
     } catch (error) {
-      console.error('Error deleting hardware device:', error);
-      throw error;
+      console.error(`Failed to delete hardware device ${deviceId}:`, error);
+      throw this.handleError(error);
     }
   }
 
   /**
-   * Test a hardware device connection
+   * Test hardware device connection
+   * 
+   * @param tenantId - Tenant ID
+   * @param storeId - Store ID
+   * @param deviceId - Device ID
+   * @param testRequest - Test request details
+   * @returns Test response
    */
   async testHardwareDevice(
+    tenantId: string,
     storeId: string,
-    deviceId: string
-  ): Promise<{ success: boolean; message: string }> {
+    deviceId: string,
+    testRequest: HardwareTestRequest
+  ): Promise<HardwareTestResponse> {
     try {
-      const url = `/v0/store/${storeId}/config/hardware/${deviceId}/test`;
-      const response = await apiClient.post<{ success: boolean; message: string }>(url);
+      const endpoint = `${this.basePath}/${tenantId}/store/${storeId}/hardware/${deviceId}/test`;
+      const response = await apiClient.post<HardwareTestResponse>(endpoint, testRequest);
       return response.data;
     } catch (error) {
-      console.error('Error testing hardware device:', error);
-      throw error;
+      console.error(`Failed to test hardware device ${deviceId}:`, error);
+      throw this.handleError(error);
     }
   }
 
   /**
-   * Get hardware devices for store level (no terminal_id)
+   * Filter devices by type
    */
-  async getStoreHardwareDevices(
-    storeId: string
-  ): Promise<HardwareDevice[]> {
-    return this.getHardwareDevices(storeId);
+  filterDevicesByType(devices: HardwareDevice[], deviceType: DeviceType): HardwareDevice[] {
+    return devices.filter(device => device.type === deviceType);
   }
 
   /**
-   * Get hardware devices for a specific terminal
+   * Filter devices by status
    */
-  async getTerminalHardwareDevices(
-    storeId: string,
-    terminalId: string
-  ): Promise<HardwareDevice[]> {
-    return this.getHardwareDevices(storeId, { terminal_id: terminalId });
+  filterDevicesByStatus(devices: HardwareDevice[], status: DeviceStatus): HardwareDevice[] {
+    return devices.filter(device => device.status === status);
   }
 
   /**
-   * Get hardware devices by type
+   * Filter devices by terminal
    */
-  async getHardwareDevicesByType(
-    storeId: string,
-    deviceType: string,
-    terminalId?: string
-  ): Promise<HardwareDevice[]> {
-    const params: { type: string; terminal_id?: string } = { type: deviceType };
-    if (terminalId) params.terminal_id = terminalId;
+  filterDevicesByTerminal(devices: HardwareDevice[], terminalId: string): HardwareDevice[] {
+    return devices.filter(device => device.terminal_id === terminalId);
+  }
+
+  // ============================================================================
+  // PRIVATE HELPER METHODS
+  // ============================================================================
+
+  /**
+   * Transform device from API response to internal format
+   */
+  private transformDevice(device: any): HardwareDevice {
+    return {
+      ...device,
+      // Ensure dates are Date objects
+      last_connected: device.last_connected ? new Date(device.last_connected) : null,
+      last_seen: device.last_seen ? new Date(device.last_seen) : null,
+      last_health_check: device.last_health_check ? new Date(device.last_health_check) : null,
+      first_seen_at: device.first_seen_at ? new Date(device.first_seen_at) : null,
+      created_at: new Date(device.created_at),
+      updated_at: new Date(device.updated_at),
+    };
+  }
+
+  /**
+   * Transform device list from API response
+   */
+  private transformDeviceList(devices: any[]): HardwareDevice[] {
+    return devices.map(device => this.transformDevice(device));
+  }
+
+  /**
+   * Prepare create request data
+   */
+  private prepareCreateRequest(data: CreateHardwareDTO, storeId: string): any {
+    const requestData: any = {
+      ...data,
+      store_id: data.store_id || storeId,
+      // Generate ID if not provided
+      id: data.id || this.generateDeviceId(),
+      // Ensure enabled defaults to true
+      enabled: data.enabled !== undefined ? data.enabled : true,
+    };
+
+    // Remove undefined/null values to avoid backend validation issues
+    return this.cleanRequestData(requestData);
+  }
+
+  /**
+   * Prepare update request data
+   */
+  private prepareUpdateRequest(data: UpdateHardwareDTO): any {
+    // Remove undefined values
+    return this.cleanRequestData(data);
+  }
+
+  /**
+   * Remove null/undefined values from request data
+   */
+  private cleanRequestData(data: any): any {
+    const cleaned: any = {};
     
-    return this.getHardwareDevices(storeId, params);
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined && value !== null) {
+        // Handle nested objects
+        if (typeof value === 'object' && !Array.isArray(value)) {
+          const cleanedNested = this.cleanRequestData(value);
+          if (Object.keys(cleanedNested).length > 0) {
+            cleaned[key] = cleanedNested;
+          }
+        } else {
+          cleaned[key] = value;
+        }
+      }
+    }
+    
+    return cleaned;
+  }
+
+  /**
+   * Generate a unique device ID
+   */
+  private generateDeviceId(): string {
+    return `hw_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Handle API errors
+   */
+  private handleError(error: any): Error {
+    if (error.response?.data?.message) {
+      return new Error(error.response.data.message);
+    }
+    if (error.response?.data?.slug) {
+      // Handle structured API error responses
+      const slug = error.response.data.slug;
+      const details = error.response.data.details;
+      
+      if (details && Object.keys(details).length > 0) {
+        const fieldErrors = Object.entries(details)
+          .map(([field, msg]) => `${field}: ${msg}`)
+          .join(', ');
+        return new Error(`${slug} - ${fieldErrors}`);
+      }
+      
+      return new Error(slug);
+    }
+    if (error.message) {
+      return new Error(error.message);
+    }
+    return new Error('An unexpected error occurred while processing hardware device request');
   }
 }
 

@@ -1,130 +1,140 @@
 import React from 'react';
+import type { LabelPrinterConfig as LabelConfig } from '../../../types/hardware-new.types';
 import {
-  DropdownSearch,
   InputTextField,
-  PropertyCheckbox
+  PropertyCheckbox,
+  MultipleDropdownSearch
 } from '../../ui';
-import {
-  LABEL_PRINTER_MODELS,
-  LABEL_SIZES,
-  PRINT_DENSITIES,
-  PRINT_SPEEDS
-} from '../../../types/hardware-api';
-import type { LabelPrinterConfig } from '../../../types/hardware-api';
 
 interface LabelPrinterConfigProps {
-  config: Partial<LabelPrinterConfig>;
-  onFieldChange: (field: string, value: any) => void;
-  errors: Record<string, string>;
-  characterEncodingOptions: { id: string; label: string; value: string; }[];
-  connectionType: string;
+  config: LabelConfig;
+  onChange: (config: LabelConfig) => void;
+  errors?: Record<string, string>;
 }
 
+// Label width options in mm
+const LABEL_WIDTH_OPTIONS = [
+  { id: '25', label: '25mm', value: '25' },
+  { id: '32', label: '32mm', value: '32' },
+  { id: '40', label: '40mm', value: '40' },
+  { id: '50', label: '50mm', value: '50' },
+  { id: '58', label: '58mm', value: '58' },
+  { id: '62', label: '62mm', value: '62' },
+  { id: '76', label: '76mm', value: '76' },
+  { id: '102', label: '102mm (4")', value: '102' },
+  { id: '110', label: '110mm', value: '110' }
+];
+
+/**
+ * LabelPrinterConfig - Configuration form for label printers
+ * 
+ * Handles label printer settings including:
+ * - Supported label widths (25mm to 110mm)
+ * - Maximum label length
+ * - ZPL support (Zebra Programming Language)
+ * 
+ * Label printers are used for shipping labels, product labels, barcode labels,
+ * price tags, and inventory labels. Common brands: Zebra, Dymo, Brother.
+ * 
+ * @example
+ * ```tsx
+ * <LabelPrinterConfig
+ *   config={device.device_config as LabelPrinterConfig}
+ *   onChange={(newConfig) => handleDeviceConfigChange(newConfig)}
+ *   errors={validationErrors}
+ * />
+ * ```
+ */
 const LabelPrinterConfigComponent: React.FC<LabelPrinterConfigProps> = ({
   config,
-  onFieldChange,
-  characterEncodingOptions,
-  connectionType
+  onChange,
+  errors = {},
 }) => {
+  const handleFieldChange = (field: keyof LabelConfig, value: boolean | number | number[] | null) => {
+    onChange({
+      ...config,
+      [field]: value,
+    });
+  };
   return (
     <div className="space-y-6">
-      {/* Printer Model */}
-      <DropdownSearch
-        label="Label Printer Model"
-        options={LABEL_PRINTER_MODELS}
-        value={config.printer_model || ''}
-        onSelect={(option) => option && onFieldChange('printer_model', option.id)}
-        placeholder="Select label printer model"
-        displayValue={(option) => option ? (
-          <div className="flex items-center gap-2">
-            <span>{option.label}</span>
-          </div>
-        ) : 'Select label printer model'}
-      />
-
-      {/* Label Size */}
-      <DropdownSearch
-        label="Label Size"
-        options={LABEL_SIZES}
-        value={config.label_size || '62x100mm'}
-        onSelect={(option) => option && onFieldChange('label_size', option.id)}
-        placeholder="Select label size"
-        required
-      />
-
-      {/* Network Settings */}
-      {connectionType === 'network' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <InputTextField
-            label="IP Address"
-            value={config.ip_address || ''}
-            onChange={(value) => onFieldChange('ip_address', value)}
-            placeholder="192.168.1.103"
-            required
-          />
-          <InputTextField
-            label="Port"
-            type="number"
-            value={config.port?.toString() || '9100'}
-            onChange={(value) => onFieldChange('port', parseInt(value) || 9100)}
-            placeholder="9100"
-            required
-          />
-        </div>
-      )}
-
-      {/* Print Quality Settings */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <DropdownSearch
-          label="Print Density"
-          options={PRINT_DENSITIES}
-          value={config.print_density || '203dpi'}
-          onSelect={(option) => option && onFieldChange('print_density', option.id)}
-          placeholder="Select print density"
-          required
+      {/* Supported Label Widths */}
+      <div className="border-t pt-4">
+        <h4 className="text-sm font-medium text-gray-900 mb-4">Label Dimensions</h4>
+        <MultipleDropdownSearch
+          label="Supported Label Widths (mm)"
+          options={LABEL_WIDTH_OPTIONS}
+          values={(config.supported_label_widths || []).map(w => w.toString())}
+          onSelect={(values: string[]) => {
+            const widths = values.map(v => parseInt(v)).filter(n => !isNaN(n));
+            handleFieldChange('supported_label_widths', widths.length > 0 ? widths : null);
+          }}
+          placeholder="Select supported label widths"
+          error={errors['label_printer_config.supported_label_widths']}
         />
-        <DropdownSearch
-          label="Print Speed"
-          options={PRINT_SPEEDS}
-          value={config.print_speed || '100mm/s'}
-          onSelect={(option) => option && onFieldChange('print_speed', option.id)}
-          placeholder="Select print speed"
-          required
+        <p className="text-sm text-gray-500 mt-2">
+          Select all label widths this printer supports (typically 58mm, 62mm, 76mm, 102mm)
+        </p>
+      </div>
+
+      {/* Maximum Label Length */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputTextField
+          label="Maximum Label Length (mm)"
+          type="number"
+          value={config.max_length_mm?.toString() || ''}
+          onChange={(value) => handleFieldChange('max_length_mm', value ? parseInt(value) : null)}
+          placeholder="300"
+          error={errors['label_printer_config.max_length_mm']}
         />
       </div>
 
-      {/* Character Encoding */}
-      <DropdownSearch
-        label="Character Encoding"
-        options={characterEncodingOptions}
-        value={config.character_encoding || 'utf8'}
-        onSelect={(option) => option && onFieldChange('character_encoding', option.id)}
-        placeholder="Select character encoding"
-        required
-      />
+      {/* ZPL Support */}
+      <div className="border-t pt-4">
+        <h4 className="text-sm font-medium text-gray-900 mb-4">Programming Language Support</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <PropertyCheckbox
+            title="Supports ZPL"
+            description="Zebra Programming Language (industry standard for label printing)"
+            checked={config.supports_zpl || false}
+            onChange={(checked) => handleFieldChange('supports_zpl', checked)}
+          />
+        </div>
+      </div>
 
-      {/* Label Printer Settings */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PropertyCheckbox
-          title="Auto Cut"
-          description="Automatically cut labels after printing"
-          checked={config.auto_cut ?? true}
-          onChange={(checked) => onFieldChange('auto_cut', checked)}
-        />
-        <PropertyCheckbox
-          title="Calibration Enabled"
-          description="Enable automatic label calibration"
-          checked={config.calibration_enabled ?? true}
-          onChange={(checked) => onFieldChange('calibration_enabled', checked)}
-        />
-        <InputTextField
-          label="Print Copies"
-          type="number"
-          value={config.print_copies?.toString() || '1'}
-          onChange={(value) => onFieldChange('print_copies', parseInt(value) || 1)}
-          placeholder="1"
-          required
-        />
+      {/* Help Text */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+        <h5 className="text-sm font-medium text-indigo-900 mb-2">Label Printer Configuration Notes</h5>
+        <ul className="text-sm text-indigo-800 space-y-1 list-disc list-inside">
+          <li><strong>Label Widths:</strong> Common sizes: 62mm (address labels), 102mm (4" shipping labels)</li>
+          <li><strong>Max Length:</strong> Continuous label printers can print up to 300-1000mm length</li>
+          <li><strong>ZPL Support:</strong> Enable for Zebra printers or ZPL-compatible devices (Dymo, Brother with ZPL emulation)</li>
+          <li><strong>Use Cases:</strong> Shipping (102mm), Product labels (62mm), Price tags (58mm), Barcode labels (76mm)</li>
+          <li><strong>Direct Thermal vs Transfer:</strong> Direct thermal (no ribbon), Thermal transfer (with ribbon, more durable)</li>
+        </ul>
+      </div>
+
+      {/* Common Label Sizes */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h5 className="text-sm font-medium text-blue-900 mb-2">Common Label Printer Configurations</h5>
+        <div className="space-y-2 text-sm text-blue-800">
+          <div>
+            <p className="font-semibold">Zebra ZD420 (Desktop):</p>
+            <p className="ml-2">Widths: 25, 32, 58, 76, 102mm | Max Length: 300mm | ZPL: Yes</p>
+          </div>
+          <div>
+            <p className="font-semibold">Dymo LabelWriter 450:</p>
+            <p className="ml-2">Widths: 19, 28, 36, 54, 62mm | Max Length: 300mm | ZPL: No (uses ESC/POS)</p>
+          </div>
+          <div>
+            <p className="font-semibold">Brother QL-820NWB:</p>
+            <p className="ml-2">Widths: 29, 38, 50, 62mm | Max Length: 1000mm | ZPL: Optional (with firmware)</p>
+          </div>
+          <div>
+            <p className="font-semibold">Zebra ZT411 (Industrial):</p>
+            <p className="ml-2">Widths: 25-170mm | Max Length: 991mm | ZPL: Yes</p>
+          </div>
+        </div>
       </div>
     </div>
   );

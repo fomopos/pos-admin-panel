@@ -11,10 +11,15 @@ import {
   ExclamationTriangleIcon,
   PencilIcon,
   TrashIcon,
-  PlayIcon
+  PlayIcon,
+  ClockIcon,
+  CreditCardIcon,
+  ScaleIcon,
+  TagIcon,
+  InboxIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../ui';
-import type { HardwareDevice, HardwareStatus } from '../../types/hardware';
+import type { HardwareDevice, DeviceStatus, DeviceType } from '../../types/hardware-new.types';
 
 interface HardwareDeviceCardProps {
   device: HardwareDevice;
@@ -34,15 +39,24 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
   className = ''
 }) => {
   // Get device type icon
-  const getDeviceIcon = (deviceType: string) => {
+  const getDeviceIcon = (deviceType: DeviceType) => {
     switch (deviceType) {
       case 'thermal_printer':
-      case 'kitchen_printer':
+      case 'kot_printer':
+      case 'network_printer':
         return PrinterIcon;
-      case 'scanner':
+      case 'barcode_scanner':
         return QrCodeIcon;
+      case 'payment_terminal':
+        return CreditCardIcon;
+      case 'scale':
+        return ScaleIcon;
+      case 'label_printer':
+        return TagIcon;
+      case 'cash_drawer':
+        return InboxIcon;
       default:
-        return PrinterIcon;
+        return CpuChipIcon;
     }
   };
 
@@ -57,56 +71,73 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
         return SignalIcon;
       case 'serial':
         return LinkIcon;
+      case 'aidl':
+        return CpuChipIcon;
+      case 'cloud_print':
+      case 'local_print':
+      case 'sdk':
+      case 'driver':
+        return LinkIcon;
       default:
         return CpuChipIcon;
     }
   };
 
   // Get status styling
-  const getStatusConfig = (status: HardwareStatus = 'unknown') => {
+  const getStatusConfig = (status?: DeviceStatus | null) => {
     switch (status) {
       case 'connected':
         return {
           icon: CheckCircleIcon,
-          className: 'text-green-600 bg-green-50',
+          className: 'text-green-600 bg-green-50 border border-green-200',
           label: 'Connected'
         };
       case 'disconnected':
         return {
           icon: XCircleIcon,
-          className: 'text-gray-500 bg-gray-50',
+          className: 'text-gray-500 bg-gray-50 border border-gray-200',
           label: 'Disconnected'
+        };
+      case 'degraded':
+        return {
+          icon: ExclamationTriangleIcon,
+          className: 'text-yellow-600 bg-yellow-50 border border-yellow-200',
+          label: 'Degraded'
         };
       case 'error':
         return {
           icon: ExclamationTriangleIcon,
-          className: 'text-red-600 bg-red-50',
+          className: 'text-red-600 bg-red-50 border border-red-200',
           label: 'Error'
         };
       default:
         return {
           icon: XCircleIcon,
-          className: 'text-gray-400 bg-gray-50',
+          className: 'text-gray-400 bg-gray-50 border border-gray-200',
           label: 'Unknown'
         };
     }
   };
 
   // Format device type for display
-  const formatDeviceType = (type: string) => {
+  const formatDeviceType = (type: DeviceType) => {
     switch (type) {
       case 'thermal_printer':
         return 'Thermal Printer';
-      case 'kitchen_printer':
+      case 'kot_printer':
         return 'Kitchen KOT Printer';
-      case 'scanner':
+      case 'network_printer':
+        return 'Network Printer';
+      case 'barcode_scanner':
         return 'Barcode Scanner';
-      case 'cash_drawer':
-        return 'Cash Drawer';
-      case 'customer_display':
-        return 'Customer Display';
+      case 'payment_terminal':
+        return 'Payment Terminal';
       case 'scale':
         return 'Scale';
+      case 'label_printer':
+        return 'Label Printer';
+      case 'cash_drawer':
+        return 'Cash Drawer';
       default:
         return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
@@ -114,22 +145,40 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
 
   // Get connection details
   const getConnectionDetails = () => {
-    if (device.connection_type === 'network' && 'ip_address' in device && device.ip_address) {
-      return `${device.ip_address}${device.port ? `:${device.port}` : ''}`;
+    if (device.connection_type === 'network' && device.connection_config) {
+      const config = device.connection_config as any;
+      if (config.ip_address) {
+        return `${config.ip_address}${config.port ? `:${config.port}` : ''}`;
+      }
     }
-    if (device.connection_type === 'usb') {
-      return 'USB Connection';
+    if (device.connection_type === 'bluetooth' && device.connection_config) {
+      const config = device.connection_config as any;
+      if (config.mac_address) {
+        return `BT: ${config.mac_address}`;
+      }
     }
-    if (device.connection_type === 'bluetooth') {
-      return 'Bluetooth Connection';
-    }
-    if (device.connection_type === 'serial') {
-      return 'Serial Connection';
+    if (device.connection_type === 'usb' && device.connection_config) {
+      const config = device.connection_config as any;
+      if (config.vendor_id && config.product_id) {
+        return `USB: ${config.vendor_id}:${config.product_id}`;
+      }
     }
     return device.connection_type.toUpperCase();
   };
 
-  const DeviceIcon = getDeviceIcon(device.type);
+  // Get capabilities badges
+  const getCapabilitiesBadges = () => {
+    if (!device.capabilities) return [];
+    const badges = [];
+    if (device.capabilities.can_print) badges.push({ label: 'Print', icon: '🖨️' });
+    if (device.capabilities.can_scan) badges.push({ label: 'Scan', icon: '📷' });
+    if (device.capabilities.can_accept_payment) badges.push({ label: 'Payment', icon: '💳' });
+    if (device.capabilities.can_weigh) badges.push({ label: 'Weigh', icon: '⚖️' });
+    if (device.capabilities.can_open_drawer) badges.push({ label: 'Drawer', icon: '🗃️' });
+    return badges;
+  };
+
+  const DeviceIcon = getDeviceIcon(device.device_type || 'printer');
   const ConnectionIcon = getConnectionIcon(device.connection_type);
   const statusConfig = getStatusConfig(device.status);
   const StatusIcon = statusConfig.icon;
@@ -155,15 +204,15 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
                 <h3 className="text-sm font-semibold text-gray-900 truncate">
                   {device.name}
                 </h3>
-                {!device.enabled && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                    Disabled
-                  </span>
-                )}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                {formatDeviceType(device.type)}
+                {formatDeviceType(device.device_type || 'printer')}
               </p>
+              {device.model && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {device.model}
+                </p>
+              )}
             </div>
           </div>
 
@@ -173,7 +222,7 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onTest(device.id)}
+                onClick={() => device.device_id && onTest(device.device_id)}
                 className="px-2 py-1 h-8"
                 title="Test Device"
               >
@@ -191,7 +240,7 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(device.id)}
+                onClick={() => device.device_id && onDelete(device.device_id)}
                 className="px-2 py-1 h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                 title="Delete Device"
               >
@@ -220,56 +269,53 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
           <span className="text-xs font-medium text-gray-500">Connection</span>
           <div className="flex items-center space-x-2 text-xs text-gray-700">
             <ConnectionIcon className="w-3 h-3" />
-            <span>{getConnectionDetails()}</span>
+            <span className="font-mono">{getConnectionDetails()}</span>
           </div>
         </div>
 
-        {/* Device-specific info */}
-        {device.type === 'thermal_printer' && 'paper_size' in device && (
+        {/* Capabilities */}
+        {getCapabilitiesBadges().length > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Paper Size</span>
-            <span className="text-xs text-gray-700">
-              {device.paper_size?.replace('_', ' ').toUpperCase()}
-            </span>
-          </div>
-        )}
-
-        {device.type === 'kitchen_printer' && 'kitchen_sections' in device && device.kitchen_sections && (
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Sections</span>
-            <div className="flex flex-wrap gap-1">
-              {device.kitchen_sections.slice(0, 2).map((section) => (
+            <span className="text-xs font-medium text-gray-500">Capabilities</span>
+            <div className="flex flex-wrap gap-1 justify-end">
+              {getCapabilitiesBadges().map((badge) => (
                 <span
-                  key={section}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700"
+                  key={badge.label}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                  title={badge.label}
                 >
-                  {section.replace('_', ' ')}
+                  <span className="mr-1">{badge.icon}</span>
+                  {badge.label}
                 </span>
               ))}
-              {device.kitchen_sections.length > 2 && (
-                <span className="text-xs text-gray-500">
-                  +{device.kitchen_sections.length - 2} more
-                </span>
-              )}
             </div>
           </div>
         )}
 
-        {device.type === 'scanner' && 'scan_mode' in device && (
+        {/* Location */}
+        {device.location && (
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Scan Mode</span>
-            <span className="text-xs text-gray-700">
-              {device.scan_mode?.replace('_', ' ').toUpperCase()}
-            </span>
+            <span className="text-xs font-medium text-gray-500">Location</span>
+            <span className="text-xs text-gray-700">{device.location}</span>
           </div>
         )}
 
-        {/* Last Connected */}
-        {device.last_connected && (
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">Last Connected</span>
+        {/* Description */}
+        {device.description && (
+          <div className="pt-2 border-t border-gray-100">
+            <p className="text-xs text-gray-600 line-clamp-2">{device.description}</p>
+          </div>
+        )}
+
+        {/* Last Online */}
+        {device.last_online && (
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+            <span className="text-xs font-medium text-gray-500 flex items-center">
+              <ClockIcon className="w-3 h-3 mr-1" />
+              Last Online
+            </span>
             <span className="text-xs text-gray-700">
-              {new Date(device.last_connected).toLocaleString()}
+              {new Date(device.last_online).toLocaleString()}
             </span>
           </div>
         )}
