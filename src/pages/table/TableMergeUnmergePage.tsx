@@ -1,68 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
+  ArrowLeftIcon,
   ArrowsPointingOutIcon,
+  ArrowsPointingInIcon,
+  CloudArrowUpIcon,
+  MagnifyingGlassIcon,
+  TableCellsIcon,
   XMarkIcon,
-  TrashIcon,
-  TableCellsIcon
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline';
 import { tableApiService } from '../../services/table';
 import { 
   PageHeader, 
   Button, 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent,
-  Input,
-  DropdownSearch
+  Widget,
+  Alert,
+  Loading,
+  InputTextField
 } from '../../components/ui';
+import { useError } from '../../hooks/useError';
 import type { 
   TableMergeRequest,
   EnhancedTable,
-  DropdownSearchOption 
+  EnhancedZone
 } from '../../types/table';
 import useTenantStore from '../../tenants/tenantStore';
 
 const TableMergeUnmergePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { showError, showSuccess } = useError();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tables, setTables] = useState<EnhancedTable[]>([]);
+  const [zones, setZones] = useState<EnhancedZone[]>([]);
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { currentTenant, currentStore } = useTenantStore();
-
-  const [formData, setFormData] = useState<TableMergeRequest>({
-    new_table_id: '',
-    merged_table_ids: [],
-    name: '',
-    capacity: 0,
-  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    loadTables();
+    loadData();
   }, []);
 
+  // Track changes
   useEffect(() => {
-    // Update form data when selected tables change
-    if (selectedTables.length > 0) {
-      const selectedTableObjects = tables.filter(t => selectedTables.includes(t.table_id));
-      const totalCapacity = selectedTableObjects.reduce((sum, table) => sum + table.capacity, 0);
-      const mergedName = selectedTableObjects.map(t => t.name).join('+');
-      
-      setFormData(prev => ({
-        ...prev,
-        merged_table_ids: selectedTables,
-        capacity: totalCapacity,
-        name: mergedName,
-      }));
-    }
-  }, [selectedTables, tables]);
+    setHasChanges(selectedTables.length >= 2);
+  }, [selectedTables]);
 
-  const loadTables = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       
@@ -71,12 +64,17 @@ const TableMergeUnmergePage: React.FC = () => {
         store_id: currentStore?.store_id,
       };
 
-      const tablesData = await tableApiService.getTables(context, { 
-        status: 'available' // Only show available tables for merging
-      });
+      // Load tables that are combinable
+      const [tablesData, zonesData] = await Promise.all([
+        tableApiService.getTables(context, { is_combinable: true }),
+        tableApiService.getZones(context)
+      ]);
+      
       setTables(tablesData);
+      setZones(zonesData);
     } catch (error) {
-      console.error('Failed to load tables:', error);
+      console.error('Failed to load data:', error);
+      showError(error);
     } finally {
       setLoading(false);
     }
@@ -86,15 +84,17 @@ const TableMergeUnmergePage: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (selectedTables.length < 2) {
-      newErrors.tables = 'Select at least 2 tables to merge';
+      newErrors.tables = t('tables.merge.errors.minTables');
     }
 
-    if (!formData.new_table_id.trim()) {
-      newErrors.new_table_id = 'New table ID is required';
-    }
+    // Check if all selected tables are combinable
+    const nonCombinableTables = selectedTables.filter(tableId => {
+      const table = tables.find(t => t.table_id === tableId);
+      return table && !table.is_combinable;
+    });
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Merged table name is required';
+    if (nonCombinableTables.length > 0) {
+      newErrors.tables = t('tables.merge.errors.notCombinable');
     }
 
     setErrors(newErrors);
@@ -114,247 +114,418 @@ const TableMergeUnmergePage: React.FC = () => {
         store_id: currentStore?.store_id,
       };
 
-      await tableApiService.mergeTables(formData, context);
-      navigate('/tables');
-    } catch (error) {
+      const mergeRequest: TableMergeRequest = {
+        tbl_ids: selectedTables,
+      };
+
+      await tableApiService.mergeTables(mergeRequest, context);
+      showSuccess(t('tables.merge.success'));
+      setHasChanges(false);
+      setTimeout(() => navigate('/tables'), 1500);
+    } catch (error: any) {
       console.error('Failed to merge tables:', error);
+      if (error.code === 400) {
+        showError(t('tables.merge.errors.mergeFailedNotCombinable'));
+      } else {
+        showError(error);
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  const getAvailableTableOptions = (): DropdownSearchOption[] => {
-    return tables
-      .filter(table => !selectedTables.includes(table.table_id))
-      .map(table => ({
-        id: table.table_id,
-        label: table.name,
-        description: `Zone: ${table.zone_name || 'No zone'} • Capacity: ${table.capacity}`,
-      }));
-  };
-
-  const handleTableSelect = (option: DropdownSearchOption | null) => {
-    if (option && !selectedTables.includes(option.id)) {
-      setSelectedTables(prev => [...prev, option.id]);
+  const handleTableToggle = (tableId: string) => {
+    setSelectedTables(prev => {
+      if (prev.includes(tableId)) {
+        return prev.filter(id => id !== tableId);
+      } else {
+        return [...prev, tableId];
+      }
+    });
+    
+    // Clear error when user selects tables
+    if (errors.tables) {
+      setErrors(prev => ({ ...prev, tables: '' }));
     }
-  };
-
-  const removeSelectedTable = (tableId: string) => {
-    setSelectedTables(prev => prev.filter(id => id !== tableId));
   };
 
   const getSelectedTableDetails = () => {
     return tables.filter(t => selectedTables.includes(t.table_id));
   };
 
+  const getTotalCapacity = () => {
+    return getSelectedTableDetails().reduce((sum, table) => sum + table.capacity, 0);
+  };
+
+  const getZoneName = (zoneId: string | null | undefined): string => {
+    if (!zoneId) return t('tables.table.noZone');
+    const zone = zones.find(z => z.zone_id === zoneId);
+    return zone?.zone_name || t('tables.table.unknownZone');
+  };
+
+  // Filter tables based on search term
+  const getFilteredTables = () => {
+    if (!searchTerm.trim()) return tables;
+    
+    const lowerSearch = searchTerm.toLowerCase().trim();
+    return tables.filter(table => {
+      const tableNumber = table.table_number?.toLowerCase() || '';
+      const zoneName = getZoneName(table.zone_id).toLowerCase();
+      const capacity = table.capacity?.toString() || '';
+      
+      return tableNumber.includes(lowerSearch) ||
+             zoneName.includes(lowerSearch) ||
+             capacity.includes(lowerSearch);
+    });
+  };
+
+  // Get tables grouped by zone for better organization
+  const getTablesByZone = () => {
+    const filteredTables = getFilteredTables();
+    const grouped: Record<string, EnhancedTable[]> = {};
+    
+    // Add unzoned group
+    grouped['__unzoned__'] = [];
+    
+    filteredTables.forEach(table => {
+      if (!table.zone_id) {
+        grouped['__unzoned__'].push(table);
+      } else {
+        if (!grouped[table.zone_id]) {
+          grouped[table.zone_id] = [];
+        }
+        grouped[table.zone_id].push(table);
+      }
+    });
+
+    return grouped;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'occupied':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'reserved':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'cleaning':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading tables for merging...</p>
-        </div>
-      </div>
+      <Loading 
+        title={t('tables.merge.loading')}
+        description={t('common.loadingDescription')}
+        size="lg"
+        fullScreen={true}
+      />
     );
   }
 
   const selectedTableDetails = getSelectedTableDetails();
+  const tablesByZone = getTablesByZone();
 
   return (
-    <div className="p-6">
+    <div className="space-y-6 p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <PageHeader
-        title="Merge Tables"
-        description="Combine multiple tables into a single larger table for parties"
+        title={t('tables.merge.title')}
+        description={t('tables.merge.description')}
       >
         <div className="flex items-center space-x-3">
           <Button
             variant="outline"
             onClick={() => navigate('/tables')}
+            className="flex items-center space-x-2"
           >
-            <XMarkIcon className="w-5 h-5 mr-2" />
-            Cancel
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>{t('tables.table.backToTables')}</span>
           </Button>
-          <Button
-            onClick={handleMerge}
-            disabled={saving || selectedTables.length < 2}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {saving ? 'Merging...' : 'Merge Tables'}
-          </Button>
+          
+          {hasChanges && (
+            <Button
+              onClick={handleMerge}
+              disabled={saving}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6"
+            >
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>{t('common.saving')}</span>
+                </>
+              ) : (
+                <>
+                  <CloudArrowUpIcon className="h-4 w-4" />
+                  <span>{t('tables.merge.mergeButton')}</span>
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </PageHeader>
 
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Table Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <TableCellsIcon className="h-6 w-6 mr-2" />
-                Select Tables to Merge
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Table Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add Table to Merge
-                </label>
-                <DropdownSearch
-                  label="Table Selection"
-                  value=""
-                  options={getAvailableTableOptions()}
-                  onSelect={handleTableSelect}
-                  displayValue={() => 'Select a table to add...'}
-                  placeholder="Choose table..."
-                  searchPlaceholder="Search tables..."
+      {/* Instructions Alert */}
+      <Alert variant="info">
+        <div className="flex items-start space-x-3">
+          <div>
+            <p className="font-medium text-blue-900">{t('tables.merge.instructionsTitle')}</p>
+            <p className="text-sm text-blue-700 mt-1">{t('tables.merge.instructionsText')}</p>
+          </div>
+        </div>
+      </Alert>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Table Selection Widget - Takes 2 columns */}
+        <Widget
+          title={t('tables.merge.selectTables')}
+          description={t('tables.merge.selectTablesDescription')}
+          icon={TableCellsIcon}
+          className="lg:col-span-2"
+        >
+          {tables.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <TableCellsIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="font-medium">{t('tables.merge.noTablesAvailable')}</p>
+              <p className="text-sm mt-1">{t('tables.merge.noTablesAvailableDesc')}</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Search Input */}
+              <div className="relative">
+                <InputTextField
+                  label=""
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  placeholder={t('tables.merge.searchPlaceholder')}
+                  prefixIcon={MagnifyingGlassIcon}
+                  inputClassName="h-11"
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  Only available tables can be merged
-                </p>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                )}
               </div>
 
+              {/* Results count */}
+              {searchTerm && (
+                <p className="text-sm text-gray-500">
+                  {t('tables.merge.searchResults', { 
+                    count: getFilteredTables().length, 
+                    total: tables.length 
+                  })}
+                </p>
+              )}
+
+              {/* No search results state */}
+              {searchTerm && getFilteredTables().length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <MagnifyingGlassIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p className="font-medium">{t('tables.merge.noSearchResults')}</p>
+                  <p className="text-sm mt-1">{t('tables.merge.tryDifferentSearch')}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearchTerm('')}
+                    className="mt-4"
+                  >
+                    {t('common.clearSearch')}
+                  </Button>
+                </div>
+              )}
+
+              {/* Zone-grouped tables (only show when there are results) */}
+              {(!searchTerm || getFilteredTables().length > 0) && Object.entries(tablesByZone).map(([zoneId, zoneTables]) => {
+                if (zoneTables.length === 0) return null;
+                
+                const zoneName = zoneId === '__unzoned__' 
+                  ? t('tables.table.noZone')
+                  : getZoneName(zoneId);
+
+                return (
+                  <div key={zoneId}>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                      <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs mr-2">
+                        {zoneName}
+                      </span>
+                      <span className="text-gray-400 text-xs">
+                        {zoneTables.length} {t('tables.merge.tablesInZone')}
+                      </span>
+                    </h4>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {zoneTables.map((table) => {
+                        const isSelected = selectedTables.includes(table.table_id);
+                        const isDisabled = table.status !== 'available' || !table.is_combinable;
+                        
+                        return (
+                          <button
+                            key={table.table_id}
+                            onClick={() => !isDisabled && handleTableToggle(table.table_id)}
+                            disabled={isDisabled}
+                            className={`
+                              relative p-4 rounded-lg border-2 transition-all duration-200 text-left
+                              ${isSelected 
+                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
+                                : isDisabled
+                                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+                                  : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer'
+                              }
+                            `}
+                          >
+                            {/* Selection indicator */}
+                            {isSelected && (
+                              <div className="absolute top-2 right-2">
+                                <CheckCircleIcon className="h-5 w-5 text-blue-600" />
+                              </div>
+                            )}
+
+                            {/* Merged indicator */}
+                            {table.is_combined && !isSelected && (
+                              <div className="absolute top-2 right-2" title={t('tables.merge.alreadyMerged')}>
+                                <LinkIcon className="h-4 w-4 text-purple-500" />
+                              </div>
+                            )}
+                            
+                            {/* Table number */}
+                            <div className={`font-semibold text-lg ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                              {table.table_number}
+                            </div>
+                            
+                            {/* Capacity */}
+                            <div className="text-sm text-gray-500 mt-1">
+                              {t('tables.table.capacity')}: {table.capacity}
+                            </div>
+                            
+                            {/* Status badge */}
+                            <div className={`
+                              inline-block mt-2 px-2 py-0.5 rounded text-xs font-medium border
+                              ${getStatusColor(table.status)}
+                            `}>
+                              {t(`tables.status.${table.status}`)}
+                            </div>
+                            
+                            {/* Merged badge */}
+                            {table.is_combined && (
+                              <div className="mt-2 text-xs text-purple-600 flex items-center bg-purple-50 px-2 py-0.5 rounded-full w-fit">
+                                <LinkIcon className="h-3 w-3 mr-1" />
+                                {t('tables.merge.merged')}
+                              </div>
+                            )}
+
+                            {/* Not combinable warning */}
+                            {!table.is_combinable && (
+                              <div className="mt-2 text-xs text-amber-600 flex items-center">
+                                <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+                                {t('tables.merge.notCombinable')}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {errors.tables && (
+            <p className="mt-4 text-sm text-red-600">{errors.tables}</p>
+          )}
+        </Widget>
+
+        {/* Merge Summary Widget */}
+        <Widget
+          title={t('tables.merge.summary')}
+          description={t('tables.merge.summaryDescription')}
+          icon={ArrowsPointingOutIcon}
+        >
+          {selectedTables.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <ArrowsPointingInIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="font-medium">{t('tables.merge.noTablesSelected')}</p>
+              <p className="text-sm mt-1">{t('tables.merge.selectAtLeastTwo')}</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
               {/* Selected Tables List */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Selected Tables ({selectedTables.length})
+                  {t('tables.merge.selectedTables')} ({selectedTables.length})
                 </label>
-                {selectedTables.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <TableCellsIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No tables selected for merging</p>
-                    <p className="text-sm">Select at least 2 tables to merge</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {selectedTableDetails.map((table, index) => (
-                      <div
-                        key={table.table_id}
-                        className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">{table.name}</div>
-                            <div className="text-sm text-gray-600">
-                              {table.zone_name || 'No zone'} • Capacity: {table.capacity}
-                            </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {selectedTableDetails.map((table, index) => (
+                    <div
+                      key={table.table_id}
+                      className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{table.table_number}</div>
+                          <div className="text-sm text-gray-600">
+                            {getZoneName(table.zone_id)} • {t('tables.table.capacity')}: {table.capacity}
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => removeSelectedTable(table.table_id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </Button>
                       </div>
-                    ))}
-                  </div>
-                )}
-                {errors.tables && (
-                  <p className="mt-1 text-sm text-red-600">{errors.tables}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Merge Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ArrowsPointingOutIcon className="h-6 w-6 mr-2" />
-                Merged Table Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* New Table ID */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Table ID *
-                </label>
-                <Input
-                  value={formData.new_table_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, new_table_id: e.target.value }))}
-                  placeholder="e.g., TBL_MERGED_01"
-                  error={errors.new_table_id}
-                />
-                {errors.new_table_id && (
-                  <p className="mt-1 text-sm text-red-600">{errors.new_table_id}</p>
-                )}
+                      <button
+                        onClick={() => handleTableToggle(table.table_id)}
+                        className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                      >
+                        <XMarkIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Merged Table Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Merged Table Name *
-                </label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Tables 1+2+3"
-                  error={errors.name}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Total Capacity */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Capacity
-                </label>
-                <Input
-                  type="number"
-                  value={formData.capacity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, capacity: parseInt(e.target.value) || 0 }))}
-                  placeholder="0"
-                  disabled
-                />
-                <p className="mt-1 text-sm text-gray-500">
-                  Automatically calculated from selected tables
-                </p>
-              </div>
-
-              {/* Merge Summary */}
-              {selectedTables.length > 0 && (
+              {/* Summary Stats */}
+              {selectedTables.length >= 2 && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h4 className="font-medium text-green-900 mb-3">Merge Summary</h4>
+                  <h4 className="font-medium text-green-900 mb-3">{t('tables.merge.mergeSummary')}</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-green-600">Tables to merge:</span>
-                      <span className="font-medium">{selectedTables.length}</span>
+                      <span className="text-green-700">{t('tables.merge.tablesToMerge')}:</span>
+                      <span className="font-medium text-green-900">{selectedTables.length}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-green-600">Total capacity:</span>
-                      <span className="font-medium">{formData.capacity} guests</span>
+                      <span className="text-green-700">{t('tables.merge.totalCapacity')}:</span>
+                      <span className="font-medium text-green-900">{getTotalCapacity()} {t('tables.merge.guests')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-green-600">New table name:</span>
-                      <span className="font-medium">{formData.name || 'Not specified'}</span>
+                      <span className="text-green-700">{t('tables.merge.mergedTableName')}:</span>
+                      <span className="font-medium text-green-900">
+                        {selectedTableDetails.map(t => t.table_number).join('+')}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Merge Instructions */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-medium text-yellow-900 mb-2">Important Notes</h4>
-                <ul className="text-sm text-yellow-800 space-y-1">
-                  <li>• Selected tables will be temporarily unavailable during merge</li>
-                  <li>• The merged table will appear as a single unit</li>
-                  <li>• You can unmerge tables later if needed</li>
-                  <li>• All original table properties will be preserved for unmerging</li>
+              {/* Important Notes */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <h4 className="font-medium text-amber-900 mb-2">{t('tables.merge.importantNotes')}</h4>
+                <ul className="text-sm text-amber-800 space-y-1">
+                  <li>• {t('tables.merge.note1')}</li>
+                  <li>• {t('tables.merge.note2')}</li>
+                  <li>• {t('tables.merge.note3')}</li>
                 </ul>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          )}
+        </Widget>
       </div>
     </div>
   );

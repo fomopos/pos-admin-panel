@@ -123,8 +123,8 @@ const TableDetailPage: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <PageHeader
-        title={`Table ${table.name}`}
-        description={`Details and management for table ${table.name} in ${table.zone_name || 'no zone'}`}
+        title={`Table ${table.table_number}`}
+        description={`Details and management for table ${table.table_number} in ${table.zone_name || 'no zone'}`}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -166,8 +166,8 @@ const TableDetailPage: React.FC = () => {
                         <div className="font-medium">{table.table_id}</div>
                       </div>
                       <div>
-                        <span className="text-sm text-gray-600">Name:</span>
-                        <div className="font-medium">{table.name}</div>
+                        <span className="text-sm text-gray-600">Table Number:</span>
+                        <div className="font-medium">{table.table_number}</div>
                       </div>
                       <div>
                         <span className="text-sm text-gray-600">Zone:</span>
@@ -192,8 +192,8 @@ const TableDetailPage: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <span className="text-sm text-gray-600">Active:</span>
-                        <div className="font-medium">{table.active ? 'Yes' : 'No'}</div>
+                        <span className="text-sm text-gray-600">Combinable:</span>
+                        <div className="font-medium">{table.is_combinable ? 'Yes' : 'No'}</div>
                       </div>
                       {(table.position_x !== undefined || table.position_y !== undefined) && (
                         <div>

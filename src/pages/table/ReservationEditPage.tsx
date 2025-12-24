@@ -223,10 +223,10 @@ const ReservationEditPage: React.FC = () => {
 
   const getTableDropdownOptions = (): DropdownSearchOption[] => {
     return tables
-      .filter(table => table.active)
+      .filter(table => table.status === 'available' || table.status === 'reserved')
       .map(table => ({
         id: table.table_id,
-        label: table.name,
+        label: table.table_number,
         description: `Zone: ${table.zone_name || 'No zone'} • Capacity: ${table.capacity} • Status: ${table.status}`,
       }));
   };
@@ -235,7 +235,7 @@ const ReservationEditPage: React.FC = () => {
     if (!formData.table_id) return 'Select a table...';
     
     const table = tables.find(t => t.table_id === formData.table_id);
-    return table ? `${table.name} (${table.zone_name || 'No zone'})` : 'Unknown Table';
+    return table ? `${table.table_number} (${table.zone_name || 'No zone'})` : 'Unknown Table';
   };
 
   const handleTableSelect = (option: DropdownSearchOption | null) => {
@@ -432,8 +432,8 @@ const ReservationEditPage: React.FC = () => {
                   <h4 className="font-medium text-blue-900 mb-2">Selected Table Details</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div>
-                      <span className="text-blue-600">Name:</span>
-                      <div className="font-medium">{selectedTable.name}</div>
+                      <span className="text-blue-600">Table:</span>
+                      <div className="font-medium">{selectedTable.table_number}</div>
                     </div>
                     <div>
                       <span className="text-blue-600">Zone:</span>

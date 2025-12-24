@@ -140,12 +140,12 @@ export const AdvancedSearchFilter: React.FC<AdvancedSearchFilterProps> = ({
     if (!onViewModeChange || enabledViews.length <= 1) return null;
 
     return (
-      <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white">
+      <div className="flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white h-12">
         {enabledViews.includes('grid') && (
           <button
             onClick={() => onViewModeChange('grid')}
             className={cn(
-              'p-2 transition-colors',
+              'h-full px-3.5 flex items-center justify-center transition-colors',
               viewMode === 'grid'
                 ? 'bg-primary-100 text-primary-600'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -159,7 +159,7 @@ export const AdvancedSearchFilter: React.FC<AdvancedSearchFilterProps> = ({
           <button
             onClick={() => onViewModeChange('list')}
             className={cn(
-              'p-2 transition-colors border-l border-slate-300',
+              'h-full px-3.5 flex items-center justify-center transition-colors border-l border-slate-300',
               viewMode === 'list'
                 ? 'bg-primary-100 text-primary-600'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -173,7 +173,7 @@ export const AdvancedSearchFilter: React.FC<AdvancedSearchFilterProps> = ({
           <button
             onClick={() => onViewModeChange('table')}
             className={cn(
-              'p-2 transition-colors border-l border-slate-300',
+              'h-full px-3.5 flex items-center justify-center transition-colors border-l border-slate-300',
               viewMode === 'table'
                 ? 'bg-primary-100 text-primary-600'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -274,7 +274,7 @@ export const AdvancedSearchFilter: React.FC<AdvancedSearchFilterProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-2">
             {/* Advanced Filters Toggle */}
             {hasAdvancedFilters && (
               <Button
