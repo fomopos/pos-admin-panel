@@ -1,11 +1,10 @@
 // Table API service for backend integration
-import { apiClient, ApiError, USE_MOCK_DATA } from '../api';
+import { apiClient, ApiError } from '../api';
 import type {
   Table,
   TableZone,
   Reservation,
   ServerAssignment,
-  TableMerge,
   CreateTableRequest,
   UpdateTableRequest,
   CreateZoneRequest,
@@ -14,6 +13,7 @@ import type {
   UpdateReservationRequest,
   ServerAssignmentRequest,
   TableMergeRequest,
+  TableMergeResponse,
   TableUnmergeRequest,
   UpdateTableStatusRequest,
   TablesApiResponse,
@@ -24,7 +24,14 @@ import type {
   ZoneQueryParams,
   EnhancedTable,
   EnhancedZone,
-  EnhancedReservation
+  EnhancedReservation,
+  TableStatusEntity,
+  TableStatusesApiResponse,
+  TableStatusQueryParams,
+  SeatTableRequest,
+  SeatTableResponse,
+  ClearTableRequest,
+  ClearTableResponse
 } from '../../types/table';
 
 export interface ApiContext {
@@ -33,27 +40,23 @@ export interface ApiContext {
 }
 
 class TableApiService {
-  private basePath = '/v0/tenant';
+  private basePath = '/v0/store';
 
-  private getPath(tenantId: string, storeId: string, endpoint: string): string {
-    return `${this.basePath}/${tenantId}/store/${storeId}${endpoint}`;
+  private getPath(storeId: string, endpoint: string): string {
+    return `${this.basePath}/${storeId}${endpoint}`;
   }
 
   // ===== TABLE OPERATIONS =====
 
   async getTables(context: ApiContext, params?: TableQueryParams): Promise<EnhancedTable[]> {
-    if (USE_MOCK_DATA) {
-      return this.getMockTables(params);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/table');
-      const response = await apiClient.get<TablesApiResponse>(path, { params });
+      const path = this.getPath(store_id, '/table');
+      const response = await apiClient.get<TablesApiResponse>(path, params);
       
       // Enhance tables with additional information
       return this.enhanceTables(response.data.tables);
@@ -63,22 +66,13 @@ class TableApiService {
   }
 
   async getTable(tableId: string, context: ApiContext): Promise<EnhancedTable> {
-    if (USE_MOCK_DATA) {
-      const tables = await this.getMockTables();
-      const table = tables.find(t => t.table_id === tableId);
-      if (!table) {
-        throw new ApiError('Table not found', 404);
-      }
-      return table;
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/table/${tableId}`);
+      const path = this.getPath(store_id, `/table/${tableId}`);
       const response = await apiClient.get<Table>(path);
       
       return this.enhanceTable(response.data);
@@ -88,17 +82,13 @@ class TableApiService {
   }
 
   async createTable(tableData: CreateTableRequest, context: ApiContext): Promise<Table> {
-    if (USE_MOCK_DATA) {
-      return this.createMockTable(tableData);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/table');
+      const path = this.getPath(store_id, '/table');
       const response = await apiClient.post<Table>(path, tableData);
       
       return response.data;
@@ -108,17 +98,13 @@ class TableApiService {
   }
 
   async updateTable(tableId: string, tableData: UpdateTableRequest, context: ApiContext): Promise<Table> {
-    if (USE_MOCK_DATA) {
-      return this.updateMockTable(tableId, tableData);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/table/${tableId}`);
+      const path = this.getPath(store_id, `/table/${tableId}`);
       const response = await apiClient.put<Table>(path, tableData);
       
       return response.data;
@@ -128,36 +114,115 @@ class TableApiService {
   }
 
   async deleteTable(tableId: string, context: ApiContext): Promise<void> {
-    if (USE_MOCK_DATA) {
-      return this.deleteMockTable(tableId);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/table/${tableId}`);
+      const path = this.getPath(store_id, `/table/${tableId}`);
       await apiClient.delete(path);
     } catch (error) {
       throw this.handleApiError(error);
     }
   }
 
-  async updateTableStatus(tableId: string, statusData: UpdateTableStatusRequest, context: ApiContext): Promise<Table> {
-    if (USE_MOCK_DATA) {
-      return this.updateMockTableStatus(tableId, statusData);
-    }
+  // ===== TABLE STATUS OPERATIONS =====
 
+  /**
+   * Get all table statuses
+   * GET /v0/store/:storeId/table-status
+   */
+  async getTableStatuses(context: ApiContext, params?: TableStatusQueryParams): Promise<TableStatusEntity[]> {
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/table/${tableId}/status`);
-      const response = await apiClient.patch<Table>(path, statusData);
+      const path = this.getPath(store_id, '/table-status');
+      const response = await apiClient.get<TableStatusesApiResponse>(path, params);
+      
+      return response.data.statuses;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Get status for a specific table
+   * GET /v0/store/:storeId/table/:tableId/status
+   */
+  async getTableStatus(tableId: string, context: ApiContext): Promise<TableStatusEntity> {
+    const { tenant_id, store_id } = context;
+    if (!tenant_id || !store_id) {
+      throw new ApiError('Tenant ID and Store ID are required');
+    }
+
+    try {
+      const path = this.getPath(store_id, `/table/${tableId}/status`);
+      const response = await apiClient.get<TableStatusEntity>(path);
+      
+      return response.data;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Update table status
+   * PATCH /v0/store/:storeId/table/:tableId/status
+   */
+  async updateTableStatus(tableId: string, statusData: UpdateTableStatusRequest, context: ApiContext): Promise<TableStatusEntity> {
+    const { tenant_id, store_id } = context;
+    if (!tenant_id || !store_id) {
+      throw new ApiError('Tenant ID and Store ID are required');
+    }
+
+    try {
+      const path = this.getPath(store_id, `/table/${tableId}/status`);
+      const response = await apiClient.patch<TableStatusEntity>(path, statusData);
+      
+      return response.data;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Seat a table (marks as occupied with party details)
+   * POST /v0/store/:storeId/table/:tableId/seat
+   */
+  async seatTable(tableId: string, seatData: SeatTableRequest, context: ApiContext): Promise<SeatTableResponse> {
+    const { tenant_id, store_id } = context;
+    if (!tenant_id || !store_id) {
+      throw new ApiError('Tenant ID and Store ID are required');
+    }
+
+    try {
+      const path = this.getPath(store_id, `/table/${tableId}/seat`);
+      const response = await apiClient.post<SeatTableResponse>(path, seatData);
+      
+      return response.data;
+    } catch (error) {
+      throw this.handleApiError(error);
+    }
+  }
+
+  /**
+   * Clear a table (marks as available, clears all occupancy details)
+   * POST /v0/store/:storeId/table/:tableId/clear
+   */
+  async clearTable(tableId: string, clearData?: ClearTableRequest, context?: ApiContext): Promise<ClearTableResponse> {
+    const ctx = context || {};
+    const { tenant_id, store_id } = ctx;
+    if (!tenant_id || !store_id) {
+      throw new ApiError('Tenant ID and Store ID are required');
+    }
+
+    try {
+      const path = this.getPath(store_id, `/table/${tableId}/clear`);
+      const response = await apiClient.post<ClearTableResponse>(path, clearData || {});
       
       return response.data;
     } catch (error) {
@@ -168,18 +233,14 @@ class TableApiService {
   // ===== ZONE OPERATIONS =====
 
   async getZones(context: ApiContext, params?: ZoneQueryParams): Promise<EnhancedZone[]> {
-    if (USE_MOCK_DATA) {
-      return this.getMockZones(params);
-    }
-
-    const { tenant_id, store_id } = context;
-    if (!tenant_id || !store_id) {
-      throw new ApiError('Tenant ID and Store ID are required');
+    const { store_id } = context;
+    if (!store_id) {
+      throw new ApiError('Store ID is required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/zone');
-      const response = await apiClient.get<ZonesApiResponse>(path, { params });
+      const path = this.getPath(store_id, '/zone');
+      const response = await apiClient.get<ZonesApiResponse>(path, params);
       
       return this.enhanceZones(response.data.zones);
     } catch (error) {
@@ -188,22 +249,13 @@ class TableApiService {
   }
 
   async getZone(zoneId: string, context: ApiContext): Promise<EnhancedZone> {
-    if (USE_MOCK_DATA) {
-      const zones = await this.getMockZones();
-      const zone = zones.find(z => z.zone_id === zoneId);
-      if (!zone) {
-        throw new ApiError('Zone not found', 404);
-      }
-      return zone;
-    }
-
-    const { tenant_id, store_id } = context;
-    if (!tenant_id || !store_id) {
-      throw new ApiError('Tenant ID and Store ID are required');
+    const { store_id } = context;
+    if (!store_id) {
+      throw new ApiError('Store ID is required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/zone/${zoneId}`);
+      const path = this.getPath(store_id, `/zone/${zoneId}`);
       const response = await apiClient.get<TableZone>(path);
       
       return this.enhanceZone(response.data);
@@ -213,17 +265,13 @@ class TableApiService {
   }
 
   async createZone(zoneData: CreateZoneRequest, context: ApiContext): Promise<TableZone> {
-    if (USE_MOCK_DATA) {
-      return this.createMockZone(zoneData);
-    }
-
-    const { tenant_id, store_id } = context;
-    if (!tenant_id || !store_id) {
-      throw new ApiError('Tenant ID and Store ID are required');
+    const { store_id } = context;
+    if (!store_id) {
+      throw new ApiError('Store ID is required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/zone');
+      const path = this.getPath(store_id, '/zone');
       const response = await apiClient.post<TableZone>(path, zoneData);
       
       return response.data;
@@ -233,17 +281,13 @@ class TableApiService {
   }
 
   async updateZone(zoneId: string, zoneData: UpdateZoneRequest, context: ApiContext): Promise<TableZone> {
-    if (USE_MOCK_DATA) {
-      return this.updateMockZone(zoneId, zoneData);
-    }
-
-    const { tenant_id, store_id } = context;
-    if (!tenant_id || !store_id) {
-      throw new ApiError('Tenant ID and Store ID are required');
+    const { store_id } = context;
+    if (!store_id) {
+      throw new ApiError('Store ID is required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/zone/${zoneId}`);
+      const path = this.getPath(store_id, `/zone/${zoneId}`);
       const response = await apiClient.put<TableZone>(path, zoneData);
       
       return response.data;
@@ -253,36 +297,28 @@ class TableApiService {
   }
 
   async deleteZone(zoneId: string, context: ApiContext): Promise<void> {
-    if (USE_MOCK_DATA) {
-      return this.deleteMockZone(zoneId);
-    }
-
-    const { tenant_id, store_id } = context;
-    if (!tenant_id || !store_id) {
-      throw new ApiError('Tenant ID and Store ID are required');
+    const { store_id } = context;
+    if (!store_id) {
+      throw new ApiError('Store ID is required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/zone/${zoneId}`);
+      const path = this.getPath(store_id, `/zone/${zoneId}`);
       await apiClient.delete(path);
+      // Note: Returns 409 Conflict if zone has tables assigned
     } catch (error) {
       throw this.handleApiError(error);
     }
   }
 
   async getTablesByZone(zoneId: string, context: ApiContext): Promise<EnhancedTable[]> {
-    if (USE_MOCK_DATA) {
-      const tables = await this.getMockTables();
-      return tables.filter(t => t.zone_id === zoneId);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/zone/${zoneId}/table`);
+      const path = this.getPath(store_id, `/zone/${zoneId}/table`);
       const response = await apiClient.get<TablesApiResponse>(path);
       
       return this.enhanceTables(response.data.tables);
@@ -294,9 +330,12 @@ class TableApiService {
   // ===== RESERVATION OPERATIONS =====
 
   async getReservations(context: ApiContext, params?: ReservationQueryParams): Promise<EnhancedReservation[]> {
-    if (USE_MOCK_DATA) {
-      return this.getMockReservations(params);
-    }
+    // Default to current date if no date param provided
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const queryParams: ReservationQueryParams = {
+      date: today,
+      ...params, // Allow override if date is explicitly provided
+    };
 
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
@@ -304,8 +343,8 @@ class TableApiService {
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/reservation');
-      const response = await apiClient.get<ReservationsApiResponse>(path, { params });
+      const path = this.getPath(store_id, '/reservations');
+      const response = await apiClient.get<ReservationsApiResponse>(path, queryParams);
       
       return this.enhanceReservations(response.data.reservations);
     } catch (error) {
@@ -314,17 +353,13 @@ class TableApiService {
   }
 
   async createReservation(reservationData: CreateReservationRequest, context: ApiContext): Promise<Reservation> {
-    if (USE_MOCK_DATA) {
-      return this.createMockReservation(reservationData);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/reservation');
+      const path = this.getPath(store_id, '/reservations');
       const response = await apiClient.post<Reservation>(path, reservationData);
       
       return response.data;
@@ -334,17 +369,13 @@ class TableApiService {
   }
 
   async updateReservation(reservationId: string, reservationData: UpdateReservationRequest, context: ApiContext): Promise<Reservation> {
-    if (USE_MOCK_DATA) {
-      return this.updateMockReservation(reservationId, reservationData);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/reservation/${reservationId}`);
+      const path = this.getPath(store_id, `/reservations/${reservationId}`);
       const response = await apiClient.put<Reservation>(path, reservationData);
       
       return response.data;
@@ -356,17 +387,13 @@ class TableApiService {
   // ===== SERVER ASSIGNMENT OPERATIONS =====
 
   async assignServer(assignmentData: ServerAssignmentRequest, context: ApiContext): Promise<ServerAssignment> {
-    if (USE_MOCK_DATA) {
-      return this.createMockServerAssignment(assignmentData);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/server/assign');
+      const path = this.getPath(store_id, '/server/assign');
       const response = await apiClient.post<ServerAssignment>(path, assignmentData);
       
       return response.data;
@@ -376,17 +403,13 @@ class TableApiService {
   }
 
   async getTableServer(tableId: string, context: ApiContext): Promise<ServerAssignment | null> {
-    if (USE_MOCK_DATA) {
-      return this.getMockTableServer(tableId);
-    }
-
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, `/table/${tableId}/server`);
+      const path = this.getPath(store_id, `/table/${tableId}/server`);
       const response = await apiClient.get<ServerAssignment>(path);
       
       return response.data;
@@ -400,19 +423,16 @@ class TableApiService {
 
   // ===== TABLE MERGE/UNMERGE OPERATIONS =====
 
-  async mergeTables(mergeData: TableMergeRequest, context: ApiContext): Promise<TableMerge> {
-    if (USE_MOCK_DATA) {
-      return this.createMockTableMerge(mergeData);
-    }
-
+  async mergeTables(mergeData: TableMergeRequest, context: ApiContext): Promise<TableMergeResponse> {
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/table/merge');
-      const response = await apiClient.post<TableMerge>(path, mergeData);
+      // API endpoint: POST /v0/store/:storeId/tables/merge
+      const path = this.getPath(store_id, '/tables/merge');
+      const response = await apiClient.post<TableMergeResponse>(path, mergeData);
       
       return response.data;
     } catch (error) {
@@ -420,19 +440,18 @@ class TableApiService {
     }
   }
 
-  async unmergeTables(unmergeData: TableUnmergeRequest, context: ApiContext): Promise<void> {
-    if (USE_MOCK_DATA) {
-      return this.deleteMockTableMerge(unmergeData.merged_table_id);
-    }
-
+  async unmergeTables(unmergeData: TableUnmergeRequest, context: ApiContext): Promise<TableMergeResponse> {
     const { tenant_id, store_id } = context;
     if (!tenant_id || !store_id) {
       throw new ApiError('Tenant ID and Store ID are required');
     }
 
     try {
-      const path = this.getPath(tenant_id, store_id, '/table/unmerge');
-      await apiClient.post(path, unmergeData);
+      // API endpoint: POST /v0/store/:storeId/tables/unmerge
+      const path = this.getPath(store_id, '/tables/unmerge');
+      const response = await apiClient.post<TableMergeResponse>(path, unmergeData);
+      
+      return response.data;
     } catch (error) {
       throw this.handleApiError(error);
     }
@@ -459,9 +478,8 @@ class TableApiService {
   private enhanceZone(zone: TableZone): EnhancedZone {
     return {
       ...zone,
-      table_count: 0, // Would be calculated from actual table data
-      available_tables: 0,
-      occupied_tables: 0,
+      // table_count comes from API response
+      // available_tables and occupied_tables can be computed if needed
     };
   }
 
@@ -509,325 +527,6 @@ class TableApiService {
     }
     
     return new ApiError('Network error occurred');
-  }
-
-  // ===== MOCK DATA METHODS =====
-
-  private async getMockTables(params?: TableQueryParams): Promise<EnhancedTable[]> {
-    const mockTables: EnhancedTable[] = [
-      {
-        table_id: 'TBL001',
-        zone_id: 'ZONE01',
-        zone_name: 'Dining Room',
-        name: 'T1',
-        capacity: 4,
-        status: 'available',
-        active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        create_user_id: 'user1',
-        update_user_id: null,
-      },
-      {
-        table_id: 'TBL002',
-        zone_id: 'ZONE01',
-        zone_name: 'Dining Room',
-        name: 'T2',
-        capacity: 6,
-        status: 'occupied',
-        active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        create_user_id: 'user1',
-        update_user_id: null,
-      },
-      {
-        table_id: 'TBL003',
-        zone_id: 'ZONE02',
-        zone_name: 'Patio',
-        name: 'P1',
-        capacity: 2,
-        status: 'reserved',
-        active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        create_user_id: 'user1',
-        update_user_id: null,
-      },
-    ];
-
-    let filtered = mockTables;
-
-    if (params?.zone_id) {
-      filtered = filtered.filter(t => t.zone_id === params.zone_id);
-    }
-
-    if (params?.status) {
-      filtered = filtered.filter(t => t.status === params.status);
-    }
-
-    if (params?.active !== undefined) {
-      filtered = filtered.filter(t => t.active === params.active);
-    }
-
-    return filtered;
-  }
-
-  private async getMockZones(params?: ZoneQueryParams): Promise<EnhancedZone[]> {
-    const mockZones: EnhancedZone[] = [
-      {
-        zone_id: 'ZONE01',
-        name: 'Dining Room',
-        description: 'Main dining area',
-        color: '#3B82F6',
-        active: true,
-        sort_order: 1,
-        table_count: 8,
-        available_tables: 4,
-        occupied_tables: 3,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        create_user_id: 'user1',
-        update_user_id: null,
-      },
-      {
-        zone_id: 'ZONE02',
-        name: 'Patio',
-        description: 'Outdoor seating area',
-        color: '#10B981',
-        active: true,
-        sort_order: 2,
-        table_count: 6,
-        available_tables: 5,
-        occupied_tables: 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        create_user_id: 'user1',
-        update_user_id: null,
-      },
-    ];
-
-    let filtered = mockZones;
-
-    if (params?.active !== undefined) {
-      filtered = filtered.filter(z => z.active === params.active);
-    }
-
-    return filtered;
-  }
-
-  private async getMockReservations(params?: ReservationQueryParams): Promise<EnhancedReservation[]> {
-    const now = new Date();
-    const today = new Date();
-    today.setHours(19, 0, 0, 0);
-
-    const mockReservations: EnhancedReservation[] = [
-      {
-        reservation_id: 'RSV10001',
-        table_id: 'TBL001',
-        table_name: 'T1',
-        customer_name: 'John Doe',
-        contact: '+1234567890',
-        reservation_time: today.toISOString(),
-        number_of_guests: 4,
-        notes: 'Birthday dinner',
-        status: 'confirmed',
-        is_today: true,
-        is_upcoming: today > now,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        create_user_id: 'user1',
-        update_user_id: null,
-      },
-    ];
-
-    let filtered = mockReservations;
-
-    if (params?.date) {
-      const filterDate = new Date(params.date);
-      filtered = filtered.filter(r => {
-        const reservationDate = new Date(r.reservation_time);
-        return reservationDate.toDateString() === filterDate.toDateString();
-      });
-    }
-
-    if (params?.status) {
-      filtered = filtered.filter(r => r.status === params.status);
-    }
-
-    if (params?.table_id) {
-      filtered = filtered.filter(r => r.table_id === params.table_id);
-    }
-
-    return filtered;
-  }
-
-  private createMockTable(tableData: CreateTableRequest): Table {
-    return {
-      table_id: tableData.table_id || `TBL${Date.now()}`,
-      zone_id: tableData.zone_id || null,
-      name: tableData.name,
-      capacity: tableData.capacity,
-      status: tableData.status || 'available',
-      active: tableData.active !== false,
-      position_x: tableData.position_x,
-      position_y: tableData.position_y,
-      width: tableData.width,
-      height: tableData.height,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: null,
-    };
-  }
-
-  private updateMockTable(tableId: string, tableData: UpdateTableRequest): Table {
-    // In a real implementation, this would update the stored data
-    return {
-      table_id: tableId,
-      zone_id: tableData.zone_id || null,
-      name: tableData.name || `Table ${tableId}`,
-      capacity: tableData.capacity || 4,
-      status: tableData.status || 'available',
-      active: tableData.active !== false,
-      position_x: tableData.position_x,
-      position_y: tableData.position_y,
-      width: tableData.width,
-      height: tableData.height,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: 'mock_user',
-    };
-  }
-
-  private deleteMockTable(tableId: string): void {
-    // In a real implementation, this would remove the table from storage
-    console.log(`Mock: Deleted table ${tableId}`);
-  }
-
-  private updateMockTableStatus(tableId: string, statusData: UpdateTableStatusRequest): Table {
-    return {
-      table_id: tableId,
-      zone_id: null,
-      name: `Table ${tableId}`,
-      capacity: 4,
-      status: statusData.status,
-      active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: 'mock_user',
-    };
-  }
-
-  private createMockZone(zoneData: CreateZoneRequest): TableZone {
-    return {
-      zone_id: zoneData.zone_id || `ZONE${Date.now()}`,
-      name: zoneData.name,
-      description: zoneData.description,
-      color: zoneData.color,
-      active: zoneData.active !== false,
-      sort_order: zoneData.sort_order,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: null,
-    };
-  }
-
-  private updateMockZone(zoneId: string, zoneData: UpdateZoneRequest): TableZone {
-    return {
-      zone_id: zoneId,
-      name: zoneData.name || `Zone ${zoneId}`,
-      description: zoneData.description,
-      color: zoneData.color,
-      active: zoneData.active !== false,
-      sort_order: zoneData.sort_order,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: 'mock_user',
-    };
-  }
-
-  private deleteMockZone(zoneId: string): void {
-    console.log(`Mock: Deleted zone ${zoneId}`);
-  }
-
-  private createMockReservation(reservationData: CreateReservationRequest): Reservation {
-    return {
-      reservation_id: reservationData.reservation_id || `RSV${Date.now()}`,
-      table_id: reservationData.table_id,
-      customer_name: reservationData.customer_name,
-      contact: reservationData.contact,
-      reservation_time: reservationData.reservation_time,
-      number_of_guests: reservationData.number_of_guests,
-      notes: reservationData.notes,
-      status: reservationData.status || 'confirmed',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: null,
-    };
-  }
-
-  private updateMockReservation(reservationId: string, reservationData: UpdateReservationRequest): Reservation {
-    return {
-      reservation_id: reservationId,
-      table_id: reservationData.table_id || 'TBL001',
-      customer_name: reservationData.customer_name || 'Customer',
-      contact: reservationData.contact || '',
-      reservation_time: reservationData.reservation_time || new Date().toISOString(),
-      number_of_guests: reservationData.number_of_guests || 2,
-      notes: reservationData.notes,
-      status: reservationData.status || 'confirmed',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      create_user_id: 'mock_user',
-      update_user_id: 'mock_user',
-    };
-  }
-
-  private createMockServerAssignment(assignmentData: ServerAssignmentRequest): ServerAssignment {
-    return {
-      assignment_id: `ASG${Date.now()}`,
-      table_id: assignmentData.table_id,
-      server_id: assignmentData.server_id,
-      server_name: assignmentData.server_name,
-      assigned_at: new Date().toISOString(),
-      assigned_by: 'mock_user',
-    };
-  }
-
-  private getMockTableServer(tableId: string): ServerAssignment | null {
-    if (tableId === 'TBL002') {
-      return {
-        assignment_id: 'ASG001',
-        table_id: tableId,
-        server_id: 'SERVER01',
-        server_name: 'Alice Smith',
-        assigned_at: new Date().toISOString(),
-        assigned_by: 'mock_user',
-      };
-    }
-    return null;
-  }
-
-  private createMockTableMerge(mergeData: TableMergeRequest): TableMerge {
-    return {
-      merged_table_id: `MERGE${Date.now()}`,
-      new_table_id: mergeData.new_table_id,
-      merged_table_ids: mergeData.merged_table_ids,
-      name: mergeData.name,
-      capacity: mergeData.capacity,
-      merged_at: new Date().toISOString(),
-      merged_by: 'mock_user',
-    };
-  }
-
-  private deleteMockTableMerge(mergedTableId: string): void {
-    console.log(`Mock: Unmerged table ${mergedTableId}`);
   }
 }
 

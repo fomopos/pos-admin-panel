@@ -1,7 +1,13 @@
-// Device configuration components
-export { default as NetworkPrinterConfig } from './NetworkPrinterConfig';
-export { default as ThermalPrinterConfig } from './ThermalPrinterConfig';
-export { default as KitchenPrinterConfig } from './KitchenPrinterConfig';
-export { default as ScannerConfig } from './ScannerConfig';
-export { default as CashDrawerConfig } from './CashDrawerConfig';
-export { default as LabelPrinterConfig } from './LabelPrinterConfig';
+/**
+ * Device Configuration Forms
+ * 
+ * Reusable form components for different hardware device types.
+ * Simplified API with 6 device types and unified printer configuration.
+ */
+
+export { PrinterConfigForm } from './PrinterConfig';
+export { ScannerConfigForm } from './ScannerConfigForm';
+export { PaymentConfigForm } from './PaymentConfigForm';
+export { ScaleConfigForm } from './ScaleConfigForm';
+export { DrawerConfigForm } from './DrawerConfigForm';
+export { DisplayConfigForm } from './DisplayConfigForm';

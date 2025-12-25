@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   PlusIcon, 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
-  Squares2X2Icon, 
-  ListBulletIcon,
   TagIcon,
   EyeIcon,
   PencilIcon,
@@ -14,8 +10,9 @@ import {
   PercentBadgeIcon
 } from '@heroicons/react/24/outline';
 import { discountApiService } from '../services/discount/discountApiService';
-import { PageHeader, Button, ConfirmDialog } from '../components/ui';
+import { PageHeader, Button, ConfirmDialog, AdvancedSearchFilter } from '../components/ui';
 import type { Discount } from '../types/discount';
+import type { FilterConfig, ViewMode } from '../components/ui/AdvancedSearchFilter';
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
@@ -27,7 +24,7 @@ const Discounts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [loading, setLoading] = useState(true);
   const { currentTenant, currentStore } = useTenantStore();
 
@@ -65,6 +62,13 @@ const Discounts: React.FC = () => {
     }
   };
 
+  const isDiscountActive = (discount: Discount) => {
+    const now = new Date();
+    const startDate = new Date(discount.effective_datetime);
+    const endDate = new Date(discount.expr_datetime);
+    return now >= startDate && now <= endDate;
+  };
+
   const handleDelete = async (discountId: string) => {
     const discount = discounts.find(d => d.discount_id === discountId);
     if (!discount) {
@@ -97,15 +101,80 @@ const Discounts: React.FC = () => {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const isDiscountActive = (discount: Discount) => {
-    const now = new Date();
-    const startDate = new Date(discount.effective_datetime);
-    const endDate = new Date(discount.expr_datetime);
-    return now >= startDate && now <= endDate;
+  // Filter configuration for AdvancedSearchFilter
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: 'type',
+      label: 'Type',
+      type: 'dropdown',
+      options: [
+        { id: 'DISCOUNT', label: 'Discount' },
+        { id: 'VOUCHER', label: 'Voucher' },
+        { id: 'COUPON', label: 'Coupon' }
+      ],
+      value: selectedType
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'dropdown',
+      options: [
+        { id: 'active', label: 'Active' },
+        { id: 'inactive', label: 'Inactive' }
+      ],
+      value: selectedStatus
+    }
+  ];
+
+  // Handle filter changes from AdvancedSearchFilter
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === 'type') {
+      setSelectedType(value as string);
+    } else if (key === 'status') {
+      setSelectedStatus(value as string);
+    }
+  };
+
+  // Active filters for badge display
+  const activeFilters: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+  
+  if (searchTerm) {
+    activeFilters.push({
+      key: 'search',
+      label: 'Search',
+      value: searchTerm,
+      onRemove: () => setSearchTerm('')
+    });
+  }
+  
+  if (selectedType) {
+    const typeLabel = filterConfigs[0].options?.find(opt => opt.id === selectedType)?.label || selectedType;
+    activeFilters.push({
+      key: 'type',
+      label: 'Type',
+      value: typeLabel,
+      onRemove: () => setSelectedType('')
+    });
+  }
+  
+  if (selectedStatus) {
+    const statusLabel = filterConfigs[1].options?.find(opt => opt.id === selectedStatus)?.label || selectedStatus;
+    activeFilters.push({
+      key: 'status',
+      label: 'Status',
+      value: statusLabel,
+      onRemove: () => setSelectedStatus('')
+    });
+  }
+
+  const handleClearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedType('');
+    setSelectedStatus('');
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <PageHeader
         title="Discounts"
         description="Manage your store's discounts and promotional offers"
@@ -120,54 +189,23 @@ const Discounts: React.FC = () => {
       </PageHeader>
 
       {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-        <div className="flex-1 relative">
-          <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search discounts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <FunnelIcon className="w-5 h-5 text-gray-400" />
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Types</option>
-            <option value="DISCOUNT">Discount</option>
-            <option value="VOUCHER">Voucher</option>
-            <option value="COUPON">Coupon</option>
-          </select>
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <div className="flex border border-gray-300 rounded-lg">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-2 ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
-          >
-            <Squares2X2Icon className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-2 ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400'}`}
-          >
-            <ListBulletIcon className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+      <AdvancedSearchFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchLabel=""
+        searchPlaceholder="Search by discount code or description..."
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        enabledViews={['grid', 'list']}
+        filters={filterConfigs}
+        onFilterChange={handleFilterChange}
+        activeFilters={activeFilters}
+        totalResults={discounts.length}
+        filteredResults={filteredDiscounts.length}
+        showResultsCount={true}
+        onClearAll={handleClearAllFilters}
+        className="mb-6"
+      />
 
       {/* Loading State */}
       {loading ? (

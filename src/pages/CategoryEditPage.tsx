@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
-  CheckCircleIcon,
   TrashIcon,
   PlusIcon,
   TagIcon,
@@ -17,6 +16,7 @@ import {
   SwatchIcon
 } from '@heroicons/react/24/outline';
 import { categoryApiService } from '../services/category/categoryApiService';
+import { categoryCacheService } from '../services/category/categoryCache';
 import { PageHeader, Button, Input, Alert, ConfirmDialog, Loading, PropertyCheckbox, InputTextField, DropdownSearch, IconPicker } from '../components/ui';
 import { getIconComponent } from '../components/ui/IconPicker';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -29,6 +29,7 @@ import { useTenantStore } from '../tenants/tenantStore';
 import { CategoryUtils } from '../utils/categoryUtils';
 import { useDeleteConfirmDialog, useDiscardChangesDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
+import { useCategories } from '../hooks/useCategories';
 
 // Category templates for quick setup
 const CATEGORY_TEMPLATES = [
@@ -90,12 +91,19 @@ const CategoryEditPage: React.FC = () => {
   
   const isEditing = Boolean(id);
   const [originalCategory, setOriginalCategory] = useState<EnhancedCategory | null>(null);
-  const [categories, setCategories] = useState<EnhancedCategory[]>([]);
+  
+  // Use cached categories instead of loading them directly
+  const { categories } = useCategories({
+    tenantId: currentTenant?.id,
+    storeId: currentStore?.store_id,
+    autoLoad: true
+  });
   
   // Generate a random color only for new categories
   const defaultColor = useMemo(() => generateRandomColor(), []);
 
   const [formData, setFormData] = useState<CategoryFormData>({
+    category_id: '',
     name: '',
     description: '',
     parent_category_id: undefined,
@@ -105,8 +113,8 @@ const CategoryEditPage: React.FC = () => {
     icon_url: undefined,
     image_url: undefined,
     tags: [],
+    color: defaultColor, // Use generated random color for new categories
     properties: {
-      color: defaultColor, // Use generated random color for new categories
       tax_rate: 0,
       commission_rate: 0,
       featured: false,
@@ -118,7 +126,6 @@ const CategoryEditPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
   
   const [showTemplates, setShowTemplates] = useState(!isEditing);
@@ -135,15 +142,12 @@ const CategoryEditPage: React.FC = () => {
         setIsLoading(true);
         setFetchError(null);
 
-        // Load all categories for parent selection
-        const allCategories = await categoryApiService.getCategories({
-          tenant_id: currentTenant?.id,
-          store_id: currentStore?.store_id
-        });
-        setCategories(allCategories);
+        // Use cached categories instead of API call
+        // Categories are already loaded by the useCategories hook
 
         // If editing, load the specific category
         if (isEditing && id) {
+          const { categoryApiService } = await import('../services/category/categoryApiService');
           const categoryData = await categoryApiService.getCategoryById(id, {
             tenant_id: currentTenant?.id,
             store_id: currentStore?.store_id
@@ -153,6 +157,7 @@ const CategoryEditPage: React.FC = () => {
           
           // Map to form data
           setFormData({
+            category_id: categoryData.category_id,
             name: categoryData.name,
             description: categoryData.description || '',
             parent_category_id: categoryData.parent_category_id || undefined,
@@ -162,8 +167,8 @@ const CategoryEditPage: React.FC = () => {
             icon_url: categoryData.icon_url || undefined,
             image_url: categoryData.image_url || undefined,
             tags: categoryData.tags || [],
+            color: categoryData.color || '#3B82F6',
             properties: {
-              color: categoryData.color || '#3B82F6',
               tax_rate: categoryData.properties?.tax_rate || 0,
               commission_rate: categoryData.properties?.commission_rate || 0,
               featured: categoryData.properties?.featured || false,
@@ -188,6 +193,7 @@ const CategoryEditPage: React.FC = () => {
     if (isEditing && originalCategory) {
       // Compare current form data with original category
       const currentData = {
+        category_id: formData.category_id,
         name: formData.name,
         description: formData.description || '',
         parent_category_id: formData.parent_category_id || undefined,
@@ -197,11 +203,13 @@ const CategoryEditPage: React.FC = () => {
         icon_url: formData.icon_url || undefined,
         image_url: formData.image_url || undefined,
         tags: formData.tags,
+        color: formData.color || '#3B82F6',
         properties: formData.properties
       };
 
       // Apply the same transformations to original data as were applied when setting form data
       const originalData = {
+        category_id: originalCategory.category_id,
         name: originalCategory.name,
         description: originalCategory.description || '',
         parent_category_id: originalCategory.parent_category_id || undefined,
@@ -211,8 +219,8 @@ const CategoryEditPage: React.FC = () => {
         icon_url: originalCategory.icon_url || undefined,
         image_url: originalCategory.image_url || undefined,
         tags: originalCategory.tags || [],
+        color: originalCategory.color || '#3B82F6',
         properties: {
-          color: originalCategory.color || '#3B82F6',
           tax_rate: originalCategory.properties?.tax_rate || 0,
           commission_rate: originalCategory.properties?.commission_rate || 0,
           featured: originalCategory.properties?.featured || false,
@@ -224,7 +232,8 @@ const CategoryEditPage: React.FC = () => {
       setHasChanges(JSON.stringify(currentData) !== JSON.stringify(originalData));
     } else if (!isEditing) {
       // For new categories, check if any fields are filled
-      const hasData = formData.name.trim() !== '' || 
+      const hasData = formData.category_id?.trim() !== '' ||
+                     formData.name.trim() !== '' || 
                      formData.description.trim() !== '' ||
                      formData.tags.length > 0 ||
                      formData.parent_category_id !== undefined;
@@ -250,8 +259,9 @@ const CategoryEditPage: React.FC = () => {
 
   const handlePropertyChange = (field: string, value: any) => {
     if (field === 'color') {
-      // Handle color at parent level
-      setFormData(prev => ({ ...prev, color: value }));
+      // Handle color at parent level with validation
+      const validColor = value && /^#[0-9A-F]{6}$/i.test(value) ? value : '#3B82F6';
+      setFormData(prev => ({ ...prev, color: validColor }));
     } else {
       // Handle other properties in properties object
       setFormData(prev => ({
@@ -294,9 +304,9 @@ const CategoryEditPage: React.FC = () => {
       description: template.description,
       tags: template.tags,
       icon_url: template.icon,
+      color: template.color,
       properties: {
-        ...prev.properties,
-        color: template.color
+        ...prev.properties
       }
     }));
     setShowTemplates(false);
@@ -311,6 +321,18 @@ const CategoryEditPage: React.FC = () => {
     
     if (formData.name.length > 100) {
       newErrors.name = 'Category name must be less than 100 characters';
+    }
+
+    // Validate category_id if provided
+    if (formData.category_id && formData.category_id.trim().length > 0) {
+      if (formData.category_id.trim().length > 20) {
+        newErrors.category_id = 'Category ID must be less than 20 characters';
+      }
+      
+      const validIdPattern = /^[a-zA-Z0-9\-_]+$/;
+      if (!validIdPattern.test(formData.category_id.trim())) {
+        newErrors.category_id = 'Category ID can only contain letters, numbers, hyphens, and underscores';
+      }
     }
     
     setErrors(newErrors);
@@ -340,26 +362,50 @@ const CategoryEditPage: React.FC = () => {
 
       const categoryData = {
         ...formData,
+        // Generate ID on frontend if empty to ensure consistent short format
+        category_id: (formData.category_id && formData.category_id.trim()) || CategoryUtils.generateCategoryId(),
       };
 
       if (isEditing && id) {
-        await categoryApiService.updateCategory(id, categoryData, {
+        const updatedCategory = await categoryApiService.updateCategory(id, categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
         
+        // Update the cache with the updated category (convert from API response to Enhanced)
+        if (updatedCategory && currentTenant && currentStore) {
+          const enhancedCategory: EnhancedCategory = {
+            ...updatedCategory,
+            color: updatedCategory.color || undefined,
+            productCount: 0,
+            children: [],
+            level: 0
+          };
+          categoryCacheService.addOrUpdateCategory(currentTenant.id, currentStore.store_id, enhancedCategory, false);
+        }
+        
         // Use error framework for success message
         showSuccess('Category updated successfully!');
-        setSuccessMessage('Category updated successfully!');
       } else {
-        await categoryApiService.createCategory(categoryData, {
+        const newCategory = await categoryApiService.createCategory(categoryData, {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
-        }); 
+        });
+        
+        // Add the new category to the cache (convert from API response to Enhanced)
+        if (newCategory && currentTenant && currentStore) {
+          const enhancedCategory: EnhancedCategory = {
+            ...newCategory,
+            color: newCategory.color || undefined,
+            productCount: 0,
+            children: [],
+            level: 0
+          };
+          categoryCacheService.addOrUpdateCategory(currentTenant.id, currentStore.store_id, enhancedCategory, true);
+        }
         
         // Use error framework for success message
         showSuccess('Category created successfully!');
-        setSuccessMessage('Category created successfully!');
         setTimeout(() => navigate('/categories'), 1500);
       }
       
@@ -387,6 +433,12 @@ const CategoryEditPage: React.FC = () => {
           tenant_id: currentTenant?.id,
           store_id: currentStore?.store_id
         });
+        
+        // Remove the category from cache
+        if (currentTenant && currentStore) {
+          categoryCacheService.removeCategory(currentTenant.id, currentStore.store_id, id);
+        }
+        
         navigate('/categories');
       }
     );
@@ -397,6 +449,7 @@ const CategoryEditPage: React.FC = () => {
       if (originalCategory) {
         // Reset form data to match exactly how it was initially loaded
         setFormData({
+          category_id: originalCategory.category_id,
           name: originalCategory.name,
           description: originalCategory.description || '',
           parent_category_id: originalCategory.parent_category_id || undefined,
@@ -406,8 +459,8 @@ const CategoryEditPage: React.FC = () => {
           icon_url: originalCategory.icon_url || undefined,
           image_url: originalCategory.image_url || undefined,
           tags: originalCategory.tags || [],
+          color: originalCategory.color || '#3B82F6',
           properties: {
-            color: originalCategory.color || '#3B82F6', // Use the same logic as initial load
             tax_rate: originalCategory.properties?.tax_rate || 0,
             commission_rate: originalCategory.properties?.commission_rate || 0,
             featured: originalCategory.properties?.featured || false,
@@ -418,6 +471,7 @@ const CategoryEditPage: React.FC = () => {
       } else {
         // Reset to empty form with new random color
         setFormData({
+          category_id: '',
           name: '',
           description: '',
           parent_category_id: undefined,
@@ -427,8 +481,8 @@ const CategoryEditPage: React.FC = () => {
           icon_url: undefined,
           image_url: undefined,
           tags: [],
+          color: defaultColor, // Use the same default random color
           properties: {
-            color: defaultColor, // Use the same default random color
             tax_rate: 0,
             commission_rate: 0,
             featured: false,
@@ -607,14 +661,6 @@ const CategoryEditPage: React.FC = () => {
         </div>
       </PageHeader>
 
-      {/* Success Message */}
-      {successMessage && (
-        <Alert variant="success" className="mb-4">
-          <CheckCircleIcon className="h-5 w-5" />
-          {successMessage}
-        </Alert>
-      )}
-
       {/* Template Selection for New Categories */}
       {showTemplates && !isEditing && (
         <CategoryWidget
@@ -696,8 +742,42 @@ const CategoryEditPage: React.FC = () => {
                 onChange={(value) => handleInputChange('name', value)}
                 placeholder="Enter category name"
                 error={errors.name}
-                colSpan="md:col-span-2"
+                colSpan="md:col-span-1"
               />
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Category ID
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={formData.category_id || ''}
+                    onChange={(e) => handleInputChange('category_id', e.target.value)}
+                    placeholder={isEditing ? 'Cannot change when editing' : 'Auto-generated if empty'}
+                    className="flex-1"
+                    disabled={isEditing}
+                    error={errors.category_id}
+                  />
+                  {!isEditing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleInputChange('category_id', CategoryUtils.generateCategoryId())}
+                      className="px-3"
+                    >
+                      Generate
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {isEditing 
+                    ? 'Category ID cannot be changed when editing'
+                    : 'Leave empty for auto-generated ID (e.g., CK7M2N4X)'
+                  }
+                </p>
+              </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -808,7 +888,7 @@ const CategoryEditPage: React.FC = () => {
                     type="color"
                     value={formData.color || '#3B82F6'}
                     onChange={(e) => handlePropertyChange('color', e.target.value)}
-                    className="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer"
+                    className="w-12 h-12 border border-gray-300 rounded-lg cursor-pointer shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <Input
                     type="text"
@@ -816,11 +896,12 @@ const CategoryEditPage: React.FC = () => {
                     onChange={(e) => handlePropertyChange('color', e.target.value)}
                     className="flex-1"
                     placeholder="#3B82F6"
+                    pattern="^#[0-9A-Fa-f]{6}$"
                   />
                   <button
                     type="button"
                     onClick={() => handleColorRefresh(generateRandomColor())}
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-300 transition-colors"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 border border-gray-300 transition-colors shadow-sm"
                     title="Generate random color"
                   >
                     <FontAwesomeIcon icon={faRotateRight} className="h-4 w-4" />

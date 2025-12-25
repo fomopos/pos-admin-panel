@@ -14,10 +14,10 @@ interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, children, ...props }, ref) => (
-    <div className="overflow-hidden rounded-xl border border-slate-200">
+    <div className="overflow-hidden">
       <table
         ref={ref}
-        className={cn('min-w-full divide-y divide-slate-200', className)}
+        className={cn('min-w-full', className)}
         {...props}
       >
         {children}
@@ -36,7 +36,7 @@ const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
   ({ className, children, ...props }, ref) => (
     <thead
       ref={ref}
-      className={cn('bg-slate-50', className)}
+      className={cn('bg-slate-50 border-b border-slate-200', className)}
       {...props}
     >
       {children}
@@ -54,7 +54,7 @@ const TableBody = React.forwardRef<HTMLTableSectionElement, TableBodyProps>(
   ({ className, children, ...props }, ref) => (
     <tbody
       ref={ref}
-      className={cn('bg-white divide-y divide-slate-200', className)}
+      className={cn('bg-white', className)}
       {...props}
     >
       {children}
@@ -74,7 +74,8 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
     <tr
       ref={ref}
       className={cn(
-        hoverable && 'hover:bg-slate-50 transition-colors',
+        'even:bg-slate-50',
+        hoverable && 'hover:bg-slate-100 transition-colors',
         className
       )}
       {...props}

@@ -5,6 +5,7 @@ export interface ValidationResult {
 }
 
 export interface CategoryFormData {
+  category_id?: string;
   name: string;
   description: string;
   parent_category_id?: string;
@@ -23,6 +24,8 @@ export class CategoryValidationRules {
    */
   static validateField(fieldName: string, value: any, _formData: CategoryFormData): ValidationResult {
     switch (fieldName) {
+      case 'category_id':
+        return this.validateCategoryId(value);
       case 'name':
         return this.validateName(value);
       case 'description':
@@ -36,6 +39,28 @@ export class CategoryValidationRules {
       default:
         return { isValid: true };
     }
+  }
+
+  /**
+   * Validate category ID format
+   */
+  static validateCategoryId(categoryId: string): ValidationResult {
+    // Category ID is optional for creation (will be auto-generated)
+    if (!categoryId || categoryId.trim().length === 0) {
+      return { isValid: true };
+    }
+
+    if (categoryId.trim().length > 20) {
+      return { isValid: false, error: 'Category ID must be less than 20 characters' };
+    }
+
+    // Check for valid ID characters (letters, numbers, hyphens, underscores)
+    const validIdPattern = /^[a-zA-Z0-9\-_]+$/;
+    if (!validIdPattern.test(categoryId.trim())) {
+      return { isValid: false, error: 'Category ID can only contain letters, numbers, hyphens, and underscores' };
+    }
+
+    return { isValid: true };
   }
 
   /**

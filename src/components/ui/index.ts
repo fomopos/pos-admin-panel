@@ -14,6 +14,7 @@ export { default as TimeSlotPicker } from './TimeSlotPicker';
 // New unified components
 export { Tabs, TabsList, TabsTrigger, TabsContent, EnhancedTabs } from './Tabs';
 export { PageHeader } from './PageHeader';
+export { default as PageContainer } from './PageContainer';
 export { Alert } from './Alert';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Modal } from './Modal';
@@ -28,13 +29,34 @@ export { CompactToggle } from './CompactToggle';
 export { IconPicker } from './IconPicker';
 export { Widget } from './Widget';
 export { SearchAndFilter } from './SearchAndFilter';
+export { AdvancedSearchFilter } from './AdvancedSearchFilter';
 export { Badge } from './Badge';
 export { TagsInput } from './TagsInput';
 export { default as PermissionGuard, AdminGuard, RoleManagerGuard, UserManagerGuard } from './PermissionGuard';
 export { default as VersionDisplay } from './VersionDisplay';
 export { default as JsonViewerEditor } from './JsonViewerEditor';
 export { default as ResizablePanels } from './ResizablePanels';
+export { 
+  Typography, 
+  H1, 
+  H2, 
+  H3, 
+  H4, 
+  H5, 
+  H6, 
+  Body1, 
+  Body2, 
+  Subtitle1, 
+  Subtitle2, 
+  Caption, 
+  Overline, 
+  Label 
+} from './Typography';
 
 // Re-export types
 export type { ButtonProps } from './Button';
 export type { BadgeProps } from './Badge';
+export type { PageContainerProps } from './PageContainer';
+export type { TypographyProps, TypographyVariant, TypographyColor, TypographyAlign, TypographyWeight } from './Typography';
+export type { Column } from './DataTable';
+export type { AdvancedSearchFilterProps, ViewMode, FilterConfig } from './AdvancedSearchFilter';

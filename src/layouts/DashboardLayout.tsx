@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTenantStore } from '../tenants/tenantStore';
 import { authService } from '../auth/authService';
+import logoSvg from '../assets/logo_border.svg';
 import { PermissionManager, usePermissions } from '../utils/permissions';
 import { VersionDisplay } from '../components/ui';
 import {
@@ -85,6 +86,7 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.products'), href: '/products', icon: CubeIcon },
         { name: t('nav.categories'), href: '/categories', icon: TagIcon },
         { name: t('nav.discounts'), href: '/discounts', icon: PercentBadgeIcon },
+        { name: 'Reason Codes', href: '/reason-codes', icon: DocumentTextIcon },
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
         { name: t('nav.tableManagement'), href: '/tables', icon: TableCellsIcon },
         { name: t('nav.employeeShifts'), href: '/employee-shifts', icon: UserGroupIcon },
@@ -231,9 +233,7 @@ const DashboardLayout: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <div className="flex items-center">
-              <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-lg mr-3">
-                <span className="text-white font-bold text-sm">P</span>
-              </div>
+              <img src={logoSvg} alt="Logo" className="w-8 h-8 mr-3" />
               <span className="text-lg font-semibold text-gray-900">POS Admin</span>
             </div>
             <button
@@ -538,12 +538,8 @@ const DashboardLayout: React.FC = () => {
         </div>
 
         {/* Page content */}
-        <main className="flex-1">
-          <div className="py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <Outlet />
-            </div>
-          </div>
+        <main className="flex-1 p-8">
+          <Outlet />
         </main>
       </div>
 

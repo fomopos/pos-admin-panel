@@ -109,7 +109,7 @@ class GlobalModifierService {
    * Get all global modifier groups for a store
    */
   async getGlobalModifierGroups(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string,
     filters?: {
       active?: boolean;
@@ -274,7 +274,7 @@ class GlobalModifierService {
       if (filters?.includeModifiers) params.append('include_modifiers', 'true'); // Add parameter for embedded modifiers
 
       const queryString = params.toString();
-      const url = `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups${queryString ? `?${queryString}` : ''}`;
+      const url = `/v0/store/${storeId}/global-modifier-groups${queryString ? `?${queryString}` : ''}`;
       
       const response = await apiClient.get<GlobalModifierGroupsResponse>(url);
       return response.data;
@@ -288,7 +288,7 @@ class GlobalModifierService {
    * Get a single global modifier group by ID (includes modifiers)
    */
   async getGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupId: string
   ): Promise<ApiGlobalModifierGroup> {
@@ -353,7 +353,7 @@ class GlobalModifierService {
 
     try {
       const response = await apiClient.get<ApiGlobalModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}`
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}`
       );
       return response.data;
     } catch (error) {
@@ -366,13 +366,13 @@ class GlobalModifierService {
    * Create a new global modifier group
    */
   async createGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupData: CreateGlobalModifierGroupRequest
   ): Promise<ApiGlobalModifierGroup> {
     try {
       const response = await apiClient.post<ApiGlobalModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups`,
+        `/v0/store/${storeId}/global-modifier-groups`,
         groupData
       );
       return response.data;
@@ -386,14 +386,14 @@ class GlobalModifierService {
    * Update an existing global modifier group
    */
   async updateGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupId: string, 
     groupData: UpdateGlobalModifierGroupRequest
   ): Promise<ApiGlobalModifierGroup> {
     try {
       const response = await apiClient.put<ApiGlobalModifierGroup>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}`,
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}`,
         groupData
       );
       return response.data;
@@ -407,13 +407,13 @@ class GlobalModifierService {
    * Delete a global modifier group
    */
   async deleteGlobalModifierGroup(
-    tenantId: string, 
+    _tenantId: string, 
     storeId: string, 
     groupId: string
   ): Promise<void> {
     try {
       await apiClient.delete(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}`
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}`
       );
     } catch (error) {
       console.error('Error deleting global modifier group:', error);
@@ -429,14 +429,14 @@ class GlobalModifierService {
    * Apply a global modifier group template to a product
    */
   async applyTemplateToProduct(
-    tenantId: string,
+    _tenantId: string,
     storeId: string,
     templateGroupId: string,
     itemId: string
   ): Promise<void> {
     try {
       await apiClient.post(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${templateGroupId}/apply-to-product`,
+        `/v0/store/${storeId}/global-modifier-groups/${templateGroupId}/apply-to-product`,
         { item_id: itemId }
       );
     } catch (error) {
@@ -449,7 +449,7 @@ class GlobalModifierService {
    * Get usage statistics for a global modifier group
    */
   async getTemplateUsageStats(
-    tenantId: string,
+    _tenantId: string,
     storeId: string,
     groupId: string
   ): Promise<{
@@ -475,7 +475,7 @@ class GlobalModifierService {
         usage_count: number;
         products: Array<{ item_id: string; name: string }>;
       }>(
-        `/v0/tenant/${tenantId}/store/${storeId}/global-modifier-groups/${groupId}/usage`
+        `/v0/store/${storeId}/global-modifier-groups/${groupId}/usage`
       );
       return response.data;
     } catch (error) {

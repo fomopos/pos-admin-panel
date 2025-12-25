@@ -155,10 +155,59 @@ const TerminalSettings: React.FC = () => {
 
   const getPlatformIcon = (platform: string) => {
     const platformLower = platform.toLowerCase();
-    if (platformLower.includes('android') || platformLower.includes('mobile')) {
-      return <DevicePhoneMobileIcon className="w-5 h-5" />;
+    
+    // iOS
+    if (platformLower.includes('ios') || platformLower.includes('iphone') || platformLower.includes('ipad')) {
+      return (
+        <div className="relative">
+          <DevicePhoneMobileIcon className="w-5 h-5 text-slate-700" />
+          <span className="absolute -bottom-0.5 -right-0.5 text-[8px]">🍎</span>
+        </div>
+      );
     }
-    return <ComputerDesktopIcon className="w-5 h-5" />;
+    
+    // Android
+    if (platformLower.includes('android')) {
+      return (
+        <div className="relative">
+          <DevicePhoneMobileIcon className="w-5 h-5 text-green-600" />
+          <span className="absolute -bottom-0.5 -right-0.5 text-[8px]">🤖</span>
+        </div>
+      );
+    }
+    
+    // macOS
+    if (platformLower.includes('mac') || platformLower.includes('darwin')) {
+      return (
+        <div className="relative">
+          <ComputerDesktopIcon className="w-5 h-5 text-slate-700" />
+          <span className="absolute -bottom-0.5 -right-0.5 text-[8px]">🍎</span>
+        </div>
+      );
+    }
+    
+    // Windows
+    if (platformLower.includes('windows') || platformLower.includes('win32')) {
+      return (
+        <div className="relative">
+          <ComputerDesktopIcon className="w-5 h-5 text-blue-600" />
+          <span className="absolute -bottom-0.5 -right-0.5 text-[8px]">🪟</span>
+        </div>
+      );
+    }
+    
+    // Linux
+    if (platformLower.includes('linux')) {
+      return (
+        <div className="relative">
+          <ComputerDesktopIcon className="w-5 h-5 text-orange-600" />
+          <span className="absolute -bottom-0.5 -right-0.5 text-[8px]">🐧</span>
+        </div>
+      );
+    }
+    
+    // Default fallback
+    return <ComputerDesktopIcon className="w-5 h-5 text-slate-600" />;
   };
 
   const filteredTerminals = Object.values(state.terminals).filter(terminal => {
@@ -546,6 +595,7 @@ const TerminalFormModal: React.FC<TerminalFormModalProps> = ({
   const platformOptions = [
     { value: 'Android', label: t('terminalSettings.platforms.android') },
     { value: 'iOS', label: t('terminalSettings.platforms.ios') },
+    { value: 'macOS', label: t('terminalSettings.platforms.macos') },
     { value: 'Windows', label: t('terminalSettings.platforms.windows') },
     { value: 'Linux', label: t('terminalSettings.platforms.linux') },
     { value: 'Web', label: t('terminalSettings.platforms.web') }

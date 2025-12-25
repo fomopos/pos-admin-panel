@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Pre-push hook to run npm build
+# This script will run before every git push
+
+echo "🔄 Running pre-push hook..."
+echo "📦 Building project with 'npm run build'..."
+
+# Run the build command
+npm run build
+
+# Check if build was successful
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed! Push aborted."
+    echo "Please fix the build errors and try again."
+    exit 1
+fi
+
+echo "✅ Build successful! Continuing with push..."
+exit 0

@@ -35,7 +35,7 @@ import {
 } from '../constants/dropdownOptions';
 import { getDefaultTimezone } from '../utils/timezoneUtils';
 import { detectUserCountryCode } from '../utils/locationUtils';
-import HardwareConfigurationTab from '../components/hardware/HardwareConfigurationTab';
+import { HardwareConfigurationTab } from '../components/hardware';
 
 interface StoreSettingsState {
   settings: StoreSettings | null;

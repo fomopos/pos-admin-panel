@@ -117,6 +117,15 @@ export class ApiClient {
         );
       }
 
+      // Handle 204 No Content response (common for DELETE operations)
+      if (response.status === 204) {
+        return {
+          data: null as unknown as T,
+          success: true,
+          message: 'Success'
+        };
+      }
+
       const data = await response.json();
       
       // Check if the response is already in the expected format

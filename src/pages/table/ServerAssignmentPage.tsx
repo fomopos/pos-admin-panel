@@ -201,8 +201,8 @@ const ServerAssignmentPage: React.FC = () => {
     <div className="p-6">
       {/* Header */}
       <PageHeader
-        title={`Server Assignment - ${table.name}`}
-        description={`Assign or reassign a server to table ${table.name} in ${table.zone_name || 'no zone'}`}
+        title={`Server Assignment - ${table.table_number}`}
+        description={`Assign or reassign a server to table ${table.table_number} in ${table.zone_name || 'no zone'}`}
       >
         <div className="flex items-center space-x-3">
           <Button
@@ -279,8 +279,8 @@ const ServerAssignmentPage: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-3">Table Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <span className="text-gray-600 text-sm">Table Name:</span>
-                  <div className="font-medium">{table.name}</div>
+                  <span className="text-gray-600 text-sm">Table Number:</span>
+                  <div className="font-medium">{table.table_number}</div>
                 </div>
                 <div>
                   <span className="text-gray-600 text-sm">Zone:</span>

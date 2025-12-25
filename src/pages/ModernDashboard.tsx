@@ -2,45 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, PageHeader } from '../components/ui';
 import KPICard from '../components/ui/KPICard';
-import { dashboardKPIService } from '../services/dashboard/dashboardKPIService';
+import { dashboardKPIService, type DashboardKPIFilters } from '../services/dashboard/dashboardKPIService';
+import { type TimePeriod, type CustomDateRange } from '../services/dashboard/dashboardMetricsService';
 import type { DashboardKPIResponse } from '../types/dashboard-kpi';
 import {
   CurrencyDollarIcon,
   ShoppingCartIcon,
-  UserGroupIcon,
   ClockIcon,
   CubeIcon,
   StarIcon,
   ComputerDesktopIcon,
-  BuildingStorefrontIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
   BellIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
-interface DashboardKPIFilters {
-  storeId?: string;
-  startDate?: string;
-  endDate?: string;
-  period?: 'today' | 'week' | 'month' | 'quarter' | 'year';
-  compareWith?: 'previous_period' | 'previous_year';
-}
-
 const ModernDashboard: React.FC = () => {
   const { t } = useTranslation();
   const [kpiData, setKpiData] = useState<DashboardKPIResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'quarter' | 'year'>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
+  const [customDateRange, setCustomDateRange] = useState<CustomDateRange>();
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch KPI data
-  const fetchKPIData = async (period?: typeof selectedPeriod) => {
+  const fetchKPIData = async (period?: TimePeriod, customRange?: CustomDateRange) => {
     try {
       setLoading(true);
+      const currentPeriod = period || selectedPeriod;
+      
       const filters: DashboardKPIFilters = {
-        period: period || selectedPeriod,
+        period: currentPeriod,
       };
+      
+      // Add custom date range if provided and period is custom
+      if (currentPeriod === 'custom' && customRange) {
+        filters.startDate = customRange.startDate;
+        filters.endDate = customRange.endDate;
+      }
+      
       const data = await dashboardKPIService.getDashboardKPIs(filters);
       setKpiData(data);
     } catch (error) {
@@ -58,9 +59,10 @@ const ModernDashboard: React.FC = () => {
   };
 
   // Handle period change
-  const handlePeriodChange = async (period: typeof selectedPeriod) => {
+  const handlePeriodChange = async (period: TimePeriod, customRange?: CustomDateRange) => {
     setSelectedPeriod(period);
-    await fetchKPIData(period);
+    setCustomDateRange(customRange);
+    await fetchKPIData(period, customRange);
   };
 
   useEffect(() => {
@@ -104,7 +106,21 @@ const ModernDashboard: React.FC = () => {
           </button>
           <select
             value={selectedPeriod}
-            onChange={(e) => handlePeriodChange(e.target.value as typeof selectedPeriod)}
+            onChange={(e) => {
+              const period = e.target.value as TimePeriod;
+              if (period === 'custom') {
+                // Set default custom range (last 7 days)
+                const today = new Date();
+                const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const customRange: CustomDateRange = {
+                  startDate: lastWeek.toISOString().split('T')[0],
+                  endDate: today.toISOString().split('T')[0]
+                };
+                handlePeriodChange(period, customRange);
+              } else {
+                handlePeriodChange(period);
+              }
+            }}
             className="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <option value="today">Today</option>
@@ -112,7 +128,41 @@ const ModernDashboard: React.FC = () => {
             <option value="month">This Month</option>
             <option value="quarter">This Quarter</option>
             <option value="year">This Year</option>
+            <option value="custom">{t('dashboard.periods.customRange')}</option>
           </select>
+          
+          {/* Custom Date Inputs - Show when custom is selected */}
+          {selectedPeriod === 'custom' && (
+            <div className="flex items-center space-x-2 ml-3">
+              <input
+                type="date"
+                value={customDateRange?.startDate || ''}
+                onChange={(e) => {
+                  const newRange = {
+                    startDate: e.target.value,
+                    endDate: customDateRange?.endDate || e.target.value
+                  };
+                  setCustomDateRange(newRange);
+                  handlePeriodChange('custom', newRange);
+                }}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <span className="text-sm text-slate-500">to</span>
+              <input
+                type="date"
+                value={customDateRange?.endDate || ''}
+                onChange={(e) => {
+                  const newRange = {
+                    startDate: customDateRange?.startDate || e.target.value,
+                    endDate: e.target.value
+                  };
+                  setCustomDateRange(newRange);
+                  handlePeriodChange('custom', newRange);
+                }}
+                className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          )}
         </div>
       </PageHeader>
 
@@ -220,52 +270,6 @@ const ModernDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Operational Stats Section */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">⏱️ Operational Performance</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPICard
-            title="Avg Preparation Time"
-            value={kpiData?.operational_stats.order_preparation_time.average_minutes || 0}
-            format="time"
-            subtitle={`Range: ${kpiData?.operational_stats.order_preparation_time.minimum_minutes || 0}-${kpiData?.operational_stats.order_preparation_time.maximum_minutes || 0} min`}
-            icon={ClockIcon}
-            iconBg="bg-blue-100"
-            iconColor="text-blue-600"
-            loading={loading}
-          />
-          <KPICard
-            title="Queue Length"
-            value={kpiData?.operational_stats.wait_time_queue.current_queue_length || 0}
-            subtitle={`Max today: ${kpiData?.operational_stats.wait_time_queue.max_queue_today || 0}`}
-            icon={UserGroupIcon}
-            iconBg="bg-orange-100"
-            iconColor="text-orange-600"
-            loading={loading}
-            alert={kpiData && kpiData.operational_stats.wait_time_queue.current_queue_length > 5 ? 'warning' : undefined}
-          />
-          <KPICard
-            title="Table Turnover"
-            value={kpiData?.operational_stats.table_turnover_rate.average_turnover_minutes || 0}
-            format="time"
-            subtitle={`${kpiData?.operational_stats.table_turnover_rate.tables_served || 0} tables served`}
-            icon={BuildingStorefrontIcon}
-            iconBg="bg-green-100"
-            iconColor="text-green-600"
-            loading={loading}
-          />
-          <KPICard
-            title="Delivery Performance"
-            value={kpiData?.operational_stats.delivery_performance.on_time_delivery_rate || 0}
-            format="percentage"
-            subtitle={`Avg: ${kpiData?.operational_stats.delivery_performance.average_delivery_time || 0} min`}
-            icon={ClockIcon}
-            iconBg="bg-purple-100"
-            iconColor="text-purple-600"
-            loading={loading}
-          />
-        </div>
-      </div>
 
       {/* Employee Performance Section */}
       <div className="space-y-6">

@@ -349,7 +349,8 @@
       "thisWeek": "Esta Semana",
       "thisMonth": "Este Mes",
       "thisQuarter": "Este Trimestre",
-      "thisYear": "Este Año"
+      "thisYear": "Este Año",
+      "customRange": "Rango Personalizado"
     },
     "alerts": {
       "active": "Alertas Activas"
@@ -616,7 +617,8 @@
     },
     "platforms": {
       "android": "Android",
-      "ios": "iOS", 
+      "ios": "iOS",
+      "macos": "macOS", 
       "windows": "Windows",
       "linux": "Linux",
       "web": "Navegador Web"
