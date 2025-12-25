@@ -1,9 +1,22 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * Hardware Configuration Tab - New API Specification
+ * 
+ * Main component for managing hardware devices at store and terminal levels.
+ * Uses the new simplified API with 6 device types and 3 connection types.
+ * 
+ * @see src/types/hardware.types.ts
+ * @see docs/api/HARDWARE_API_SPECIFIACTIONS.md
+ */
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ComputerDesktopIcon,
   PlusIcon,
   CogIcon,
-  FunnelIcon
+  FunnelIcon,
+  ArrowPathIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import {
   Widget,
@@ -11,28 +24,42 @@ import {
   Alert,
   EnhancedTabs,
   DropdownSearch,
-  MultipleDropdownSearch
+  MultipleDropdownSearch,
+  InputTextField
 } from '../ui';
-import HardwareDeviceCard from './HardwareDeviceCard';
-import HardwareDeviceForm from './HardwareDeviceForm';
-import { hardwareApiService } from '../../services/hardware/hardwareApiService';
-import { useTenantStore } from '../../tenants/tenantStore';
-import { useError } from '../../hooks/useError';
-import type { 
+
+// New components
+import { DeviceCard } from './DeviceCard';
+import DeviceForm from './DeviceForm';
+
+// New service
+import { hardwareService } from '../../services/hardware/hardware.service';
+
+// New types
+import type {
   HardwareDevice,
+  CreateHardwareDTO,
   DeviceType,
-  DeviceStatus,
   ConnectionType
-} from '../../types/hardware-new.types';
+} from '../../types/hardware.types';
+
+// New options
 import {
   DEVICE_TYPES,
-  CONNECTION_TYPES,
-  DEVICE_STATUS_OPTIONS
-} from '../../constants/hardwareOptions';
+  CONNECTION_TYPES
+} from '../../constants/hardware.options';
+
+// Store
+import { useTenantStore } from '../../tenants/tenantStore';
+import { useError } from '../../hooks/useError';
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface HardwareConfigurationTabProps {
-  settings: any;
-  onFieldChange: () => void;
+  settings?: any;
+  onFieldChange?: () => void;
 }
 
 interface HardwareOption {
@@ -45,46 +72,78 @@ interface HardwareOption {
 
 interface FilterState {
   deviceTypes: DeviceType[];
-  statuses: DeviceStatus[];
   connectionTypes: ConnectionType[];
   searchTerm: string;
+  enabledOnly: boolean;
 }
 
-// No converter needed - new API service handles transformation
+// ============================================================================
+// COMPONENT
+// ============================================================================
 
-const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
+export const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
   onFieldChange
 }) => {
+  const { t } = useTranslation();
   const { currentStore } = useTenantStore();
   const { showError, showSuccess } = useError();
+
+  // State
   const [devices, setDevices] = useState<HardwareDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeLevel, setActiveLevel] = useState<'store' | 'terminal'>('store');
   const [selectedTerminalId, setSelectedTerminalId] = useState<string>('');
   const [showDeviceForm, setShowDeviceForm] = useState(false);
   const [editingDevice, setEditingDevice] = useState<HardwareDevice | null>(null);
-  const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     deviceTypes: [],
-    statuses: [],
     connectionTypes: [],
-    searchTerm: ''
+    searchTerm: '',
+    enabledOnly: false
   });
 
-  // Filter and search devices
-  const applyFilters = (deviceList: HardwareDevice[]): HardwareDevice[] => {
+  // ============================================================================
+  // COMPUTED VALUES
+  // ============================================================================
+
+  // Hardware level tabs
+  const levelTabs = [
+    { 
+      id: 'store', 
+      name: t('hardware.storeLevel', 'Store Level'), 
+      icon: ComputerDesktopIcon,
+      description: t('hardware.storeLevelDesc', 'Common to all registers')
+    },
+    { 
+      id: 'terminal', 
+      name: t('hardware.terminalLevel', 'Terminal Level'), 
+      icon: CogIcon,
+      description: t('hardware.terminalLevelDesc', 'Specific to individual registers')
+    }
+  ];
+
+  // Get terminal options for dropdown
+  const getTerminalOptions = useCallback((): HardwareOption[] => {
+    if (!currentStore?.terminals) return [];
+    
+    return Object.values(currentStore.terminals).map((terminal: any) => ({
+      id: terminal.terminal_id,
+      label: `${terminal.name} (${terminal.terminal_id})`,
+      value: terminal.terminal_id,
+      description: `${terminal.platform || 'Unknown'} - ${terminal.status || 'unknown'}`,
+      icon: terminal.status === 'active' ? '🟢' : '🔴'
+    }));
+  }, [currentStore?.terminals]);
+
+  // Filter devices based on current filters
+  const applyFilters = useCallback((deviceList: HardwareDevice[]): HardwareDevice[] => {
     let filtered = [...deviceList];
 
     // Filter by device type
     if (filters.deviceTypes.length > 0) {
-      filtered = filtered.filter(d => d.device_type && filters.deviceTypes.includes(d.device_type));
-    }
-
-    // Filter by status
-    if (filters.statuses.length > 0) {
-      filtered = filtered.filter(d => d.status && filters.statuses.includes(d.status));
+      filtered = filtered.filter(d => filters.deviceTypes.includes(d.type));
     }
 
     // Filter by connection type
@@ -92,82 +151,77 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       filtered = filtered.filter(d => filters.connectionTypes.includes(d.connection_type));
     }
 
+    // Filter by enabled status
+    if (filters.enabledOnly) {
+      filtered = filtered.filter(d => d.enabled !== false);
+    }
+
     // Filter by search term
     if (filters.searchTerm.trim()) {
       const searchLower = filters.searchTerm.toLowerCase();
       filtered = filtered.filter(d => 
         d.name?.toLowerCase().includes(searchLower) ||
-        d.description?.toLowerCase().includes(searchLower) ||
-        d.model?.toLowerCase().includes(searchLower) ||
-        d.manufacturer?.toLowerCase().includes(searchLower)
+        d.id.toLowerCase().includes(searchLower) ||
+        d.type.toLowerCase().includes(searchLower)
       );
     }
 
     return filtered;
-  };
+  }, [filters]);
 
-  // Hardware level tabs
-  const levelTabs = [
-    { 
-      id: 'store', 
-      name: 'Store Level', 
-      icon: ComputerDesktopIcon,
-      description: 'Common to all registers'
-    },
-    { 
-      id: 'terminal', 
-      name: 'Terminal Level', 
-      icon: CogIcon,
-      description: 'Specific to individual registers'
-    }
-  ];
-
-  // Get terminal options for dropdown
-  const getTerminalOptions = (): HardwareOption[] => {
-    if (!currentStore?.terminals) return [];
+  // Get current devices based on active level and terminal selection
+  const getCurrentDevices = useCallback((): HardwareDevice[] => {
+    let levelDevices: HardwareDevice[];
     
-    return Object.values(currentStore.terminals).map(terminal => ({
-      id: terminal.terminal_id,
-      label: `${terminal.name} (${terminal.terminal_id})`,
-      value: terminal.terminal_id,
-      description: `${terminal.platform} - ${terminal.model} - ${terminal.status}`,
-      icon: terminal.status === 'active' ? '🟢' : '🔴'
-    }));
-  };
+    if (activeLevel === 'store') {
+      // Store level: devices without terminal_id
+      levelDevices = devices.filter(d => !d.terminal_id);
+    } else {
+      // Terminal level: devices with matching terminal_id
+      if (!selectedTerminalId) return [];
+      levelDevices = devices.filter(d => d.terminal_id === selectedTerminalId);
+    }
+    
+    return applyFilters(levelDevices);
+  }, [devices, activeLevel, selectedTerminalId, applyFilters]);
 
-  // Fetch hardware configuration
+  // ============================================================================
+  // DATA FETCHING
+  // ============================================================================
+
+  const fetchDevices = useCallback(async () => {
+    if (!currentStore?.store_id) {
+      setError(t('hardware.noStoreSelected', 'No store selected'));
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await hardwareService.getAllDevices(currentStore.store_id);
+      setDevices(response.hardware);
+    } catch (err: any) {
+      console.error('Failed to fetch hardware devices:', err);
+      showError(err);
+      setError(err?.message || t('hardware.fetchFailed', 'Failed to load hardware configuration'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentStore?.store_id, showError, t]);
+
   useEffect(() => {
-    const fetchHardwareConfig = async () => {
-      if (!currentStore?.tenant_id || !currentStore?.store_id) {
-        setErrors({ general: 'Store information not available' });
-        setIsLoading(false);
-        return;
-      }
+    fetchDevices();
+  }, [fetchDevices]);
 
-      setIsLoading(true);
-      try {
-        // Fetch all devices using new API service
-        const fetchedDevices = await hardwareApiService.getHardwareDevices(
-          currentStore.tenant_id,
-          currentStore.store_id
-        );
-        
-        setDevices(fetchedDevices);
-      } catch (error: any) {
-        console.error('Failed to fetch hardware config:', error);
-        showError(error);
-        setErrors({ general: error?.message || 'Failed to load hardware configuration. Please try again.' });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // ============================================================================
+  // HANDLERS
+  // ============================================================================
 
-    fetchHardwareConfig();
-  }, [currentStore, showError]);
-
-  const handleLevelTabChange = (tabId: string) => {
+  const handleLevelTabChange = useCallback((tabId: string) => {
     setActiveLevel(tabId as 'store' | 'terminal');
-    setErrors({});
+    setError(null);
     
     // Auto-select first active terminal when switching to terminal level
     if (tabId === 'terminal' && !selectedTerminalId) {
@@ -179,191 +233,181 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
         setSelectedTerminalId(terminalOptions[0].id);
       }
     }
-  };
+  }, [selectedTerminalId, getTerminalOptions]);
 
-  const handleAddDevice = () => {
+  const handleAddDevice = useCallback(() => {
     // Check if terminal is selected for terminal level
     if (activeLevel === 'terminal' && !selectedTerminalId) {
-      showError('Please select a terminal first');
-      setErrors({ general: 'Please select a terminal first' });
+      showError(t('hardware.selectTerminalFirst', 'Please select a terminal first'));
       return;
     }
-    
-    // Clear any previous errors
-    setErrors({});
     
     setEditingDevice(null);
-    setFormMode('create');
     setShowDeviceForm(true);
-  };
+  }, [activeLevel, selectedTerminalId, showError, t]);
 
-  const handleEditDevice = (device: HardwareDevice) => {
+  const handleEditDevice = useCallback((device: HardwareDevice) => {
     setEditingDevice(device);
-    setFormMode('edit');
     setShowDeviceForm(true);
-  };
+  }, []);
 
-  const handleDeleteDevice = async (deviceId: string) => {
-    if (!currentStore?.tenant_id || !currentStore?.store_id) {
-      showError('Store information not available');
-      setErrors({ general: 'Store information not available' });
+  const handleDeleteDevice = useCallback(async (deviceId: string) => {
+    if (!currentStore?.store_id) {
+      showError(t('hardware.noStoreSelected', 'No store selected'));
       return;
     }
 
     try {
-      setErrors({});
+      const deviceToDelete = devices.find(d => d.id === deviceId);
+      const deviceName = deviceToDelete?.name || deviceId;
+
+      await hardwareService.deleteDevice(currentStore.store_id, deviceId);
       
-      const deviceToDelete = getCurrentDevices().find(d => d.device_id === deviceId);
-      const deviceName = deviceToDelete?.name || 'device';
-
-      await hardwareApiService.deleteHardwareDevice(
-        currentStore.tenant_id,
-        currentStore.store_id,
-        deviceId
-      );
-
-      showSuccess(`Device "${deviceName}" deleted successfully!`);
+      showSuccess(t('hardware.deviceDeleted', 'Device "{{name}}" deleted successfully', { name: deviceName }));
 
       // Update local state
-      setDevices(prevDevices => prevDevices.filter(d => d.device_id !== deviceId));
-      onFieldChange();
-    } catch (error: any) {
-      console.error('Failed to delete device:', error);
-      showError(error);
-      setErrors({ general: error?.message || 'Failed to delete device. Please try again.' });
+      setDevices(prev => prev.filter(d => d.id !== deviceId));
+      onFieldChange?.();
+    } catch (err: any) {
+      console.error('Failed to delete device:', err);
+      showError(err);
     }
-  };
+  }, [currentStore?.store_id, devices, showError, showSuccess, onFieldChange, t]);
 
-  const handleSaveDevice = async (deviceData: Partial<HardwareDevice>, terminalId?: string) => {
-    if (!currentStore?.tenant_id || !currentStore?.store_id) {
-      showError('Store information not available');
-      setErrors({ general: 'Store information not available' });
+  const handleSaveDevice = useCallback(async (deviceData: CreateHardwareDTO) => {
+    if (!currentStore?.store_id) {
+      showError(t('hardware.noStoreSelected', 'No store selected'));
       return;
     }
 
+    const isEdit = !!editingDevice;
+
     try {
-      setErrors({});
-      
-      if (formMode === 'create') {
-        // Create new device
-        const newDevice = await hardwareApiService.createHardwareDevice(
-          currentStore.tenant_id,
+      if (isEdit) {
+        // Update existing device
+        const { id, type, ...updateData } = deviceData;
+        await hardwareService.updateDevice(
           currentStore.store_id,
-          {
-            ...deviceData,
-            terminal_id: terminalId
-          } as HardwareDevice
+          deviceData.id,
+          updateData
         );
-        showSuccess(`Device "${deviceData.name}" created successfully!`);
+        
+        showSuccess(t('hardware.deviceUpdated', 'Device updated successfully'));
+        
+        // Update local state - merge the update data with existing device
+        setDevices(prev => prev.map(d => 
+          d.id === deviceData.id 
+            ? { ...d, ...deviceData, updated_at: new Date().toISOString() }
+            : d
+        ));
+      } else {
+        // Create new device
+        const newDevice = await hardwareService.createDevice(currentStore.store_id, deviceData);
+        
+        showSuccess(t('hardware.deviceCreated', 'Device created successfully'));
         
         // Add to local state
-        setDevices(prevDevices => [...prevDevices, newDevice]);
-      } else {
-        // Update existing device
-        const updatedDevice = await hardwareApiService.updateHardwareDevice(
-          currentStore.tenant_id,
-          currentStore.store_id,
-          deviceData.device_id!,
-          deviceData
-        );
-        showSuccess(`Device "${deviceData.name}" updated successfully!`);
-        
-        // Update local state
-        setDevices(prevDevices => 
-          prevDevices.map(d => d.device_id === updatedDevice.device_id ? updatedDevice : d)
-        );
+        setDevices(prev => [...prev, newDevice]);
       }
 
       setShowDeviceForm(false);
       setEditingDevice(null);
-      onFieldChange();
-    } catch (error: any) {
-      console.error('Failed to save device:', error);
-      showError(error);
-      setErrors({ general: error?.message || `Failed to ${formMode === 'create' ? 'create' : 'update'} device. Please try again.` });
+      onFieldChange?.();
+    } catch (err: any) {
+      console.error('Failed to save device:', err);
+      throw err; // Re-throw to let form handle error display
     }
-  };
+  }, [currentStore?.store_id, editingDevice, showError, showSuccess, onFieldChange, t]);
 
-  const handleTestDevice = async (device: HardwareDevice) => {
-    if (!currentStore?.tenant_id || !currentStore?.store_id) {
-      showError('Store information not available');
-      setErrors({ general: 'Store information not available' });
-      return;
-    }
+  const handleToggleDevice = useCallback(async (device: HardwareDevice) => {
+    if (!currentStore?.store_id) return;
 
     try {
-      setErrors({});
-      
-      if (!device.device_id) {
-        throw new Error('Device ID is missing');
-      }
-      
-      await hardwareApiService.testHardwareDevice(
-        currentStore.tenant_id,
+      const newEnabledState = !device.enabled;
+      await hardwareService.updateDevice(
         currentStore.store_id,
-        device.device_id,
-        { 
-          device_id: device.device_id,
-          test_type: 'connection'
-        }
+        device.id,
+        { enabled: newEnabledState }
       );
       
-      showSuccess(`Device "${device.name}" test completed successfully!`);
-    } catch (error: any) {
-      console.error('Device test failed:', error);
-      showError(error);
-      setErrors({ general: error?.message || `Failed to test device "${device.name}". Please try again.` });
+      // Update local state
+      setDevices(prev => prev.map(d => 
+        d.id === device.id 
+          ? { ...d, enabled: newEnabledState, updated_at: new Date().toISOString() }
+          : d
+      ));
+      showSuccess(t('hardware.deviceToggled', 'Device {{status}}', { 
+        status: newEnabledState ? 'enabled' : 'disabled' 
+      }));
+      onFieldChange?.();
+    } catch (err: any) {
+      console.error('Failed to toggle device:', err);
+      showError(err);
     }
-  };
+  }, [currentStore?.store_id, showError, showSuccess, onFieldChange, t]);
 
-  const getCurrentDevices = (): HardwareDevice[] => {
-    let filteredDevices: HardwareDevice[] = [];
-    
-    if (activeLevel === 'store') {
-      // Store level: devices without terminal_id
-      filteredDevices = devices.filter(d => !d.terminal_id);
-    } else {
-      // Terminal level: devices with matching terminal_id
-      if (!selectedTerminalId) return [];
-      filteredDevices = devices.filter(d => d.terminal_id === selectedTerminalId);
-    }
-    
-    // Apply filters
-    return applyFilters(filteredDevices);
-  };
+  const clearFilters = useCallback(() => {
+    setFilters({
+      deviceTypes: [],
+      connectionTypes: [],
+      searchTerm: '',
+      enabledOnly: false
+    });
+  }, []);
+
+  // ============================================================================
+  // RENDER: LOADING
+  // ============================================================================
 
   if (isLoading) {
     return (
       <div className="space-y-6">
         <Widget
-          title="Hardware Configuration"
-          description="Loading hardware configuration..."
+          title={t('hardware.title', 'Hardware Configuration')}
+          description={t('hardware.loading', 'Loading hardware configuration...')}
           icon={ComputerDesktopIcon}
         >
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="h-32 bg-gray-200 rounded"></div>
+              <div className="h-32 bg-gray-200 rounded"></div>
+            </div>
           </div>
         </Widget>
       </div>
     );
   }
 
+  // ============================================================================
+  // RENDER: MAIN
+  // ============================================================================
+
   const currentDevices = getCurrentDevices();
+  const totalDevicesAtLevel = devices.filter(d => 
+    activeLevel === 'store' ? !d.terminal_id : d.terminal_id === selectedTerminalId
+  ).length;
 
   return (
     <div className="space-y-6">
       {/* Error Alert */}
-      {errors.general && (
+      {error && (
         <Alert variant="error">
-          {errors.general}
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button variant="ghost" size="sm" onClick={fetchDevices}>
+              <ArrowPathIcon className="h-4 w-4 mr-1" />
+              {t('common.retry', 'Retry')}
+            </Button>
+          </div>
         </Alert>
       )}
 
       {/* Hardware Configuration Header */}
       <Widget
-        title="Hardware Configuration"
-        description="Configure hardware devices for your point of sale system at both store and terminal levels"
+        title={t('hardware.title', 'Hardware Configuration')}
+        description={t('hardware.description', 'Configure hardware devices for your point of sale system at both store and terminal levels')}
         icon={ComputerDesktopIcon}
       >
         {/* Level Selection Tabs */}
@@ -376,12 +420,15 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
             {/* Level Description */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="text-sm font-medium text-blue-900 mb-1">
-                {activeLevel === 'store' ? 'Store Level Configuration' : 'Terminal Level Configuration'}
+                {activeLevel === 'store' 
+                  ? t('hardware.storeLevelConfig', 'Store Level Configuration')
+                  : t('hardware.terminalLevelConfig', 'Terminal Level Configuration')
+                }
               </h3>
               <p className="text-sm text-blue-700">
                 {activeLevel === 'store' 
-                  ? 'Hardware devices configured at store level are shared across all registers and terminals in this store.'
-                  : 'Hardware devices configured at terminal level are specific to individual registers and override store-level settings.'
+                  ? t('hardware.storeLevelInfo', 'Hardware devices configured at store level are shared across all registers and terminals in this store.')
+                  : t('hardware.terminalLevelInfo', 'Hardware devices configured at terminal level are specific to individual registers and override store-level settings.')
                 }
               </p>
             </div>
@@ -390,40 +437,54 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
             {activeLevel === 'terminal' && (
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <h3 className="text-sm font-medium text-amber-900 mb-3">
-                  Select Terminal
+                  {t('hardware.selectTerminal', 'Select Terminal')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <DropdownSearch
-                    label="Terminal"
+                    label={t('hardware.terminal', 'Terminal')}
                     options={getTerminalOptions()}
                     value={selectedTerminalId}
                     onSelect={(option) => setSelectedTerminalId(option ? option.id : '')}
-                    placeholder="Select a terminal to view/edit its devices"
+                    placeholder={t('hardware.selectTerminalPlaceholder', 'Select a terminal to view/edit its devices')}
                     displayValue={(option) => option ? (
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{option.icon}</span>
                         <span>{option.label}</span>
                       </div>
-                    ) : 'Select terminal'}
+                    ) : t('hardware.selectTerminalShort', 'Select terminal')}
                   />
                   {selectedTerminalId && (
                     <div className="flex items-center text-sm text-amber-700">
-                      <span>Viewing devices for: <strong>{getTerminalOptions().find(t => t.id === selectedTerminalId)?.label}</strong></span>
+                      <span>
+                        {t('hardware.viewingDevicesFor', 'Viewing devices for')}: 
+                        <strong className="ml-1">
+                          {getTerminalOptions().find(t => t.id === selectedTerminalId)?.label}
+                        </strong>
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Device List */}
+            {/* Device List Header */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">
-                    {activeLevel === 'store' ? 'Store Hardware Devices' : 'Terminal Hardware Devices'}
+                    {activeLevel === 'store' 
+                      ? t('hardware.storeDevices', 'Store Hardware Devices')
+                      : t('hardware.terminalDevices', 'Terminal Hardware Devices')
+                    }
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    {currentDevices.length} device{currentDevices.length !== 1 ? 's' : ''} found
+                    {currentDevices.length === totalDevicesAtLevel
+                      ? t('hardware.deviceCount', '{{count}} device(s) configured', { count: currentDevices.length })
+                      : t('hardware.deviceCountFiltered', '{{shown}} of {{total}} device(s) shown', { 
+                          shown: currentDevices.length, 
+                          total: totalDevicesAtLevel 
+                        })
+                    }
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -433,7 +494,19 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
                     size="sm"
                   >
                     <FunnelIcon className="h-4 w-4 mr-2" />
-                    Filters
+                    {t('common.filters', 'Filters')}
+                    {(filters.deviceTypes.length > 0 || filters.connectionTypes.length > 0 || filters.searchTerm || filters.enabledOnly) && (
+                      <span className="ml-1 bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded-full">
+                        {filters.deviceTypes.length + filters.connectionTypes.length + (filters.searchTerm ? 1 : 0) + (filters.enabledOnly ? 1 : 0)}
+                      </span>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={fetchDevices}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <ArrowPathIcon className="h-4 w-4" />
                   </Button>
                   <Button
                     onClick={handleAddDevice}
@@ -442,7 +515,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
                     disabled={activeLevel === 'terminal' && !selectedTerminalId}
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Device
+                    {t('hardware.addDevice', 'Add Device')}
                   </Button>
                 </div>
               </div>
@@ -451,98 +524,106 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
               {showFilters && (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Search
-                      </label>
-                      <input
-                        type="text"
-                        value={filters.searchTerm}
-                        onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                        placeholder="Search devices..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
+                    <InputTextField
+                      label={t('common.search', 'Search')}
+                      value={filters.searchTerm}
+                      onChange={(value) => setFilters(prev => ({ ...prev, searchTerm: value }))}
+                      placeholder={t('hardware.searchPlaceholder', 'Search devices...')}
+                    />
                     
                     <MultipleDropdownSearch
-                      label="Device Types"
-                      options={DEVICE_TYPES}
+                      label={t('hardware.deviceTypes', 'Device Types')}
+                      options={DEVICE_TYPES.map(dt => ({ id: dt.id, label: dt.label, value: dt.value }))}
                       values={filters.deviceTypes}
                       onSelect={(selected) => setFilters(prev => ({ ...prev, deviceTypes: selected as DeviceType[] }))}
-                      placeholder="All types"
+                      placeholder={t('hardware.allTypes', 'All types')}
                     />
                     
                     <MultipleDropdownSearch
-                      label="Status"
-                      options={DEVICE_STATUS_OPTIONS}
-                      values={filters.statuses}
-                      onSelect={(selected) => setFilters(prev => ({ ...prev, statuses: selected as DeviceStatus[] }))}
-                      placeholder="All statuses"
-                    />
-                    
-                    <MultipleDropdownSearch
-                      label="Connection Types"
-                      options={CONNECTION_TYPES}
+                      label={t('hardware.connectionTypes', 'Connection Types')}
+                      options={CONNECTION_TYPES.map(ct => ({ id: ct.id, label: ct.label, value: ct.value }))}
                       values={filters.connectionTypes}
                       onSelect={(selected) => setFilters(prev => ({ ...prev, connectionTypes: selected as ConnectionType[] }))}
-                      placeholder="All connections"
+                      placeholder={t('hardware.allConnections', 'All connections')}
                     />
+                    
+                    <div className="flex items-end">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filters.enabledOnly}
+                          onChange={(e) => setFilters(prev => ({ ...prev, enabledOnly: e.target.checked }))}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {t('hardware.enabledOnly', 'Enabled only')}
+                        </span>
+                      </label>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      {currentDevices.length} of {devices.filter(d => 
-                        activeLevel === 'store' ? !d.terminal_id : d.terminal_id === selectedTerminalId
-                      ).length} devices shown
-                    </p>
+                  <div className="flex items-center justify-end">
                     <Button
-                      onClick={() => setFilters({ deviceTypes: [], statuses: [], connectionTypes: [], searchTerm: '' })}
+                      onClick={clearFilters}
                       variant="outline"
                       size="sm"
                     >
-                      Clear Filters
+                      <XMarkIcon className="h-4 w-4 mr-1" />
+                      {t('common.clearFilters', 'Clear Filters')}
                     </Button>
                   </div>
                 </div>
               )}
 
-              {/* Show terminal selection prompt for terminal level */}
+              {/* Device List Content */}
               {activeLevel === 'terminal' && !selectedTerminalId ? (
+                // Terminal not selected prompt
                 <div className="text-center py-12 bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg">
                   <ComputerDesktopIcon className="mx-auto h-12 w-12 text-amber-400 mb-4" />
                   <h3 className="text-lg font-medium text-amber-900 mb-2">
-                    Select a Terminal
+                    {t('hardware.selectTerminalPrompt', 'Select a Terminal')}
                   </h3>
                   <p className="text-sm text-amber-700 mb-6">
-                    Please select a terminal from the dropdown above to view and manage its hardware devices.
+                    {t('hardware.selectTerminalInfo', 'Please select a terminal from the dropdown above to view and manage its hardware devices.')}
                   </p>
                 </div>
               ) : currentDevices.length === 0 ? (
+                // Empty state
                 <div className="text-center py-12 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg">
                   <ComputerDesktopIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hardware devices configured
+                    {totalDevicesAtLevel === 0
+                      ? t('hardware.noDevices', 'No hardware devices configured')
+                      : t('hardware.noMatchingDevices', 'No devices match your filters')
+                    }
                   </h3>
                   <p className="text-sm text-gray-600 mb-6">
-                    Get started by adding your first hardware device for this {activeLevel}.
+                    {totalDevicesAtLevel === 0
+                      ? t('hardware.getStarted', 'Get started by adding your first hardware device.')
+                      : t('hardware.tryDifferentFilters', 'Try adjusting your filter criteria.')
+                    }
                   </p>
-                  <Button
-                    onClick={handleAddDevice}
-                    variant="primary"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Device
-                  </Button>
+                  {totalDevicesAtLevel === 0 ? (
+                    <Button onClick={handleAddDevice} variant="primary">
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      {t('hardware.addDevice', 'Add Device')}
+                    </Button>
+                  ) : (
+                    <Button onClick={clearFilters} variant="outline">
+                      {t('common.clearFilters', 'Clear Filters')}
+                    </Button>
+                  )}
                 </div>
               ) : (
+                // Device grid
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {currentDevices.map((device) => (
-                    <HardwareDeviceCard
-                      key={device.device_id}
+                    <DeviceCard
+                      key={device.id}
                       device={device}
                       onEdit={() => handleEditDevice(device)}
-                      onDelete={() => device.device_id && handleDeleteDevice(device.device_id)}
-                      onTest={() => handleTestDevice(device)}
+                      onDelete={() => handleDeleteDevice(device.id)}
+                      onToggle={() => handleToggleDevice(device)}
                     />
                   ))}
                 </div>
@@ -553,7 +634,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
       </Widget>
 
       {/* Device Form Modal */}
-      <HardwareDeviceForm
+      <DeviceForm
         isOpen={showDeviceForm}
         onClose={() => {
           setShowDeviceForm(false);
@@ -562,7 +643,7 @@ const HardwareConfigurationTab: React.FC<HardwareConfigurationTabProps> = ({
         onSave={handleSaveDevice}
         device={editingDevice}
         level={activeLevel}
-        mode={formMode}
+        terminalId={activeLevel === 'terminal' ? selectedTerminalId : undefined}
       />
     </div>
   );
