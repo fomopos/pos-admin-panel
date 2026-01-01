@@ -31,6 +31,7 @@ import type {
   HardwareDevice,
   CreateHardwareDTO,
   DeviceType,
+  DeviceRole,
   ConnectionType,
   NetworkConfig,
   BluetoothConfig,
@@ -47,7 +48,9 @@ import type {
 import {
   DEVICE_TYPES,
   CONNECTION_TYPES,
+  DEVICE_ROLES,
   getConnectionTypesForDevice,
+  getRolesForDeviceType,
   getDefaultNetworkConfig,
   getDefaultBluetoothConfig,
   getDefaultUSBConfig,
@@ -111,6 +114,7 @@ interface FormData {
   id: string;
   name: string;
   type: DeviceType | '';
+  role: DeviceRole | '';
   connection_type: ConnectionType | '';
   terminal_id?: string;
   enabled: boolean;
@@ -147,6 +151,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
     id: '',
     name: '',
     type: '',
+    role: '',
     connection_type: '',
     terminal_id: terminalId,
     enabled: true
@@ -171,6 +176,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
           id: device.id,
           name: device.name || '',
           type: device.type,
+          role: device.role || '',
           connection_type: device.connection_type,
           terminal_id: device.terminal_id,
           enabled: device.enabled ?? true,
@@ -190,6 +196,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
           id: `device_${Date.now()}`,
           name: '',
           type: '',
+          role: '',
           connection_type: '',
           terminal_id: terminalId,
           enabled: true
@@ -213,6 +220,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
       const updated: FormData = {
         ...prev,
         type: newType,
+        role: '', // Reset role when device type changes
         // Reset all device configs
         printer_config: undefined,
         scanner_config: undefined,
@@ -498,6 +506,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         id: formData.id.trim(),
         name: formData.name.trim() || undefined,
         type: formData.type as DeviceType,
+        role: formData.role ? (formData.role as DeviceRole) : undefined,
         connection_type: formData.connection_type as ConnectionType,
         terminal_id: level === 'terminal' ? terminalId : undefined,
         enabled: formData.enabled
@@ -850,6 +859,25 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
                         disabled={!formData.type}
                       />
                     </div>
+
+                    {/* Device Role */}
+                    {formData.type && getRolesForDeviceType(formData.type as DeviceType).length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <DropdownSearch
+                          label={t('hardware.deviceRole', 'Device Role')}
+                          options={getRolesForDeviceType(formData.type as DeviceType).map(role => ({
+                            id: role.id,
+                            label: `${role.icon} ${role.label}`,
+                            description: role.description
+                          }))}
+                          value={formData.role}
+                          onSelect={(option) => handleFieldChange('role', option?.id || '')}
+                          placeholder={t('hardware.selectDeviceRole', 'Select device role')}
+                          allowClear={true}
+                          clearLabel={t('common.noRole', 'No specific role')}
+                        />
+                      </div>
+                    )}
 
                     {/* Enabled Toggle */}
                     <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50">

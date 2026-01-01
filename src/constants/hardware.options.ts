@@ -8,7 +8,7 @@
  * @see docs/api/HARDWARE_API_SPECIFIACTIONS.md
  */
 
-import type { DeviceType, ConnectionType, PrinterMode, PaperSize, WeightUnit } from '../types/hardware.types';
+import type { DeviceType, ConnectionType, DeviceRole, PrinterMode, PaperSize, WeightUnit } from '../types/hardware.types';
 
 // ============================================================================
 // OPTION INTERFACE
@@ -73,6 +73,91 @@ export const DEVICE_TYPES: HardwareOption[] = [
     description: 'Customer-facing displays, KDS screens'
   }
 ];
+
+// ============================================================================
+// DEVICE ROLES (per API spec)
+// ============================================================================
+
+/**
+ * Device roles per API specification
+ * Each role is applicable to specific device types
+ */
+export const DEVICE_ROLES: HardwareOption[] = [
+  {
+    id: 'main_printer',
+    label: 'Main Printer',
+    value: 'main_printer',
+    icon: '🖨️',
+    description: 'Primary receipt printer used to print customer transaction receipts'
+  },
+  {
+    id: 'backup_printer',
+    label: 'Backup Printer',
+    value: 'backup_printer',
+    icon: '🖨️',
+    description: 'Secondary receipt printer used when the main printer is unavailable'
+  },
+  {
+    id: 'kitchen_printer',
+    label: 'Kitchen Printer',
+    value: 'kitchen_printer',
+    icon: '🍳',
+    description: 'Printer used to print kitchen order tickets for food preparation'
+  },
+  {
+    id: 'cashdrawer',
+    label: 'Cash Drawer',
+    value: 'cashdrawer',
+    icon: '💵',
+    description: 'Physical drawer used to securely store and dispense cash during transactions'
+  },
+  {
+    id: 'scanner',
+    label: 'Scanner',
+    value: 'scanner',
+    icon: '📷',
+    description: 'Device used to scan barcodes or QR codes for item and payment identification'
+  },
+  {
+    id: 'kds',
+    label: 'KDS',
+    value: 'kds',
+    icon: '📺',
+    description: 'Kitchen display system used to show and manage orders digitally in real time'
+  }
+];
+
+/**
+ * Get valid roles for a device type
+ */
+export function getRolesForDeviceType(deviceType: DeviceType): HardwareOption[] {
+  const roleMap: Record<DeviceType, DeviceRole[]> = {
+    printer: ['main_printer', 'backup_printer', 'kitchen_printer'],
+    scanner: ['scanner'],
+    cash_drawer: ['cashdrawer'],
+    scale: [], // No specific roles for scale
+    payment_terminal: [], // No specific roles for payment terminal
+    display: ['kds']
+  };
+
+  const validRoles = roleMap[deviceType] || [];
+  return DEVICE_ROLES.filter(role => validRoles.includes(role.value as DeviceRole));
+}
+
+/**
+ * Get role display info by role value
+ */
+export function getRoleDisplayInfo(role: DeviceRole): { label: string; icon: string; color: string } {
+  const roleInfo: Record<DeviceRole, { label: string; icon: string; color: string }> = {
+    main_printer: { label: 'Main Printer', icon: '🖨️', color: 'green' },
+    backup_printer: { label: 'Backup Printer', icon: '🖨️', color: 'amber' },
+    kitchen_printer: { label: 'Kitchen Printer', icon: '🍳', color: 'orange' },
+    cashdrawer: { label: 'Cash Drawer', icon: '💵', color: 'blue' },
+    scanner: { label: 'Scanner', icon: '📷', color: 'purple' },
+    kds: { label: 'KDS', icon: '📺', color: 'cyan' }
+  };
+  return roleInfo[role] || { label: role, icon: '📦', color: 'gray' };
+}
 
 // ============================================================================
 // CONNECTION TYPES (per API spec - 3 types only)

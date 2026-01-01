@@ -26,7 +26,8 @@ import {
   ComputerDesktopIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../ui';
-import type { HardwareDevice, DeviceType, ConnectionType, PrinterMode } from '../../types/hardware.types';
+import type { HardwareDevice, DeviceType, DeviceRole, ConnectionType, PrinterMode } from '../../types/hardware.types';
+import { getRoleDisplayInfo } from '../../constants/hardware.options';
 
 interface HardwareDeviceCardProps {
   device: HardwareDevice;
@@ -97,6 +98,24 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
       icon: CheckCircleIcon,
       className: 'text-green-600 bg-green-50 border border-green-200',
       label: 'Enabled'
+    };
+  };
+
+  // Get role badge styling
+  const getRoleBadgeConfig = (role: DeviceRole) => {
+    const roleInfo = getRoleDisplayInfo(role);
+    const colorStyles: Record<string, string> = {
+      green: 'text-green-700 bg-green-100 border-green-300',
+      amber: 'text-amber-700 bg-amber-100 border-amber-300',
+      orange: 'text-orange-700 bg-orange-100 border-orange-300',
+      blue: 'text-blue-700 bg-blue-100 border-blue-300',
+      purple: 'text-purple-700 bg-purple-100 border-purple-300',
+      cyan: 'text-cyan-700 bg-cyan-100 border-cyan-300',
+      gray: 'text-gray-700 bg-gray-100 border-gray-300'
+    };
+    return {
+      ...roleInfo,
+      className: colorStyles[roleInfo.color] || colorStyles.gray
     };
   };
 
@@ -232,6 +251,13 @@ const HardwareDeviceCard: React.FC<HardwareDeviceCardProps> = ({
                 <h3 className="text-sm font-semibold text-gray-900 truncate">
                   {device.name || device.id}
                 </h3>
+                {/* Role Badge */}
+                {device.role && (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeConfig(device.role).className}`}>
+                    <span className="mr-1">{getRoleBadgeConfig(device.role).icon}</span>
+                    {getRoleBadgeConfig(device.role).label}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-gray-500 mt-1">
                 {formatDeviceType(device.type, device.printer_config?.mode)}
