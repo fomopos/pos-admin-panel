@@ -48,7 +48,6 @@ import type {
 import {
   DEVICE_TYPES,
   CONNECTION_TYPES,
-  DEVICE_ROLES,
   getConnectionTypesForDevice,
   getRolesForDeviceType,
   getDefaultNetworkConfig,
