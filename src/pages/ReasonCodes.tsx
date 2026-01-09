@@ -267,7 +267,7 @@ const ReasonCodes: React.FC = () => {
       render: (_value, item) => (
         <div className="flex flex-wrap gap-1">
           {item.categories.map((category) => (
-            <Badge key={category} color={getCategoryColor(category) as any}>
+            <Badge key={category} color={getCategoryColor(category) as any} size='sm'>
               {category.replace(/_/g, ' ')}
             </Badge>
           ))}

@@ -89,20 +89,22 @@ const DashboardLayout: React.FC = () => {
         { name: 'Reason Codes', href: '/reason-codes', icon: DocumentTextIcon },
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
         { name: t('nav.tableManagement'), href: '/tables', icon: TableCellsIcon },
-        { name: t('nav.employeeShifts'), href: '/employee-shifts', icon: UserGroupIcon },
-        ...(permissionsInitialized && canManageUsers() ? [{ name: 'Employee Management', href: '/employees', icon: UsersIcon }] : []),
+        // @TODO Enable later
+        // { name: t('nav.employeeShifts'), href: '/employee-shifts', icon: UserGroupIcon },
+        // ...(permissionsInitialized && canManageUsers() ? [{ name: 'Employee Management', href: '/employees', icon: UsersIcon }] : []),
       ]
     },
-    {
-      category: 'REPORTS & ANALYTICS',
-      items: [
-        { name: t('nav.salesReports'), href: '/reports/sales', icon: ChartBarIcon },
-        { name: t('nav.inventoryReports'), href: '/reports/inventory', icon: RectangleStackIcon },
-        { name: t('nav.customerAnalytics'), href: '/reports/customers', icon: UsersIcon },
-        { name: t('nav.paymentAnalytics'), href: '/payment-analytics', icon: CreditCardIcon },
-        { name: t('nav.financialReports'), href: '/reports/financial', icon: DocumentTextIcon },
-      ]
-    },
+    // @TODo Implement later.
+    // {
+    //   category: 'REPORTS & ANALYTICS',
+    //   items: [
+    //     { name: t('nav.salesReports'), href: '/reports/sales', icon: ChartBarIcon },
+    //     { name: t('nav.inventoryReports'), href: '/reports/inventory', icon: RectangleStackIcon },
+    //     { name: t('nav.customerAnalytics'), href: '/reports/customers', icon: UsersIcon },
+    //     { name: t('nav.paymentAnalytics'), href: '/payment-analytics', icon: CreditCardIcon },
+    //     { name: t('nav.financialReports'), href: '/reports/financial', icon: DocumentTextIcon },
+    //   ]
+    // },
     {
       category: t('nav.settings'),
       items: [
