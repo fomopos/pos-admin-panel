@@ -460,7 +460,12 @@
       "accountNotVerified": "Account not verified. Please check your email for verification instructions.",
       "socialNotImplemented": "{{provider}} login is not yet implemented. Please use email and password.",
       "socialFailed": "{{provider}} login failed. Please try again.",
-      "resetEmailFailed": "Failed to send reset email. Please try again."
+      "resetEmailFailed": "Failed to send reset email. Please try again.",
+      "oauthCallbackFailed": "Authentication callback failed. Please try signing in again.",
+      "authenticationFailed": "Authentication failed. Please try again.",
+      "authenticationError": "Authentication Error",
+      "oauthNotConfigured": "OAuth is not properly configured. Please contact support.",
+      "providerNotConfigured": "{{provider}} identity provider is not configured. Please contact support."
     },
     "signIn": {
       "welcome": "Welcome back!",
@@ -495,6 +500,9 @@
     },
     "forgotPassword": "Forgot password",
     "orContinueWith": "or continue with",
+    "completingAuthentication": "Completing Authentication",
+    "pleaseWait": "Please wait while we complete your sign in...",
+    "redirectingToSignIn": "Redirecting to sign in page...",
     "social": {
       "google": "Google",
       "github": "Github"

@@ -2,7 +2,7 @@ import {
   signIn, 
   signUp, 
   confirmSignUp, 
-  signOut, 
+  signOut as amplifySignOut, 
   getCurrentUser, 
   resetPassword, 
   confirmResetPassword,
@@ -97,7 +97,9 @@ class AuthService {
       const { clearAllData } = useTenantStore.getState();
       clearAllData();
       
-      await signOut();
+      // Sign out locally without redirecting to hosted UI
+      // Using global: false ensures no redirect to Cognito Hosted UI
+      await amplifySignOut({ global: false });
       console.log('✅ User signed out and data cleared successfully');
     } catch (error) {
       console.error('Sign out error:', error);

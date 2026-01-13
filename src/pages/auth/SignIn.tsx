@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { cn } from '../../utils/cn';
 import { authService } from '../../auth/authService';
+import { signInWithRedirect } from 'aws-amplify/auth';
 
 const SignIn: React.FC = () => {
   const { t } = useTranslation();
@@ -114,18 +115,29 @@ const SignIn: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Social login with AWS Cognito would require additional setup
-      // For now, show a message that it's not implemented
-      setErrors({ 
-        general: t('auth.errors.socialNotImplemented', { provider })
+      // Initiate OAuth flow with AWS Cognito
+      // User will be redirected to the identity provider (Google)
+      // After authentication, they'll be redirected back to /auth/callback
+      await signInWithRedirect({ 
+        provider: provider === 'google' ? 'Google' : 'GitHub'
       });
       
-    } catch (error) {
+      // Note: This code won't execute as the user is redirected
+      // The callback is handled in OAuthCallback.tsx component
+      
+    } catch (error: any) {
       console.error(`${provider} login error:`, error);
-      setErrors({ 
-        general: t('auth.errors.socialFailed', { provider })
-      });
-    } finally {
+      
+      let errorMessage = t('auth.errors.socialFailed', { provider });
+      
+      // Handle specific OAuth errors
+      if (error.name === 'InvalidParameterException') {
+        errorMessage = t('auth.errors.oauthNotConfigured');
+      } else if (error.message?.includes('identity provider')) {
+        errorMessage = t('auth.errors.providerNotConfigured', { provider });
+      }
+      
+      setErrors({ general: errorMessage });
       setIsLoading(false);
     }
   };

@@ -10,6 +10,7 @@ import SignUp from './pages/auth/SignUp';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 import ResetPassword from './pages/auth/ResetPassword';
+import OAuthCallback from './pages/auth/OAuthCallback';
 import TenantStoreSelection from './pages/auth/TenantStoreSelection';
 import CreateTenantPage from './pages/auth/CreateTenantPage';
 import Dashboard from './pages/Dashboard';
@@ -124,6 +125,7 @@ function App() {
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
             <Route path="/auth/verify-email" element={<VerifyEmail />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/callback" element={<OAuthCallback />} />
             
             {/* i18n Test Page - Public for testing translations */}
             <Route path="/i18n-test" element={<I18nTestPage />} />
