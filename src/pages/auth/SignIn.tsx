@@ -115,15 +115,24 @@ const SignIn: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Initiate OAuth flow with AWS Cognito
-      // User will be redirected to the identity provider (Google)
-      // After authentication, they'll be redirected back to /auth/callback
-      await signInWithRedirect({ 
-        provider: provider === 'google' ? 'Google' : 'GitHub'
-      });
-      
-      // Note: This code won't execute as the user is redirected
-      // The callback is handled in OAuthCallback.tsx component
+      // Only Google is currently configured
+      if (provider === 'google') {
+        // Initiate OAuth flow with AWS Cognito
+        // User will be redirected to the identity provider (Google)
+        // After authentication, they'll be redirected back to /auth/callback
+        await signInWithRedirect({ 
+          provider: 'Google'
+        });
+        
+        // Note: This code won't execute as the user is redirected
+        // The callback is handled in OAuthCallback.tsx component
+      } else {
+        // GitHub or other providers not yet configured
+        setErrors({ 
+          general: t('auth.errors.providerNotConfigured', { provider: provider.charAt(0).toUpperCase() + provider.slice(1) })
+        });
+        setIsLoading(false);
+      }
       
     } catch (error: any) {
       console.error(`${provider} login error:`, error);
