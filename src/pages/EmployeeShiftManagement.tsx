@@ -19,7 +19,7 @@ import {
   Modal
 } from '../components/ui';
 
-// Mock data types
+// Type definitions
 interface Employee {
   employee_id: string;
   name: string;
@@ -289,168 +289,27 @@ const EmployeeShiftManagement: React.FC = () => {
   const [showShiftModal, setShowShiftModal] = useState(false);
 
   useEffect(() => {
-    loadMockData();
+    loadData();
   }, []);
 
-  const loadMockData = () => {
+  const loadData = async () => {
     setLoading(true);
     
-    // Mock employees
-    const mockEmployees: Employee[] = [
-      {
-        employee_id: 'EMP001',
-        name: 'Alice Johnson',
-        role: 'server',
-        hourly_rate: 15.00,
-        status: 'active',
-        contact: '+1234567890',
-        hire_date: '2023-01-15'
-      },
-      {
-        employee_id: 'EMP002',
-        name: 'Bob Smith',
-        role: 'chef',
-        hourly_rate: 20.00,
-        status: 'active',
-        contact: '+1234567891',
-        hire_date: '2022-08-10'
-      },
-      {
-        employee_id: 'EMP003',
-        name: 'Carol Williams',
-        role: 'server',
-        hourly_rate: 16.00,
-        status: 'active',
-        contact: '+1234567892',
-        hire_date: '2023-03-20'
-      },
-      {
-        employee_id: 'EMP004',
-        name: 'David Brown',
-        role: 'host',
-        hourly_rate: 14.00,
-        status: 'active',
-        contact: '+1234567893',
-        hire_date: '2023-06-01'
-      },
-      {
-        employee_id: 'EMP005',
-        name: 'Eva Martinez',
-        role: 'bartender',
-        hourly_rate: 18.00,
-        status: 'active',
-        contact: '+1234567894',
-        hire_date: '2023-02-14'
-      }
-    ];
-
-    // Mock shifts for the next 7 days
-    const mockShifts: Shift[] = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 7; i++) {
-      const shiftDate = new Date(today);
-      shiftDate.setDate(today.getDate() + i);
-      const dateStr = shiftDate.toISOString().split('T')[0];
-      
-      // Morning shift - Chef
-      mockShifts.push({
-        shift_id: `SHF${i}001`,
-        employee_id: 'EMP002',
-        employee_name: 'Bob Smith',
-        role: 'chef',
-        date: dateStr,
-        start_time: '08:00',
-        end_time: '16:00',
-        status: i === 0 ? 'in_progress' : 'scheduled',
-        hourly_rate: 20.00,
-        break_minutes: 60,
-        notes: i === 0 ? 'Currently working' : ''
-      });
-
-      // Day shift - Servers
-      mockShifts.push({
-        shift_id: `SHF${i}002`,
-        employee_id: 'EMP001',
-        employee_name: 'Alice Johnson',
-        role: 'server',
-        date: dateStr,
-        start_time: '11:00',
-        end_time: '19:00',
-        status: i === 0 ? 'confirmed' : 'scheduled',
-        hourly_rate: 15.00,
-        break_minutes: 30
-      });
-
-      mockShifts.push({
-        shift_id: `SHF${i}003`,
-        employee_id: 'EMP003',
-        employee_name: 'Carol Williams',
-        role: 'server',
-        date: dateStr,
-        start_time: '17:00',
-        end_time: '23:00',
-        status: 'scheduled',
-        hourly_rate: 16.00,
-        break_minutes: 30
-      });
-
-      // Host shift
-      mockShifts.push({
-        shift_id: `SHF${i}004`,
-        employee_id: 'EMP004',
-        employee_name: 'David Brown',
-        role: 'host',
-        date: dateStr,
-        start_time: '16:00',
-        end_time: '22:00',
-        status: 'scheduled',
-        hourly_rate: 14.00,
-        break_minutes: 30
-      });
-
-      // Evening bartender (Fri-Sat only)
-      if (shiftDate.getDay() === 5 || shiftDate.getDay() === 6) {
-        mockShifts.push({
-          shift_id: `SHF${i}005`,
-          employee_id: 'EMP005',
-          employee_name: 'Eva Martinez',
-          role: 'bartender',
-          date: dateStr,
-          start_time: '18:00',
-          end_time: '02:00',
-          status: 'scheduled',
-          hourly_rate: 18.00,
-          break_minutes: 45
-        });
-      }
+    try {
+      // TODO: Replace with actual API calls when shift management service is implemented
+      // const employeesResponse = await shiftService.getEmployees();
+      // const shiftsResponse = await shiftService.getShifts();
+      // setEmployees(employeesResponse);
+      // setShifts(shiftsResponse);
+      setEmployees([]);
+      setShifts([]);
+    } catch (error) {
+      console.error('Failed to load shift data:', error);
+      setEmployees([]);
+      setShifts([]);
+    } finally {
+      setLoading(false);
     }
-
-    // const mockTemplates: ShiftTemplate[] = [
-    //   {
-    //     template_id: 'TPL001',
-    //     name: 'Weekday Morning Chef',
-    //     day_of_week: 1, // Monday
-    //     start_time: '08:00',
-    //     end_time: '16:00',
-    //     role: 'chef',
-    //     required_employees: 1
-    //   },
-    //   {
-    //     template_id: 'TPL002',
-    //     name: 'Weekend Dinner Service',
-    //     day_of_week: 6, // Saturday
-    //     start_time: '17:00',
-    //     end_time: '23:00',
-    //     role: 'server',
-    //     required_employees: 3
-    //   }
-    // ];
-
-    setEmployees(mockEmployees);
-    setShifts(mockShifts);
-    // setTemplates(mockTemplates); // Will be used for shift templates
-    setLoading(false);
   };
 
   const getShiftsForDate = (date: Date): Shift[] => {

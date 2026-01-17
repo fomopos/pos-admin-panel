@@ -82,130 +82,22 @@ const Customers: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock data - in real app, this would come from API
+  // TODO: Implement customer API service
   useEffect(() => {
     const fetchCustomers = async () => {
       setIsLoading(true);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setCustomers([
-        {
-          id: '1',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john.doe@email.com',
-          phone: '+1 (555) 123-4567',
-          address: {
-            street: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            zipCode: '10001',
-            country: 'US',
-          },
-          dateOfBirth: '1985-06-15',
-          gender: 'male',
-          status: 'active',
-          totalPurchases: 15,
-          totalSpent: 2847.50,
-          lastPurchase: '2024-01-15T10:30:00Z',
-          notes: 'VIP customer, prefers contactless payment',
-          createdAt: '2023-08-15T09:00:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
-        },
-        {
-          id: '2',
-          firstName: 'Jane',
-          lastName: 'Smith',
-          email: 'jane.smith@email.com',
-          phone: '+1 (555) 987-6543',
-          address: {
-            street: '456 Oak Ave',
-            city: 'Los Angeles',
-            state: 'CA',
-            zipCode: '90210',
-            country: 'US',
-          },
-          dateOfBirth: '1990-03-22',
-          gender: 'female',
-          status: 'active',
-          totalPurchases: 8,
-          totalSpent: 1245.75,
-          lastPurchase: '2024-01-14T16:20:00Z',
-          createdAt: '2023-11-20T14:30:00Z',
-          updatedAt: '2024-01-14T16:20:00Z',
-        },
-        {
-          id: '3',
-          firstName: 'Mike',
-          lastName: 'Johnson',
-          email: 'mike.johnson@email.com',
-          phone: '+1 (555) 456-7890',
-          address: {
-            street: '789 Pine St',
-            city: 'Chicago',
-            state: 'IL',
-            zipCode: '60601',
-            country: 'US',
-          },
-          status: 'active',
-          totalPurchases: 3,
-          totalSpent: 567.25,
-          lastPurchase: '2024-01-10T11:15:00Z',
-          notes: 'Interested in electronics',
-          createdAt: '2023-12-05T10:00:00Z',
-          updatedAt: '2024-01-10T11:15:00Z',
-        },
-        {
-          id: '4',
-          firstName: 'Sarah',
-          lastName: 'Brown',
-          email: 'sarah.brown@email.com',
-          phone: '+1 (555) 321-0987',
-          address: {
-            street: '321 Elm St',
-            city: 'Houston',
-            state: 'TX',
-            zipCode: '77001',
-            country: 'US',
-          },
-          dateOfBirth: '1988-11-08',
-          gender: 'female',
-          status: 'inactive',
-          totalPurchases: 1,
-          totalSpent: 199.99,
-          lastPurchase: '2023-12-20T09:45:00Z',
-          notes: 'Requested refund, account temporarily inactive',
-          createdAt: '2023-12-15T13:20:00Z',
-          updatedAt: '2023-12-22T10:00:00Z',
-        },
-        {
-          id: '5',
-          firstName: 'David',
-          lastName: 'Wilson',
-          email: 'david.wilson@email.com',
-          phone: '+1 (555) 654-3210',
-          address: {
-            street: '654 Maple Dr',
-            city: 'Phoenix',
-            state: 'AZ',
-            zipCode: '85001',
-            country: 'US',
-          },
-          dateOfBirth: '1975-09-12',
-          gender: 'male',
-          status: 'active',
-          totalPurchases: 22,
-          totalSpent: 4567.80,
-          lastPurchase: '2024-01-13T14:30:00Z',
-          notes: 'Loyal customer since 2023',
-          createdAt: '2023-07-10T08:15:00Z',
-          updatedAt: '2024-01-13T14:30:00Z',
-        },
-      ]);
-      
-      setIsLoading(false);
+      try {
+        // TODO: Replace with actual API call when customer service is implemented
+        // const response = await customerService.getCustomers();
+        // setCustomers(response.customers);
+        setCustomers([]);
+      } catch (error) {
+        console.error('Failed to fetch customers:', error);
+        setCustomers([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchCustomers();

@@ -53,8 +53,20 @@ const PaymentAnalyticsDashboard: React.FC = () => {
     setState(prev => ({ ...prev, isLoading: true }));
     try {
       const [analytics, trends] = await Promise.all([
-        paymentAnalyticsService.getMockAnalytics(),
-        paymentAnalyticsService.getMockTrends()
+        paymentAnalyticsService.getPaymentAnalytics({
+          tenant_id: 'demo-tenant',
+          store_id: 'demo-store',
+          period: state.selectedPeriod,
+          start_date: state.dateRange.start,
+          end_date: state.dateRange.end
+        }),
+        paymentAnalyticsService.getPaymentTrends({
+          tenant_id: 'demo-tenant',
+          store_id: 'demo-store',
+          start_date: state.dateRange.start,
+          end_date: state.dateRange.end,
+          period: state.selectedPeriod
+        })
       ]);
       
       setState(prev => ({

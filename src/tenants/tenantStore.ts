@@ -241,29 +241,23 @@ export const useTenantStore = create<TenantState>()(
         const { tenants } = get();
         const tenant = tenants.find((t) => t.id === tenantId);
         if (tenant) {
+          // Set currentTenant FIRST so that subsequent API calls have the X-Tenant-Id header
+          set({ 
+            currentTenant: tenant,
+            currentStore: null // Reset store when switching tenant
+          });
+          
           try {
             console.log('🎯 Switching tenant and calling server selection API:', tenantId);
             
             // Call the tenant selection API to inform the server
             await tenantSelectionService.completeTenantSelection(tenantId);
             
-            // Update local state
-            set({ 
-              currentTenant: tenant,
-              currentStore: null // Reset store when switching tenant
-            });
-            
             console.log('✅ Tenant switched successfully with server selection');
           } catch (error) {
             console.error('❌ Error switching tenant:', error);
-            // Still update local state even if server selection fails
-            // This ensures the UI can continue working
-            set({ 
-              currentTenant: tenant,
-              currentStore: null
-            });
-            
-            // Use the error handler to show user feedback
+            // currentTenant is already set, so UI can continue working
+            // Just show user feedback about the server sync failure
             const { handleError } = useErrorHandler.getState();
             handleError(error, { 
               showToast: true,

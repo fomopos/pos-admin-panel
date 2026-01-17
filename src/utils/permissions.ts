@@ -27,8 +27,8 @@ export class PermissionManager {
           this.currentUserRole = userData.role;
           this.isInitialized = true;
         } else {
-          // Fallback for development: if user not found in mock data, give admin permissions
-          console.warn(`User ${currentUser.email} not found in user data. Using admin permissions for development.`);
+          // Fallback: if user not found, grant admin permissions to allow access
+          console.warn(`User ${currentUser.email} not found in user data. Granting admin permissions.`);
           this.currentUserPermissions = [
             'sales_create', 'sales_read', 'sales_update', 'sales_delete', 'sales_void', 'sales_refund',
             'products_create', 'products_read', 'products_update', 'products_delete',

@@ -74,21 +74,15 @@ const StoreSettingsPage: React.FC = () => {
       try {
         const storeId = currentStore?.store_id || '*';
         
-        // Fetch store details only
-        let storeDetails;
-        try {
-          storeDetails = await storeServices.store.getStoreDetails(storeId);
-        } catch (apiError) {
-          console.warn('Failed to fetch real store details, using mock data:', apiError);
-          storeDetails = await storeServices.store.getMockStoreDetails();
-        }
+        // Fetch store details
+        const storeDetails = await storeServices.store.getStoreDetails(storeId);
         
-        // Create a mock settings object since we're removing the settings API call
-        const mockSettings = await storeServices.settings.getMockStoreSettings();
+        // Fetch store settings
+        const settings = await storeServices.settings.getStoreSettings({ store_id: storeId });
         
         setState(prev => ({ 
           ...prev, 
-          settings: mockSettings, 
+          settings, 
           storeDetails, 
           isLoading: false 
         }));

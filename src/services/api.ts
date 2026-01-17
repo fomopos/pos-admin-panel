@@ -3,10 +3,6 @@ import { authService } from '../auth/authService';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
-// Development mode flag - set to true to use mock data instead of real API calls
-export const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true' || 
-  import.meta.env.NODE_ENV === 'development';
-
 export interface ApiResponse<T> {
   data: T;
   message?: string;

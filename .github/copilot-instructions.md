@@ -144,7 +144,6 @@ npm run preview      # Preview production build
 ### Environment Variables
 Key variables in `.env`:
 - `VITE_API_BASE_URL`: Backend API URL (default: http://localhost:3001/api in dev)
-- `VITE_USE_MOCK_DATA`: Toggle mock data vs real API (default: true in dev)
 - AWS Cognito config in `src/auth/config.ts`
 
 ## Project-Specific Conventions

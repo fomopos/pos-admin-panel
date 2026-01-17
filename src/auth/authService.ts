@@ -110,14 +110,28 @@ class AuthService {
   async getCurrentUser(): Promise<User | null> {
     try {
       const user = await getCurrentUser();
+      const session = await fetchAuthSession();
       
-      // Extract user information from Cognito
-      const email = user.signInDetails?.loginId || '';
+      // Extract user ID from the basic user object
       const userId = user.userId;
-      const name = user.username;
       
-      // Mock tenant data - in real app, this would come from your API
-      const tenants = ['tenant-1', 'tenant-2'];
+      // Get detailed user info from the idToken payload
+      const idToken = session.tokens?.idToken;
+      const payload = idToken?.payload;
+      
+      // Extract email and name from idToken claims
+      const email = (payload?.email as string) || user.signInDetails?.loginId || '';
+      const name = (payload?.name as string) || (payload?.['cognito:username'] as string) || user.username;
+      
+      console.log('👤 User details from idToken:', {
+        userId,
+        email,
+        name,
+        claims: payload ? Object.keys(payload) : []
+      });
+      
+      // Tenants are fetched separately via tenantApiService.getUserTenants()
+      const tenants: string[] = [];
       
       return {
         userId,
@@ -160,7 +174,7 @@ class AuthService {
   async getAccessToken(): Promise<string | null> {
     try {
       const session = await fetchAuthSession();
-      return session.tokens?.idToken?.toString() || null;
+      return session.tokens?.accessToken?.toString() || null;
     } catch (error) {
       console.error('Get access token error:', error);
       return null;
@@ -182,7 +196,7 @@ class AuthService {
       
       // Force refresh the AWS Cognito session
       const session = await fetchAuthSession({ forceRefresh: true });
-      const newToken = session.tokens?.idToken?.toString() || null;
+      const newToken = session.tokens?.accessToken?.toString() || null;
       
       if (newToken) {
         console.log('✅ Token refreshed successfully');

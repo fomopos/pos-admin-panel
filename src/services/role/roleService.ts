@@ -31,63 +31,6 @@ export interface RoleServiceError {
   details?: any;
 }
 
-// Mock data for development
-const mockRoles: UserRole[] = [
-  {
-    role_id: 'role-1',
-    role_name: 'Store Manager',
-    permissions: [
-      'sales_create', 'sales_read', 'sales_update', 'sales_delete', 'sales_void', 'sales_refund',
-      'products_create', 'products_read', 'products_update', 'products_delete',
-      'users_create', 'users_read', 'users_update', 'users_delete',
-      'roles_create', 'roles_read', 'roles_update', 'roles_delete',
-      'settings_store', 'settings_users', 'manager_functions',
-      'cash_management', 'reports_sales', 'reports_inventory', 'reports_financial'
-    ],
-    description: 'Full access to store operations and management'
-  },
-  {
-    role_id: 'role-2',
-    role_name: 'Assistant Manager',
-    permissions: [
-      'sales_create', 'sales_read', 'sales_update', 'sales_void', 'sales_refund',
-      'products_read', 'products_update',
-      'users_read', 'users_update',
-      'roles_read',
-      'manager_functions', 'discount_apply',
-      'reports_sales', 'reports_inventory'
-    ],
-    description: 'Limited management access with supervisory permissions'
-  },
-  {
-    role_id: 'role-3',
-    role_name: 'Sales Associate',
-    permissions: [
-      'sales_create', 'sales_read', 'products_read',
-      'customers_create', 'customers_read', 'customers_update'
-    ],
-    description: 'Standard sales operations and customer management'
-  },
-  {
-    role_id: 'role-4',
-    role_name: 'Cashier',
-    permissions: [
-      'sales_create', 'sales_read', 'products_read', 'customers_read'
-    ],
-    description: 'Basic point-of-sale operations'
-  },
-  {
-    role_id: 'role-5',
-    role_name: 'Inventory Manager',
-    permissions: [
-      'products_read', 'products_update', 'products_create',
-      'inventory_read', 'inventory_update', 'inventory_adjust',
-      'reports_inventory'
-    ],
-    description: 'Inventory management and product catalog maintenance'
-  }
-];
-
 export class RoleService {
   private readonly basePath = '/roles';
 
@@ -99,14 +42,8 @@ export class RoleService {
       const response = await apiClient.get<RolesResponse>(`${this.basePath}`, { store_id: storeId });
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      return {
-        roles: mockRoles,
-        total: mockRoles.length,
-        page: 1,
-        limit: 50
-      };
+      console.error('Failed to fetch roles:', error);
+      throw error;
     }
   }
 
@@ -118,13 +55,8 @@ export class RoleService {
       const response = await apiClient.get<UserRole>(`${this.basePath}/${roleId}`);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      const role = mockRoles.find(r => r.role_id === roleId);
-      if (!role) {
-        throw this.handleError(error, `Role ${roleId} not found`);
-      }
-      return role;
+      console.error('Failed to fetch role:', error);
+      throw error;
     }
   }
 
@@ -137,15 +69,8 @@ export class RoleService {
       const response = await apiClient.post<UserRole>(this.basePath, data);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development - create a mock role
-      const newRole: UserRole = {
-        role_id: `role-${Date.now()}`,
-        role_name: data.role_name,
-        permissions: data.permissions,
-        description: data.description
-      };
-      return newRole;
+      console.error('Failed to create role:', error);
+      throw error;
     }
   }
 
@@ -158,18 +83,8 @@ export class RoleService {
       const response = await apiClient.put<UserRole>(`${this.basePath}/${roleId}`, data);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development - simulate an updated role
-      const existingRole = mockRoles.find(r => r.role_id === roleId);
-      if (!existingRole) {
-        throw this.handleError(error, `Role ${roleId} not found`);
-      }
-      
-      const updatedRole: UserRole = {
-        ...existingRole,
-        ...data
-      };
-      return updatedRole;
+      console.error('Failed to update role:', error);
+      throw error;
     }
   }
 
@@ -194,19 +109,8 @@ export class RoleService {
       const response = await apiClient.get<{ permissions: Permission[] }>('/permissions');
       return response.data.permissions;
     } catch (error) {
-      console.warn('API call failed, using mock permissions for development:', error);
-      // Fallback to hardcoded permissions for development
-      return [
-        'sales_create', 'sales_read', 'sales_update', 'sales_delete', 'sales_void', 'sales_refund',
-        'products_create', 'products_read', 'products_update', 'products_delete',
-        'inventory_read', 'inventory_update', 'inventory_adjust',
-        'customers_create', 'customers_read', 'customers_update', 'customers_delete',
-        'reports_sales', 'reports_inventory', 'reports_customers', 'reports_financial',
-        'settings_store', 'settings_users', 'settings_payment', 'settings_tax', 'settings_system',
-        'users_create', 'users_read', 'users_update', 'users_delete',
-        'roles_create', 'roles_read', 'roles_update', 'roles_delete',
-        'cash_management', 'discount_apply', 'discount_override', 'price_override', 'manager_functions'
-      ] as Permission[];
+      console.error('Failed to fetch available permissions:', error);
+      throw error;
     }
   }
 
@@ -218,9 +122,8 @@ export class RoleService {
       const response = await apiClient.get<{ canDelete: boolean; userCount: number }>(`${this.basePath}/${roleId}/can-delete`);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback - allow deletion in development mode
-      return { canDelete: true, userCount: 0 };
+      console.error('Failed to check if role can be deleted:', error);
+      throw error;
     }
   }
 
