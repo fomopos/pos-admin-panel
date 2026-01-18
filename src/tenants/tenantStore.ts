@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { tenantApiService } from '../services/tenant/tenantApiService';
-import { tenantSelectionService } from '../services/tenant/tenantSelectionService';
 import type { TenantApiResponse, StoreApiResponse } from '../services/tenant/tenantApiService';
 import { useErrorHandler } from '../services/errorHandler';
 
@@ -186,7 +185,7 @@ interface TenantState {
   setTenants: (tenants: TenantWithStores[]) => void;
   setCurrentTenant: (tenant: Tenant | null) => void;
   setCurrentStore: (store: Store | null) => void;
-  switchTenant: (tenantId: string) => Promise<void>;
+  switchTenant: (tenantId: string) => void;
   switchStore: (storeId: string) => Promise<void>;
   fetchTenants: (userId: string, clearSelections?: boolean) => Promise<void>;
   fetchStoresForTenant: (tenantId: string) => Promise<void>;
@@ -237,33 +236,16 @@ export const useTenantStore = create<TenantState>()(
 
       setCurrentStore: (store) => set({ currentStore: store }),
 
-      switchTenant: async (tenantId) => {
+      switchTenant: (tenantId) => {
         const { tenants } = get();
         const tenant = tenants.find((t) => t.id === tenantId);
         if (tenant) {
-          // Set currentTenant FIRST so that subsequent API calls have the X-Tenant-Id header
+          // Set currentTenant so that subsequent API calls have the X-Tenant-Id header
           set({ 
             currentTenant: tenant,
             currentStore: null // Reset store when switching tenant
           });
-          
-          try {
-            console.log('🎯 Switching tenant and calling server selection API:', tenantId);
-            
-            // Call the tenant selection API to inform the server
-            await tenantSelectionService.completeTenantSelection(tenantId);
-            
-            console.log('✅ Tenant switched successfully with server selection');
-          } catch (error) {
-            console.error('❌ Error switching tenant:', error);
-            // currentTenant is already set, so UI can continue working
-            // Just show user feedback about the server sync failure
-            const { handleError } = useErrorHandler.getState();
-            handleError(error, { 
-              showToast: true,
-              autoClose: 5000 
-            });
-          }
+          console.log('✅ Tenant switched successfully:', tenantId);
         }
       },
 
@@ -275,112 +257,96 @@ export const useTenantStore = create<TenantState>()(
         if (tenant) {
           const store = tenant.stores.find((s) => s.store_id === storeId);
           if (store) {
+            console.log('🏪 Switching store:', { tenantId: currentTenant.id, storeId });
+            
+            // Set the store from local data for immediate UI update
+            set({ currentStore: store });
+            
+            console.log('✅ Store switched successfully:', storeId);
+            
+            // Fetch fresh store details from API in the background
             try {
-              console.log('🏪 Switching store and calling server selection API:', { tenantId: currentTenant.id, storeId });
+              console.log('🔄 Fetching fresh store details after store switch:', { tenantId: currentTenant.id, storeId });
               
-              // Call the tenant selection API with both tenant and store IDs
-              await tenantSelectionService.completeTenantSelection(currentTenant.id, storeId);
+              // Import the store service to fetch store details
+              const { storeServices } = await import('../services/store');
               
-              // Set the store from local data first for immediate UI update
-              set({ currentStore: store });
+              // Fetch fresh store details from API
+              const freshStoreDetails = await storeServices.store.getStoreDetails(storeId);
               
-              console.log('✅ Store switched successfully with server selection');
+              // Transform the API response to match our Store interface
+              const updatedStore: Store = {
+                ...store, // Keep the existing store data as base
+                // Update with fresh data from API
+                status: freshStoreDetails.status === 'suspended' ? 'inactive' : freshStoreDetails.status as 'active' | 'inactive' | 'pending',
+                store_name: freshStoreDetails.store_name,
+                description: freshStoreDetails.description,
+                location_type: freshStoreDetails.location_type,
+                store_type: freshStoreDetails.store_type,
+                address: {
+                  address1: freshStoreDetails.address.address1,
+                  address2: freshStoreDetails.address.address2,
+                  address3: freshStoreDetails.address.address3,
+                  address4: freshStoreDetails.address.address4,
+                  city: freshStoreDetails.address.city,
+                  state: freshStoreDetails.address.state,
+                  district: freshStoreDetails.address.district || '',
+                  area: freshStoreDetails.address.area || '',
+                  postal_code: freshStoreDetails.address.postal_code,
+                  country: freshStoreDetails.address.country,
+                  county: freshStoreDetails.address.county,
+                },
+                locale: freshStoreDetails.locale,
+                currency: freshStoreDetails.currency,
+                latitude: freshStoreDetails.latitude,
+                longitude: freshStoreDetails.longitude,
+                telephone1: freshStoreDetails.telephone1,
+                telephone2: freshStoreDetails.telephone2,
+                telephone3: freshStoreDetails.telephone3,
+                telephone4: freshStoreDetails.telephone4,
+                email: freshStoreDetails.email,
+                legal_entity_id: freshStoreDetails.legal_entity_id,
+                legal_entity_name: freshStoreDetails.legal_entity_name,
+                store_timing: {
+                  Monday: freshStoreDetails.store_timing.Monday || store.store_timing?.Monday || '09:00-18:00',
+                  Tuesday: freshStoreDetails.store_timing.Tuesday || store.store_timing?.Tuesday || '09:00-18:00',
+                  Wednesday: freshStoreDetails.store_timing.Wednesday || store.store_timing?.Wednesday || '09:00-18:00',
+                  Thursday: freshStoreDetails.store_timing.Thursday || store.store_timing?.Thursday || '09:00-18:00',
+                  Friday: freshStoreDetails.store_timing.Friday || store.store_timing?.Friday || '09:00-18:00',
+                  Saturday: freshStoreDetails.store_timing.Saturday || store.store_timing?.Saturday || '09:00-18:00',
+                  Sunday: freshStoreDetails.store_timing.Sunday || store.store_timing?.Sunday || '10:00-17:00',
+                  Holidays: freshStoreDetails.store_timing.Holidays || store.store_timing?.Holidays || 'Closed',
+                },
+                terminals: freshStoreDetails.terminals,
+                properties: freshStoreDetails.properties,
+                created_at: freshStoreDetails.created_at,
+                create_user_id: freshStoreDetails.create_user_id,
+                updated_at: freshStoreDetails.updated_at,
+                update_user_id: freshStoreDetails.update_user_id,
+              };
               
-              // Then fetch fresh store details from API in the background
-              try {
-                console.log('🔄 Fetching fresh store details after store switch:', { tenantId: currentTenant.id, storeId });
-                
-                // Import the store service to fetch store details
-                const { storeServices } = await import('../services/store');
-                
-                // Fetch fresh store details from API
-                const freshStoreDetails = await storeServices.store.getStoreDetails(storeId);
-                
-                // Transform the API response to match our Store interface
-                const updatedStore: Store = {
-                  ...store, // Keep the existing store data as base
-                  // Update with fresh data from API
-                  status: freshStoreDetails.status === 'suspended' ? 'inactive' : freshStoreDetails.status as 'active' | 'inactive' | 'pending',
-                  store_name: freshStoreDetails.store_name,
-                  description: freshStoreDetails.description,
-                  location_type: freshStoreDetails.location_type,
-                  store_type: freshStoreDetails.store_type,
-                  address: {
-                    address1: freshStoreDetails.address.address1,
-                    address2: freshStoreDetails.address.address2,
-                    address3: freshStoreDetails.address.address3,
-                    address4: freshStoreDetails.address.address4,
-                    city: freshStoreDetails.address.city,
-                    state: freshStoreDetails.address.state,
-                    district: freshStoreDetails.address.district || '',
-                    area: freshStoreDetails.address.area || '',
-                    postal_code: freshStoreDetails.address.postal_code,
-                    country: freshStoreDetails.address.country,
-                    county: freshStoreDetails.address.county,
-                  },
-                  locale: freshStoreDetails.locale,
-                  currency: freshStoreDetails.currency,
-                  latitude: freshStoreDetails.latitude,
-                  longitude: freshStoreDetails.longitude,
-                  telephone1: freshStoreDetails.telephone1,
-                  telephone2: freshStoreDetails.telephone2,
-                  telephone3: freshStoreDetails.telephone3,
-                  telephone4: freshStoreDetails.telephone4,
-                  email: freshStoreDetails.email,
-                  legal_entity_id: freshStoreDetails.legal_entity_id,
-                  legal_entity_name: freshStoreDetails.legal_entity_name,
-                  store_timing: {
-                    Monday: freshStoreDetails.store_timing.Monday || store.store_timing?.Monday || '09:00-18:00',
-                    Tuesday: freshStoreDetails.store_timing.Tuesday || store.store_timing?.Tuesday || '09:00-18:00',
-                    Wednesday: freshStoreDetails.store_timing.Wednesday || store.store_timing?.Wednesday || '09:00-18:00',
-                    Thursday: freshStoreDetails.store_timing.Thursday || store.store_timing?.Thursday || '09:00-18:00',
-                    Friday: freshStoreDetails.store_timing.Friday || store.store_timing?.Friday || '09:00-18:00',
-                    Saturday: freshStoreDetails.store_timing.Saturday || store.store_timing?.Saturday || '09:00-18:00',
-                    Sunday: freshStoreDetails.store_timing.Sunday || store.store_timing?.Sunday || '10:00-17:00',
-                    Holidays: freshStoreDetails.store_timing.Holidays || store.store_timing?.Holidays || 'Closed',
-                  },
-                  terminals: freshStoreDetails.terminals,
-                  properties: freshStoreDetails.properties,
-                  created_at: freshStoreDetails.created_at,
-                  create_user_id: freshStoreDetails.create_user_id,
-                  updated_at: freshStoreDetails.updated_at,
-                  update_user_id: freshStoreDetails.update_user_id,
-                };
-                
-                // Update the store in the tenants array
-                const updatedTenants = tenants.map(t => {
-                  if (t.id === currentTenant.id) {
-                    return {
-                      ...t,
-                      stores: t.stores.map(s => s.store_id === storeId ? updatedStore : s)
-                    };
-                  }
-                  return t;
-                });
-                
-                // Update the state with fresh store details
-                set({ 
-                  tenants: updatedTenants,
-                  currentStore: updatedStore 
-                });
-                
-                console.log('✅ Store details refreshed successfully after switch');
-              } catch (error) {
-                console.error('❌ Failed to refresh store details after switch:', error);
-                // Don't throw error - the store switch already succeeded with cached data
-                // The UI will still work with the cached store data
-              }
-            } catch (error) {
-              console.error('❌ Error switching store:', error);
-              // Still update local state even if server selection fails
-              set({ currentStore: store });
-              
-              // Use the error handler to show user feedback
-              const { handleError } = useErrorHandler.getState();
-              handleError(error, { 
-                showToast: true,
-                autoClose: 5000 
+              // Update the store in the tenants array
+              const updatedTenants = tenants.map(t => {
+                if (t.id === currentTenant.id) {
+                  return {
+                    ...t,
+                    stores: t.stores.map(s => s.store_id === storeId ? updatedStore : s)
+                  };
+                }
+                return t;
               });
+              
+              // Update the state with fresh store details
+              set({ 
+                tenants: updatedTenants,
+                currentStore: updatedStore 
+              });
+              
+              console.log('✅ Store details refreshed successfully after switch');
+            } catch (error) {
+              console.error('❌ Failed to refresh store details after switch:', error);
+              // Don't throw error - the store switch already succeeded with cached data
+              // The UI will still work with the cached store data
             }
           }
         }

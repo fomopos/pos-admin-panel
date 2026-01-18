@@ -275,43 +275,6 @@ export const setupGlobalErrorHandlers = () => {
       originalConsoleError('Error in error handler:', err);
     }
   });
-
-  // Only override console in development and with better safety checks
-  if (process.env.NODE_ENV === 'development') {
-    // Track if we're currently processing an error to prevent recursion
-    let isProcessingError = false;
-    
-    console.error = (...args) => {
-      // Always call the original console.error first
-      originalConsoleError.apply(console, args);
-      
-      // Avoid recursion and only handle React-specific errors
-      if (!isProcessingError) {
-        const isReactError = args.some(arg => 
-          typeof arg === 'string' && 
-          (arg.includes('Warning: ') || arg.includes('Error: '))
-        );
-        
-        const isNotOurErrorLog = !args.some(arg =>
-          typeof arg === 'string' && 
-          (arg.includes('🚨') || arg.includes('Error ID:') || arg.includes('Unhandled'))
-        );
-        
-        if (isReactError && isNotOurErrorLog) {
-          isProcessingError = true;
-          try {
-            handleError(new Error(args.join(' ')), { 
-              showToast: false // Don't show toast for console errors
-            });
-          } catch (err) {
-            originalConsoleError('Error in console.error override:', err);
-          } finally {
-            isProcessingError = false;
-          }
-        }
-      }
-    };
-  }
 };
 
 export default useErrorHandler;
