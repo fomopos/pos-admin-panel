@@ -142,14 +142,15 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
         <canvas
           ref={canvasRef}
           className="border border-gray-200"
-          width={250}
-          height={80}
+          style={{ maxWidth: '100%', height: 'auto' }}
+          width={200}
+          height={70}
         />
       );
     };
 
     return (
-      <div key={`barcode-${Math.random()}`} className="flex justify-center my-2">
+      <div key={`barcode-${Math.random()}`} className="flex justify-center my-2" style={{ maxWidth: '100%', overflow: 'hidden' }}>
         <BarcodeComponent />
       </div>
     );
@@ -207,22 +208,22 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
   switch (element.type) {
     case 'text':
       return renderTextElement(element as TextElement);
-    
+
     case 'row':
       return renderRowElement(element as RowElement);
-    
+
     case 'barcode':
       return renderBarcodeElement(element as BarcodeElement);
-    
+
     case 'picture':
       return renderPictureElement(element as PictureElement);
-    
+
     case 'horizontalline':
       return renderHorizontalLine();
-    
+
     case 'pagebreak':
       return renderPageBreak();
-    
+
     case 'sectionref':
       // For section references, we might need to look up the section
       // For now, render a placeholder
@@ -231,7 +232,7 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
           [Section: {(element as any).ref}]
         </div>
       );
-    
+
     case 'iterator':
       // For iterators, we'd need to process the data path
       // For now, render the rows directly
@@ -248,7 +249,7 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
           ))}
         </div>
       );
-    
+
     default:
       console.warn('Unknown receipt element type:', (element as any).type);
       return (

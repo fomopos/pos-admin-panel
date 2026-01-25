@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { 
+import {
   PrinterIcon,
   DocumentDuplicateIcon,
   EyeIcon,
@@ -50,7 +50,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
   const parseReceiptData = (jsonString: string): ReceiptElement[] => {
     try {
       const parsed = JSON.parse(jsonString);
-      
+
       // Handle different possible JSON structures
       if (Array.isArray(parsed)) {
         return parsed;
@@ -83,37 +83,37 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
     if (receipt) {
       try {
         const receiptElements = parseReceiptData(receipt.data);
-        
+
         // Create a temporary container to render the receipt content
         const tempContainer = document.createElement('div');
         tempContainer.style.fontFamily = defaultOptions.fontFamily || 'monospace';
         tempContainer.style.fontSize = `${defaultOptions.fontSize}px`;
         tempContainer.style.lineHeight = '1.2';
         tempContainer.style.width = `${defaultOptions.width}px`;
-        
+
         // Render each element as HTML
         const renderElementToHTML = async (element: any): Promise<string> => {
           switch (element.type) {
             case 'text':
-              const textAlign = element.align === 'center' ? 'center' : 
-                              element.align === 'right' ? 'right' : 
-                              element.align === 'justify' ? 'justify' : 'left';
+              const textAlign = element.align === 'center' ? 'center' :
+                element.align === 'right' ? 'right' :
+                  element.align === 'justify' ? 'justify' : 'left';
               return `<div style="text-align: ${textAlign}; ${element.flex ? `flex: ${element.flex};` : ''}">${element.text || ''}</div>`;
-            
+
             case 'row':
               const childrenHTML = await Promise.all(
-                (element.children || []).map(async (child: any) => 
+                (element.children || []).map(async (child: any) =>
                   `<div style="${child.flex ? `flex: ${child.flex};` : ''}">${await renderElementToHTML(child)}</div>`
                 )
               );
               return `<div style="display: flex; gap: 4px;">${childrenHTML.join('')}</div>`;
-            
+
             case 'horizontalline':
               return '<div style="border-top: 1px dashed #666; margin: 8px 0; width: 100%;"></div>';
-            
+
             case 'pagebreak':
               return '<div style="page-break-after: always; margin: 16px 0; border-top: 2px solid #444;"></div>';
-            
+
             case 'barcode':
               if (element.barcode_type === 'qrcode') {
                 try {
@@ -141,7 +141,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
                 try {
                   // Generate other barcode types using jsbarcode
                   const canvas = document.createElement('canvas');
-                  
+
                   // Map barcode types to jsbarcode formats
                   const formatMap: { [key: string]: string } = {
                     'code128': 'CODE128',
@@ -189,36 +189,36 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
                   </div>`;
                 }
               }
-            
+
             case 'picture':
               return `<div style="text-align: center; margin: 8px 0;">
                 <img src="${element.url}" alt="Receipt Image" style="max-width: 100%; max-height: 100px;" onerror="this.style.display='none'; this.nextSibling.style.display='block';" />
                 <div style="display: none; padding: 16px; background: #f3f4f6; border: 1px solid #d1d5db; text-align: center; color: #6b7280; font-size: 12px;">Image not available</div>
               </div>`;
-            
+
             case 'sectionref':
               return `<div style="color: #6b7280; font-style: italic; font-size: 12px;">[Section: ${element.ref}]</div>`;
-            
+
             case 'iterator':
               const iteratorHTML = await Promise.all(
                 (element.rows || []).map(async (row: any) => await renderElementToHTML(row))
               );
               return `<div>${iteratorHTML.join('')}</div>`;
-            
+
             default:
               return `<div style="color: #ef4444; font-size: 12px;">Unknown element type: ${element.type}</div>`;
           }
         };
-        
+
         // Process all elements with async support
         const receiptHTMLElements = await Promise.all(
           receiptElements.map(async (element) => await renderElementToHTML(element))
         );
         const receiptHTML = receiptHTMLElements.join('');
-        
+
         // Create a new window for printing
         const printWindow = window.open('', '_blank');
-        if (printWindow) {        
+        if (printWindow) {
           printWindow.document.write(`
             <!DOCTYPE html>
             <html>
@@ -388,7 +388,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
                     ID: {document.document_id}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setSelectedReceipt(selectedReceipt === document.document_id ? null : document.document_id)}
@@ -418,10 +418,10 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
             {/* Receipt Content - Expanded View */}
             {isExpanded && (
               <div className="p-4">
-              
+
                 {/* Receipt Preview */}
-                <div 
-                  className="receipt-container border border-gray-300 bg-white p-4 rounded-lg"
+                <div
+                  className="receipt-container border border-gray-300 bg-white p-4 rounded-lg overflow-hidden"
                   style={{
                     width: `${defaultOptions.width}px`,
                     fontFamily: defaultOptions.fontFamily,
@@ -456,7 +456,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
                     </button>
                   </div>
                   <div className="p-4">
-                    <div 
+                    <div
                       className="receipt-container bg-white border border-gray-200 p-4 rounded"
                       style={{
                         fontFamily: defaultOptions.fontFamily,
