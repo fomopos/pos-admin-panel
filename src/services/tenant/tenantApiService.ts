@@ -43,6 +43,7 @@ export interface StoreApiResponse {
     county: string | null;
   };
   locale: string;
+  timezone?: string;
   currency: string;
   latitude?: string | null;
   longitude?: string | null;
@@ -104,13 +105,13 @@ class TenantApiService {
 
       // Real API call using the API client
       const response = await apiClient.get<UserTenantsApiResponse>(`/v0/tenant`);
-      
+
       console.log('✅ Successfully fetched tenants from API:', response.data);
       return response.data;
-      
+
     } catch (error) {
       console.error('❌ Error fetching tenants from API:', error);
-      
+
       // Don't return empty data on API failures - let the error bubble up
       // The calling code should handle the error appropriately
       throw error;
@@ -128,13 +129,13 @@ class TenantApiService {
 
       // Real API call using the updated Store API endpoint
       const response = await apiClient.get<TenantStoresApiResponse>(`/v0/store`);
-      
+
       console.log('✅ Successfully fetched stores from API:', response.data);
       return response.data;
-      
+
     } catch (error) {
       console.error('❌ Error fetching stores from API:', error);
-      
+
       // Don't return empty data on API failures - let the error bubble up
       // The calling code should handle the error appropriately
       throw error;
@@ -153,10 +154,10 @@ class TenantApiService {
       // Real API call
       const response = await apiClient.get<TenantApiResponse>(`/tenants/${tenantId}`);
       return response.data;
-      
+
     } catch (error) {
       console.error('❌ Error fetching tenant details:', error);
-      
+
       // No fallback data available
       throw new ApiError(`Tenant not found: ${tenantId}`, 1001, 'TENANT_NOT_FOUND');
     }
@@ -174,7 +175,7 @@ class TenantApiService {
 
       // Real API call using the updated Store API endpoint
       const response = await apiClient.get<StoreApiResponse>(`/v0/store/${storeId}`);
-      
+
       console.log('✅ Successfully fetched store from API:', response.data);
       return response.data;
     } catch (error) {

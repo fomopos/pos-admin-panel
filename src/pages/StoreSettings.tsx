@@ -534,7 +534,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
     setFormData((prev: any) => ({
       ...prev,
       store_timing: {
-        ...prev.store_timing,
+        ...(prev.store_timing || {}),
         [day]: value
       }
     }));
@@ -887,8 +887,8 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
               <div className="flex-1">
                 <InputTextField
                   label=""
-                  value={formData.store_timing?.[day.toLowerCase()] || ''}
-                  onChange={(value) => handleTimingChange(day.toLowerCase(), value)}
+                  value={formData.store_timing?.[day] || ''}
+                  onChange={(value) => handleTimingChange(day, value)}
                   placeholder="9:00 AM - 9:00 PM"
                 />
               </div>

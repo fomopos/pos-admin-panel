@@ -39,11 +39,11 @@ export class StoreService {
   /**
    * Convert store timings to business hours format
    */
-  convertTimingsToBusinessHours(timings: Record<string, string>): Array<{ day: string; is_open: boolean; open_time: string; close_time: string }> {
+  convertTimingsToBusinessHours(timings: Record<string, string> | null | undefined): Array<{ day: string; is_open: boolean; open_time: string; close_time: string }> {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     
     return days.map(day => {
-      const timing = timings[day];
+      const timing = timings?.[day];
       if (!timing || timing === 'closed') {
         return {
           day,

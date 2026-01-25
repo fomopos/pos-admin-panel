@@ -50,8 +50,8 @@ export interface StoreDetails {
   email?: string;
   legal_entity_id?: string;
   legal_entity_name?: string;
-  store_timing: StoreTimings;
-  terminals: Record<string, Terminal>;
+  store_timing?: StoreTimings | null;
+  terminals?: Record<string, Terminal>;
   properties?: any;
   created_at: string;
   create_user_id: string;
@@ -375,7 +375,7 @@ export interface StoreServiceError {
 }
 
 // Supported currencies
-export type SupportedCurrency = 
+export type SupportedCurrency =
   | 'USD'
   | 'EUR'
   | 'GBP'
@@ -388,7 +388,7 @@ export type SupportedCurrency =
   | 'CNY';
 
 // Supported timezones (common ones)
-export type SupportedTimezone = 
+export type SupportedTimezone =
   | 'America/New_York'
   | 'America/Chicago'
   | 'America/Denver'
