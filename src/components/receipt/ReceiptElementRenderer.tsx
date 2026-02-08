@@ -30,6 +30,18 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
     }
   };
 
+  const getStyleProps = (style?: string): React.CSSProperties => {
+    if (!style) return {};
+    const props: React.CSSProperties = {};
+    // Support common style strings from the receipt template system
+    if (style.includes('bold') || style.includes('B')) props.fontWeight = 'bold';
+    if (style.includes('italic') || style.includes('I')) props.fontStyle = 'italic';
+    if (style.includes('underline') || style.includes('U')) props.textDecoration = 'underline';
+    if (style.includes('large') || style.includes('L')) props.fontSize = `${fontSize * 1.5}px`;
+    if (style.includes('small') || style.includes('S')) props.fontSize = `${fontSize * 0.85}px`;
+    return props;
+  };
+
   const renderTextElement = (textElement: TextElement) => {
     return (
       <div
@@ -41,6 +53,7 @@ export const ReceiptElementRenderer: React.FC<ReceiptElementRendererProps> = ({
           lineHeight: 1.2,
           wordBreak: 'break-word',
           flex: textElement.flex || undefined,
+          ...getStyleProps(textElement.style),
         }}
       >
         {textElement.text}

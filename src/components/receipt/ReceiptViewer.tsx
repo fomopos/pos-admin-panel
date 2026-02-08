@@ -11,6 +11,7 @@ import QRCode from 'qrcode';
 import JsBarcode from 'jsbarcode';
 import { ReceiptElementRenderer } from './ReceiptElementRenderer';
 import type { ReceiptElement, ReceiptRenderOptions } from '../../types/receipt';
+import { receiptBinaryCodec } from '../../services/receipt/receiptBinaryCodec';
 
 interface ReceiptViewerProps {
   documents: Array<{
@@ -48,9 +49,17 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
     ...renderOptions
   };
 
-  const parseReceiptData = (jsonString: string): ReceiptElement[] => {
+  const parseReceiptData = (dataString: string): ReceiptElement[] => {
     try {
-      const parsed = JSON.parse(jsonString);
+      // Try binary codec first (base64-encoded receipt binary)
+      if (receiptBinaryCodec.isReceiptBinary(dataString)) {
+        const elements = receiptBinaryCodec.fromBase64(dataString);
+        console.log('✅ Decoded binary receipt:', elements.length, 'elements');
+        return elements;
+      }
+
+      // Fall back to JSON parsing
+      const parsed = JSON.parse(dataString);
 
       // Handle different possible JSON structures
       if (Array.isArray(parsed)) {
@@ -64,7 +73,7 @@ const ReceiptViewer: React.FC<ReceiptViewerProps> = ({
         return [];
       }
     } catch (error) {
-      console.error('Failed to parse receipt JSON:', error, jsonString);
+      console.error('Failed to parse receipt data:', error);
       return [];
     }
   };
