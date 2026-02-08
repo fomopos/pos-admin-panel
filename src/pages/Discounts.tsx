@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  PlusIcon, 
+import {
+  PlusIcon,
   TagIcon,
   EyeIcon,
   PencilIcon,
@@ -19,7 +19,7 @@ import { useError } from '../hooks/useError';
 
 const Discounts: React.FC = () => {
   const navigate = useNavigate();
-  
+
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -93,11 +93,11 @@ const Discounts: React.FC = () => {
 
   const filteredDiscounts = (discounts || []).filter(discount => {
     const matchesSearch = discount.discount_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         discount.description.toLowerCase().includes(searchTerm.toLowerCase());
+      discount.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = !selectedType || discount.typcode === selectedType;
-    const matchesStatus = !selectedStatus || 
-                         (selectedStatus === 'active' && isDiscountActive(discount)) ||
-                         (selectedStatus === 'inactive' && !isDiscountActive(discount));
+    const matchesStatus = !selectedStatus ||
+      (selectedStatus === 'active' && isDiscountActive(discount)) ||
+      (selectedStatus === 'inactive' && !isDiscountActive(discount));
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -137,7 +137,7 @@ const Discounts: React.FC = () => {
 
   // Active filters for badge display
   const activeFilters: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
-  
+
   if (searchTerm) {
     activeFilters.push({
       key: 'search',
@@ -146,7 +146,7 @@ const Discounts: React.FC = () => {
       onRemove: () => setSearchTerm('')
     });
   }
-  
+
   if (selectedType) {
     const typeLabel = filterConfigs[0].options?.find(opt => opt.id === selectedType)?.label || selectedType;
     activeFilters.push({
@@ -156,7 +156,7 @@ const Discounts: React.FC = () => {
       onRemove: () => setSelectedType('')
     });
   }
-  
+
   if (selectedStatus) {
     const statusLabel = filterConfigs[1].options?.find(opt => opt.id === selectedStatus)?.label || selectedStatus;
     activeFilters.push({
@@ -192,7 +192,7 @@ const Discounts: React.FC = () => {
       <AdvancedSearchFilter
         searchValue={searchTerm}
         onSearchChange={setSearchTerm}
-        searchLabel=""
+        searchLabel="earch by discount code or description"
         searchPlaceholder="Search by discount code or description..."
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -281,13 +281,13 @@ const Discounts: React.FC = () => {
               </p>
               {!searchTerm && (
                 <div className="mt-6">
-                    <Button
-                      onClick={() => navigate('/discounts/new')}
-                      className="inline-flex items-center"
-                    >
-                      <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-                      Add Discount
-                    </Button>
+                  <Button
+                    onClick={() => navigate('/discounts/new')}
+                    className="inline-flex items-center"
+                  >
+                    <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
+                    Add Discount
+                  </Button>
                 </div>
               )}
             </div>
@@ -373,11 +373,11 @@ const DiscountCard: React.FC<{
             </button>
           </div>
         </div>
-        
+
         {discount.description && (
           <p className="text-gray-600 text-sm mb-4 line-clamp-2">{discount.description}</p>
         )}
-        
+
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <PercentBadgeIcon className="h-4 w-4 text-gray-400" />
@@ -386,8 +386,8 @@ const DiscountCard: React.FC<{
             </span>
           </div>
           <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-            {discount.app_mthd_code === 'TRANSACTION' ? 'Transaction' : 
-             discount.app_mthd_code === 'LINE_ITEM' ? 'Line Item' : 'Group'}
+            {discount.app_mthd_code === 'TRANSACTION' ? 'Transaction' :
+              discount.app_mthd_code === 'LINE_ITEM' ? 'Line Item' : 'Group'}
           </span>
         </div>
 
@@ -402,13 +402,12 @@ const DiscountCard: React.FC<{
             </div>
           </div>
         </div>
-        
+
         <div className="flex justify-end">
-          <span className={`px-2 py-1 text-xs rounded-full ${
-            isDiscountActive(discount)
-              ? 'bg-green-100 text-green-800' 
+          <span className={`px-2 py-1 text-xs rounded-full ${isDiscountActive(discount)
+              ? 'bg-green-100 text-green-800'
               : 'bg-gray-100 text-gray-800'
-          }`}>
+            }`}>
             {isDiscountActive(discount) ? 'Active' : 'Inactive'}
           </span>
         </div>
@@ -458,8 +457,8 @@ const DiscountListItem: React.FC<{
               {discount.discount_code}
             </div>
             <div className="text-sm text-gray-500">
-              {discount.app_mthd_code === 'TRANSACTION' ? 'Transaction' : 
-               discount.app_mthd_code === 'LINE_ITEM' ? 'Line Item' : 'Group'}
+              {discount.app_mthd_code === 'TRANSACTION' ? 'Transaction' :
+                discount.app_mthd_code === 'LINE_ITEM' ? 'Line Item' : 'Group'}
             </div>
           </div>
         </div>
@@ -494,11 +493,10 @@ const DiscountListItem: React.FC<{
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-          isDiscountActive(discount)
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${isDiscountActive(discount)
             ? 'bg-green-100 text-green-800'
             : 'bg-gray-100 text-gray-800'
-        }`}>
+          }`}>
           {isDiscountActive(discount) ? 'Active' : 'Inactive'}
         </span>
       </td>

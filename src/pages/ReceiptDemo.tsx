@@ -8,7 +8,8 @@ const ReceiptDemo: React.FC = () => {
   // Sample receipt data based on Flutter examples
   const sampleReceipts = [
     {
-      document_id: 1,
+      doc_id: '1',
+      doc_type: 'receipt',
       data: JSON.stringify([
         {
           type: 'text',
@@ -247,7 +248,8 @@ const ReceiptDemo: React.FC = () => {
       ])
     },
     {
-      document_id: 2,
+      doc_id: '2',
+      doc_type: 'receipt',
       data: JSON.stringify([
         {
           type: 'text',

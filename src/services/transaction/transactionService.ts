@@ -1,30 +1,102 @@
 import { apiClient } from '../api';
 
-// API Response Types
+// =============================================================================
+// SCALED INT UTILITIES
+// =============================================================================
+
+/**
+ * ScaledInt values are integers scaled by 10,000 to preserve 4 decimal places.
+ * Example: $12.50 = 125000
+ * To display to user: value / 10000 = actual amount
+ */
+export const SCALE_FACTOR = 10000;
+
+/**
+ * Convert a ScaledInt value to a displayable number
+ * @param scaledValue - The scaled integer value (e.g., 125000)
+ * @returns The actual decimal value (e.g., 12.50)
+ */
+export function fromScaledInt(scaledValue: number | string | null | undefined): number {
+  if (scaledValue === null || scaledValue === undefined) return 0;
+  const numValue = typeof scaledValue === 'string' ? parseFloat(scaledValue) : scaledValue;
+  return numValue / SCALE_FACTOR;
+}
+
+/**
+ * Convert a display number to ScaledInt for API requests
+ * @param value - The actual decimal value (e.g., 12.50)
+ * @returns The scaled integer value (e.g., 125000)
+ */
+export function toScaledInt(value: number): number {
+  return Math.round(value * SCALE_FACTOR);
+}
+
+/**
+ * Format a ScaledInt as a string representation of the actual value
+ * @param scaledValue - The scaled integer value
+ * @param decimals - Number of decimal places (default: 2)
+ * @returns Formatted string
+ */
+export function formatScaledInt(scaledValue: number | string | null | undefined, decimals: number = 2): string {
+  return fromScaledInt(scaledValue).toFixed(decimals);
+}
+
+// =============================================================================
+// ENUMERATIONS (matching API spec)
+// =============================================================================
+
+export type TransactionType = 'RETAIL_SALE';
+
+export type TransactionStatus = 'COMPLETED' | 'CANCEL' | 'NEW' | 'RESUME' | 'SUSPEND';
+
+export type LineItemTypeCode = 'SALE' | 'RETURN';
+
+export type ReturnTypeCode = 'BLIND' | 'VERIFIED' | 'UNVERIFIED';
+
+export type PriceModReasonCode = 
+  | 'DEAL' 
+  | 'LINE_ITEM_DISCOUNT' 
+  | 'GROUP_DISCOUNT' 
+  | 'TRANSACTION_DISCOUNT' 
+  | 'PRICE_OVERRIDE' 
+  | 'PROMPT_PRICE_CHANGE' 
+  | 'BASE_PRICE_RULE' 
+  | 'NEW_PRICE_RULE' 
+  | 'DOCUMENT' 
+  | 'MANUFACTURER_COUPON' 
+  | 'REFUND_PRORATION' 
+  | 'CALCULATED_WARRANTY_PRICE' 
+  | 'ENTITLEMENT';
+
+// =============================================================================
+// API RESPONSE TYPES - Transaction Summary (List View)
+// =============================================================================
+
 export interface TenderSummary {
   tender: string;
-  amount: string;
+  amount: number; // ScaledInt
 }
 
 export interface TransactionSummary {
-  transaction_id: string;
+  trans_id: string; // Composite ID like "20260208-101-93"
+  trans_seq: string;
   terminal_id: string;
-  barcode?: string;
-  business_date: string;
-  begin_datetime?: string;
+  barcode: string | null;
+  biz_date: string;
+  begin_time: string;
   created_at: string;
-  created_by?: string;
-  status: 'COMPLETED' | 'CANCELLED' | 'CANCEL_ORPHANED' | 'NEW' | 'SUSPENDED' | 'IN_PROGRESS' | 'completed' | 'cancelled' | 'cancel_orphaned' | 'new' | 'suspended';
-  transaction_type: 'SALE' | 'RETURN' | 'EXCHANGE' | 'sale' | 'return' | 'exchange';
-  total: string;
-  sub_total: string;
-  tax_total: string;
-  store_currency: string;
+  created_by: string;
+  status: TransactionStatus;
+  trans_type: TransactionType;
+  total: number; // ScaledInt
+  sub_total: number; // ScaledInt
+  tax_total: number; // ScaledInt
+  currency: string;
   associates: string[];
   is_void: boolean;
-  tender_summary: TenderSummary[];
-  line_items_count: number;
-  discount_amount?: string;
+  tenders: TenderSummary[];
+  item_count: number;
+  disc_amt: number | null;
 }
 
 export interface TransactionSummaryResponse {
@@ -32,7 +104,10 @@ export interface TransactionSummaryResponse {
   next: string | null;
 }
 
-// Query Parameters
+// =============================================================================
+// QUERY PARAMETERS
+// =============================================================================
+
 export interface TransactionQueryParams {
   start_date?: string;
   end_date?: string;
@@ -42,7 +117,10 @@ export interface TransactionQueryParams {
   limit?: number;
 }
 
-// Converted Sale interface for UI compatibility
+// =============================================================================
+// CONVERTED SALE INTERFACE (For UI Compatibility)
+// =============================================================================
+
 export interface ConvertedSale {
   id: string;
   saleNumber: string;
@@ -78,19 +156,12 @@ export interface ConvertedSale {
   isVoid: boolean;
 }
 
-// Detailed Transaction Types for Transaction Detail API
+// =============================================================================
+// NESTED OBJECTS - Tax Modifiers
+// =============================================================================
+
 export interface TaxModifier {
-  created_at: string;
-  created_by: string;
-  updated_at: string | null;
-  updated_by: string | null;
-  deleted_at: string | null;
-  tenant_id: string;
-  store_id: string;
-  terminal_id: string;
-  trans_id: string;
-  line_item_id: number;
-  tax_modifier_seq: number;
+  seq: number;
   authority_id: string;
   authority_name: string | null;
   authority_type: string;
@@ -98,161 +169,208 @@ export interface TaxModifier {
   tax_rule_id: number;
   tax_rule_name: string;
   tax_location_id: string;
-  taxable_amount: string;
-  tax_amount: string;
-  tax_percent: string;
-  original_taxable_amount: string | null;
-  raw_tax_percentage: string | null;
-  raw_tax_amount: string;
+  taxable_amt: number; // ScaledInt
+  tax_amt: number; // ScaledInt
+  tax_pct: number; // ScaledInt (percentage * 10000)
+  orig_taxable_amt?: number; // ScaledInt
+  raw_tax_pct?: number; // ScaledInt
+  raw_tax_amt?: number; // ScaledInt
   tax_override: boolean;
-  tax_override_amount: string | null;
-  tax_override_reason_code: string | null;
+  override_amt?: number | null; // ScaledInt
+  override_reason?: string | null;
 }
+
+// =============================================================================
+// NESTED OBJECTS - Price Modifiers
+// =============================================================================
 
 export interface PriceModifier {
-  // Based on the response, price_modifiers array is empty, but keeping the structure for future use
-  price_modifier_seq: number;
-  price_change_amount: string;
-  price_change_reason_code: string;
-  deal_id: string | null;
-  amount: string | null;
-  percent: string | null;
-  extended_amount: string;
-  notes: string | null;
-  description: string | null;
+  seq: number;
+  reason: PriceModReasonCode;
+  amt?: number | null; // ScaledInt
+  percent?: number | null; // ScaledInt
+  change_amt: number; // ScaledInt
+  change_reason?: string | null;
+  disc_code?: string | null;
+  disc_reason?: string | null;
+  deal_id?: string | null;
+  deal_amt?: number | null; // ScaledInt
+  serial_num?: string | null;
+  ext_amt: number; // ScaledInt
+  desc?: string | null;
   is_void: boolean;
+  notes?: string | null;
 }
+
+// =============================================================================
+// NESTED OBJECTS - Additional Line Item Modifiers (Addons)
+// =============================================================================
+
+export interface TransactionAdditionalLineItemModifier {
+  seq: number;
+  group_id: string;
+  mod_id: string;
+  mod_desc: string;
+  qty: number; // ScaledInt
+  unit_price: number; // ScaledInt
+  ext_amt: number; // ScaledInt
+}
+
+// =============================================================================
+// NESTED OBJECTS - Transaction Line Item
+// =============================================================================
 
 export interface TransactionLineItem {
-  created_at: string;
-  created_by: string;
-  updated_at: string | null;
-  updated_by: string | null;
-  deleted_at: string | null;
-  tenant_id: string;
-  store_id: string;
-  terminal_id: string;
-  trans_id: string;
-  line_item_id: number;
-  business_date: string;
-  category: string | null;
+  seq: number;
+  category?: string | null;
   item_id: string;
-  item_description: string;
-  entered_description: string | null;
+  line_type: LineItemTypeCode;
+  item_desc: string;
+  entered_desc?: string | null;
   is_void: boolean;
-  quantity: string;
-  gross_quantity: string;
-  net_quantity: string;
-  unit_price: string;
-  extended_amount: string;
-  vat_amount: string | null;
-  return_flag: string | null;
-  item_id_entry_method: string | null;
-  price_entry_method: string | null;
-  price_property_code: string | null;
-  net_amount: string;
-  gross_amount: string;
-  serial_number: string | null;
-  scanned_item_id: string | null;
+  qty: number; // ScaledInt
+  gross_qty: number; // ScaledInt
+  net_qty: number; // ScaledInt
+  unit_price: number; // ScaledInt
+  ext_amt: number; // ScaledInt
+  vat_amt?: number | null; // ScaledInt
+  is_return: boolean;
+  item_entry?: string | null;
+  price_entry?: string | null;
+  price_prop?: string | null;
+  net_amt: number; // ScaledInt
+  gross_amt: number; // ScaledInt
+  serial_num?: string | null;
+  scanned_id?: string | null;
   tax_group_id: string;
-  original_trans_seq: string | null;
-  original_store_id: string | null;
-  original_line_item_seq: string | null;
-  original_terminal_id: string | null;
-  original_business_date: string | null;
-  return_comment: string | null;
-  return_reason: string | null;
-  return_type_code: string | null;
-  base_unit_price: string;
-  base_extended_amount: string;
-  food_stamp_applied_amount: string | null;
-  vendor_id: string | null;
-  regular_base_price: string;
-  shipping_weight: string | null;
-  unit_cost: string | null;
-  initial_quantity: string | null;
-  non_returnable: string | null;
-  exclude_from_net_sales: string | null;
-  measure_required: string | null;
-  weight_entry_method: string | null;
-  tare_value: string | null;
-  tare_type: string | null;
-  tare_uom: string | null;
-  notes: string | null;
-  tax_modifiers: TaxModifier[];
-  price_modifiers: PriceModifier[];
+  // Return-related fields
+  orig_trans_seq?: string | null;
+  orig_store_id?: string | null;
+  orig_line_seq?: number | null;
+  orig_terminal_id?: string | null;
+  orig_biz_date?: string | null;
+  return_comment?: string | null;
+  return_reason?: string | null;
+  return_type?: ReturnTypeCode | null;
+  // Price fields
+  base_unit_price: number; // ScaledInt
+  base_ext_amt: number; // ScaledInt
+  food_stamp_amt?: number | null; // ScaledInt
+  vendor_id?: string | null;
+  regular_price: number; // ScaledInt
+  unit_cost?: number | null; // ScaledInt
+  init_qty?: number | null; // ScaledInt
+  // Flags
+  non_returnable: boolean;
+  exclude_net_sales: boolean;
+  measure_req: boolean;
+  // Weight/measurement fields
+  weight_method?: string | null;
+  tare_value?: number | null; // ScaledInt
+  tare_type?: string | null;
+  tare_uom?: string | null;
+  notes?: string | null;
+  // Nested modifiers
+  taxes: TaxModifier[];
+  modifiers: PriceModifier[];
+  addons: TransactionAdditionalLineItemModifier[];
 }
+
+// =============================================================================
+// NESTED OBJECTS - Payment Line Item
+// =============================================================================
 
 export interface PaymentLineItem {
-  created_at: string;
-  created_by: string;
-  updated_at: string | null;
-  updated_by: string | null;
-  deleted_at: string | null;
-  tenant_id: string;
-  store_id: string;
-  terminal_id: string;
-  trans_id: string;
-  payment_seq: number;
-  amount: string;
-  change_flag: boolean;
+  seq: number;
+  amt: number; // ScaledInt
+  is_change: boolean;
   tender_id: string;
-  tender_description: string;
+  tender_desc: string;
   is_void: boolean;
-  serial_number: string | null;
-  tender_stat_code: string | null;
-  foreign_amount: string | null;
-  exchange_rate: string | null;
+  serial_num?: string | null;
+  tender_status?: string | null;
+  foreign_amt?: number | null; // ScaledInt
+  exch_rate?: number | null; // ScaledInt
 }
+
+// =============================================================================
+// NESTED OBJECTS - Transaction Discount Line Item
+// =============================================================================
+
+export interface TransactionDiscountLineItem {
+  seq: number;
+  disc_code: string;
+  percent?: number | null; // ScaledInt
+  amt: number; // ScaledInt
+  serial_num?: string | null;
+}
+
+// =============================================================================
+// NESTED OBJECTS - Transaction Table (Restaurant)
+// =============================================================================
+
+export interface TransactionTable {
+  table_id: string;
+  table_name: string;
+  section_id: string;
+  server_id: string;
+  guests: number;
+}
+
+// =============================================================================
+// NESTED OBJECTS - Transaction Document
+// =============================================================================
 
 export interface TransactionDocument {
-  created_at: string;
-  created_by: string;
-  updated_at: string | null;
-  updated_by: string | null;
-  deleted_at: string | null;
-  tenant_id: string;
-  store_id: string;
-  terminal_id: string;
-  trans_id: string;
-  document_id: number;
-  data: string; // JSON string containing receipt data
+  doc_id: string;
+  doc_type: string;
+  data: string;
 }
 
+// =============================================================================
+// MAIN TRANSACTION DETAIL OBJECT
+// =============================================================================
+
 export interface TransactionDetail {
-  transaction_id: string;
-  created_at: string;
-  created_by: string;
-  updated_at: string;
-  updated_by: string;
-  deleted_at: string | null;
   tenant_id: string;
   store_id: string;
   terminal_id: string;
-  barcode: string | null;
-  trans_id: string;
-  store_locale: string;
-  store_currency: string;
-  transaction_type: string;
-  business_date: string;
-  begin_datetime: string;
-  end_datetime: string;
-  total: string;
-  tax_total: string;
-  sub_total: string;
-  round_total: string;
-  status: 'completed' | 'cancelled' | 'cancel_orphaned' | 'new' | 'suspended';
+  trans_seq: string;
+  locale: string;
+  currency: string;
+  trans_type: TransactionType;
+  biz_date: string;
+  begin_time: string;
+  end_time?: string | null;
+  total: number; // ScaledInt
+  tax_total: number; // ScaledInt
+  sub_total: number; // ScaledInt
+  disc_total: number; // ScaledInt
+  round_total: number; // ScaledInt
+  status: TransactionStatus;
   is_void: boolean;
-  customer_id: string | null;
+  customer_id?: string | null;
   associates: string[];
-  notes: string | null;
-  return_ref: string | null;
-  external_order_id: string | null;
-  external_order_source: string | null;
+  notes?: string | null;
+  return_ref?: string[] | null;
+  ext_order_id?: string | null;
+  ext_order_src?: string | null;
+  trans_table?: TransactionTable | null;
   line_items: TransactionLineItem[];
   documents: TransactionDocument[];
-  payment_line_items: PaymentLineItem[];
+  payments: PaymentLineItem[];
+  discounts: TransactionDiscountLineItem[];
+  // Audit fields (may be present in API response)
+  created_at?: string;
+  created_by?: string;
+  updated_at?: string;
+  updated_by?: string;
+  deleted_at?: string | null;
 }
+
+// =============================================================================
+// TRANSACTION SERVICE CLASS
+// =============================================================================
 
 export class TransactionService {
   private readonly basePath = '/v0/store';
@@ -305,11 +423,11 @@ export class TransactionService {
   }
 
   /**
-   * Convert API transaction data to UI Sale format
+   * Convert API transaction summary data to UI Sale format
    */
   convertTransactionToSale(transaction: TransactionSummary): ConvertedSale {
-    // Map payment method from tender summary
-    const primaryTender = transaction.tender_summary[0];
+    // Map payment method from tenders array
+    const primaryTender = transaction.tenders[0];
     const paymentMethod = this.mapTenderToPaymentMethod(primaryTender?.tender || 'Cash');
     
     // Determine payment status based on transaction status
@@ -318,31 +436,28 @@ export class TransactionService {
     // Map transaction status
     const status = this.mapTransactionStatus(transaction.status, transaction.is_void);
 
-    // Use begin_datetime if available, otherwise fallback to created_at
-    const displayDate = transaction.begin_datetime || transaction.created_at;
-
     return {
-      id: transaction.transaction_id,
-      saleNumber: transaction.transaction_id,
-      customerName: 'Walk-in Customer', // API doesn't provide customer info
+      id: transaction.trans_id,
+      saleNumber: transaction.trans_id,
+      customerName: 'Walk-in Customer',
       customerEmail: undefined,
       items: [], // Would need separate API call to get line items
-      subtotal: parseFloat(transaction.sub_total || '0'),
-      totalDiscount: parseFloat(transaction.discount_amount || '0'),
-      totalTax: parseFloat(transaction.tax_total || '0'),
-      total: parseFloat(transaction.total || '0'),
+      subtotal: fromScaledInt(transaction.sub_total),
+      totalDiscount: fromScaledInt(transaction.disc_amt),
+      totalTax: fromScaledInt(transaction.tax_total),
+      total: fromScaledInt(transaction.total),
       paymentMethod,
       paymentStatus,
       status,
       notes: transaction.is_void ? 'Transaction voided' : undefined,
-      createdAt: displayDate,
+      createdAt: transaction.created_at,
       updatedAt: transaction.created_at,
       cashierId: transaction.associates[0] || 'unknown',
       cashierName: this.getCashierName(transaction.associates[0]),
-      currency: transaction.store_currency,
+      currency: transaction.currency,
       terminalId: transaction.terminal_id,
-      businessDate: transaction.business_date,
-      lineItemsCount: transaction.line_items_count,
+      businessDate: transaction.biz_date,
+      lineItemsCount: transaction.item_count,
       isVoid: transaction.is_void
     };
   }
@@ -353,7 +468,9 @@ export class TransactionService {
   private mapTenderToPaymentMethod(tender: string): string {
     const tenderMap: Record<string, string> = {
       'Cash': 'cash',
+      'CASH': 'cash',
       'Card': 'card',
+      'CARD': 'card',
       'Credit Card': 'card',
       'Debit Card': 'card',
       'Digital Wallet': 'digital_wallet',
@@ -369,21 +486,17 @@ export class TransactionService {
   /**
    * Map transaction status to payment status
    */
-  private mapStatusToPaymentStatus(status: string, isVoid: boolean): 'paid' | 'pending' | 'partial' | 'refunded' {
+  private mapStatusToPaymentStatus(status: TransactionStatus, isVoid: boolean): 'paid' | 'pending' | 'partial' | 'refunded' {
     if (isVoid) return 'refunded';
     
-    // Normalize status to lowercase for comparison
-    const normalizedStatus = status.toLowerCase();
-    
-    switch (normalizedStatus) {
-      case 'completed':
+    switch (status) {
+      case 'COMPLETED':
         return 'paid';
-      case 'new':
-      case 'suspended':
-      case 'in_progress':
+      case 'NEW':
+      case 'SUSPEND':
+      case 'RESUME':
         return 'pending';
-      case 'cancelled':
-      case 'cancel_orphaned':
+      case 'CANCEL':
         return 'refunded';
       default:
         return 'pending';
@@ -393,22 +506,18 @@ export class TransactionService {
   /**
    * Map transaction status to sale status
    */
-  private mapTransactionStatus(status: string, isVoid: boolean): 'completed' | 'pending' | 'cancelled' | 'refunded' | 'suspended' {
+  private mapTransactionStatus(status: TransactionStatus, isVoid: boolean): 'completed' | 'pending' | 'cancelled' | 'refunded' | 'suspended' {
     if (isVoid) return 'refunded';
     
-    // Normalize status to lowercase for comparison
-    const normalizedStatus = status.toLowerCase();
-    
-    switch (normalizedStatus) {
-      case 'completed':
+    switch (status) {
+      case 'COMPLETED':
         return 'completed';
-      case 'new':
-      case 'in_progress':
+      case 'NEW':
+      case 'RESUME':
         return 'pending';
-      case 'suspended':
+      case 'SUSPEND':
         return 'suspended';
-      case 'cancelled':
-      case 'cancel_orphaned':
+      case 'CANCEL':
         return 'cancelled';
       default:
         return 'pending';
@@ -486,13 +595,15 @@ export class TransactionService {
 
   /**
    * Fetch detailed transaction by transaction ID
+   * @param storeId - The store ID
+   * @param transId - The transaction ID (e.g., "20260208-101-93") or trans_seq for backward compatibility
    */
   async getTransactionDetail(
     storeId: string,
-    transactionId: string
+    transId: string
   ): Promise<TransactionDetail> {
     try {
-      const endpoint = `${this.basePath}/${storeId}/transaction/${transactionId}`;
+      const endpoint = `${this.basePath}/${storeId}/transaction/${transId}`;
 
       console.log('🔄 Fetching transaction detail:', endpoint);
 
