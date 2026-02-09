@@ -28,6 +28,7 @@ import {
   LanguageIcon,
   PercentBadgeIcon,
   CodeBracketIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavigationItem {
@@ -36,6 +37,7 @@ interface NavigationItem {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   active?: boolean;
   hasDropdown?: boolean;
+  children?: { name: string; href: string }[];
 }
 
 interface NavigationSection {
@@ -65,11 +67,38 @@ const DashboardLayout: React.FC = () => {
   const [tenantMenuOpen, setTenantMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
+  // ── Mode: 'store' or 'tenant' ────────────────────────────────────────────
+  type SidebarMode = 'store' | 'tenant';
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>(() => {
+    // Auto-detect mode from current URL
+    if (location.pathname.startsWith('/tenant/')) return 'tenant';
+    return 'store';
+  });
+
+  // Keep mode in sync if user navigates via browser back/forward
+  React.useEffect(() => {
+    if (location.pathname.startsWith('/tenant/')) {
+      setSidebarMode('tenant');
+    } else {
+      setSidebarMode('store');
+    }
+  }, [location.pathname]);
+
+  const handleModeSwitch = (mode: SidebarMode) => {
+    setSidebarMode(mode);
+    if (mode === 'tenant') {
+      navigate('/tenant/overview');
+    } else {
+      navigate('/dashboard');
+    }
+    setSidebarOpen(false);
+  };
+
   // Note: Tenants are loaded via TenantStoreSelection flow before reaching this layout
   // No need to fetch tenants here as it would interfere with the hierarchical auth flow
 
-  // Navigation sections - recalculated when permissions change
-  const navigation: NavigationSection[] = React.useMemo(() => [
+  // ── Store-mode navigation ────────────────────────────────────────────────
+  const storeNavigation: NavigationSection[] = React.useMemo(() => [
     {
       category: 'DASHBOARD',
       items: [
@@ -86,28 +115,13 @@ const DashboardLayout: React.FC = () => {
         { name: 'Reason Codes', href: '/reason-codes', icon: DocumentTextIcon },
         { name: t('nav.customers'), href: '/customers', icon: UserGroupIcon },
         { name: t('nav.tableManagement'), href: '/tables', icon: TableCellsIcon },
-        // @TODO Enable later
-        // { name: t('nav.employeeShifts'), href: '/employee-shifts', icon: UserGroupIcon },
-        // ...(permissionsInitialized && canManageUsers() ? [{ name: 'Employee Management', href: '/employees', icon: UsersIcon }] : []),
       ]
     },
-    // @TODo Implement later.
-    // {
-    //   category: 'REPORTS & ANALYTICS',
-    //   items: [
-    //     { name: t('nav.salesReports'), href: '/reports/sales', icon: ChartBarIcon },
-    //     { name: t('nav.inventoryReports'), href: '/reports/inventory', icon: RectangleStackIcon },
-    //     { name: t('nav.customerAnalytics'), href: '/reports/customers', icon: UsersIcon },
-    //     { name: t('nav.paymentAnalytics'), href: '/payment-analytics', icon: CreditCardIcon },
-    //     { name: t('nav.financialReports'), href: '/reports/financial', icon: DocumentTextIcon },
-    //   ]
-    // },
     {
       category: t('nav.settings'),
       items: [
         { name: t('nav.storeSettings'), href: '/settings/store', icon: BuildingStorefrontIcon },
         { name: t('nav.terminalSettings'), href: '/settings/terminals', icon: ComputerDesktopIcon },
-        ...(permissionsInitialized && canManageRoles() ? [{ name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon }] : []),
         { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
         { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },
       ]
@@ -120,6 +134,46 @@ const DashboardLayout: React.FC = () => {
       ]
     }
   ], [permissionsInitialized, canManageUsers, canManageRoles, t]);
+
+  // ── Tenant-mode navigation ───────────────────────────────────────────────
+  const tenantNavigation: NavigationSection[] = React.useMemo(() => [
+    {
+      category: 'ORGANIZATION',
+      items: [
+        { name: 'Overview', href: '/tenant/overview', icon: HomeIcon },
+        { name: 'Stores', href: '/tenant/stores', icon: BuildingStorefrontIcon },
+        { name: 'Users & Roles', href: '/tenant/users', icon: UserGroupIcon },
+      ]
+    },
+    {
+      category: 'BILLING',
+      items: [
+        {
+          name: 'Billing & Subscription',
+          href: '/tenant/billing',
+          icon: CreditCardIcon,
+          hasDropdown: true,
+          children: [
+            { name: 'Overview', href: '/tenant/billing' },
+            { name: 'Change Plan', href: '/tenant/billing/change-plan' },
+            { name: 'Invoices', href: '/tenant/billing/invoices' },
+            { name: 'Payment Methods', href: '/tenant/billing/payment-methods' },
+          ],
+        },
+      ]
+    },
+    {
+      category: 'ADMINISTRATION',
+      items: [
+        { name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon },
+        { name: 'Activity Log', href: '/tenant/audit-log', icon: ClipboardDocumentListIcon },
+        { name: 'Tenant Settings', href: '/tenant/settings', icon: Cog6ToothIcon },
+      ]
+    }
+  ], []);
+
+  // Select which navigation to show
+  const navigation = sidebarMode === 'tenant' ? tenantNavigation : storeNavigation;
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -150,7 +204,10 @@ const DashboardLayout: React.FC = () => {
   };
 
   const isCurrentPath = (path: string) => {
-    return location.pathname === path;
+    if (location.pathname === path) return true;
+    // For tenant routes, highlight if pathname starts with the href
+    if (path.startsWith('/tenant/') && location.pathname.startsWith(path)) return true;
+    return false;
   };
 
   const toggleMenu = (menuName: string) => {
@@ -351,6 +408,34 @@ const DashboardLayout: React.FC = () => {
             </div>
           )}
 
+          {/* Mode Toggle: Store ↔ Tenant */}
+          <div className="px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => handleModeSwitch('store')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${
+                  sidebarMode === 'store'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <BuildingStorefrontIcon className="h-3.5 w-3.5" />
+                Store
+              </button>
+              <button
+                onClick={() => handleModeSwitch('tenant')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${
+                  sidebarMode === 'tenant'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <BuildingOfficeIcon className="h-3.5 w-3.5" />
+                Tenant
+              </button>
+            </div>
+          </div>
+
           {/* Navigation */}
           <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
             {navigation.map((section, sectionIndex) => (
@@ -363,8 +448,9 @@ const DashboardLayout: React.FC = () => {
                 <div className="space-y-1">
                   {section.items.map((item) => {
                     const Icon = item.icon;
-                    const isActive = item.active || isCurrentPath(item.href);
-                    const isExpanded = expandedMenus.includes(item.name);
+                    const hasActiveChild = item.children?.some((child) => location.pathname === child.href) ?? false;
+                    const isActive = item.active || isCurrentPath(item.href) || hasActiveChild;
+                    const isExpanded = expandedMenus.includes(item.name) || hasActiveChild;
                     
                     return (
                       <div key={item.name}>
@@ -395,14 +481,27 @@ const DashboardLayout: React.FC = () => {
                             />
                           )}
                         </button>
-                        {item.hasDropdown && isExpanded && (
+                        {item.hasDropdown && isExpanded && item.children && (
                           <div className="ml-8 mt-1 space-y-1">
-                            <button className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded">
-                              Submenu 1
-                            </button>
-                            <button className="w-full text-left px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded">
-                              Submenu 2
-                            </button>
+                            {item.children.map((child) => {
+                              const isChildActive = location.pathname === child.href;
+                              return (
+                                <button
+                                  key={child.href}
+                                  onClick={() => {
+                                    navigate(child.href);
+                                    setSidebarOpen(false);
+                                  }}
+                                  className={`w-full text-left px-3 py-1.5 text-sm rounded transition-colors ${
+                                    isChildActive
+                                      ? 'text-blue-700 bg-blue-50 font-medium'
+                                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {child.name}
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

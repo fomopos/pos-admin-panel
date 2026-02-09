@@ -52,6 +52,16 @@ import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPa
 import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
 import ReceiptBuilder from './pages/ReceiptBuilder';
 import TenantAccessDebug from './pages/TenantAccessDebug';
+import TenantOverviewPage from './pages/tenant/TenantOverviewPage';
+import TenantStoresPage from './pages/tenant/TenantStoresPage';
+import TenantUsersPage from './pages/tenant/TenantUsersPage';
+import TenantBillingPage from './pages/tenant/TenantBillingPage';
+import PlanSelectionPage from './pages/tenant/PlanSelectionPage';
+import InvoiceListPage from './pages/tenant/InvoiceListPage';
+import InvoiceDetailPage from './pages/tenant/InvoiceDetailPage';
+import PaymentMethodsPage from './pages/tenant/PaymentMethodsPage';
+import TenantAuditLogPage from './pages/tenant/TenantAuditLogPage';
+import TenantSettingsPage from './pages/tenant/TenantSettingsPage';
 
 // Error handling imports
 import ErrorBoundary from './components/ErrorBoundary';
@@ -225,6 +235,17 @@ function App() {
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
               <Route path="developer/receipt-builder" element={<ReceiptBuilder />} />
               <Route path="developer/translations" element={<TranslationManagement />} />
+              {/* Tenant-mode routes */}
+              <Route path="tenant/overview" element={<TenantOverviewPage />} />
+              <Route path="tenant/stores" element={<TenantStoresPage />} />
+              <Route path="tenant/users" element={<TenantUsersPage />} />
+              <Route path="tenant/billing" element={<TenantBillingPage />} />
+              <Route path="tenant/billing/change-plan" element={<PlanSelectionPage />} />
+              <Route path="tenant/billing/invoices" element={<InvoiceListPage />} />
+              <Route path="tenant/billing/invoices/:invoiceId" element={<InvoiceDetailPage />} />
+              <Route path="tenant/billing/payment-methods" element={<PaymentMethodsPage />} />
+              <Route path="tenant/audit-log" element={<TenantAuditLogPage />} />
+              <Route path="tenant/settings" element={<TenantSettingsPage />} />
               <Route path="debug/tenant-access" element={<TenantAccessDebug />} />
             </Route>
 
