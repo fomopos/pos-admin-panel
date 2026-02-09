@@ -50,7 +50,7 @@ const DashboardLayout: React.FC = () => {
   const { currentTenant, currentStore, tenants, switchTenant, switchStore, getCurrentTenantStores } = useTenantStore();
   const { canManageUsers, canManageRoles } = usePermissions();
   const [permissionsInitialized, setPermissionsInitialized] = React.useState(false);
-  
+
   // Debug logging for navigation
   React.useEffect(() => {
     console.log('Navigation check:', {
@@ -110,6 +110,7 @@ const DashboardLayout: React.FC = () => {
         ...(permissionsInitialized && canManageRoles() ? [{ name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon }] : []),
         { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
         { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },
+        { name: 'Subscription', href: '/settings/subscription', icon: CreditCardIcon },
       ]
     },
     {
@@ -154,8 +155,8 @@ const DashboardLayout: React.FC = () => {
   };
 
   const toggleMenu = (menuName: string) => {
-    setExpandedMenus(prev => 
-      prev.includes(menuName) 
+    setExpandedMenus(prev =>
+      prev.includes(menuName)
         ? prev.filter(name => name !== menuName)
         : [...prev, menuName]
     );
@@ -187,7 +188,7 @@ const DashboardLayout: React.FC = () => {
 
   // Get user info from Cognito auth service
   const [currentUser, setCurrentUser] = React.useState<{ email: string; name: string } | null>(null);
-  
+
   // Initialize user info (no tenant fetching - handled by TenantStoreSelection flow)
   React.useEffect(() => {
     const getCurrentUserInfo = async () => {
@@ -197,7 +198,7 @@ const DashboardLayout: React.FC = () => {
           email: user.email,
           name: user.name || user.email.split('@')[0] || 'User'
         });
-        
+
         // Initialize permission manager
         try {
           await PermissionManager.initialize();
@@ -225,9 +226,8 @@ const DashboardLayout: React.FC = () => {
       )}
 
       {/* Sidebar - Always visible on medium screens and above */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-sm transform transition-transform duration-300 ease-in-out border-r border-gray-200 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } md:translate-x-0`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-sm transform transition-transform duration-300 ease-in-out border-r border-gray-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
@@ -266,9 +266,8 @@ const DashboardLayout: React.FC = () => {
                       <button
                         key={tenant.id}
                         onClick={() => handleTenantSwitch(tenant.id)}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                          currentTenant?.id === tenant.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                        }`}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${currentTenant?.id === tenant.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          }`}
                       >
                         <div className="flex items-center">
                           <BuildingOfficeIcon className="h-4 w-4 mr-2" />
@@ -301,9 +300,8 @@ const DashboardLayout: React.FC = () => {
                         <button
                           key={store.store_id}
                           onClick={() => handleStoreSwitch(store.store_id)}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                            currentStore?.store_id === store.store_id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                          }`}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${currentStore?.store_id === store.store_id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                            }`}
                         >
                           <div className="flex items-center">
                             <BuildingStorefrontIcon className="h-4 w-4 mr-2" />
@@ -314,12 +312,12 @@ const DashboardLayout: React.FC = () => {
                           </div>
                         </button>
                       ))}
-                      
+
                       {/* Divider */}
                       {getCurrentTenantStores().length > 0 && (
                         <div className="border-t border-gray-200 my-1"></div>
                       )}
-                      
+
                       {/* Create New Store Option */}
                       <button
                         onClick={() => {
@@ -338,7 +336,7 @@ const DashboardLayout: React.FC = () => {
                           </div>
                         </div>
                       </button>
-                      
+
                       {getCurrentTenantStores().length === 0 && (
                         <div className="px-3 py-2 text-sm text-gray-500">
                           {t('common.noStoresAvailable')}
@@ -365,7 +363,7 @@ const DashboardLayout: React.FC = () => {
                     const Icon = item.icon;
                     const isActive = item.active || isCurrentPath(item.href);
                     const isExpanded = expandedMenus.includes(item.name);
-                    
+
                     return (
                       <div key={item.name}>
                         <button
@@ -377,21 +375,19 @@ const DashboardLayout: React.FC = () => {
                               setSidebarOpen(false);
                             }
                           }}
-                          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                            isActive
+                          className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${isActive
                               ? 'bg-blue-50 text-blue-700'
                               : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center">
                             <Icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
                             {item.name}
                           </div>
                           {item.hasDropdown && (
-                            <ChevronDownIcon 
-                              className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
-                                isExpanded ? 'rotate-180' : ''
-                              }`} 
+                            <ChevronDownIcon
+                              className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                                }`}
                             />
                           )}
                         </button>
@@ -413,14 +409,14 @@ const DashboardLayout: React.FC = () => {
               </div>
             ))}
           </nav>
-          
+
           {/* Version Display */}
           <div className="px-4 py-3 border-t border-gray-200">
             <div className="flex items-center justify-center">
-              <VersionDisplay 
-                style="subtle" 
-                size="sm" 
-                className="select-none" 
+              <VersionDisplay
+                style="subtle"
+                size="sm"
+                className="select-none"
               />
             </div>
           </div>
@@ -489,7 +485,7 @@ const DashboardLayout: React.FC = () => {
               </button>
 
               {/* Settings */}
-              <button 
+              <button
                 onClick={() => navigate('/settings')}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
