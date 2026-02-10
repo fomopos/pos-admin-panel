@@ -25,6 +25,7 @@ export interface StoreApiResponse {
   tenant_id: string;
   store_id: string | null;
   status: 'active' | 'inactive' | 'pending';
+  billing_plan?: 'free' | 'starter' | 'pro';
   store_name: string;
   description: string | null;
   location_type: string;

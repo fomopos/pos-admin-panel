@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTenantStore } from '../tenants/tenantStore';
 import { Button, Card, PageHeader, ConfirmDialog, Loading } from '../components/ui';
+import { formattingService } from '../services/formatting';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 
 interface Customer {
@@ -263,10 +264,7 @@ const Customers: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+    return formattingService.formatCurrency(amount);
   };
 
   const formatDate = (dateString: string) => {

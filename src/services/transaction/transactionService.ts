@@ -5,6 +5,17 @@ import { apiClient } from '../api';
 // =============================================================================
 
 /**
+ * ScaledInt is a branded type representing integers scaled by 10,000 to preserve 4 decimal places.
+ * Example: $12.50 = 125000 (as ScaledInt)
+ * 
+ * Use fromScaledInt() to convert to displayable numbers.
+ * Use toScaledInt() to convert from user input to ScaledInt.
+ * 
+ * This branded type provides compile-time safety to prevent mixing scaled and unscaled values.
+ */
+export type ScaledInt = number & { readonly __brand: 'ScaledInt' };
+
+/**
  * ScaledInt values are integers scaled by 10,000 to preserve 4 decimal places.
  * Example: $12.50 = 125000
  * To display to user: value / 10000 = actual amount
@@ -13,10 +24,12 @@ export const SCALE_FACTOR = 10000;
 
 /**
  * Convert a ScaledInt value to a displayable number
- * @param scaledValue - The scaled integer value (e.g., 125000)
+ * @param scaledValue - The scaled integer value (e.g., 125000 as ScaledInt)
  * @returns The actual decimal value (e.g., 12.50)
+ * @example
+ * const displayPrice = fromScaledInt(125000 as ScaledInt); // 12.50
  */
-export function fromScaledInt(scaledValue: number | string | null | undefined): number {
+export function fromScaledInt(scaledValue: ScaledInt | number | string | null | undefined): number {
   if (scaledValue === null || scaledValue === undefined) return 0;
   const numValue = typeof scaledValue === 'string' ? parseFloat(scaledValue) : scaledValue;
   return numValue / SCALE_FACTOR;
@@ -26,18 +39,22 @@ export function fromScaledInt(scaledValue: number | string | null | undefined): 
  * Convert a display number to ScaledInt for API requests
  * @param value - The actual decimal value (e.g., 12.50)
  * @returns The scaled integer value (e.g., 125000)
+ * @example
+ * const apiValue = toScaledInt(12.50); // 125000 as ScaledInt
  */
-export function toScaledInt(value: number): number {
-  return Math.round(value * SCALE_FACTOR);
+export function toScaledInt(value: number): ScaledInt {
+  return Math.round(value * SCALE_FACTOR) as ScaledInt;
 }
 
 /**
- * Format a ScaledInt as a string representation of the actual value
+ * Format a ScaledInt as a currency string with proper decimal places
  * @param scaledValue - The scaled integer value
  * @param decimals - Number of decimal places (default: 2)
  * @returns Formatted string
+ * @example
+ * formatScaledInt(125000 as ScaledInt, 2); // "12.50"
  */
-export function formatScaledInt(scaledValue: number | string | null | undefined, decimals: number = 2): string {
+export function formatScaledInt(scaledValue: ScaledInt | number | string | null | undefined, decimals: number = 2): string {
   return fromScaledInt(scaledValue).toFixed(decimals);
 }
 

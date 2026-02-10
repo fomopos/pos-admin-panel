@@ -62,6 +62,8 @@ import InvoiceDetailPage from './pages/tenant/InvoiceDetailPage';
 import PaymentMethodsPage from './pages/tenant/PaymentMethodsPage';
 import TenantAuditLogPage from './pages/tenant/TenantAuditLogPage';
 import TenantSettingsPage from './pages/tenant/TenantSettingsPage';
+import BillingSuccessPage from './pages/billing/BillingSuccessPage';
+import BillingCancelPage from './pages/billing/BillingCancelPage';
 
 // Error handling imports
 import ErrorBoundary from './components/ErrorBoundary';
@@ -166,6 +168,24 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateTenantPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Billing callback pages - Protected, outside dashboard layout */}
+            <Route 
+              path="/billing/success" 
+              element={
+                <ProtectedRoute>
+                  <BillingSuccessPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/billing/cancel" 
+              element={
+                <ProtectedRoute>
+                  <BillingCancelPage />
                 </ProtectedRoute>
               } 
             />

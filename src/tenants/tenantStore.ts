@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { tenantApiService } from '../services/tenant/tenantApiService';
 import type { TenantApiResponse, StoreApiResponse } from '../services/tenant/tenantApiService';
 import { useErrorHandler } from '../services/errorHandler';
+import { formattingService } from '../services/formatting';
 
 export interface Address {
   address1: string;
@@ -59,11 +60,15 @@ export interface Tenant {
   update_user_id?: string;
 }
 
+// Billing plan type for seat-based pricing
+export type BillingPlan = 'free' | 'starter' | 'pro';
+
 // Store belongs to a tenant
 export interface Store {
   tenant_id: string; // Reference to parent tenant ID
   store_id: string;
   status: 'active' | 'inactive' | 'pending'; // Updated to match API response
+  billing_plan?: BillingPlan; // Store billing plan (free/starter/pro)
   store_name: string;
   description?: string;
   location_type: string;
@@ -101,6 +106,7 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
     tenant_id: apiStore.tenant_id || '',
     store_id: apiStore.store_id || '',
     status: apiStore.status || 'inactive',
+    billing_plan: apiStore.billing_plan || 'free',
     store_name: apiStore.store_name || 'Unnamed Store',
     description: apiStore.description || undefined,
     location_type: apiStore.location_type || 'retail',
@@ -236,7 +242,14 @@ export const useTenantStore = create<TenantState>()(
         });
       },
 
-      setCurrentStore: (store) => set({ currentStore: store }),
+      setCurrentStore: (store) => {
+        if (store) {
+          formattingService.setDefaultCurrency(store.currency || 'USD');
+          formattingService.setDefaultLocale(store.locale || 'en-US');
+          console.log('🌍 FormattingService defaults set:', { currency: store.currency, locale: store.locale });
+        }
+        set({ currentStore: store });
+      },
 
       switchTenant: (tenantId) => {
         const { tenants } = get();
@@ -263,6 +276,9 @@ export const useTenantStore = create<TenantState>()(
 
             // Set the store from local data for immediate UI update
             set({ currentStore: store });
+            formattingService.setDefaultCurrency(store.currency || 'USD');
+            formattingService.setDefaultLocale(store.locale || 'en-US');
+            console.log('🌍 FormattingService defaults set on store switch:', { currency: store.currency, locale: store.locale });
 
             console.log('✅ Store switched successfully:', storeId);
 
@@ -344,6 +360,10 @@ export const useTenantStore = create<TenantState>()(
                 tenants: updatedTenants,
                 currentStore: updatedStore
               });
+
+              // Update formatting service with fresh store data
+              formattingService.setDefaultCurrency(updatedStore.currency || 'USD');
+              formattingService.setDefaultLocale(updatedStore.locale || 'en-US');
 
               console.log('✅ Store details refreshed successfully after switch');
             } catch (error) {
@@ -623,6 +643,17 @@ export const useTenantStore = create<TenantState>()(
         currentStore: state.currentStore,
         tenants: state.tenants,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Set FormattingService defaults from persisted store on app load
+        if (state?.currentStore) {
+          formattingService.setDefaultCurrency(state.currentStore.currency || 'USD');
+          formattingService.setDefaultLocale(state.currentStore.locale || 'en-US');
+          console.log('🌍 FormattingService defaults restored from persisted store:', {
+            currency: state.currentStore.currency,
+            locale: state.currentStore.locale,
+          });
+        }
+      },
     }
   )
 );

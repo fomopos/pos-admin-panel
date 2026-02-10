@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, PageHeader, VersionDisplay } from '../components/ui';
 import KPICard from '../components/ui/KPICard';
 import { dashboardMetricsService, type DashboardMetricsResponse, type TimePeriod, type CustomDateRange } from '../services/dashboard/dashboardMetricsService';
+import { formattingService } from '../services/formatting';
 import {
   CurrencyDollarIcon,
   ShoppingCartIcon,
@@ -372,7 +373,7 @@ const Dashboard: React.FC = () => {
                           {hour.hour.toString().padStart(2, '0')}:00
                         </div>
                         <div className="text-lg font-bold text-slate-900 mb-1">
-                          ${hour.revenue.toFixed(0)}
+                          {formattingService.formatCurrency(hour.revenue, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                         </div>
                         <div className="text-xs text-slate-600">
                           {hour.orders} orders
@@ -393,7 +394,7 @@ const Dashboard: React.FC = () => {
                       .sort((a, b) => b.orders - a.orders)
                       .slice(0, 3);
                     const peakRevenue = sortedByOrders.reduce((sum, hour) => sum + hour.revenue, 0);
-                    return `$${peakRevenue.toLocaleString()}`;
+                    return formattingService.formatCurrency(peakRevenue, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
                   })()}
                 </div>
                 <div className="text-sm text-green-600">Peak Hours Revenue</div>
@@ -413,7 +414,7 @@ const Dashboard: React.FC = () => {
               
               <div className="text-center p-4 bg-blue-50 rounded-xl">
                 <div className="text-2xl font-bold text-blue-900">
-                  {(metricsData.hourly_revenue.reduce((sum, h) => sum + h.revenue, 0) / metricsData.hourly_revenue.length).toFixed(0)}
+                  {formattingService.formatCurrency(metricsData.hourly_revenue.reduce((sum, h) => sum + h.revenue, 0) / metricsData.hourly_revenue.length, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                 </div>
                 <div className="text-sm text-blue-600">Avg Hourly Revenue</div>
                 <div className="text-xs text-blue-500 mt-1">During operating hours</div>
@@ -481,13 +482,13 @@ const Dashboard: React.FC = () => {
                         <span className="block text-green-600">•</span>
                       </div>
                       <div className="text-sm font-bold text-slate-900">
-                        ${revenue.toFixed(0)}
+                        {formattingService.formatCurrency(revenue, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                       </div>
                       <div className="text-xs text-slate-600 mb-1">
                         {orders} orders
                       </div>
                       <div className="text-xs text-slate-500">
-                        ${avgOrderValue.toFixed(0)} avg
+                        {formattingService.formatCurrency(avgOrderValue, { maximumFractionDigits: 0, minimumFractionDigits: 0 })} avg
                       </div>
                       
                       {/* Progress indicator */}
@@ -502,9 +503,9 @@ const Dashboard: React.FC = () => {
                     {/* Tooltip on hover */}
                     <div className="absolute z-10 invisible group-hover:visible bg-slate-900 text-white text-xs rounded-lg p-2 -mt-16 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                       <div className="font-semibold">{dayData.day_name}</div>
-                      <div>Revenue: ${revenue.toFixed(0)}</div>
+                      <div>Revenue: {formattingService.formatCurrency(revenue, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</div>
                       <div>Orders: {orders}</div>
-                      <div>Avg: ${avgOrderValue.toFixed(2)}</div>
+                      <div>Avg: {formattingService.formatCurrency(avgOrderValue)}</div>
                       <div>Items: {dayData.total_items}</div>
                       <div className="text-green-300">• Live API Data</div>
                     </div>
@@ -526,7 +527,7 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-green-900">
-                          ${metricsData.weekly_revenue.reduce((sum, day) => sum + day.revenue, 0).toLocaleString()}
+                          {formattingService.formatCurrency(metricsData.weekly_revenue.reduce((sum, day) => sum + day.revenue, 0), { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                         </div>
                         <div className="text-xs text-green-600">
                           {metricsData.weekly_revenue.reduce((sum, day) => sum + day.orders, 0)} orders
@@ -541,7 +542,7 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-blue-900">
-                          ${(metricsData.weekly_revenue.reduce((sum, day) => sum + day.revenue, 0) / metricsData.weekly_revenue.length).toFixed(0)}
+                          {formattingService.formatCurrency(metricsData.weekly_revenue.reduce((sum, day) => sum + day.revenue, 0) / metricsData.weekly_revenue.length, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                         </div>
                         <div className="text-xs text-blue-600">
                           {Math.round(metricsData.weekly_revenue.reduce((sum, day) => sum + day.orders, 0) / metricsData.weekly_revenue.length)} orders/day
@@ -567,7 +568,7 @@ const Dashboard: React.FC = () => {
                             <div className="text-yellow-600">Day of week</div>
                           </div>
                           <div>
-                            <div className="text-yellow-900 font-bold">${bestDay.revenue.toFixed(0)}</div>
+                            <div className="text-yellow-900 font-bold">{formattingService.formatCurrency(bestDay.revenue, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</div>
                             <div className="text-yellow-600">Revenue</div>
                           </div>
                           <div>
@@ -575,7 +576,7 @@ const Dashboard: React.FC = () => {
                             <div className="text-yellow-600">Orders</div>
                           </div>
                           <div>
-                            <div className="text-yellow-900 font-bold">${bestDay.avg_order_value.toFixed(0)}</div>
+                            <div className="text-yellow-900 font-bold">{formattingService.formatCurrency(bestDay.avg_order_value, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}</div>
                             <div className="text-yellow-600">Avg Order</div>
                           </div>
                         </div>
@@ -657,7 +658,7 @@ const Dashboard: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600">Total Amount</span>
-                      <span className="font-semibold text-slate-900">${totalAmount.toLocaleString()}</span>
+                      <span className="font-semibold text-slate-900">{formattingService.formatCurrency(totalAmount)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600">Transactions</span>
@@ -665,7 +666,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-500">Average per order</span>
-                      <span className="text-slate-600 font-medium">${avgAmount.toFixed(2)}</span>
+                      <span className="text-slate-600 font-medium">{formattingService.formatCurrency(avgAmount)}</span>
                     </div>
                   </div>
                 </div>
@@ -680,10 +681,9 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-xl">
                 <div className="text-2xl font-bold text-blue-900">
-                  {metricsData.payment_breakdown.reduce((sum, p) => sum + p.total_amount, 0).toLocaleString()}
+                  {formattingService.formatCurrency(metricsData.payment_breakdown.reduce((sum, p) => sum + p.total_amount, 0))}
                 </div>
                 <div className="text-sm text-blue-600">Total Payment Volume</div>
-                <div className="text-xs text-blue-500 mt-1">${(metricsData.payment_breakdown.reduce((sum, p) => sum + p.total_amount, 0)).toFixed(2)}</div>
               </div>
               
               <div className="text-center p-4 bg-green-50 rounded-xl">
@@ -696,8 +696,10 @@ const Dashboard: React.FC = () => {
               
               <div className="text-center p-4 bg-purple-50 rounded-xl">
                 <div className="text-2xl font-bold text-purple-900">
-                  ${(metricsData.payment_breakdown.reduce((sum, p) => sum + (p.total_amount * p.transaction_count), 0) / 
-                     metricsData.payment_breakdown.reduce((sum, p) => sum + p.transaction_count, 0)).toFixed(2)}
+                  {formattingService.formatCurrency(
+                    metricsData.payment_breakdown.reduce((sum, p) => sum + (p.total_amount * p.transaction_count), 0) / 
+                    metricsData.payment_breakdown.reduce((sum, p) => sum + p.transaction_count, 0)
+                  )}
                 </div>
                 <div className="text-sm text-purple-600">Weighted Average</div>
                 <div className="text-xs text-purple-500 mt-1">Per transaction</div>

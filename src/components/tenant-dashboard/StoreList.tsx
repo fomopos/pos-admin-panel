@@ -21,7 +21,9 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   GlobeAltIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
+import { StoreBillingBadge, BillingSummary, ChangePlanModal } from '../billing';
 
 const storeStatusConfig: Record<string, { color: 'green' | 'gray' | 'yellow'; label: string }> = {
   active: { color: 'green', label: 'Active' },
@@ -42,7 +44,20 @@ const StoreList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  // Change plan modal state
+  const [changePlanStore, setChangePlanStore] = useState<Store | null>(null);
+
   const canManageStores = can('canManageStores');
+
+  // Callback when plan is changed via modal — refresh store list
+  const handlePlanChanged = async () => {
+    if (currentTenant?.id) {
+      await fetchStoresForTenant(currentTenant.id);
+      const freshStores = getCurrentTenantStores();
+      setStores(freshStores);
+    }
+    setChangePlanStore(null);
+  };
 
   // Load stores from Zustand (already fetched) or fetch from API
   const fetchStores = useCallback(async () => {
@@ -241,6 +256,7 @@ const StoreList: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-semibold text-gray-900 truncate">{store.store_name}</h4>
                         <Badge color={status.color} size="sm">{status.label}</Badge>
+                        <StoreBillingBadge plan={store.billing_plan} />
                       </div>
                       <p className="text-xs text-gray-400 font-mono mt-0.5">{store.store_id}</p>
                       <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
@@ -267,6 +283,14 @@ const StoreList: React.FC = () => {
 
                   {canManageStores && (
                     <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setChangePlanStore(store)}
+                      >
+                        <SparklesIcon className="h-3.5 w-3.5 mr-1" />
+                        Plan
+                      </Button>
                       {store.status === 'active' && (
                         <Button
                           variant="outline"
@@ -305,6 +329,21 @@ const StoreList: React.FC = () => {
           </div>
         )}
       </Widget>
+
+      {/* Billing Summary */}
+      <BillingSummary stores={stores} />
+
+      {/* Change Plan Modal */}
+      {changePlanStore && (
+        <ChangePlanModal
+          isOpen={!!changePlanStore}
+          onClose={() => setChangePlanStore(null)}
+          storeId={changePlanStore.store_id}
+          storeName={changePlanStore.store_name}
+          currentPlan={changePlanStore.billing_plan || 'free'}
+          onPlanChanged={handlePlanChanged}
+        />
+      )}
 
       {/* Confirm Dialog */}
       <ConfirmDialog

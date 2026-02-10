@@ -16,6 +16,7 @@ import type { FilterConfig, ViewMode } from '../components/ui/AdvancedSearchFilt
 import useTenantStore from '../tenants/tenantStore';
 import { useDeleteConfirmDialog } from '../hooks/useConfirmDialog';
 import { useError } from '../hooks/useError';
+import { formattingService } from '../services/formatting';
 
 const Discounts: React.FC = () => {
   const navigate = useNavigate();
@@ -333,7 +334,7 @@ const DiscountCard: React.FC<{
     if (discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT') {
       return `${discount.percentage}%`;
     } else {
-      return `$${discount.discount}`;
+      return formattingService.formatCurrency(discount.discount ?? 0);
     }
   };
 
@@ -439,7 +440,7 @@ const DiscountListItem: React.FC<{
     if (discount.calculation_mthd_code === 'PERCENT' || discount.calculation_mthd_code === 'PROMPT_PERCENT') {
       return `${discount.percentage}%`;
     } else {
-      return `$${discount.discount}`;
+      return formattingService.formatCurrency(discount.discount ?? 0);
     }
   };
 
