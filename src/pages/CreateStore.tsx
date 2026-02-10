@@ -94,7 +94,7 @@ interface CreateStoreProps {
 
 const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   const navigate = useNavigate();
-  const { currentTenant, createStore, fetchStoresForTenant } = useTenantStore();
+  const { currentTenant, fetchStoresForTenant } = useTenantStore();
   const { showError, showSuccess, showValidationError } = useError();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
