@@ -1,4 +1,4 @@
-import { apiClient, USE_MOCK_DATA } from '../api';
+import { apiClient } from '../api';
 import type { 
   ProductModifierGroup, 
   ProductModifier 
@@ -119,152 +119,6 @@ class GlobalModifierService {
       includeModifiers?: boolean; // Add option to include embedded modifiers
     }
   ): Promise<GlobalModifierGroupsResponse> {
-    if (USE_MOCK_DATA) {
-      // Return mock data for development
-      const mockGroups: ApiGlobalModifierGroup[] = [
-        {
-          group_id: '3c58d8e9-954a-4133-9c56-ac6578683cdf',
-          store_id: storeId,
-          name: 'Pizza Toppings',
-          description: 'Choose your favorite pizza toppings',
-          selection_type: 'multiple',
-          max_selections: 5,
-          min_selections: 0,
-          required: false,
-          sort_order: 1,
-          active: true,
-          modifiers: [
-            {
-              modifier_id: 'mod_1',
-              name: 'Pepperoni',
-              description: 'Classic pepperoni topping',
-              price_delta: 2.50,
-              default_selected: false,
-              sort_order: 1,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              modifier_id: 'mod_2',
-              name: 'Mushrooms',
-              description: 'Fresh mushrooms',
-              price_delta: 1.50,
-              default_selected: false,
-              sort_order: 2,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          created_by: 'admin',
-          updated_by: 'admin'
-        },
-        {
-          group_id: 'abc123-def456-ghi789',
-          store_id: storeId,
-          name: 'Drink Sizes',
-          description: 'Select your preferred drink size',
-          selection_type: 'single',
-          required: true,
-          sort_order: 2,
-          active: true,
-          modifiers: [
-            {
-              modifier_id: 'size_1',
-              name: 'Small',
-              price_delta: 0,
-              default_selected: true,
-              sort_order: 1,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              modifier_id: 'size_2',
-              name: 'Medium',
-              price_delta: 1.00,
-              default_selected: false,
-              sort_order: 2,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              modifier_id: 'size_3',
-              name: 'Large',
-              price_delta: 2.00,
-              default_selected: false,
-              sort_order: 3,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          created_by: 'admin',
-          updated_by: 'admin'
-        },
-        {
-          group_id: 'xyz789-uvw012-rst345',
-          store_id: storeId,
-          name: 'Spice Level',
-          description: 'How spicy would you like it?',
-          selection_type: 'single',
-          required: false,
-          sort_order: 3,
-          active: true,
-          modifiers: [
-            {
-              modifier_id: 'spice_1',
-              name: 'Mild',
-              price_delta: 0,
-              default_selected: true,
-              sort_order: 1,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              modifier_id: 'spice_2',
-              name: 'Hot',
-              price_delta: 0,
-              default_selected: false,
-              sort_order: 2,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              modifier_id: 'spice_3',
-              name: 'Extra Hot',
-              price_delta: 0.50,
-              default_selected: false,
-              sort_order: 3,
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          created_by: 'admin',
-          updated_by: 'admin'
-        }
-      ];
-
-      return new Promise(resolve => {
-        setTimeout(() => resolve({
-          items: mockGroups,
-          next: null,
-          total_count: mockGroups.length
-        }), 300); // Simulate API delay
-      });
-    }
-
     try {
       const params = new URLSearchParams();
       if (filters?.active !== undefined) params.append('active', filters.active.toString());
@@ -292,65 +146,6 @@ class GlobalModifierService {
     storeId: string, 
     groupId: string
   ): Promise<ApiGlobalModifierGroup> {
-    if (USE_MOCK_DATA) {
-      // Return mock data for development
-      const mockModifierGroup: ApiGlobalModifierGroup = {
-        group_id: groupId,
-        store_id: storeId,
-        name: 'Pizza Toppings',
-        description: 'Choose your favorite pizza toppings',
-        selection_type: 'multiple',
-        max_selections: 5,
-        min_selections: 0,
-        required: false,
-        sort_order: 1,
-        active: true,
-        modifiers: [
-          {
-            modifier_id: 'mod_1',
-            name: 'Pepperoni',
-            description: 'Classic pepperoni topping',
-            price_delta: 2.50,
-            default_selected: false,
-            sort_order: 1,
-            active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            modifier_id: 'mod_2',
-            name: 'Mushrooms',
-            description: 'Fresh mushrooms',
-            price_delta: 1.50,
-            default_selected: false,
-            sort_order: 2,
-            active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          },
-          {
-            modifier_id: 'mod_3',
-            name: 'Extra Cheese',
-            description: 'Double cheese for extra flavor',
-            price_delta: 3.00,
-            default_selected: false,
-            sort_order: 3,
-            active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        ],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        created_by: 'admin',
-        updated_by: 'admin'
-      };
-      
-      return new Promise(resolve => {
-        setTimeout(() => resolve(mockModifierGroup), 300); // Simulate API delay
-      });
-    }
-
     try {
       const response = await apiClient.get<ApiGlobalModifierGroup>(
         `/v0/store/${storeId}/global-modifier-groups/${groupId}`
@@ -456,20 +251,6 @@ class GlobalModifierService {
     usage_count: number;
     products: Array<{ item_id: string; name: string }>;
   }> {
-    if (USE_MOCK_DATA) {
-      // Return mock usage stats for development
-      return new Promise(resolve => {
-        setTimeout(() => resolve({
-          usage_count: 3,
-          products: [
-            { item_id: 'prod_1', name: 'Margherita Pizza' },
-            { item_id: 'prod_2', name: 'Pepperoni Pizza' },
-            { item_id: 'prod_3', name: 'Supreme Pizza' }
-          ]
-        }), 200);
-      });
-    }
-
     try {
       const response = await apiClient.get<{
         usage_count: number;

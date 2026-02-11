@@ -51,7 +51,8 @@ interface TerminalSettingsState {
 
 const TerminalSettings: React.FC = () => {
   const { t } = useTranslation();
-  const { currentStore, isLoading: storeLoading } = useTenantStore();
+  const { currentStore, isLoading: storeLoading, currentTenant } = useTenantStore();
+  
   const [state, setState] = useState<TerminalSettingsState>({
     terminals: {},
     isLoading: false,
@@ -67,13 +68,37 @@ const TerminalSettings: React.FC = () => {
 
   // Load terminals from current store
   useEffect(() => {
-    if (currentStore?.terminals) {
+    if (currentStore) {
       setState(prev => ({
         ...prev,
         terminals: currentStore.terminals || {}
       }));
     }
   }, [currentStore]);
+  
+  // Refresh store data on mount to ensure we have fresh terminals
+  useEffect(() => {
+    const loadFreshData = async () => {
+      if (currentStore && currentTenant) {
+        try {
+          const { storeServices } = await import('../services/store');
+          const freshStoreDetails = await storeServices.store.getStoreDetails(currentStore.store_id);
+          
+          // Update local state with fresh terminals
+          if (freshStoreDetails.terminals) {
+            setState(prev => ({
+              ...prev,
+              terminals: freshStoreDetails.terminals || {}
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to load fresh store details:', error);
+        }
+      }
+    };
+    
+    loadFreshData();
+  }, []); // Only run on mount
 
   const handleAddTerminal = () => {
     setState(prev => ({
@@ -114,10 +139,24 @@ const TerminalSettings: React.FC = () => {
   const handleRefresh = async () => {
     setState(prev => ({ ...prev, refreshing: true }));
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (currentStore && currentTenant) {
+        const { storeServices } = await import('../services/store');
+        const freshStoreDetails = await storeServices.store.getStoreDetails(currentStore.store_id);
+        
+        // Update local state with fresh terminals
+        if (freshStoreDetails.terminals) {
+          setState(prev => ({
+            ...prev,
+            terminals: freshStoreDetails.terminals || {}
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to refresh store details:', error);
+    } finally {
       setState(prev => ({ ...prev, refreshing: false }));
-    }, 1000);
+    }
   };
 
   const handleToggleStatus = async (terminalId: string) => {
@@ -211,9 +250,11 @@ const TerminalSettings: React.FC = () => {
   };
 
   const filteredTerminals = Object.values(state.terminals).filter(terminal => {
-    const matchesSearch = terminal.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-                         terminal.terminal_id.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-                         terminal.device_id.toLowerCase().includes(state.searchTerm.toLowerCase());
+    if (!terminal) return false;
+    
+    const matchesSearch = (terminal.name || '').toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+                         (terminal.terminal_id || '').toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+                         (terminal.device_id || '').toLowerCase().includes(state.searchTerm.toLowerCase());
     
     const matchesStatus = state.statusFilter === 'all' || terminal.status === state.statusFilter;
     

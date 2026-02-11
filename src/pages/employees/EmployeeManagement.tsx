@@ -472,8 +472,8 @@ const EmployeeManagement: React.FC = () => {
         total: response.total,
         active: response.users.filter(emp => emp.status === 'active').length,
         inactive: response.users.filter(emp => emp.status === 'inactive').length,
-        clockedIn: Math.floor(Math.random() * response.users.length), // Mock data
-        onBreak: Math.floor(Math.random() * 5) // Mock data
+        clockedIn: 0, // TODO: Fetch from time tracking API
+        onBreak: 0 // TODO: Fetch from time tracking API
       };
       
       setState(prev => ({

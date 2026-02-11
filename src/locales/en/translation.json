@@ -460,7 +460,12 @@
       "accountNotVerified": "Account not verified. Please check your email for verification instructions.",
       "socialNotImplemented": "{{provider}} login is not yet implemented. Please use email and password.",
       "socialFailed": "{{provider}} login failed. Please try again.",
-      "resetEmailFailed": "Failed to send reset email. Please try again."
+      "resetEmailFailed": "Failed to send reset email. Please try again.",
+      "oauthCallbackFailed": "Authentication callback failed. Please try signing in again.",
+      "authenticationFailed": "Authentication failed. Please try again.",
+      "authenticationError": "Authentication Error",
+      "oauthNotConfigured": "OAuth is not properly configured. Please contact support.",
+      "providerNotConfigured": "{{provider}} identity provider is not configured. Please contact support."
     },
     "signIn": {
       "welcome": "Welcome back!",
@@ -495,6 +500,9 @@
     },
     "forgotPassword": "Forgot password",
     "orContinueWith": "or continue with",
+    "completingAuthentication": "Completing Authentication",
+    "pleaseWait": "Please wait while we complete your sign in...",
+    "redirectingToSignIn": "Redirecting to sign in page...",
     "social": {
       "google": "Google",
       "github": "Github"
@@ -1239,6 +1247,65 @@
     },
     "errors": {
       "saveFailed": "Failed to save changes:"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "description": "Manage your billing and subscription",
+    "plans": {
+      "free": "Free",
+      "starter": "Starter",
+      "pro": "Pro",
+      "perMonth": "/mo",
+      "perStore": "per store / month"
+    },
+    "planDescriptions": {
+      "free": "Basic features. Limited to 1 store per tenant.",
+      "starter": "Standard POS features for small businesses.",
+      "pro": "Advanced features, analytics, multi-terminal support."
+    },
+    "summary": {
+      "title": "Billing Summary",
+      "estimatedMonthly": "Estimated Monthly Total",
+      "displayOnly": "This is a display-only estimate. Actual billing is managed by Stripe and may include prorations.",
+      "storeCount": "{{count}} store",
+      "storeCount_plural": "{{count}} stores"
+    },
+    "changePlan": {
+      "title": "Change Plan",
+      "current": "Current",
+      "upgrade": "Upgrade to {{plan}}",
+      "downgrade": "Downgrade to Free",
+      "changeTo": "Change to {{plan}}"
+    },
+    "success": {
+      "title": "Payment Successful!",
+      "description": "Your subscription is now active. Your store has been created and billing has been set up.",
+      "redirecting": "Redirecting to your stores in {{count}} seconds...",
+      "goToStores": "Go to Stores Now",
+      "goToDashboard": "Go to Dashboard",
+      "refreshing": "Refreshing your store data..."
+    },
+    "cancel": {
+      "title": "Payment Cancelled",
+      "description": "Your store was created but billing is not yet set up.",
+      "canComplete": "You can complete payment setup at any time. Your store will have full access once billing is activated.",
+      "retryButton": "Set Up Billing",
+      "goToStores": "Go to Stores"
+    },
+    "errors": {
+      "checkoutRequired": "Payment setup is required to activate your subscription.",
+      "operationNotAllowed": "This operation is not allowed. Please contact support.",
+      "subscriptionInactive": "Your subscription is not active. Please set up billing first.",
+      "paymentFailed": "Payment failed. Please update your payment method and try again.",
+      "invalidPlan": "Invalid billing plan selected.",
+      "createCheckoutFailed": "Failed to create checkout session.",
+      "changePlanFailed": "Failed to change plan. Please try again.",
+      "alreadyActive": "Your subscription is already active!"
+    },
+    "storeCreation": {
+      "selectPlan": "Billing Plan",
+      "redirectingToStripe": "Store created! Redirecting to payment setup..."
     }
   }
 }

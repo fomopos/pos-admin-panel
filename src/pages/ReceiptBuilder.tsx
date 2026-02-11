@@ -442,7 +442,8 @@ const ReceiptBuilder: React.FC<ReceiptBuilderProps> = () => {
               <div className={`border border-gray-200 rounded-lg p-4 overflow-auto ${isFullScreen ? 'flex-1' : 'max-h-screen'}`}>
                 <ReceiptViewer
                   documents={[{
-                    document_id: 1,
+                    doc_id: '1',
+                    doc_type: 'receipt',
                     data: JSON.stringify(generatedReceipt)
                   }]}
                   showCopyButton={true}

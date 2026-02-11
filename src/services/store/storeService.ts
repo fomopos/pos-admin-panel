@@ -39,11 +39,11 @@ export class StoreService {
   /**
    * Convert store timings to business hours format
    */
-  convertTimingsToBusinessHours(timings: Record<string, string>): Array<{ day: string; is_open: boolean; open_time: string; close_time: string }> {
+  convertTimingsToBusinessHours(timings: Record<string, string> | null | undefined): Array<{ day: string; is_open: boolean; open_time: string; close_time: string }> {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     
     return days.map(day => {
-      const timing = timings[day];
+      const timing = timings?.[day];
       if (!timing || timing === 'closed') {
         return {
           day,
@@ -365,102 +365,6 @@ export class StoreService {
       system: [
         'terminals', 'properties', 'created_at', 'create_user_id', 'updated_at', 'update_user_id'
       ]
-    };
-  }
-
-  /**
-   * Get mock store details for development/testing
-   */
-  async getMockStoreDetails(): Promise<StoreDetails> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      tenant_id: "2711",
-      store_id: "10001",
-      status: "active",
-      store_name: "Spice Garden",
-      description: "A fine dining restaurant offering traditional Indian cuisine",
-      location_type: "restaurant",
-      store_type: "f&b",
-      address: {
-        address1: "45 MG Road",
-        address2: "Opposite Central Mall",
-        address3: "Royal Towers",
-        address4: "Ground Floor",
-        city: "Bengaluru",
-        state: "Karnataka",
-        district: "Bangalore Urban",
-        area: "MG Road",
-        postal_code: "560001",
-        country: "India",
-        county: "Bangalore"
-      },
-      locale: "en-IN",
-      currency: "INR",
-      timezone: "Asia/Kolkata",
-      latitude: "12.9716",
-      longitude: "77.5946",
-      telephone1: "+918067891234",
-      telephone2: "+918067896789",
-      telephone3: "+918067899012",
-      telephone4: "+918067893456",
-      email: "info@spicegarden.in",
-      legal_entity_id: "LE-IN-45678",
-      legal_entity_name: "Spice Garden Hospitality Pvt. Ltd.",
-      store_timing: {
-        "Friday": "12:00-23:30",
-        "Holidays": "12:00-22:00",
-        "Monday": "12:00-23:00",
-        "Saturday": "12:00-23:30",
-        "Sunday": "12:00-22:00",
-        "Thursday": "12:00-23:00",
-        "Tuesday": "12:00-23:00",
-        "Wednesday": "12:00-23:00"
-      },
-      terminals: {
-        "101": {
-          terminal_id: "101",
-          device_id: "2D4FB4B7-4D4B-5CC0-8B4A-331AB1AACD2C",
-          status: "active",
-          platform: "macOS",
-          model: "Mac15,10",
-          arch: "arm64",
-          name: "Pratyush's MacBook Pro"
-        },
-        "102": {
-          terminal_id: "102",
-          device_id: "57B32ED7-204C-428F-8BF0-0A237866F20F",
-          status: "active",
-          platform: "ios",
-          model: "iPhone",
-          arch: "18.5",
-          name: "iPhone"
-        },
-        "103": {
-          terminal_id: "103",
-          device_id: "{DDE6A06F-8AF8-40AA-957D-EDF42F2387D1}",
-          status: "active",
-          platform: "windows",
-          model: "Windows 11 Pro",
-          arch: "26100.1.amd64fre.ge_release.240331-1435",
-          name: "UtkarshX86"
-        },
-        "104": {
-          terminal_id: "104",
-          device_id: "1019C443-5A11-41FC-9706-897DD52355A4",
-          status: "active",
-          platform: "ios",
-          model: "iPhone",
-          arch: "18.5",
-          name: "iPhone"
-        }
-      },
-      properties: null,
-      created_at: "2025-06-05T13:24:19.055068+04:00",
-      create_user_id: "Y8Z4UL",
-      updated_at: "2025-06-05T13:24:19.05507+04:00",
-      update_user_id: undefined
     };
   }
 

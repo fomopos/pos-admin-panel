@@ -18,7 +18,7 @@ import { Button, Card, PageHeader, Loading, PageContainer, H3, H4, H5, Body1, Bo
 import { EnhancedTabs, TabsContent } from '../components/ui/Tabs';
 import { ReceiptViewer } from '../components/receipt';
 import { useTenantStore } from '../tenants/tenantStore';
-import { transactionService, type TransactionDetail } from '../services/transaction';
+import { transactionService, type TransactionDetail, fromScaledInt } from '../services/transaction';
 import { formattingService } from '../services/formatting';
 
 const SalesDetail: React.FC = () => {
@@ -74,11 +74,11 @@ const SalesDetail: React.FC = () => {
 
   const getStatusBadge = (status: TransactionDetail['status']) => {
     const statusConfig = {
-      completed: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon },
-      new: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ClockIcon },
-      suspended: { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
-      cancelled: { bg: 'bg-gray-100', text: 'text-gray-800', icon: ExclamationTriangleIcon },
-      cancel_orphaned: { bg: 'bg-gray-100', text: 'text-gray-800', icon: ExclamationTriangleIcon }
+      COMPLETED: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircleIcon },
+      NEW: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: ClockIcon },
+      SUSPEND: { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
+      RESUME: { bg: 'bg-blue-100', text: 'text-blue-800', icon: ClockIcon },
+      CANCEL: { bg: 'bg-gray-100', text: 'text-gray-800', icon: ExclamationTriangleIcon }
     };
     
     // Fallback for unknown status values
@@ -92,7 +92,7 @@ const SalesDetail: React.FC = () => {
     return (
       <span className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full ${config.bg} ${config.text}`}>
         <IconComponent className="w-3 h-3 mr-1" />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
       </span>
     );
   };
@@ -139,7 +139,7 @@ const SalesDetail: React.FC = () => {
   const tabsWithCounts = transaction ? tabs.map(tab => ({
     ...tab,
     name: tab.id === 'items' ? `Items (${transaction.line_items.length})` :
-          tab.id === 'payments' ? `Payments (${transaction.payment_line_items.length})` :
+          tab.id === 'payments' ? `Payments (${transaction.payments.length})` :
           tab.id === 'receipts' ? `Receipts (${transaction.documents.length})` :
           tab.name
   })) : tabs;
@@ -180,8 +180,8 @@ const SalesDetail: React.FC = () => {
       <div className="p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Header */}
         <PageHeader
-          title={`Transaction ${transaction.trans_id}`}
-          description={`${transaction.transaction_type.charAt(0).toUpperCase() + transaction.transaction_type.slice(1)} • ${formattingService.formatDate(transaction.created_at, 'datetime-short')}`}
+          title={`Transaction ${transaction.trans_seq}`}
+          description={`${transaction.trans_type.charAt(0).toUpperCase() + transaction.trans_type.slice(1).toLowerCase()} • ${formattingService.formatDate(transaction.begin_time, 'datetime-short')}`}
         >
         <div className="flex items-center space-x-3">
           <Button
@@ -216,7 +216,7 @@ const SalesDetail: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <Label color="slate-600">Transaction ID</Label>
-                    <H5 color="slate-900">{transaction.trans_id}</H5>
+                    <H5 color="slate-900">{transaction.trans_seq}</H5>
                   </div>
                   <div>
                     <Label color="slate-600">Terminal</Label>
@@ -227,12 +227,14 @@ const SalesDetail: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <Label color="slate-600">Business Date</Label>
-                    <Body1 color="slate-900">{formattingService.formatDate(transaction.business_date, 'datetime-short')}</Body1>
+                    <Body1 color="slate-900">{formattingService.formatDate(transaction.biz_date, 'datetime-short')}</Body1>
                   </div>
                   <div>
                     <Label color="slate-600">Duration</Label>
                     <Body1 color="slate-900">
-                      {formattingService.formatDuration(Math.round((new Date(transaction.end_datetime).getTime() - new Date(transaction.begin_datetime).getTime()) / 1000))}
+                      {transaction.end_time 
+                        ? formattingService.formatDuration(Math.round((new Date(transaction.end_time).getTime() - new Date(transaction.begin_time).getTime()) / 1000))
+                        : 'In Progress'}
                     </Body1>
                   </div>
                 </div>
@@ -247,7 +249,7 @@ const SalesDetail: React.FC = () => {
                   </div>
                   <div>
                     <Label color="slate-600">Locale</Label>
-                    <Body1 color="slate-900">{transaction.store_locale}</Body1>
+                    <Body1 color="slate-900">{transaction.locale}</Body1>
                   </div>
                 </div>
               </div>
@@ -262,25 +264,32 @@ const SalesDetail: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <Body2 color="slate-600">Subtotal</Body2>
-                  <Body2 weight="medium">{formattingService.formatCurrency(transaction.sub_total, { currency: transaction.store_currency })}</Body2>
+                  <Body2 weight="medium">{formattingService.formatCurrency(fromScaledInt(transaction.sub_total), { currency: transaction.currency })}</Body2>
                 </div>
                 
                 <div className="flex justify-between">
                   <Body2 color="slate-600">Tax Total</Body2>
-                  <Body2 weight="medium">{formattingService.formatCurrency(transaction.tax_total, { currency: transaction.store_currency })}</Body2>
+                  <Body2 weight="medium">{formattingService.formatCurrency(fromScaledInt(transaction.tax_total), { currency: transaction.currency })}</Body2>
                 </div>
+
+                {fromScaledInt(transaction.disc_total) !== 0 && (
+                  <div className="flex justify-between">
+                    <Body2 color="slate-600">Discount Total</Body2>
+                    <Body2 weight="medium" className="text-green-600">-{formattingService.formatCurrency(fromScaledInt(transaction.disc_total), { currency: transaction.currency })}</Body2>
+                  </div>
+                )}
                 
-                {parseFloat(transaction.round_total) !== 0 && (
+                {fromScaledInt(transaction.round_total) !== 0 && (
                   <div className="flex justify-between">
                     <Body2 color="slate-600">Rounding</Body2>
-                    <Body2 weight="medium">{formattingService.formatCurrency(transaction.round_total, { currency: transaction.store_currency })}</Body2>
+                    <Body2 weight="medium">{formattingService.formatCurrency(fromScaledInt(transaction.round_total), { currency: transaction.currency })}</Body2>
                   </div>
                 )}
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between">
                     <H5>Total</H5>
-                    <H5>{formattingService.formatCurrency(transaction.total, { currency: transaction.store_currency })}</H5>
+                    <H5>{formattingService.formatCurrency(fromScaledInt(transaction.total), { currency: transaction.currency })}</H5>
                   </div>
                 </div>
                 
@@ -288,15 +297,15 @@ const SalesDetail: React.FC = () => {
                   <div className="flex justify-between">
                     <Body2 color="slate-600">Amount Tendered</Body2>
                     <Body2 weight="medium">{formattingService.formatCurrency(
-                      transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0).toString(),
-                      { currency: transaction.store_currency }
+                      transaction.payments.reduce((sum, payment) => sum + fromScaledInt(payment.amt), 0),
+                      { currency: transaction.currency }
                     )}</Body2>
                   </div>
                   <div className="flex justify-between">
                     <Body2 color="slate-600">Amount Due</Body2>
                     <Body2 weight="medium">{formattingService.formatCurrency(
-                      (parseFloat(transaction.total) - transaction.payment_line_items.reduce((sum, payment) => sum + parseFloat(payment.amount), 0)).toString(),
-                      { currency: transaction.store_currency }
+                      fromScaledInt(transaction.total) - transaction.payments.reduce((sum, payment) => sum + fromScaledInt(payment.amt), 0),
+                      { currency: transaction.currency }
                     )}</Body2>
                   </div>
                 </div>
@@ -317,12 +326,12 @@ const SalesDetail: React.FC = () => {
             <TabsContent value="items" activeTab={activeTab}>
               <div className="space-y-4">
                 {transaction.line_items.map((item) => (
-                  <div key={item.line_item_id} className="border border-slate-200 rounded-xl p-6">
+                  <div key={item.seq} className="border border-slate-200 rounded-xl p-6">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <H4 color="slate-900">{item.item_id}</H4>
-                        {item.item_description && (
-                          <Body2 color="slate-600" className="mt-1">{item.item_description}</Body2>
+                        {item.item_desc && (
+                          <Body2 color="slate-600" className="mt-1">{item.item_desc}</Body2>
                         )}
                         {item.notes && (
                           <Body2 color="warning" weight="medium" className="mt-2">💡 {item.notes}</Body2>
@@ -330,23 +339,23 @@ const SalesDetail: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <H5 color="slate-900">
-                          {formattingService.formatCurrency(item.extended_amount, { currency: transaction.store_currency })}
+                          {formattingService.formatCurrency(fromScaledInt(item.ext_amt), { currency: transaction.currency })}
                         </H5>
                         <Caption color="slate-500">
-                          {item.quantity} × {formattingService.formatCurrency(item.unit_price, { currency: transaction.store_currency })}
+                          {fromScaledInt(item.qty)} × {formattingService.formatCurrency(fromScaledInt(item.unit_price), { currency: transaction.currency })}
                         </Caption>
                       </div>
                     </div>
                     
                     {/* Price Modifiers */}
-                    {item.price_modifiers.length > 0 && (
+                    {item.modifiers.length > 0 && (
                       <div className="bg-orange-50 rounded-lg p-3 mb-3">
                         <Label color="warning" className="mb-2">Price Adjustments</Label>
-                        {item.price_modifiers.map((modifier, idx) => (
+                        {item.modifiers.map((modifier, idx) => (
                           <div key={idx} className="flex justify-between">
-                            <Caption color="warning">{modifier.price_change_reason_code}</Caption>
+                            <Caption color="warning">{modifier.reason}</Caption>
                             <Caption color="warning" weight="medium">
-                              {formattingService.formatCurrency(modifier.price_change_amount, { currency: transaction.store_currency })}
+                              {formattingService.formatCurrency(fromScaledInt(modifier.change_amt), { currency: transaction.currency })}
                             </Caption>
                           </div>
                         ))}
@@ -354,17 +363,34 @@ const SalesDetail: React.FC = () => {
                     )}
                     
                     {/* Tax Breakdown */}
-                    {item.tax_modifiers.length > 0 && (
+                    {item.taxes.length > 0 && (
                       <div className="bg-slate-50 rounded-lg p-3">
                         <Label color="slate-700" className="mb-2">Tax Breakdown</Label>
                         <div className="space-y-1">
-                          {item.tax_modifiers.map((tax, idx) => (
+                          {item.taxes.map((tax, idx) => (
                             <div key={idx} className="flex justify-between">
                               <Caption color="slate-600">
-                                {tax.tax_rule_name} ({formattingService.formatPercentage(parseFloat(tax.tax_percent))})
+                                {tax.tax_rule_name} ({formattingService.formatPercentage(fromScaledInt(tax.tax_pct))})
                               </Caption>
                               <Caption color="slate-700" weight="medium">
-                                {formattingService.formatCurrency(tax.tax_amount, { currency: transaction.store_currency })}
+                                {formattingService.formatCurrency(fromScaledInt(tax.tax_amt), { currency: transaction.currency })}
+                              </Caption>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Addons */}
+                    {item.addons && item.addons.length > 0 && (
+                      <div className="bg-blue-50 rounded-lg p-3 mt-3">
+                        <Label color="info" className="mb-2">Add-ons</Label>
+                        <div className="space-y-1">
+                          {item.addons.map((addon, idx) => (
+                            <div key={idx} className="flex justify-between">
+                              <Caption color="slate-600">{addon.mod_desc}</Caption>
+                              <Caption color="slate-700" weight="medium">
+                                {formattingService.formatCurrency(fromScaledInt(addon.ext_amt), { currency: transaction.currency })}
                               </Caption>
                             </div>
                           ))}
@@ -379,18 +405,18 @@ const SalesDetail: React.FC = () => {
             {/* Payments Tab */}
             <TabsContent value="payments" activeTab={activeTab}>
               <div className="space-y-4">
-                {transaction.payment_line_items.map((payment) => {
+                {transaction.payments.map((payment) => {
                   const PaymentIcon = getPaymentIcon(payment.tender_id);
                   return (
-                    <div key={payment.payment_seq} className="flex items-center justify-between p-6 border border-slate-200 rounded-xl">
+                    <div key={payment.seq} className="flex items-center justify-between p-6 border border-slate-200 rounded-xl">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                           <PaymentIcon className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
-                          <H5 color="slate-900">{payment.tender_description}</H5>
-                          <Caption color="slate-500">Payment #{payment.payment_seq}</Caption>
-                          {payment.change_flag && (
+                          <H5 color="slate-900">{payment.tender_desc}</H5>
+                          <Caption color="slate-500">Payment #{payment.seq}</Caption>
+                          {payment.is_change && (
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
                               Change
                             </span>
@@ -399,11 +425,11 @@ const SalesDetail: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <H4 color="slate-900">
-                          {formattingService.formatCurrency(payment.amount, { currency: transaction.store_currency })}
+                          {formattingService.formatCurrency(fromScaledInt(payment.amt), { currency: transaction.currency })}
                         </H4>
-                        {payment.foreign_amount && (
+                        {payment.foreign_amt && (
                           <Caption color="slate-500">
-                            Foreign: {payment.foreign_amount} (Rate: {payment.exchange_rate})
+                            Foreign: {formattingService.formatCurrency(fromScaledInt(payment.foreign_amt), { currency: transaction.currency })} (Rate: {payment.exch_rate ? fromScaledInt(payment.exch_rate) : 'N/A'})
                           </Caption>
                         )}
                       </div>
@@ -427,7 +453,7 @@ const SalesDetail: React.FC = () => {
                   }}
                   showCopyButton={false}
                   printButtonText="Print All"
-                  transactionId={transaction.transaction_id}
+                  transactionId={transaction.trans_seq}
                 />
               ) : (
                 <div className="text-center py-12">

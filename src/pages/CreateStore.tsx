@@ -14,6 +14,8 @@ import {
 import { Button, PageHeader, EnhancedTabs, InputTextField, InputTextArea, DropdownSearch, Widget } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { useTenantStore } from '../tenants/tenantStore';
+import { storeBillingService, PLAN_PRICES, PLAN_LABELS, PLAN_DESCRIPTIONS } from '../services/billing/storeBillingService';
+import type { BillingPlan } from '../services/billing/storeBillingService';
 import { 
   COUNTRIES, 
   LOCALES, 
@@ -36,6 +38,7 @@ interface StoreFormData {
   description: string;
   location_type: string;
   store_type: string;
+  billing_plan: BillingPlan;
   
   // Address Information
   address: {
@@ -91,7 +94,7 @@ interface CreateStoreProps {
 
 const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
   const navigate = useNavigate();
-  const { currentTenant, createStore } = useTenantStore();
+  const { currentTenant, fetchStoresForTenant } = useTenantStore();
   const { showError, showSuccess, showValidationError } = useError();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -104,6 +107,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     description: '',
     location_type: 'retail',
     store_type: 'general',
+    billing_plan: 'free',
     address: {
       address1: '',
       address2: '',
@@ -418,13 +422,66 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
     try {
       setIsLoading(true);
       
-      // Call the store creation API
-      await createStore(currentTenant.id, formData);
-      
-      // Use error framework for success message
+      // Helper function to convert empty strings to null
+      const toNullIfEmpty = (value: string | undefined): string | null => {
+        if (!value || value.trim() === '') return null;
+        return value.trim();
+      };
+
+      // Build the API payload including billing_plan
+      const apiStoreData = {
+        tenant_id: currentTenant.id,
+        store_id: toNullIfEmpty(formData.store_id),
+        store_name: formData.store_name?.trim() || 'New Store',
+        billing_plan: formData.billing_plan,
+        description: toNullIfEmpty(formData.description),
+        location_type: formData.location_type || 'retail',
+        store_type: formData.store_type || 'general',
+        address: {
+          address1: toNullIfEmpty(formData.address.address1),
+          address2: toNullIfEmpty(formData.address.address2),
+          address3: toNullIfEmpty(formData.address.address3),
+          address4: toNullIfEmpty(formData.address.address4),
+          city: toNullIfEmpty(formData.address.city),
+          state: toNullIfEmpty(formData.address.state),
+          district: toNullIfEmpty(formData.address.district),
+          area: toNullIfEmpty(formData.address.area),
+          postal_code: toNullIfEmpty(formData.address.postal_code),
+          country: formData.address.country?.trim() || '',
+          county: toNullIfEmpty(formData.address.county),
+        },
+        locale: formData.locale || 'en-US',
+        currency: formData.currency || 'USD',
+        latitude: toNullIfEmpty(formData.latitude),
+        longitude: toNullIfEmpty(formData.longitude),
+        telephone1: toNullIfEmpty(formData.telephone1),
+        telephone2: toNullIfEmpty(formData.telephone2),
+        telephone3: toNullIfEmpty(formData.telephone3),
+        telephone4: toNullIfEmpty(formData.telephone4),
+        email: toNullIfEmpty(formData.email),
+        legal_entity_id: toNullIfEmpty(formData.legal_entity_id),
+        legal_entity_name: toNullIfEmpty(formData.legal_entity_name),
+        timezone: formData.timezone || undefined,
+        store_timing: formData.store_timing,
+      };
+
+      // Use storeBillingService to handle 201 vs 402
+      const result = await storeBillingService.createStoreWithBilling(apiStoreData);
+
+      if (result.checkoutRequired && result.checkoutUrl) {
+        // 402 — store was created but needs Stripe Checkout
+        // Add store to local state before redirecting
+        await fetchStoresForTenant(currentTenant.id);
+        showSuccess('Store created! Redirecting to payment setup...');
+        // Redirect to Stripe Checkout (per MD: full-page redirect)
+        storeBillingService.redirectToCheckout(result.checkoutUrl);
+        return; // Don't proceed — page will navigate away
+      }
+
+      // 201 — store created successfully, refresh store list
+      await fetchStoresForTenant(currentTenant.id);
       showSuccess('Store created successfully!');
       
-      // Clear local success message and navigate
       setSuccessMessage(null);
       setTimeout(() => {
         handleSave();
@@ -589,7 +646,50 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
             searchPlaceholder="Search store types..."
             error={errors.store_type}
           />
+        </div>
 
+        {/* Billing Plan Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Billing Plan</label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {(['free', 'starter', 'pro'] as BillingPlan[]).map((plan) => {
+              const isSelected = formData.billing_plan === plan;
+              return (
+                <button
+                  key={plan}
+                  type="button"
+                  onClick={() => handleInputChange('billing_plan', plan)}
+                  className={`relative flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                      : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <span className={`text-sm font-bold ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>
+                      {PLAN_LABELS[plan]}
+                    </span>
+                    {isSelected && (
+                      <CheckIcon className="h-5 w-5 text-blue-600" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">{PLAN_DESCRIPTIONS[plan]}</p>
+                  <p className={`text-lg font-bold ${isSelected ? 'text-blue-600' : 'text-gray-900'}`}>
+                    {PLAN_PRICES[plan] === 0 ? 'Free' : `$${PLAN_PRICES[plan]}/mo`}
+                  </p>
+                  {plan !== 'free' && (
+                    <p className="text-xs text-gray-400 mt-1">per store / month</p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {errors.billing_plan && (
+            <p className="mt-2 text-sm text-red-600">{errors.billing_plan}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <DropdownSearch
             label="Locale"
             options={LOCALES}

@@ -8,6 +8,7 @@ export interface TextElement extends BaseReceiptElement {
   type: 'text';
   text: string;
   align?: 'left' | 'center' | 'right' | 'justify';
+  style?: string;
   flex?: number;
 }
 

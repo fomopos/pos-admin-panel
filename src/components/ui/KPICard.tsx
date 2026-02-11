@@ -6,6 +6,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+import { formattingService } from '../../services/formatting';
 
 export interface KPICardProps {
   title: string;
@@ -45,12 +46,10 @@ const KPICard: React.FC<KPICardProps> = ({
     
     switch (format) {
       case 'currency':
-        return new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
+        return formattingService.formatCurrency(val, {
           minimumFractionDigits: 0,
           maximumFractionDigits: 2,
-        }).format(val);
+        });
       case 'percentage':
         return `${val.toFixed(1)}%`;
       case 'time':

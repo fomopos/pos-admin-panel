@@ -34,6 +34,17 @@ This API provides endpoints to manage **POS hardware devices** such as receipt p
 | Network | `network` | TCP/IP network connected devices |
 | Bluetooth | `bluetooth` | Bluetooth connected devices |
 
+### Supported Device Roles
+
+| Role | Value | Applicable Device Types | Description |
+|------|-------|------------------------|-------------|
+| Main Printer | `main_printer` | `printer` | Primary receipt printer used to print customer transaction receipts. |
+| Backup Printer | `backup_printer` | `printer` | Secondary receipt printer used when the main printer is unavailable. |
+| Kitchen Printer | `kitchen_printer` | `printer` | Printer used to print kitchen order tickets for food preparation. |
+| Cash Drawer | `cashdrawer` | `cash_drawer` | Physical drawer used to securely store and dispense cash during transactions. |
+| Scanner | `scanner` | `scanner` | Device used to scan barcodes or QR codes for item and payment identification. |
+| KDS | `kds` | `display` | Kitchen display system used to show and manage orders digitally in real time. |
+
 ---
 
 ## 🧾 Device Entity Schema
@@ -45,6 +56,7 @@ This API provides endpoints to manage **POS hardware devices** such as receipt p
   "id": "string (required - UUID or custom ID)",
   "name": "string (optional)",
   "type": "printer | scanner | cash_drawer | scale | payment_terminal | display",
+  "role": "main_printer | backup_printer | kitchen_printer | cashdrawer | scanner | kds (optional)",
   "connection_type": "usb | network | bluetooth",
   "terminal_id": "string (optional - links device to specific terminal)",
   "enabled": true,
@@ -233,6 +245,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "receipt_printer_001",
   "name": "Main Receipt Printer",
   "type": "printer",
+  "role": "main_printer",
   "connection_type": "network",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -258,6 +271,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "receipt_printer_001",
   "name": "Main Receipt Printer",
   "type": "printer",
+  "role": "main_printer",
   "connection_type": "network",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -290,6 +304,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "kitchen_printer_001",
   "name": "Hot Kitchen Printer",
   "type": "printer",
+  "role": "kitchen_printer",
   "connection_type": "network",
   "enabled": true,
   "network_config": {
@@ -346,6 +361,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "scanner_001",
   "name": "Main Barcode Scanner",
   "type": "scanner",
+  "role": "scanner",
   "connection_type": "usb",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -372,6 +388,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "scanner_bt_001",
   "name": "Wireless Barcode Scanner",
   "type": "scanner",
+  "role": "scanner",
   "connection_type": "bluetooth",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -398,6 +415,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "drawer_001",
   "name": "Main Cash Drawer",
   "type": "cash_drawer",
+  "role": "cashdrawer",
   "connection_type": "network",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -422,6 +440,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "drawer_usb_001",
   "name": "USB Cash Drawer",
   "type": "cash_drawer",
+  "role": "cashdrawer",
   "connection_type": "usb",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -570,6 +589,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "kds_001",
   "name": "Kitchen Display System",
   "type": "display",
+  "role": "kds",
   "connection_type": "network",
   "enabled": true,
   "network_config": {
@@ -594,6 +614,7 @@ POST /v0/store/{storeId}/config/hardware
   "id": "bt_printer_001",
   "name": "Mobile Receipt Printer",
   "type": "printer",
+  "role": "backup_printer",
   "connection_type": "bluetooth",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -692,6 +713,7 @@ GET /v0/store/store_001/config/hardware?type=printer&limit=10
       "id": "receipt_printer_001",
       "name": "Main Receipt Printer",
       "type": "printer",
+      "role": "main_printer",
       "connection_type": "network",
       "terminal_id": "terminal_001",
       "enabled": true,
@@ -715,6 +737,7 @@ GET /v0/store/store_001/config/hardware?type=printer&limit=10
       "id": "kitchen_printer_001",
       "name": "Hot Kitchen Printer",
       "type": "printer",
+      "role": "kitchen_printer",
       "connection_type": "network",
       "enabled": true,
       "network_config": {
@@ -751,6 +774,7 @@ GET /v0/store/store_001/config/hardware?type=printer&limit=10
   "id": "receipt_printer_001",
   "name": "Main Receipt Printer",
   "type": "printer",
+  "role": "main_printer",
   "connection_type": "network",
   "terminal_id": "terminal_001",
   "enabled": true,
@@ -861,6 +885,16 @@ PUT /v0/store/{storeId}/config/hardware/receipt_printer_001
 - `id` - Unique identifier for the device
 - `type` - Device type (printer, scanner, cash_drawer, scale, payment_terminal, display)
 - `connection_type` - Connection method (usb, network, bluetooth)
+
+### Optional Fields
+- `role` - Device role (main_printer, backup_printer, kitchen_printer, cashdrawer, scanner, kds). Role must be compatible with device type.
+
+### Role Validation Rules
+- Role must match the device type:
+  - `main_printer`, `backup_printer`, `kitchen_printer` → only for `type: "printer"`
+  - `cashdrawer` → only for `type: "cash_drawer"`
+  - `scanner` → only for `type: "scanner"`
+  - `kds` → only for `type: "display"`
 
 ### Connection Config Rules
 - **Exactly one** connection config must be provided matching the `connection_type`:

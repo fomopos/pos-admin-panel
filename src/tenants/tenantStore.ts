@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { tenantApiService } from '../services/tenant/tenantApiService';
-import { tenantSelectionService } from '../services/tenant/tenantSelectionService';
 import type { TenantApiResponse, StoreApiResponse } from '../services/tenant/tenantApiService';
 import { useErrorHandler } from '../services/errorHandler';
+import { formattingService } from '../services/formatting';
 
 export interface Address {
   address1: string;
@@ -60,17 +60,22 @@ export interface Tenant {
   update_user_id?: string;
 }
 
+// Billing plan type for seat-based pricing
+export type BillingPlan = 'free' | 'starter' | 'pro';
+
 // Store belongs to a tenant
 export interface Store {
   tenant_id: string; // Reference to parent tenant ID
   store_id: string;
   status: 'active' | 'inactive' | 'pending'; // Updated to match API response
+  billing_plan?: BillingPlan; // Store billing plan (free/starter/pro)
   store_name: string;
   description?: string;
   location_type: string;
   store_type: string;
   address: Address;
   locale: string;
+  timezone?: string;
   currency: string;
   latitude?: string;
   longitude?: string;
@@ -101,6 +106,7 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
     tenant_id: apiStore.tenant_id || '',
     store_id: apiStore.store_id || '',
     status: apiStore.status || 'inactive',
+    billing_plan: apiStore.billing_plan || 'free',
     store_name: apiStore.store_name || 'Unnamed Store',
     description: apiStore.description || undefined,
     location_type: apiStore.location_type || 'retail',
@@ -115,7 +121,7 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
       district: apiStore.address.district || '',
       area: apiStore.address.area || '',
       postal_code: apiStore.address.postal_code || '',
-      country: apiStore.address.country || 'India',
+      country: apiStore.address.country || '',
       county: apiStore.address.county || '',
     } : {
       address1: '',
@@ -127,11 +133,12 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
       district: '',
       area: '',
       postal_code: '',
-      country: 'India',
+      country: '',
       county: '',
     },
-    locale: apiStore.locale || 'en-IN',
-    currency: apiStore.currency || 'INR',
+    locale: apiStore.locale || 'en-US',
+    timezone: apiStore.timezone,
+    currency: apiStore.currency || 'USD',
     latitude: apiStore.latitude || undefined,
     longitude: apiStore.longitude || undefined,
     telephone1: apiStore.telephone1 || undefined,
@@ -181,12 +188,12 @@ interface TenantState {
   currentStore: Store | null;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   setTenants: (tenants: TenantWithStores[]) => void;
   setCurrentTenant: (tenant: Tenant | null) => void;
   setCurrentStore: (store: Store | null) => void;
-  switchTenant: (tenantId: string) => Promise<void>;
+  switchTenant: (tenantId: string) => void;
   switchStore: (storeId: string) => Promise<void>;
   fetchTenants: (userId: string, clearSelections?: boolean) => Promise<void>;
   fetchStoresForTenant: (tenantId: string) => Promise<void>;
@@ -229,164 +236,140 @@ export const useTenantStore = create<TenantState>()(
       setTenants: (tenants) => set({ tenants }),
 
       setCurrentTenant: (tenant) => {
-        set({ 
+        set({
           currentTenant: tenant,
           currentStore: null // Reset store when switching tenant
         });
       },
 
-      setCurrentStore: (store) => set({ currentStore: store }),
+      setCurrentStore: (store) => {
+        if (store) {
+          formattingService.setDefaultCurrency(store.currency || 'USD');
+          formattingService.setDefaultLocale(store.locale || 'en-US');
+          console.log('🌍 FormattingService defaults set:', { currency: store.currency, locale: store.locale });
+        }
+        set({ currentStore: store });
+      },
 
-      switchTenant: async (tenantId) => {
+      switchTenant: (tenantId) => {
         const { tenants } = get();
         const tenant = tenants.find((t) => t.id === tenantId);
         if (tenant) {
-          try {
-            console.log('🎯 Switching tenant and calling server selection API:', tenantId);
-            
-            // Call the tenant selection API to inform the server
-            await tenantSelectionService.completeTenantSelection(tenantId);
-            
-            // Update local state
-            set({ 
-              currentTenant: tenant,
-              currentStore: null // Reset store when switching tenant
-            });
-            
-            console.log('✅ Tenant switched successfully with server selection');
-          } catch (error) {
-            console.error('❌ Error switching tenant:', error);
-            // Still update local state even if server selection fails
-            // This ensures the UI can continue working
-            set({ 
-              currentTenant: tenant,
-              currentStore: null
-            });
-            
-            // Use the error handler to show user feedback
-            const { handleError } = useErrorHandler.getState();
-            handleError(error, { 
-              showToast: true,
-              autoClose: 5000 
-            });
-          }
+          // Set currentTenant so that subsequent API calls have the X-Tenant-Id header
+          set({
+            currentTenant: tenant,
+            currentStore: null // Reset store when switching tenant
+          });
+          console.log('✅ Tenant switched successfully:', tenantId);
         }
       },
 
       switchStore: async (storeId) => {
         const { tenants, currentTenant } = get();
         if (!currentTenant) return;
-        
+
         const tenant = tenants.find((t) => t.id === currentTenant.id);
         if (tenant) {
           const store = tenant.stores.find((s) => s.store_id === storeId);
           if (store) {
+            console.log('🏪 Switching store:', { tenantId: currentTenant.id, storeId });
+
+            // Set the store from local data for immediate UI update
+            set({ currentStore: store });
+            formattingService.setDefaultCurrency(store.currency || 'USD');
+            formattingService.setDefaultLocale(store.locale || 'en-US');
+            console.log('🌍 FormattingService defaults set on store switch:', { currency: store.currency, locale: store.locale });
+
+            console.log('✅ Store switched successfully:', storeId);
+
+            // Fetch fresh store details from API in the background
             try {
-              console.log('🏪 Switching store and calling server selection API:', { tenantId: currentTenant.id, storeId });
-              
-              // Call the tenant selection API with both tenant and store IDs
-              await tenantSelectionService.completeTenantSelection(currentTenant.id, storeId);
-              
-              // Set the store from local data first for immediate UI update
-              set({ currentStore: store });
-              
-              console.log('✅ Store switched successfully with server selection');
-              
-              // Then fetch fresh store details from API in the background
-              try {
-                console.log('🔄 Fetching fresh store details after store switch:', { tenantId: currentTenant.id, storeId });
-                
-                // Import the store service to fetch store details
-                const { storeServices } = await import('../services/store');
-                
-                // Fetch fresh store details from API
-                const freshStoreDetails = await storeServices.store.getStoreDetails(storeId);
-                
-                // Transform the API response to match our Store interface
-                const updatedStore: Store = {
-                  ...store, // Keep the existing store data as base
-                  // Update with fresh data from API
-                  status: freshStoreDetails.status === 'suspended' ? 'inactive' : freshStoreDetails.status as 'active' | 'inactive' | 'pending',
-                  store_name: freshStoreDetails.store_name,
-                  description: freshStoreDetails.description,
-                  location_type: freshStoreDetails.location_type,
-                  store_type: freshStoreDetails.store_type,
-                  address: {
-                    address1: freshStoreDetails.address.address1,
-                    address2: freshStoreDetails.address.address2,
-                    address3: freshStoreDetails.address.address3,
-                    address4: freshStoreDetails.address.address4,
-                    city: freshStoreDetails.address.city,
-                    state: freshStoreDetails.address.state,
-                    district: freshStoreDetails.address.district || '',
-                    area: freshStoreDetails.address.area || '',
-                    postal_code: freshStoreDetails.address.postal_code,
-                    country: freshStoreDetails.address.country,
-                    county: freshStoreDetails.address.county,
-                  },
-                  locale: freshStoreDetails.locale,
-                  currency: freshStoreDetails.currency,
-                  latitude: freshStoreDetails.latitude,
-                  longitude: freshStoreDetails.longitude,
-                  telephone1: freshStoreDetails.telephone1,
-                  telephone2: freshStoreDetails.telephone2,
-                  telephone3: freshStoreDetails.telephone3,
-                  telephone4: freshStoreDetails.telephone4,
-                  email: freshStoreDetails.email,
-                  legal_entity_id: freshStoreDetails.legal_entity_id,
-                  legal_entity_name: freshStoreDetails.legal_entity_name,
-                  store_timing: {
-                    Monday: freshStoreDetails.store_timing.Monday || store.store_timing?.Monday || '09:00-18:00',
-                    Tuesday: freshStoreDetails.store_timing.Tuesday || store.store_timing?.Tuesday || '09:00-18:00',
-                    Wednesday: freshStoreDetails.store_timing.Wednesday || store.store_timing?.Wednesday || '09:00-18:00',
-                    Thursday: freshStoreDetails.store_timing.Thursday || store.store_timing?.Thursday || '09:00-18:00',
-                    Friday: freshStoreDetails.store_timing.Friday || store.store_timing?.Friday || '09:00-18:00',
-                    Saturday: freshStoreDetails.store_timing.Saturday || store.store_timing?.Saturday || '09:00-18:00',
-                    Sunday: freshStoreDetails.store_timing.Sunday || store.store_timing?.Sunday || '10:00-17:00',
-                    Holidays: freshStoreDetails.store_timing.Holidays || store.store_timing?.Holidays || 'Closed',
-                  },
-                  terminals: freshStoreDetails.terminals,
-                  properties: freshStoreDetails.properties,
-                  created_at: freshStoreDetails.created_at,
-                  create_user_id: freshStoreDetails.create_user_id,
-                  updated_at: freshStoreDetails.updated_at,
-                  update_user_id: freshStoreDetails.update_user_id,
-                };
-                
-                // Update the store in the tenants array
-                const updatedTenants = tenants.map(t => {
-                  if (t.id === currentTenant.id) {
-                    return {
-                      ...t,
-                      stores: t.stores.map(s => s.store_id === storeId ? updatedStore : s)
-                    };
-                  }
-                  return t;
-                });
-                
-                // Update the state with fresh store details
-                set({ 
-                  tenants: updatedTenants,
-                  currentStore: updatedStore 
-                });
-                
-                console.log('✅ Store details refreshed successfully after switch');
-              } catch (error) {
-                console.error('❌ Failed to refresh store details after switch:', error);
-                // Don't throw error - the store switch already succeeded with cached data
-                // The UI will still work with the cached store data
-              }
-            } catch (error) {
-              console.error('❌ Error switching store:', error);
-              // Still update local state even if server selection fails
-              set({ currentStore: store });
-              
-              // Use the error handler to show user feedback
-              const { handleError } = useErrorHandler.getState();
-              handleError(error, { 
-                showToast: true,
-                autoClose: 5000 
+              console.log('🔄 Fetching fresh store details after store switch:', { tenantId: currentTenant.id, storeId });
+
+              // Import the store service to fetch store details
+              const { storeServices } = await import('../services/store');
+
+              // Fetch fresh store details from API
+              const freshStoreDetails = await storeServices.store.getStoreDetails(storeId);
+
+              // Transform the API response to match our Store interface
+              const updatedStore: Store = {
+                ...store, // Keep the existing store data as base
+                // Update with fresh data from API
+                status: freshStoreDetails.status === 'suspended' ? 'inactive' : freshStoreDetails.status as 'active' | 'inactive' | 'pending',
+                store_name: freshStoreDetails.store_name,
+                description: freshStoreDetails.description,
+                location_type: freshStoreDetails.location_type,
+                store_type: freshStoreDetails.store_type,
+                address: {
+                  address1: freshStoreDetails.address.address1 || '',
+                  address2: freshStoreDetails.address.address2 || undefined,
+                  address3: freshStoreDetails.address.address3 || undefined,
+                  address4: freshStoreDetails.address.address4 || undefined,
+                  city: freshStoreDetails.address.city || '',
+                  state: freshStoreDetails.address.state || '',
+                  district: freshStoreDetails.address.district || '',
+                  area: freshStoreDetails.address.area || '',
+                  postal_code: freshStoreDetails.address.postal_code || '',
+                  country: freshStoreDetails.address.country || '',
+                  county: freshStoreDetails.address.county || '',
+                },
+                locale: freshStoreDetails.locale || 'en-US',
+                timezone: freshStoreDetails.timezone,
+                currency: freshStoreDetails.currency || 'USD',
+                latitude: freshStoreDetails.latitude,
+                longitude: freshStoreDetails.longitude,
+                telephone1: freshStoreDetails.telephone1,
+                telephone2: freshStoreDetails.telephone2,
+                telephone3: freshStoreDetails.telephone3,
+                telephone4: freshStoreDetails.telephone4,
+                email: freshStoreDetails.email,
+                legal_entity_id: freshStoreDetails.legal_entity_id,
+                legal_entity_name: freshStoreDetails.legal_entity_name,
+                store_timing: freshStoreDetails.store_timing ? {
+                  Monday: freshStoreDetails.store_timing.Monday || store.store_timing?.Monday || '09:00-18:00',
+                  Tuesday: freshStoreDetails.store_timing.Tuesday || store.store_timing?.Tuesday || '09:00-18:00',
+                  Wednesday: freshStoreDetails.store_timing.Wednesday || store.store_timing?.Wednesday || '09:00-18:00',
+                  Thursday: freshStoreDetails.store_timing.Thursday || store.store_timing?.Thursday || '09:00-18:00',
+                  Friday: freshStoreDetails.store_timing.Friday || store.store_timing?.Friday || '09:00-18:00',
+                  Saturday: freshStoreDetails.store_timing.Saturday || store.store_timing?.Saturday || '09:00-18:00',
+                  Sunday: freshStoreDetails.store_timing.Sunday || store.store_timing?.Sunday || '10:00-17:00',
+                  Holidays: freshStoreDetails.store_timing.Holidays || store.store_timing?.Holidays || 'Closed',
+                } : store.store_timing,
+                terminals: freshStoreDetails.terminals,
+                properties: freshStoreDetails.properties,
+                created_at: freshStoreDetails.created_at,
+                create_user_id: freshStoreDetails.create_user_id,
+                updated_at: freshStoreDetails.updated_at,
+                update_user_id: freshStoreDetails.update_user_id,
+              };
+
+              // Update the store in the tenants array
+              const updatedTenants = tenants.map(t => {
+                if (t.id === currentTenant.id) {
+                  return {
+                    ...t,
+                    stores: t.stores.map(s => s.store_id === storeId ? updatedStore : s)
+                  };
+                }
+                return t;
               });
+
+              // Update the state with fresh store details
+              set({
+                tenants: updatedTenants,
+                currentStore: updatedStore
+              });
+
+              // Update formatting service with fresh store data
+              formattingService.setDefaultCurrency(updatedStore.currency || 'USD');
+              formattingService.setDefaultLocale(updatedStore.locale || 'en-US');
+
+              console.log('✅ Store details refreshed successfully after switch');
+            } catch (error) {
+              console.error('❌ Failed to refresh store details after switch:', error);
+              // Don't throw error - the store switch already succeeded with cached data
+              // The UI will still work with the cached store data
             }
           }
         }
@@ -411,7 +394,7 @@ export const useTenantStore = create<TenantState>()(
           console.log('⚠️ fetchTenants already in progress, skipping duplicate call');
           return;
         }
-        
+
         const callId = Math.random().toString(36).substr(2, 9);
         console.log(`🚀 [${callId}] fetchTenants called:`, {
           userId,
@@ -419,50 +402,50 @@ export const useTenantStore = create<TenantState>()(
           timestamp: new Date().toISOString(),
           stackTrace: new Error().stack?.split('\n').slice(1, 5)
         });
-        
+
         isCurrentlyFetching = true;
         set({ isLoading: true, error: null });
-        
+
         try {
           console.log(`🔄 [${callId}] Fetching tenants (without stores) using API service for user:`, userId);
-          
+
           // Use the tenant API service to fetch tenants only (no stores)
           const response = await tenantApiService.getUserTenants(userId);
-          
+
           console.log('📦 Raw API response structure:', response);
           console.log('📦 Response tenants array:', response.tenants);
-          
+
           // Transform API response to store format (tenants without stores initially)
-          const transformedTenants: TenantWithStores[] = response.tenants.map(tenant => 
+          const transformedTenants: TenantWithStores[] = response.tenants.map(tenant =>
             transformApiTenantToTenantWithStores(tenant, [])
           );
-          
+
           console.log(`✅ [${callId}] Successfully fetched and transformed tenants:`, transformedTenants);
-          
+
           // Get current state to preserve selections if needed
           const { currentTenant, currentStore } = get();
-          
-          set({ 
-            tenants: transformedTenants, 
+
+          set({
+            tenants: transformedTenants,
             currentTenant: clearSelections ? null : currentTenant, // Only clear if explicitly requested
             currentStore: clearSelections ? null : currentStore, // Only clear if explicitly requested
-            isLoading: false 
+            isLoading: false
           });
-          
+
           console.log(`🏁 [${callId}] fetchTenants completed successfully`);
         } catch (error) {
           console.error(`❌ [${callId}] Error in fetchTenants:`, error);
-          
+
           // Use the error handler to process the error
           const { handleError } = useErrorHandler.getState();
-          const appError = handleError(error, { 
+          const appError = handleError(error, {
             showToast: true,
-            autoClose: 5000 
+            autoClose: 5000
           });
-          
-          set({ 
+
+          set({
             error: appError.message,
-            isLoading: false 
+            isLoading: false
           });
         } finally {
           isCurrentlyFetching = false;
@@ -471,18 +454,18 @@ export const useTenantStore = create<TenantState>()(
 
       fetchStoresForTenant: async (tenantId) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           console.log('🏪 Fetching stores for tenant:', tenantId);
-          
+
           // Use the tenant API service to fetch stores for the specific tenant
           const response = await tenantApiService.getTenantStores(tenantId);
-          
+
           console.log('📦 Stores API response:', response);
-          
+
           // Transform stores
           const transformedStores = response.stores.map(transformApiStoreToStore);
-          
+
           // Update the specific tenant with its stores
           const { tenants } = get();
           const updatedTenants = tenants.map(tenant => {
@@ -494,42 +477,42 @@ export const useTenantStore = create<TenantState>()(
             }
             return tenant;
           });
-          
+
           console.log('✅ Successfully fetched and added stores to tenant:', tenantId);
-          
-          set({ 
+
+          set({
             tenants: updatedTenants,
-            isLoading: false 
+            isLoading: false
           });
         } catch (error) {
           console.error('❌ Error in fetchStoresForTenant:', error);
-          
+
           // Use the error handler to process the error
           const { handleError } = useErrorHandler.getState();
-          const appError = handleError(error, { 
+          const appError = handleError(error, {
             showToast: true,
-            autoClose: 5000 
+            autoClose: 5000
           });
-          
-          set({ 
+
+          set({
             error: appError.message,
-            isLoading: false 
+            isLoading: false
           });
         }
       },
 
       createStore: async (tenantId, storeData) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           console.log('🏪 Creating store using API service for tenant:', tenantId, storeData);
-          
+
           // Helper function to convert empty strings to null
           const toNullIfEmpty = (value: string | undefined): string | null => {
             if (!value || value.trim() === '') return null;
             return value.trim();
           };
-          
+
           // Transform store data to API format with null for empty strings
           const apiStoreData: Partial<StoreApiResponse> = {
             tenant_id: tenantId, // Add tenant_id to the API data
@@ -548,7 +531,7 @@ export const useTenantStore = create<TenantState>()(
               district: toNullIfEmpty(storeData.address.district),
               area: toNullIfEmpty(storeData.address.area),
               postal_code: toNullIfEmpty(storeData.address.postal_code),
-              country: storeData.address.country?.trim() || 'India',
+              country: storeData.address.country?.trim() || '',
               county: toNullIfEmpty(storeData.address.county),
             } : {
               address1: null,
@@ -560,7 +543,7 @@ export const useTenantStore = create<TenantState>()(
               district: null,
               area: null,
               postal_code: null,
-              country: 'India',
+              country: '',
               county: null,
             },
             locale: storeData.locale || 'en-IN',
@@ -588,10 +571,10 @@ export const useTenantStore = create<TenantState>()(
 
           // Use the tenant API service to create the store
           const apiResponse = await tenantApiService.createStore(apiStoreData);
-          
+
           // Transform API response to store format
           const newStore = transformApiStoreToStore(apiResponse);
-          
+
           console.log('✅ Successfully created store:', newStore);
 
           const { tenants } = get();
@@ -605,16 +588,16 @@ export const useTenantStore = create<TenantState>()(
             return tenant;
           });
 
-          set({ 
+          set({
             tenants: updatedTenants,
             currentStore: newStore,
-            isLoading: false 
+            isLoading: false
           });
         } catch (error) {
           console.error('❌ Error in createStore:', error);
-          set({ 
+          set({
             error: error instanceof Error ? error.message : 'Failed to create store',
-            isLoading: false 
+            isLoading: false
           });
           // Re-throw the error to allow components to handle it
           throw error;
@@ -622,21 +605,31 @@ export const useTenantStore = create<TenantState>()(
       },
 
       clearSelection: () => {
-        set({ 
+        set({
           currentTenant: null,
-          currentStore: null 
+          currentStore: null
         });
       },
 
       clearAllData: () => {
         console.log('🧹 Clearing all tenant store data on logout');
-        set({ 
+
+        // Clear the state
+        set({
           tenants: [],
           currentTenant: null,
           currentStore: null,
           isLoading: false,
           error: null
         });
+
+        // Explicitly clear the persisted data from localStorage
+        try {
+          localStorage.removeItem('tenant-storage');
+          console.log('✅ Cleared tenant-storage from localStorage');
+        } catch (error) {
+          console.error('❌ Failed to clear localStorage:', error);
+        }
       },
 
       setLoading: (loading) => set({ isLoading: loading }),
@@ -650,6 +643,17 @@ export const useTenantStore = create<TenantState>()(
         currentStore: state.currentStore,
         tenants: state.tenants,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Set FormattingService defaults from persisted store on app load
+        if (state?.currentStore) {
+          formattingService.setDefaultCurrency(state.currentStore.currency || 'USD');
+          formattingService.setDefaultLocale(state.currentStore.locale || 'en-US');
+          console.log('🌍 FormattingService defaults restored from persisted store:', {
+            currency: state.currentStore.currency,
+            locale: state.currentStore.locale,
+          });
+        }
+      },
     }
   )
 );

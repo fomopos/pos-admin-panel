@@ -74,21 +74,180 @@ const StoreSettingsPage: React.FC = () => {
       try {
         const storeId = currentStore?.store_id || '*';
         
-        // Fetch store details only
-        let storeDetails;
-        try {
-          storeDetails = await storeServices.store.getStoreDetails(storeId);
-        } catch (apiError) {
-          console.warn('Failed to fetch real store details, using mock data:', apiError);
-          storeDetails = await storeServices.store.getMockStoreDetails();
-        }
+        // Fetch store details
+        const storeDetails = await storeServices.store.getStoreDetails(storeId);
         
-        // Create a mock settings object since we're removing the settings API call
-        const mockSettings = await storeServices.settings.getMockStoreSettings();
+        // Create default settings object (settings API doesn't exist yet)
+        const defaultSettings: StoreSettings = {
+          tenant_id: currentTenant?.id || '',
+          store_id: storeId,
+          store_information: storeServices.store.convertToStoreInformation(storeDetails),
+          regional_settings: {
+            currency: storeDetails.currency || 'USD',
+            currency_symbol: '$',
+            currency_position: 'before',
+            decimal_places: 2,
+            thousands_separator: ',',
+            decimal_separator: '.',
+            timezone: storeDetails.timezone || 'America/New_York',
+            date_format: 'MM/DD/YYYY',
+            time_format: '12h',
+            first_day_of_week: 0,
+            tax_inclusive_pricing: false
+          },
+          receipt_settings: {
+            header_text: '',
+            footer_text: '',
+            show_logo: false,
+            show_barcode: false,
+            show_qr_code: false,
+            paper_size: 'thermal_80mm',
+            auto_print: false,
+            print_copies: 1,
+            show_customer_info: false,
+            show_tax_breakdown: true,
+            show_payment_details: true,
+            custom_fields: []
+          },
+          hardware_config: {
+            barcode_scanner: {
+              enabled: false
+            },
+            thermal_printer: {
+              enabled: false,
+              connection_type: 'usb'
+            },
+            cash_drawer: {
+              enabled: false,
+              auto_open: false,
+              trigger_event: 'sale_complete'
+            },
+            customer_display: {
+              enabled: false,
+              display_type: 'lcd',
+              connection_type: 'usb'
+            },
+            scale: {
+              enabled: false,
+              connection_type: 'usb'
+            }
+          },
+          operational_settings: {
+            inventory_alerts: {
+              low_stock_threshold: 10,
+              out_of_stock_notifications: true,
+              negative_inventory_allowed: false,
+              auto_reorder: false
+            },
+            return_policy: {
+              returns_allowed: true,
+              return_period_days: 30,
+              require_receipt: true,
+              partial_returns_allowed: true,
+              exchange_allowed: true
+            },
+            discount_settings: {
+              max_discount_percentage: 50,
+              manager_approval_required: false,
+              approval_threshold_percentage: 20,
+              employee_discount_allowed: false
+            },
+            transaction_settings: {
+              void_requires_approval: true,
+              refund_requires_approval: true,
+              price_override_allowed: false
+            }
+          },
+          user_management: {
+            roles: [],
+            default_role: 'cashier',
+            password_policy: {
+              min_length: 8,
+              require_uppercase: true,
+              require_lowercase: true,
+              require_numbers: true,
+              require_symbols: false
+            },
+            session_settings: {
+              session_timeout_minutes: 30,
+              max_concurrent_sessions: 1,
+              auto_logout_on_idle: true
+            }
+          },
+          integration_settings: {
+            payment_processors: [],
+            accounting_software: {
+              enabled: false,
+              sync_frequency: 'daily',
+              auto_sync: false
+            },
+            ecommerce_platforms: [],
+            email_service: {
+              enabled: false
+            }
+          },
+          api_information: {
+            api_version: 'v0',
+            base_url: '',
+            endpoints: {
+              health_check: '/health',
+              products: '/products',
+              orders: '/orders',
+              customers: '/customers',
+              inventory: '/inventory',
+              reports: '/reports',
+              settings: '/settings'
+            },
+            authentication: {
+              method: 'bearer_token',
+              refresh_token_enabled: true
+            },
+            rate_limiting: {
+              enabled: true,
+              requests_per_minute: 100,
+              burst_limit: 20
+            },
+            webhooks: {
+              enabled: false,
+              supported_events: []
+            },
+            documentation: {}
+          },
+          security_settings: {
+            data_backup: {
+              enabled: false,
+              backup_frequency: 'daily',
+              backup_time: '02:00',
+              retention_days: 30,
+              cloud_backup_enabled: false
+            },
+            audit_logs: {
+              enabled: true,
+              log_level: 'basic',
+              retention_days: 90,
+              events_to_log: ['login', 'logout', 'sale', 'refund']
+            },
+            compliance: {
+              pci_compliance_enabled: false,
+              gdpr_compliance_enabled: false,
+              data_encryption_enabled: true,
+              access_logging_enabled: true
+            },
+            security_policies: {
+              failed_login_attempts_limit: 5,
+              account_lockout_duration_minutes: 15,
+              two_factor_authentication_required: false,
+              ip_whitelist_enabled: false
+            }
+          },
+          created_at: storeDetails.created_at || new Date().toISOString(),
+          updated_at: storeDetails.updated_at || new Date().toISOString(),
+          created_by: storeDetails.create_user_id || ''
+        };
         
         setState(prev => ({ 
           ...prev, 
-          settings: mockSettings, 
+          settings: defaultSettings, 
           storeDetails, 
           isLoading: false 
         }));
@@ -143,12 +302,30 @@ const StoreSettingsPage: React.FC = () => {
           }
           break;
         case 'receipt':
-          const receiptSettings = await storeServices.settings.updateReceiptSettings(storeId, data);
-          setState(prev => ({ ...prev, settings: receiptSettings, hasUnsavedChanges: false }));
+          // TODO: Receipt settings API not yet implemented
+          // For now, just update local state
+          console.log('Receipt settings update - API not yet implemented:', data);
+          setState(prev => ({
+            ...prev,
+            settings: prev.settings ? {
+              ...prev.settings,
+              receipt_settings: { ...prev.settings.receipt_settings, ...data.receipt_settings }
+            } : null,
+            hasUnsavedChanges: false
+          }));
           break;
         case 'hardware':
-          const hardwareSettings = await storeServices.settings.updateHardwareConfig(storeId, data);
-          setState(prev => ({ ...prev, settings: hardwareSettings, hasUnsavedChanges: false }));
+          // TODO: Hardware settings API not yet implemented
+          // For now, just update local state
+          console.log('Hardware settings update - API not yet implemented:', data);
+          setState(prev => ({
+            ...prev,
+            settings: prev.settings ? {
+              ...prev.settings,
+              hardware_config: { ...prev.settings.hardware_config, ...data.hardware_config }
+            } : null,
+            hasUnsavedChanges: false
+          }));
           break;
         default:
           throw new Error('Invalid settings section');
@@ -357,7 +534,7 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
     setFormData((prev: any) => ({
       ...prev,
       store_timing: {
-        ...prev.store_timing,
+        ...(prev.store_timing || {}),
         [day]: value
       }
     }));
@@ -710,8 +887,8 @@ const StoreInformationTab: React.FC<TabProps> = ({ settings, storeDetails, onSav
               <div className="flex-1">
                 <InputTextField
                   label=""
-                  value={formData.store_timing?.[day.toLowerCase()] || ''}
-                  onChange={(value) => handleTimingChange(day.toLowerCase(), value)}
+                  value={formData.store_timing?.[day] || ''}
+                  onChange={(value) => handleTimingChange(day, value)}
                   placeholder="9:00 AM - 9:00 PM"
                 />
               </div>

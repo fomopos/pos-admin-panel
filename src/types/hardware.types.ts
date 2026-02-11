@@ -28,6 +28,18 @@ export type DeviceType =
 export type ConnectionType = 'usb' | 'network' | 'bluetooth';
 
 /**
+ * DeviceRole - Functional role of the hardware device
+ * Used to categorize devices by their purpose in the POS system
+ */
+export type DeviceRole = 
+  | 'main_printer'
+  | 'backup_printer'
+  | 'kitchen_printer'
+  | 'cashdrawer'
+  | 'scanner'
+  | 'kds';
+
+/**
  * PrinterMode - Printer operation modes
  */
 export type PrinterMode = 'thermal' | 'label' | 'document';
@@ -204,6 +216,9 @@ export interface HardwareDevice {
   /** Device type: printer, scanner, cash_drawer, scale, payment_terminal, display */
   type: DeviceType;
   
+  /** Device role: main_printer, backup_printer, kitchen_printer, cashdrawer, scanner, kds */
+  role?: DeviceRole;
+  
   /** Connection method: usb, network, bluetooth */
   connection_type: ConnectionType;
   
@@ -264,6 +279,7 @@ export interface CreateHardwareDTO {
   id: string;
   name?: string;
   type: DeviceType;
+  role?: DeviceRole;
   connection_type: ConnectionType;
   terminal_id?: string;
   enabled?: boolean;
@@ -283,6 +299,7 @@ export interface CreateHardwareDTO {
  */
 export interface UpdateHardwareDTO {
   name?: string;
+  role?: DeviceRole | null;
   enabled?: boolean;
   connection_type?: ConnectionType;
   network_config?: NetworkConfig | null;

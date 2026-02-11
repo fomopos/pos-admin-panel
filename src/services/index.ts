@@ -11,4 +11,4 @@ export { taxServices } from './tax';
 export { paymentServices } from './payment';
 export { userService } from './user';
 export { productService } from './product';
-export { tenantApiService, tenantSelectionService } from './tenant';
+export { tenantApiService } from './tenant';

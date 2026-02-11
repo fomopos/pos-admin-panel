@@ -22,7 +22,7 @@ interface ExampleProduct {
 }
 
 const AdvancedSearchFilterDemo: React.FC = () => {
-  // Mock data
+  // Demo data for component showcase
   const allProducts: ExampleProduct[] = useMemo(() => [
     { id: '1', name: 'Laptop Pro', category: 'Electronics', status: 'active', price: 1299, stock: 15, createdAt: '2024-01-15' },
     { id: '2', name: 'Wireless Mouse', category: 'Electronics', status: 'active', price: 29, stock: 50, createdAt: '2024-02-20' },

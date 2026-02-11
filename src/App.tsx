@@ -10,6 +10,7 @@ import SignUp from './pages/auth/SignUp';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
 import ResetPassword from './pages/auth/ResetPassword';
+import OAuthCallback from './pages/auth/OAuthCallback';
 import TenantStoreSelection from './pages/auth/TenantStoreSelection';
 import CreateTenantPage from './pages/auth/CreateTenantPage';
 import Dashboard from './pages/Dashboard';
@@ -51,6 +52,18 @@ import { Tables, TableEditPage, TableDetailPage, ZoneEditPage, ReservationEditPa
 import EmployeeShiftManagement from './pages/EmployeeShiftManagement';
 import ReceiptBuilder from './pages/ReceiptBuilder';
 import TenantAccessDebug from './pages/TenantAccessDebug';
+import TenantOverviewPage from './pages/tenant/TenantOverviewPage';
+import TenantStoresPage from './pages/tenant/TenantStoresPage';
+import TenantUsersPage from './pages/tenant/TenantUsersPage';
+import TenantBillingPage from './pages/tenant/TenantBillingPage';
+import PlanSelectionPage from './pages/tenant/PlanSelectionPage';
+import InvoiceListPage from './pages/tenant/InvoiceListPage';
+import InvoiceDetailPage from './pages/tenant/InvoiceDetailPage';
+import PaymentMethodsPage from './pages/tenant/PaymentMethodsPage';
+import TenantAuditLogPage from './pages/tenant/TenantAuditLogPage';
+import TenantSettingsPage from './pages/tenant/TenantSettingsPage';
+import BillingSuccessPage from './pages/billing/BillingSuccessPage';
+import BillingCancelPage from './pages/billing/BillingCancelPage';
 
 // Error handling imports
 import ErrorBoundary from './components/ErrorBoundary';
@@ -124,6 +137,7 @@ function App() {
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
             <Route path="/auth/verify-email" element={<VerifyEmail />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/callback" element={<OAuthCallback />} />
             
             {/* i18n Test Page - Public for testing translations */}
             <Route path="/i18n-test" element={<I18nTestPage />} />
@@ -154,6 +168,24 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateTenantPage />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Billing callback pages - Protected, outside dashboard layout */}
+            <Route 
+              path="/billing/success" 
+              element={
+                <ProtectedRoute>
+                  <BillingSuccessPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/billing/cancel" 
+              element={
+                <ProtectedRoute>
+                  <BillingCancelPage />
                 </ProtectedRoute>
               } 
             />
@@ -223,6 +255,17 @@ function App() {
               <Route path="payment-analytics" element={<PaymentAnalyticsDashboard />} />
               <Route path="developer/receipt-builder" element={<ReceiptBuilder />} />
               <Route path="developer/translations" element={<TranslationManagement />} />
+              {/* Tenant-mode routes */}
+              <Route path="tenant/overview" element={<TenantOverviewPage />} />
+              <Route path="tenant/stores" element={<TenantStoresPage />} />
+              <Route path="tenant/users" element={<TenantUsersPage />} />
+              <Route path="tenant/billing" element={<TenantBillingPage />} />
+              <Route path="tenant/billing/change-plan" element={<PlanSelectionPage />} />
+              <Route path="tenant/billing/invoices" element={<InvoiceListPage />} />
+              <Route path="tenant/billing/invoices/:invoiceId" element={<InvoiceDetailPage />} />
+              <Route path="tenant/billing/payment-methods" element={<PaymentMethodsPage />} />
+              <Route path="tenant/audit-log" element={<TenantAuditLogPage />} />
+              <Route path="tenant/settings" element={<TenantSettingsPage />} />
               <Route path="debug/tenant-access" element={<TenantAccessDebug />} />
             </Route>
 

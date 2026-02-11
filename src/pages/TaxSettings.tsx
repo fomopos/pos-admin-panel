@@ -62,6 +62,8 @@ const TaxSettings: React.FC = () => {
       console.log(`[API Call 1] Starting tax configuration fetch for tenant: ${currentTenant.id}`);
       
       try {
+        //log the currentStore
+        console.log('Current Store:', currentStore);
         // Use the real tax configuration service with tenant ID, store ID, and country
         const storeId = currentStore?.store_id || "*";
         const country = currentStore?.address?.country;
@@ -103,7 +105,7 @@ const TaxSettings: React.FC = () => {
     };
 
     fetchTaxConfig();
-  }, [currentTenant]);
+  }, [currentTenant, currentStore]); // Add currentStore as dependency
 
   // Check for changes
   useEffect(() => {

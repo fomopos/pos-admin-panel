@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  ArrowLeftIcon, 
+import {
+  ArrowLeftIcon,
   CalendarIcon,
   CogIcon,
   SparklesIcon,
@@ -101,10 +101,10 @@ const DiscountEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentTenant, currentStore } = useTenantStore();
-  
+
   const isEditing = Boolean(id);
   const [originalDiscount, setOriginalDiscount] = useState<Discount | null>(null);
-  
+
   const [formData, setFormData] = useState<CreateDiscountRequest>({
     discount_code: '',
     description: '',
@@ -131,7 +131,7 @@ const DiscountEditPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const [showTemplates, setShowTemplates] = useState(!isEditing);
 
   // Error handling hooks
@@ -170,12 +170,12 @@ const DiscountEditPage: React.FC = () => {
   useEffect(() => {
     if (!isEditing) {
       // For new discounts, check if any required fields are filled
-      const hasData = formData.discount_code.trim() !== '' || 
-                     formData.description.trim() !== '';
+      const hasData = formData.discount_code.trim() !== '' ||
+        formData.description.trim() !== '';
       setHasChanges(hasData);
     } else if (originalDiscount) {
       // For editing, check if any values have changed from original
-      const hasChanged = 
+      const hasChanged =
         formData.discount_code !== originalDiscount.discount_code ||
         formData.description !== originalDiscount.description ||
         formData.typcode !== originalDiscount.typcode ||
@@ -195,7 +195,7 @@ const DiscountEditPage: React.FC = () => {
         formData.exclusive_discount_flag !== originalDiscount.exclusive_discount_flag ||
         formData.serialized_discount_flag !== originalDiscount.serialized_discount_flag ||
         formData.disallow_change_flag !== originalDiscount.disallow_change_flag;
-      
+
       setHasChanges(hasChanged);
     }
   }, [formData, originalDiscount, isEditing]);
@@ -214,7 +214,7 @@ const DiscountEditPage: React.FC = () => {
         id
       );
       setOriginalDiscount(discountData);
-      
+
       // Map discount data to form data
       setFormData({
         discount_code: discountData.discount_code,
@@ -250,7 +250,7 @@ const DiscountEditPage: React.FC = () => {
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => {
@@ -265,7 +265,7 @@ const DiscountEditPage: React.FC = () => {
     const now = new Date();
     const startDate = new Date(now.getTime());
     const endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-    
+
     setFormData(prev => ({
       ...prev,
       discount_code: template.name.toUpperCase().replace(/\s+/g, ''),
@@ -325,7 +325,6 @@ const DiscountEditPage: React.FC = () => {
     // Date validations
     const startDate = new Date(formData.effective_datetime);
     const endDate = new Date(formData.expr_datetime);
-    const now = new Date();
 
     if (isNaN(startDate.getTime())) {
       newErrors.effective_datetime = 'Start date is invalid';
@@ -337,10 +336,6 @@ const DiscountEditPage: React.FC = () => {
 
     if (startDate >= endDate) {
       newErrors.expr_datetime = 'End date must be after start date';
-    }
-
-    if (!isEditing && startDate < now) {
-      newErrors.effective_datetime = 'Start date cannot be in the past';
     }
 
     // Business logic validations
@@ -369,9 +364,9 @@ const DiscountEditPage: React.FC = () => {
     }
 
     // Cross-field validations
-    if (formData.min_eligible_price && formData.max_discount && 
-        formData.calculation_mthd_code === 'AMOUNT' && 
-        formData.max_discount > formData.min_eligible_price) {
+    if (formData.min_eligible_price && formData.max_discount &&
+      formData.calculation_mthd_code === 'AMOUNT' &&
+      formData.max_discount > formData.min_eligible_price) {
       newErrors.max_discount = 'Maximum discount cannot exceed minimum eligible price';
     }
 
@@ -398,8 +393,8 @@ const DiscountEditPage: React.FC = () => {
       originalDiscount.discount_code,
       async () => {
         await discountApiService.deleteDiscount(
-          originalDiscount.tenant_id, 
-          originalDiscount.store_id, 
+          originalDiscount.tenant_id,
+          originalDiscount.store_id,
           originalDiscount.discount_id
         );
         navigate('/discounts');
@@ -409,11 +404,11 @@ const DiscountEditPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     if (!currentTenant?.id || !currentStore?.store_id) {
       showError('Missing tenant or store information');
       return;
@@ -422,7 +417,7 @@ const DiscountEditPage: React.FC = () => {
     try {
       setIsSaving(true);
       setErrors({});
-      
+
       // Format datetime strings for API
       const submitData = {
         ...formData,
@@ -451,10 +446,10 @@ const DiscountEditPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Failed to save discount:', error);
-      
+
       // Use error framework for API error display
       showError(error?.message || 'Failed to save discount. Please try again.');
-      
+
       // Also set local error for backward compatibility
       setErrors({ submit: error.message || 'Failed to save discount. Please try again.' });
     } finally {
@@ -496,7 +491,7 @@ const DiscountEditPage: React.FC = () => {
             <ArrowLeftIcon className="h-4 w-4" />
             <span>Back to Discounts</span>
           </Button>
-          
+
           {hasChanges && (
             <Button
               onClick={saveAllChanges}
@@ -516,7 +511,7 @@ const DiscountEditPage: React.FC = () => {
               )}
             </Button>
           )}
-          
+
           {isEditing && (
             <Button
               onClick={handleDelete}
@@ -701,9 +696,8 @@ const DiscountEditPage: React.FC = () => {
                   type="datetime-local"
                   value={formData.effective_datetime}
                   onChange={(e) => handleInputChange('effective_datetime', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.effective_datetime ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.effective_datetime ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   required
                 />
                 {errors.effective_datetime && (
@@ -719,9 +713,8 @@ const DiscountEditPage: React.FC = () => {
                   type="datetime-local"
                   value={formData.expr_datetime}
                   onChange={(e) => handleInputChange('expr_datetime', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.expr_datetime ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.expr_datetime ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   required
                 />
                 {errors.expr_datetime && (

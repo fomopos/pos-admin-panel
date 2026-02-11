@@ -14,14 +14,6 @@ import type {
   UserServiceError
 } from '../types/user.types';
 
-// Import mock data for development
-import { 
-  mockUserStats, 
-  mockUserActivities, 
-  mockTimeTracking,
-  createMockUsersResponse 
-} from './mockData';
-
 export class UserService {
   private readonly basePath = '/users';
 
@@ -33,17 +25,8 @@ export class UserService {
       const response = await apiClient.get<UsersResponse>(this.basePath, params);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      return createMockUsersResponse(
-        params.page || 1,
-        params.limit || 20,
-        {
-          search: params.search,
-          status: params.status,
-          department: params.department
-        }
-      );
+      console.error('Failed to fetch users:', error);
+      throw this.handleError(error, 'Failed to fetch users');
     }
   }
 
@@ -55,14 +38,8 @@ export class UserService {
       const response = await apiClient.get<StoreUser>(`${this.basePath}/${userId}`);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      const mockResponse = createMockUsersResponse(1, 50);
-      const user = mockResponse.users.find(u => u.user_id === userId);
-      if (!user) {
-        throw this.handleError(error, `User ${userId} not found`);
-      }
-      return user;
+      console.error('Failed to fetch user:', error);
+      throw this.handleError(error, `User ${userId} not found`);
     }
   }
 
@@ -75,33 +52,8 @@ export class UserService {
       const response = await apiClient.post<StoreUser>(this.basePath, data);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development - create a mock user
-      const newUser: StoreUser = {
-        user_id: `user-${Date.now()}`,
-        store_id: data.store_id,
-        tenant_id: data.store_id,
-        email: data.email,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        phone: data.phone,
-        role: data.role,
-        role_name: data.role_name,
-        permissions: data.permissions,
-        status: 'active',
-        employee_id: data.employee_id,
-        department: data.department,
-        hire_date: data.hire_date || new Date().toISOString(),
-        login_count: 0,
-        two_factor_enabled: false,
-        session_active: false,
-        access_schedule: data.access_schedule,
-        pin_code: data.pin_code,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        created_by: 'system'
-      };
-      return newUser;
+      console.error('Failed to create user:', error);
+      throw this.handleError(error, 'Failed to create user');
     }
   }
 
@@ -114,22 +66,8 @@ export class UserService {
       const response = await apiClient.put<StoreUser>(`${this.basePath}/${userId}`, data);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development - simulate an updated user
-      const mockResponse = createMockUsersResponse(1, 50);
-      const existingUser = mockResponse.users.find(u => u.user_id === userId);
-      if (!existingUser) {
-        throw this.handleError(error, `User ${userId} not found`);
-      }
-      
-      // Create updated user object
-      const updatedUser: StoreUser = {
-        ...existingUser,
-        ...data,
-        updated_at: new Date().toISOString(),
-        updated_by: 'system'
-      };
-      return updatedUser;
+      console.error('Failed to update user:', error);
+      throw this.handleError(error, `Failed to update user ${userId}`);
     }
   }
 
@@ -184,15 +122,8 @@ export class UserService {
       const response = await apiClient.get<UserActivityResponse>(`${this.basePath}/${userId}/activity`, params);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      const filteredActivities = mockUserActivities.filter(activity => activity.user_id === userId);
-      return {
-        activities: filteredActivities,
-        total: filteredActivities.length,
-        page: params.page || 1,
-        limit: params.limit || 50
-      };
+      console.error('Failed to fetch user activity:', error);
+      throw this.handleError(error, `Failed to fetch activity for user ${userId}`);
     }
   }
 
@@ -231,9 +162,8 @@ export class UserService {
       const response = await apiClient.get<UserStats>(endpoint);
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      return mockUserStats;
+      console.error('Failed to fetch user stats:', error);
+      throw this.handleError(error, 'Failed to fetch user statistics');
     }
   }
 
@@ -293,13 +223,8 @@ export class UserService {
       );
       return response.data;
     } catch (error) {
-      console.warn('API call failed, using mock data for development:', error);
-      // Fallback to mock data for development
-      const filteredRecords = mockTimeTracking.filter(record => record.user_id === userId);
-      return {
-        records: filteredRecords,
-        total: filteredRecords.length
-      };
+      console.error('Failed to fetch time tracking:', error);
+      throw this.handleError(error, `Failed to fetch time tracking for user ${userId}`);
     }
   }
 

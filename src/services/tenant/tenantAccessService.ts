@@ -60,7 +60,7 @@ class TenantAccessService {
       
       return response.data;
     } catch (error) {
-      console.error('❌ Error fetching tenant access:', error);
+      console.log('❌ Error fetching tenant access:', error);
       throw error;
     }
   }
@@ -89,11 +89,19 @@ class TenantAccessService {
       
       return hasSuperAdminRole && hasNoTenantAccess;
     } catch (error: any) {
-      console.error('❌ Error checking tenant creation eligibility:', error);
+      console.log('❌ Error checking tenant creation eligibility:', error);
       
-      // If the API returns 404 or the user has no tenant access, 
-      // we might want to offer tenant creation
-      if (error?.response?.status === 404) {
+      // Handle ApiError thrown by apiClient
+      // ApiError has code, slug, message directly on the error object
+      if (error?.code === 4000 || 
+          error?.message === "No Tenant Found For the User." ||
+          error?.message === "No TenantAccess Found.") {
+        console.log('🏢 User has no tenant access, offering tenant creation');
+        return true;
+      }
+      
+      // Also handle HTTP 404 status code
+      if (error?.code === 404) {
         return true;
       }
       
