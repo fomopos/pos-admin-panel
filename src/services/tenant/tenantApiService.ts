@@ -26,6 +26,9 @@ export interface StoreApiResponse {
   store_id: string | null;
   status: 'active' | 'inactive' | 'pending';
   billing_plan?: 'free' | 'starter' | 'pro';
+  pending_plan?: 'free' | 'starter' | 'pro' | null;
+  downgrade_effective_at?: string | null;
+  plan_activated_at?: string | null;
   store_name: string;
   description: string | null;
   location_type: string;

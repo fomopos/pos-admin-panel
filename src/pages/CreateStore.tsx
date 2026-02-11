@@ -14,7 +14,7 @@ import {
 import { Button, PageHeader, EnhancedTabs, InputTextField, InputTextArea, DropdownSearch, Widget } from '../components/ui';
 import type { DropdownSearchOption } from '../components/ui/DropdownSearch';
 import { useTenantStore } from '../tenants/tenantStore';
-import { storeBillingService, PLAN_PRICES, PLAN_LABELS, PLAN_DESCRIPTIONS } from '../services/billing/storeBillingService';
+import { storeBillingService, PLAN_PRICES, PLAN_LABELS, PLAN_DESCRIPTIONS, PLAN_CURRENCY } from '../services/billing/storeBillingService';
 import type { BillingPlan } from '../services/billing/storeBillingService';
 import { 
   COUNTRIES, 
@@ -675,7 +675,7 @@ const CreateStore: React.FC<CreateStoreProps> = ({ onBack, onSave }) => {
                   </div>
                   <p className="text-xs text-gray-500 mb-2">{PLAN_DESCRIPTIONS[plan]}</p>
                   <p className={`text-lg font-bold ${isSelected ? 'text-blue-600' : 'text-gray-900'}`}>
-                    {PLAN_PRICES[plan] === 0 ? 'Free' : `$${PLAN_PRICES[plan]}/mo`}
+                    {PLAN_PRICES[plan] === 0 ? 'Free' : `${PLAN_CURRENCY}${PLAN_PRICES[plan]}/mo`}
                   </p>
                   {plan !== 'free' && (
                     <p className="text-xs text-gray-400 mt-1">per store / month</p>

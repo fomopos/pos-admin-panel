@@ -4,3 +4,4 @@
 export { default as StoreBillingBadge } from './StoreBillingBadge';
 export { default as BillingSummary } from './BillingSummary';
 export { default as ChangePlanModal } from './ChangePlanModal';
+export { default as DowngradeBanner } from './DowngradeBanner';

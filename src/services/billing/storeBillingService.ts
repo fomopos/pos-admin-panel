@@ -22,6 +22,24 @@ import type { StoreApiResponse } from '../tenant/tenantApiService';
 
 export type BillingPlan = 'free' | 'starter' | 'pro';
 
+/** Plan rank for determining upgrade vs downgrade direction */
+export const PLAN_RANK: Record<BillingPlan, number> = {
+  free: 0,
+  starter: 1,
+  pro: 2,
+};
+
+/** Response shape from PUT /v0/store/:storeId/plan (per BILLING_FRONTEND_GUIDE.md) */
+export interface ChangeStorePlanResponse {
+  store: StoreApiResponse;
+  checkout_required: boolean;
+  checkout_url?: string;
+  checkout_session_id?: string;
+  pending_plan?: BillingPlan | null;
+  downgrade_effective_at?: string | null;
+  downgrade_scheduled: boolean;
+}
+
 /** Response when checkout is required (HTTP 402) */
 export interface CheckoutRequiredResponse {
   store: StoreApiResponse;
@@ -30,11 +48,14 @@ export interface CheckoutRequiredResponse {
   checkout_session_id?: string;
 }
 
-/** Result of store creation or plan change */
+/** Result of store creation or plan change — enriched for UI consumption */
 export interface StoreBillingResult {
   store: StoreApiResponse;
   checkoutRequired: boolean;
   checkoutUrl?: string;
+  downgradeScheduled: boolean;
+  pendingPlan?: BillingPlan | null;
+  downgradeEffectiveAt?: string | null;
 }
 
 /** Response from POST /v0/billing/checkout-session */
@@ -47,8 +68,8 @@ export interface CheckoutSessionResponse {
 
 export const PLAN_PRICES: Record<BillingPlan, number> = {
   free: 0,
-  starter: 29,
-  pro: 79,
+  starter: 15,
+  pro: 25,
 };
 
 export const PLAN_LABELS: Record<BillingPlan, string> = {
@@ -62,6 +83,8 @@ export const PLAN_DESCRIPTIONS: Record<BillingPlan, string> = {
   starter: 'Standard POS features for small businesses.',
   pro: 'Advanced features, analytics, multi-terminal support.',
 };
+
+export const PLAN_CURRENCY = '€';
 
 // ─── Helper: build authenticated headers ─────────────────────────────────────
 
@@ -115,16 +138,25 @@ class StoreBillingService {
     });
 
     if (response.status === 200) {
-      const store: StoreApiResponse = await response.json();
-      return { store, checkoutRequired: false };
+      const data: ChangeStorePlanResponse = await response.json();
+      return {
+        store: data.store,
+        checkoutRequired: false,
+        downgradeScheduled: data.downgrade_scheduled,
+        pendingPlan: data.pending_plan || null,
+        downgradeEffectiveAt: data.downgrade_effective_at || null,
+      };
     }
 
     if (response.status === 402) {
-      const data: CheckoutRequiredResponse = await response.json();
+      const data: ChangeStorePlanResponse = await response.json();
       return {
         store: data.store,
         checkoutRequired: true,
         checkoutUrl: data.checkout_url,
+        downgradeScheduled: false,
+        pendingPlan: null,
+        downgradeEffectiveAt: null,
       };
     }
 
@@ -224,7 +256,7 @@ class StoreBillingService {
 
     if (response.status === 201) {
       const store: StoreApiResponse = await response.json();
-      return { store, checkoutRequired: false };
+      return { store, checkoutRequired: false, downgradeScheduled: false };
     }
 
     if (response.status === 402) {
@@ -233,6 +265,7 @@ class StoreBillingService {
         store: data.store,
         checkoutRequired: true,
         checkoutUrl: data.checkout_url,
+        downgradeScheduled: false,
       };
     }
 
@@ -275,8 +308,20 @@ class StoreBillingService {
   /**
    * Format a dollar amount for display.
    */
-  formatAmount(cents: number): string {
-    return `$${cents.toFixed(0)}`;
+  formatAmount(amount: number): string {
+    return `${PLAN_CURRENCY}${amount.toFixed(0)}`;
+  }
+
+  /**
+   * Check if a plan change is an upgrade, downgrade, or same.
+   */
+  getPlanChangeDirection(
+    currentPlan: BillingPlan,
+    targetPlan: BillingPlan
+  ): 'upgrade' | 'downgrade' | 'same' {
+    if (PLAN_RANK[targetPlan] > PLAN_RANK[currentPlan]) return 'upgrade';
+    if (PLAN_RANK[targetPlan] < PLAN_RANK[currentPlan]) return 'downgrade';
+    return 'same';
   }
 }
 

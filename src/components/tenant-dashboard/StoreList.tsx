@@ -23,7 +23,7 @@ import {
   GlobeAltIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { StoreBillingBadge, BillingSummary, ChangePlanModal } from '../billing';
+import { StoreBillingBadge, BillingSummary, ChangePlanModal, DowngradeBanner } from '../billing';
 
 const storeStatusConfig: Record<string, { color: 'green' | 'gray' | 'yellow'; label: string }> = {
   active: { color: 'green', label: 'Active' },
@@ -257,6 +257,16 @@ const StoreList: React.FC = () => {
                         <h4 className="text-sm font-semibold text-gray-900 truncate">{store.store_name}</h4>
                         <Badge color={status.color} size="sm">{status.label}</Badge>
                         <StoreBillingBadge plan={store.billing_plan} />
+                        {store.pending_plan && store.downgrade_effective_at && (
+                          <DowngradeBanner
+                            storeId={store.store_id}
+                            currentPlan={store.billing_plan || 'free'}
+                            pendingPlan={store.pending_plan}
+                            downgradeEffectiveAt={store.downgrade_effective_at}
+                            onDowngradeCancelled={handlePlanChanged}
+                            compact
+                          />
+                        )}
                       </div>
                       <p className="text-xs text-gray-400 font-mono mt-0.5">{store.store_id}</p>
                       <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
@@ -341,6 +351,8 @@ const StoreList: React.FC = () => {
           storeId={changePlanStore.store_id}
           storeName={changePlanStore.store_name}
           currentPlan={changePlanStore.billing_plan || 'free'}
+          pendingPlan={changePlanStore.pending_plan}
+          downgradeEffectiveAt={changePlanStore.downgrade_effective_at}
           onPlanChanged={handlePlanChanged}
         />
       )}

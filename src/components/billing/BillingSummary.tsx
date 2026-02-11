@@ -2,10 +2,10 @@
  * BillingSummary
  *
  * Display-only widget showing seat-based billing breakdown.
- * Per BILLING_API_DOCUMENTATION.md:
- *   - Starter: $29/store/month
- *   - Pro: $79/store/month
- *   - Free: $0/store/month
+ * Per BILLING_FRONTEND_GUIDE.md:
+ *   - Starter: €15/store/month
+ *   - Pro: €25/store/month
+ *   - Free: €0/store/month
  *
  * ⚠️ This component ONLY computes display values.
  *    It does NOT enforce billing logic.
@@ -16,7 +16,7 @@ import React from 'react';
 import { Widget } from '../ui';
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
 import type { Store, BillingPlan } from '../../tenants/tenantStore';
-import { PLAN_PRICES, PLAN_LABELS } from '../../services/billing/storeBillingService';
+import { PLAN_PRICES, PLAN_LABELS, PLAN_CURRENCY } from '../../services/billing/storeBillingService';
 
 interface BillingSummaryProps {
   stores: Store[];
@@ -76,7 +76,7 @@ const BillingSummary: React.FC<BillingSummaryProps> = ({ stores }) => {
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Estimated Monthly Total</span>
             <span className="text-xl font-bold text-blue-600">
-              ${estimatedMonthly.toFixed(0)}/mo
+              {PLAN_CURRENCY}{estimatedMonthly.toFixed(0)}/mo
             </span>
           </div>
         </div>
@@ -106,11 +106,11 @@ const BillingRow: React.FC<BillingRowProps> = ({ plan, count, price, total }) =>
     <div className="flex items-center gap-3">
       <span className="text-sm font-medium text-gray-900">{plan}</span>
       <span className="text-xs text-gray-500">
-        {count} store{count !== 1 ? 's' : ''} × ${price}/mo
+        {count} store{count !== 1 ? 's' : ''} × {PLAN_CURRENCY}{price}/mo
       </span>
     </div>
     <span className="text-sm font-semibold text-gray-900">
-      ${total.toFixed(0)}/mo
+      {PLAN_CURRENCY}{total.toFixed(0)}/mo
     </span>
   </div>
 );

@@ -69,6 +69,9 @@ export interface Store {
   store_id: string;
   status: 'active' | 'inactive' | 'pending'; // Updated to match API response
   billing_plan?: BillingPlan; // Store billing plan (free/starter/pro)
+  pending_plan?: BillingPlan | null; // Scheduled downgrade target plan
+  downgrade_effective_at?: string | null; // ISO 8601 date when downgrade applies
+  plan_activated_at?: string | null; // When current billing_plan was activated
   store_name: string;
   description?: string;
   location_type: string;
@@ -107,6 +110,9 @@ const transformApiStoreToStore = (apiStore: StoreApiResponse): Store => {
     store_id: apiStore.store_id || '',
     status: apiStore.status || 'inactive',
     billing_plan: apiStore.billing_plan || 'free',
+    pending_plan: apiStore.pending_plan || null,
+    downgrade_effective_at: apiStore.downgrade_effective_at || null,
+    plan_activated_at: apiStore.plan_activated_at || null,
     store_name: apiStore.store_name || 'Unnamed Store',
     description: apiStore.description || undefined,
     location_type: apiStore.location_type || 'retail',
