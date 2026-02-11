@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   PlusIcon, 
-  MagnifyingGlassIcon, 
-  FunnelIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
@@ -11,7 +9,7 @@ import {
   ShieldCheckIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import { PageHeader, Button, ConfirmDialog } from '../../components/ui';
+import { PageHeader, Button, ConfirmDialog, SearchAndFilter } from '../../components/ui';
 import { roleApiService } from '../../services/role/roleApiService';
 import type { ApiRole } from '../../services/role/roleApiService';
 import { useTenantStore } from '../../tenants/tenantStore';
@@ -64,11 +62,11 @@ const RolesPage: React.FC = () => {
   });
 
   const handleView = (role: ApiRole) => {
-    navigate(`/settings/roles/${role.role_id}`);
+    navigate(`/tenant/roles/${role.role_id}`);
   };
 
   const handleEdit = (role: ApiRole) => {
-    navigate(`/settings/roles/edit/${role.role_id}`);
+    navigate(`/tenant/roles/edit/${role.role_id}`);
   };
 
   const handleDelete = async (roleId: string) => {
@@ -112,7 +110,7 @@ const RolesPage: React.FC = () => {
         description="Manage user roles and permissions"
       >
         <Button
-          onClick={() => navigate('/settings/roles/new')}
+          onClick={() => navigate('/tenant/roles/new')}
           className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg transform hover:scale-105 transition-all duration-200"
         >
           <PlusIcon className="w-5 h-5" />
@@ -121,30 +119,20 @@ const RolesPage: React.FC = () => {
       </PageHeader>
 
       {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
-        <div className="flex-1 relative">
-          <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search roles by name or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm shadow-sm"
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <FunnelIcon className="w-5 h-5 text-gray-400" />
-          <select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value as 'all' | 'active' | 'inactive')}
-            className="border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm shadow-sm"
-          >
-            <option value="all">All Roles</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-      </div>
+      <SearchAndFilter
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search roles by name or description..."
+        filterValue={filterBy === 'all' ? '' : filterBy}
+        onFilterChange={(val) => setFilterBy((val || 'all') as 'all' | 'active' | 'inactive')}
+        filterOptions={[
+          { id: 'active', label: 'Active' },
+          { id: 'inactive', label: 'Inactive' },
+        ]}
+        filterPlaceholder="All Roles"
+        showViewToggle={false}
+        className="mb-8"
+      />
 
       {/* Error State */}
       {error && (
@@ -195,7 +183,7 @@ const RolesPage: React.FC = () => {
                   : 'Get started by creating your first role.'}
               </p>
               <Button
-                onClick={() => navigate('/settings/roles/new')}
+                onClick={() => navigate('/tenant/roles/new')}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />

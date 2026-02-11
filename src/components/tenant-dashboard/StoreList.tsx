@@ -210,7 +210,7 @@ const StoreList: React.FC = () => {
         filterPlaceholder="All Statuses"
         actions={
           canManageStores ? (
-            <Button variant="primary" size="sm" onClick={() => navigate('/create-store')}>
+            <Button variant="primary" className="h-12" onClick={() => navigate('/create-store')}>
               <PlusIcon className="h-4 w-4 mr-2" />
               Create Store
             </Button>

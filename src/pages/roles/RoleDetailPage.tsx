@@ -62,7 +62,7 @@ const RoleDetailPage: React.FC = () => {
   };
 
   const handleEdit = () => {
-    navigate(`/settings/roles/edit/${id}`);
+    navigate(`/tenant/roles/edit/${id}`);
   };
 
   const handleDelete = () => {
@@ -73,7 +73,7 @@ const RoleDetailPage: React.FC = () => {
       async () => {
         if (!currentTenant?.id || !currentStore?.store_id || !id) return;
         await roleApiService.deleteRole(currentTenant.id, currentStore.store_id, id);
-        navigate('/settings/roles');
+        navigate('/tenant/roles');
       }
     );
   };
@@ -144,7 +144,7 @@ const RoleDetailPage: React.FC = () => {
         >
           <Button
             variant="outline"
-            onClick={() => navigate('/settings/roles')}
+            onClick={() => navigate('/tenant/roles')}
             className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -184,7 +184,7 @@ const RoleDetailPage: React.FC = () => {
         >
           <Button
             variant="outline"
-            onClick={() => navigate('/settings/roles')}
+            onClick={() => navigate('/tenant/roles')}
             className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -200,7 +200,7 @@ const RoleDetailPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Role</h3>
             <p className="text-red-600 mb-6">{error || 'Role not found'}</p>
             <Button 
-              onClick={() => navigate('/settings/roles')}
+              onClick={() => navigate('/tenant/roles')}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             >
               Back to Roles
@@ -221,7 +221,7 @@ const RoleDetailPage: React.FC = () => {
       >
         <Button
           variant="outline"
-          onClick={() => navigate('/settings/roles')}
+          onClick={() => navigate('/tenant/roles')}
           className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2" />

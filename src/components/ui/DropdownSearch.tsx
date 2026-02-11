@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDownIcon, MagnifyingGlassIcon, FolderIcon } from '@heroicons/react/24/outline';
@@ -85,13 +86,32 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
   
   const selectedOption = options.find(opt => opt.id === value) || null;
+
+  // Calculate dropdown position based on trigger button
+  const updateMenuPosition = useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 8, // 8px gap (mt-2 equivalent)
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setIsOpen(false);
         setSearchQuery('');
       }
@@ -104,6 +124,18 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
       };
     }
   }, [isOpen]);
+
+  // Update position on scroll/resize while open
+  useEffect(() => {
+    if (!isOpen) return;
+    updateMenuPosition();
+    window.addEventListener('scroll', updateMenuPosition, true);
+    window.addEventListener('resize', updateMenuPosition);
+    return () => {
+      window.removeEventListener('scroll', updateMenuPosition, true);
+      window.removeEventListener('resize', updateMenuPosition);
+    };
+  }, [isOpen, updateMenuPosition]);
 
   // Filter options based on search query
   const filteredOptions = searchQuery.trim() 
@@ -196,6 +228,7 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
       <div className="relative" ref={dropdownRef}>
         {/* Trigger Button */}
         <button
+          ref={triggerRef}
           type="button"
           onClick={handleToggleDropdown}
           disabled={disabled}
@@ -218,13 +251,17 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
           <p className="mt-2 text-sm text-red-600">{error}</p>
         )}
 
-        {/* Dropdown Menu */}
-        {isOpen && (
+        {/* Dropdown Menu — rendered via portal to escape overflow:hidden containers */}
+        {isOpen && createPortal(
           <div 
-            className={`absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg ${dropdownClassName}`}
+            ref={menuRef}
+            className={`fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg ${dropdownClassName}`}
             style={{ 
+              top: menuPosition.top,
+              left: menuPosition.left,
+              width: menuPosition.width,
               maxHeight: maxHeight,
-              minWidth: '100%'
+              minWidth: menuPosition.width,
             }}
           >
             {/* Search Input */}
@@ -294,7 +331,8 @@ export const DropdownSearch: React.FC<DropdownSearchProps> = ({
                 </div>
               )}
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>

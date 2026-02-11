@@ -128,7 +128,7 @@ const CreateRolePage: React.FC = () => {
         permissions: Array.from(selectedPermissions)
       });
       
-      navigate('/settings/roles');
+      navigate('/tenant/roles');
     } catch (error) {
       console.error('Failed to create role:', error);
       setErrors({ general: 'Failed to create role. Please try again.' });
@@ -185,7 +185,7 @@ const CreateRolePage: React.FC = () => {
         >
           <Button
             variant="outline"
-            onClick={() => navigate('/settings/roles')}
+            onClick={() => navigate('/tenant/roles')}
             className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -252,7 +252,7 @@ const CreateRolePage: React.FC = () => {
             </>
           ) : (
             <Button
-              onClick={() => navigate('/settings/roles')}
+              onClick={() => navigate('/tenant/roles')}
               variant="outline"
               className="flex items-center space-x-2"
             >

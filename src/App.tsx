@@ -244,10 +244,7 @@ function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="settings/store" element={<StoreSettings />} />
               <Route path="settings/terminals" element={<TerminalSettings />} />
-              <Route path="settings/roles" element={<RolesPage />} />
-              <Route path="settings/roles/new" element={<CreateRolePage />} />
-              <Route path="settings/roles/edit/:id" element={<EditRolePage />} />
-              <Route path="settings/roles/:id" element={<RoleDetailPage />} />
+
               <Route path="tax-settings" element={<TaxSettings />} />
               <Route path="payment-settings" element={<PaymentSettings />} />
               <Route path="payment-settings/new" element={<TenderEditPage />} />
@@ -264,6 +261,10 @@ function App() {
               <Route path="tenant/billing/invoices" element={<InvoiceListPage />} />
               <Route path="tenant/billing/invoices/:invoiceId" element={<InvoiceDetailPage />} />
               <Route path="tenant/billing/payment-methods" element={<PaymentMethodsPage />} />
+              <Route path="tenant/roles" element={<RolesPage />} />
+              <Route path="tenant/roles/new" element={<CreateRolePage />} />
+              <Route path="tenant/roles/edit/:id" element={<EditRolePage />} />
+              <Route path="tenant/roles/:id" element={<RoleDetailPage />} />
               <Route path="tenant/audit-log" element={<TenantAuditLogPage />} />
               <Route path="tenant/settings" element={<TenantSettingsPage />} />
               <Route path="debug/tenant-access" element={<TenantAccessDebug />} />

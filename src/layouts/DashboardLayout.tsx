@@ -124,7 +124,6 @@ const DashboardLayout: React.FC = () => {
         { name: t('nav.terminalSettings'), href: '/settings/terminals', icon: ComputerDesktopIcon },
         { name: t('nav.paymentSettings'), href: '/payment-settings', icon: CreditCardIcon },
         { name: t('nav.taxSettings'), href: '/tax-settings', icon: TableCellsIcon },
-        { name: 'Subscription', href: '/settings/subscription', icon: CreditCardIcon },
       ]
     },
     {
@@ -166,7 +165,7 @@ const DashboardLayout: React.FC = () => {
     {
       category: 'ADMINISTRATION',
       items: [
-        { name: t('nav.roleManagement'), href: '/settings/roles', icon: UserGroupIcon },
+        { name: t('nav.roleManagement'), href: '/tenant/roles', icon: UserGroupIcon },
         { name: 'Activity Log', href: '/tenant/audit-log', icon: ClipboardDocumentListIcon },
         { name: 'Tenant Settings', href: '/tenant/settings', icon: Cog6ToothIcon },
       ]
@@ -336,8 +335,8 @@ const DashboardLayout: React.FC = () => {
                 )}
               </div>
 
-              {/* Store Selection */}
-              {currentTenant && (
+              {/* Store Selection - only show in store mode */}
+              {currentTenant && sidebarMode === 'store' && (
                 <div className="relative">
                   <button
                     onClick={() => setStoreMenuOpen(!storeMenuOpen)}

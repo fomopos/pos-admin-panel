@@ -197,7 +197,7 @@ const UserManagement: React.FC = () => {
         filterPlaceholder="All Roles"
         actions={
           canManageUsers ? (
-            <Button variant="primary" size="sm" onClick={() => setInviteModalOpen(true)}>
+            <Button variant="primary" className="h-12" onClick={() => setInviteModalOpen(true)}>
               <PlusIcon className="h-4 w-4 mr-2" />
               Invite User
             </Button>

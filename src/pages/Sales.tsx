@@ -586,7 +586,7 @@ const Sales: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => setShowAdvancedFilters(true)}
-              className="text-sm"
+              className="text-sm h-12"
             >
               <FunnelIcon className="h-4 w-4 mr-2" />
               More Filters

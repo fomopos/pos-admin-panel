@@ -131,7 +131,7 @@ const EditRolePage: React.FC = () => {
         description: formData.description.trim(),
         permissions: Array.from(selectedPermissions)
       });
-      navigate('/settings/roles');
+      navigate('/tenant/roles');
     } catch (error) {
       console.error('Failed to update role:', error);
       setErrors({ general: 'Failed to update role. Please try again.' });
@@ -188,7 +188,7 @@ const EditRolePage: React.FC = () => {
         >
           <Button
             variant="outline"
-            onClick={() => navigate('/settings/roles')}
+            onClick={() => navigate('/tenant/roles')}
             className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -218,7 +218,7 @@ const EditRolePage: React.FC = () => {
         >
           <Button
             variant="outline"
-            onClick={() => navigate('/settings/roles')}
+            onClick={() => navigate('/tenant/roles')}
             className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
           >
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -234,7 +234,7 @@ const EditRolePage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Role</h3>
             <p className="text-red-600 mb-6">{errors.general}</p>
             <Button 
-              onClick={() => navigate('/settings/roles')}
+              onClick={() => navigate('/tenant/roles')}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-300"
             >
               Back to Roles
@@ -253,7 +253,7 @@ const EditRolePage: React.FC = () => {
       >
         <Button
           variant="outline"
-          onClick={() => navigate('/settings/roles')}
+          onClick={() => navigate('/tenant/roles')}
           className="flex items-center backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300"
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -411,7 +411,7 @@ const EditRolePage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/settings/roles')}
+                onClick={() => navigate('/tenant/roles')}
                 disabled={saving}
                 className="backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90"
               >
