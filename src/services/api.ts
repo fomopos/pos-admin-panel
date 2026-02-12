@@ -69,8 +69,11 @@ export class ApiClient {
     
     const config: RequestInit = {
       ...options,
+      cache: 'no-store' as RequestCache,
       headers: {
         ...this.defaultHeaders,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
         ...options.headers,
       },
     };

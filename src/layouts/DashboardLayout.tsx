@@ -170,7 +170,7 @@ const DashboardLayout: React.FC = () => {
         { name: 'Tenant Settings', href: '/tenant/settings', icon: Cog6ToothIcon },
       ]
     }
-  ], []);
+  ], [t]);
 
   // Select which navigation to show
   const navigation = sidebarMode === 'tenant' ? tenantNavigation : storeNavigation;

@@ -23,7 +23,7 @@ interface CacheChangeEvent {
 class CategoryCacheService {
   private cache: CategoryCache = {};
   private fullCacheKeys = new Set<string>(); // track which tenant:store combinations have full cache
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+  private readonly CACHE_DURATION = 2 * 60 * 1000; // 2 minutes — reduced from 5 to lower staleness risk
   private listeners = new Set<(event: CacheChangeEvent) => void>(); // Cache change listeners
 
   /**

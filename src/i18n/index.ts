@@ -102,7 +102,7 @@ export async function loadTranslations(language: string) {
     }
 
     // For future API integration
-    const response = await fetch(`/api/translations/${language}`);
+    const response = await fetch(`/api/translations/${language}`, { cache: 'no-store' });
     
     if (response.ok) {
       const translations = await response.json();

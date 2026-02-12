@@ -227,6 +227,9 @@ const cleanEmptyStrings = (value: any): any => {
   return value;
 };
 
+// Cache version — bump this when persisted state shape changes or to force-clear stale data
+const TENANT_STORE_VERSION = 2;
+
 // Store state with duplicate call prevention
 let isCurrentlyFetching = false;
 
@@ -644,11 +647,26 @@ export const useTenantStore = create<TenantState>()(
     }),
     {
       name: 'tenant-storage',
+      version: TENANT_STORE_VERSION,
       partialize: (state) => ({
         currentTenant: state.currentTenant,
         currentStore: state.currentStore,
         tenants: state.tenants,
       }),
+      migrate: (persistedState: unknown, version: number) => {
+        // If the stored version is older than current, discard stale persisted data
+        if (version < TENANT_STORE_VERSION) {
+          console.log(`🔄 Tenant store version mismatch (stored: v${version}, current: v${TENANT_STORE_VERSION}). Clearing stale data.`);
+          return {
+            tenants: [],
+            currentTenant: null,
+            currentStore: null,
+            isLoading: false,
+            error: null,
+          };
+        }
+        return persistedState as TenantState;
+      },
       onRehydrateStorage: () => (state) => {
         // Set FormattingService defaults from persisted store on app load
         if (state?.currentStore) {

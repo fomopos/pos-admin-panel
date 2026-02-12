@@ -215,12 +215,12 @@ const ReceiptBuilder: React.FC<ReceiptBuilderProps> = () => {
     const loadSampleData = async () => {
       try {
         // Load sample receipt config
-        const configResponse = await fetch('/receipt-config.json');
+        const configResponse = await fetch('/receipt-config.json', { cache: 'no-store' });
         const configData = await configResponse.json();
         setReceiptConfigJson(JSON.stringify(configData, null, 2));
 
         // Load sample receipt data
-        const dataResponse = await fetch('/receipt-data.json');
+        const dataResponse = await fetch('/receipt-data.json', { cache: 'no-store' });
         const dataData = await dataResponse.json();
         setReceiptDataJson(JSON.stringify(dataData, null, 2));
       } catch (error) {

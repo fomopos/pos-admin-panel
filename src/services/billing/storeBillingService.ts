@@ -133,7 +133,12 @@ class StoreBillingService {
 
     const response = await fetch(`${this.baseUrl}/v0/store/${storeId}/plan`, {
       method: 'PUT',
-      headers,
+      headers: {
+        ...headers,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      cache: 'no-store',
       body: JSON.stringify({ billing_plan: billingPlan }),
     });
 
@@ -197,7 +202,12 @@ class StoreBillingService {
 
     const response = await fetch(`${this.baseUrl}/v0/billing/checkout-session`, {
       method: 'POST',
-      headers,
+      headers: {
+        ...headers,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      cache: 'no-store',
       body: JSON.stringify({
         success_url: successUrl,
         cancel_url: cancelUrl,
@@ -250,7 +260,12 @@ class StoreBillingService {
 
     const response = await fetch(`${this.baseUrl}/v0/store`, {
       method: 'POST',
-      headers,
+      headers: {
+        ...headers,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+      cache: 'no-store',
       body: JSON.stringify(storeData),
     });
 

@@ -101,7 +101,12 @@ class ApiService {
 
     const requestOptions: RequestInit = {
       ...fetchOptions,
-      headers: requestHeaders,
+      cache: 'no-store' as RequestCache,
+      headers: {
+        ...requestHeaders,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
       signal: controller.signal,
     };
 
